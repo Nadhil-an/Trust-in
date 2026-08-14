@@ -23,7 +23,6 @@ import ExpenseList from './pages/accounts/Expenses'
 import ChequeList from './pages/accounts/Cheques'
 import TransferList from './pages/accounts/Transfers'
 import TransactionList from './pages/accounts/Transactions'
-import CashierDashboard from './pages/cashier/Dashboard'
 import PendingDisbursements from './pages/cashier/PendingDisbursements'
 import DisbursementList from './pages/cashier/Disbursements'
 import CashClosing from './pages/cashier/CashClosing'
@@ -55,7 +54,7 @@ function HomeRedirect() {
   const roleHome = {
     MANAGER: '/manager/dashboard',
     ACCOUNTANT: '/accounts/dashboard',
-    CASHIER: '/cashier/dashboard',
+    CASHIER: '/cashier/pending',
     HR: '/hr/dashboard',
     ADMIN: '/admin/users',
   }
@@ -118,7 +117,6 @@ export default function App() {
           <Route path="accounts/transactions" element={<ProtectedRoute roles={['ACCOUNTANT','CASHIER','ADMIN']}><TransactionList /></ProtectedRoute>} />
 
           {/* Cashier */}
-          <Route path="cashier/dashboard" element={<ProtectedRoute roles={['CASHIER','ACCOUNTANT','ADMIN']}><CashierDashboard /></ProtectedRoute>} />
           <Route path="cashier/pending" element={<ProtectedRoute roles={['CASHIER','ACCOUNTANT','ADMIN']}><PendingDisbursements /></ProtectedRoute>} />
           <Route path="cashier/disbursements" element={<ProtectedRoute roles={['CASHIER','ACCOUNTANT','ADMIN']}><DisbursementList /></ProtectedRoute>} />
           <Route path="cashier/closing" element={<ProtectedRoute roles={['CASHIER','ACCOUNTANT','ADMIN']}><CashClosing /></ProtectedRoute>} />

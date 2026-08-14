@@ -16,22 +16,26 @@ const NAV_CONFIG = {
     { label: 'Reports', icon: '📈', path: '/reports' },
   ],
   ACCOUNTANT: [
+    { type: 'header', label: 'OVERVIEW' },
     { label: 'Dashboard', icon: '📊', path: '/accounts/dashboard' },
     { label: 'Money Requests', icon: '💰', path: '/accounts/money-requests', badge: 'pending' },
+    { type: 'header', label: 'LEDGERS' },
     { label: 'Cash Book', icon: '💵', path: '/accounts/cash' },
     { label: 'Bank', icon: '🏦', path: '/accounts/bank' },
     { label: 'Income', icon: '📥', path: '/accounts/income' },
     { label: 'Expenses', icon: '📤', path: '/accounts/expenses' },
+    { type: 'header', label: 'TRANSACTIONS' },
     { label: 'Cheques', icon: '🧾', path: '/accounts/cheques' },
     { label: 'Transfers', icon: '🔄', path: '/accounts/transfers' },
     { label: 'Transactions', icon: '📋', path: '/accounts/transactions' },
+    { type: 'header', label: 'PAYOUTS & CLOSING' },
     { label: 'Pending Payouts', icon: '⏳', path: '/cashier/pending', badge: 'pending' },
     { label: 'Payouts', icon: '💸', path: '/cashier/disbursements' },
     { label: 'Cash Closing', icon: '🔒', path: '/cashier/closing' },
+    { type: 'header', label: 'ANALYTICS' },
     { label: 'Reports', icon: '📈', path: '/reports' },
   ],
   CASHIER: [
-    { label: 'Dashboard', icon: '📊', path: '/cashier/dashboard' },
     { label: 'Pending Payouts', icon: '⏳', path: '/cashier/pending', badge: 'pending' },
     { label: 'Cash Book', icon: '💵', path: '/accounts/cash' },
     { label: 'Payouts', icon: '💸', path: '/cashier/disbursements' },
@@ -167,6 +171,7 @@ export default function AppLayout() {
   const location = useLocation()
   const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
 
   const navItems = NAV_CONFIG[user?.role] || []
 
@@ -192,34 +197,40 @@ export default function AppLayout() {
 
         <div className="sidebar-nav">
           <div className="nav-section-label">{user?.role} MODULE</div>
-          {navItems.map(item => (
-            <div key={item.path}
-              className={`nav-item ${location.pathname.startsWith(item.path) ? 'active' : ''}`}
-              onClick={() => { navigate(item.path); setMobileOpen(false) }}>
-              <span className="nav-icon">{item.icon}</span>
-              <span>{item.label}</span>
-            </div>
-          ))}
-
-          <div className="nav-section-label" style={{ marginTop: 8 }}>ACCOUNT</div>
-          <div className={`nav-item ${location.pathname === '/profile' ? 'active' : ''}`}
-            onClick={() => navigate('/profile')}>
-            <span className="nav-icon">👤</span>
-            <span>Profile</span>
-          </div>
-          <div className="nav-item" onClick={handleLogout}>
-            <span className="nav-icon">🚪</span>
-            <span>Logout</span>
-          </div>
+          {navItems.map((item, idx) => {
+            if (item.type === 'header') {
+              return <div key={`header-${idx}`} className="nav-section-label" style={{ marginTop: 8 }}>{item.label}</div>
+            }
+            return (
+              <div key={item.path}
+                className={`nav-item ${location.pathname.startsWith(item.path) ? 'active' : ''}`}
+                onClick={() => { navigate(item.path); setMobileOpen(false) }}>
+                <span className="nav-icon">{item.icon}</span>
+                <span>{item.label}</span>
+              </div>
+            )
+          })}
         </div>
 
-        <div className="sidebar-user">
-          <div className="sidebar-user-avatar">
-            {user?.full_name?.charAt(0) || 'U'}
-          </div>
-          <div className="sidebar-user-info">
-            <div className="sidebar-user-name">{user?.full_name}</div>
-            <div className="sidebar-user-role">{user?.role}</div>
+        <div style={{ position: 'relative' }}>
+          {userMenuOpen && (
+            <div className="sidebar-user-menu">
+              <div className="sidebar-user-menu-item" onClick={() => { navigate('/profile'); setUserMenuOpen(false); setMobileOpen(false); }}>
+                <span className="nav-icon">👤</span> Profile
+              </div>
+              <div className="sidebar-user-menu-item" onClick={handleLogout}>
+                <span className="nav-icon">🚪</span> Logout
+              </div>
+            </div>
+          )}
+          <div className="sidebar-user" onClick={() => setUserMenuOpen(!userMenuOpen)} style={{ cursor: 'pointer' }}>
+            <div className="sidebar-user-avatar">
+              {user?.full_name?.charAt(0) || 'U'}
+            </div>
+            <div className="sidebar-user-info">
+              <div className="sidebar-user-name">{user?.full_name}</div>
+              <div className="sidebar-user-role">{user?.role}</div>
+            </div>
           </div>
         </div>
       </nav>
