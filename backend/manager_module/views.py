@@ -19,8 +19,8 @@ from manager_module.models import (
     FAOReport, FAOPhoto,
     ACOCalculation,
     GEOReport, GEOPhoto,
-    CharityInventory,
-    MinutesRegistry, Partner,
+    CharityInventory, InventoryTransaction,
+    MinutesRegistry, Partner, ScheduledPayout,
 )
 from manager_module.serializers import (
     AssessmentRequestSerializer, AssessmentRequestListSerializer,
@@ -28,8 +28,8 @@ from manager_module.serializers import (
     FAOReportSerializer,
     ACOCalculationSerializer,
     GEOReportSerializer,
-    CharityInventorySerializer,
-    MinutesSerializer, PartnerSerializer,
+    CharityInventorySerializer, InventoryTransactionSerializer,
+    MinutesSerializer, PartnerSerializer, ScheduledPayoutSerializer,
 )
 
 
@@ -40,11 +40,39 @@ class ManagerDashboardView(APIView):
 
     def get(self, request):
         from accounts_module.models import CashAccount, BankAccount
-        from hr_module.models import Member, Volunteer
+        from hr_module.models import Member, Volunteer, Attendance
+        from datetime import date
+        from dateutil.relativedelta import relativedelta
 
         reqs = AssessmentRequest.objects.all()
         cash_bal = sum(a.current_balance for a in CashAccount.objects.filter(is_active=True))
         bank_bal = sum(b.current_balance for b in BankAccount.objects.filter(is_active=True))
+
+        # Today's attendance
+        today = date.today()
+        today_att = Attendance.objects.filter(date=today)
+
+        # Monthly request trend (last 6 months)
+        monthly_trend = []
+        for i in range(5, -1, -1):
+            month_start = (today.replace(day=1) - relativedelta(months=i))
+            month_end = month_start + relativedelta(months=1)
+            count = reqs.filter(created_at__date__gte=month_start, created_at__date__lt=month_end).count()
+            monthly_trend.append({
+                'month': month_start.strftime('%b %Y'),
+                'count': count,
+            })
+
+        # Today's donations
+        from accounts_module.models import Income
+        todays_donations = Income.objects.filter(source='DONATION', date=today).aggregate(total=Sum('amount'))['total'] or 0
+
+        # Total approved amount
+        total_approved_amount = float(
+            reqs.filter(status__in=[
+                RequestStatus.APPROVED, RequestStatus.CASHIER_PENDING, RequestStatus.COMPLETED
+            ]).aggregate(total=Sum('amount_requested'))['total'] or 0
+        )
 
         data = {
             'requests': {
@@ -59,20 +87,34 @@ class ManagerDashboardView(APIView):
                 'cashier_pending': reqs.filter(status=RequestStatus.CASHIER_PENDING).count(),
                 'completed': reqs.filter(status=RequestStatus.COMPLETED).count(),
                 'total': reqs.count(),
+                'total_approved_amount': total_approved_amount,
             },
             'finance': {
                 'cash_balance': float(cash_bal),
                 'bank_balance': float(bank_bal),
                 'total_balance': float(cash_bal + bank_bal),
+                'todays_donations': float(todays_donations),
             },
             'hr': {
                 'members': Member.objects.filter(status='ACTIVE').count(),
                 'volunteers': Volunteer.objects.filter(status='ACTIVE').count(),
             },
+            'attendance': {
+                'present': today_att.filter(status='PRESENT').count(),
+                'absent': today_att.filter(status='ABSENT').count(),
+                'late': today_att.filter(status='LATE').count(),
+                'on_leave': today_att.filter(status='LEAVE').count(),
+                'wfh': today_att.filter(status='WFH').count(),
+                'total_staff': Member.objects.filter(status='ACTIVE').count(),
+            },
             'inventory': {
                 'total_items': CharityInventory.objects.filter(is_active=True).count(),
                 'low_stock': CharityInventory.objects.filter(is_active=True, quantity_available__lte=5).count(),
             },
+            'payouts': {
+                'pending': ScheduledPayout.objects.filter(status__in=['PLANNED', 'ACTIVE']).count(),
+            },
+            'monthly_trend': monthly_trend,
             'recent_requests': AssessmentRequestListSerializer(
                 reqs.select_related('requested_by').order_by('-created_at')[:10], many=True
             ).data,
@@ -739,6 +781,20 @@ class CharityInventoryDetailView(generics.RetrieveUpdateDestroyAPIView):
         serializer.save(updated_by=self.request.user)
 
 
+class InventoryTransactionListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = InventoryTransactionSerializer
+    filterset_fields = ['transaction_type']
+    search_fields = ['transaction_id', 'reference_number', 'item__item_name']
+    ordering_fields = ['-created_at']
+
+    def get_queryset(self):
+        return InventoryTransaction.objects.select_related('item', 'created_by').all()
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
+
 # ── Minutes Registry ───────────────────────────────────────────────
 
 class MinutesListCreateView(generics.ListCreateAPIView):
@@ -764,7 +820,7 @@ class MinutesDetailView(generics.RetrieveUpdateDestroyAPIView):
 # ── Partners ───────────────────────────────────────────────────────
 
 class PartnerListCreateView(generics.ListCreateAPIView):
-    permission_classes = [IsManager]
+    permission_classes = [IsAuthenticated]
     serializer_class = PartnerSerializer
     queryset = Partner.objects.all()
     filterset_fields = ['partner_type', 'status']
@@ -780,3 +836,33 @@ class PartnerDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = PartnerSerializer
     queryset = Partner.objects.all()
     parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+
+# ── Scheduled Payouts ──────────────────────────────────────────────
+
+class ScheduledPayoutListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ScheduledPayoutSerializer
+    queryset = ScheduledPayout.objects.all()
+    filterset_fields = ['status']
+    search_fields = ['payout_id', 'name']
+    ordering_fields = ['payment_date']
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+        if start_date:
+            qs = qs.filter(payment_date__gte=start_date)
+        if end_date:
+            qs = qs.filter(payment_date__lte=end_date)
+        return qs
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
+
+class ScheduledPayoutDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ScheduledPayoutSerializer
+    queryset = ScheduledPayout.objects.all()

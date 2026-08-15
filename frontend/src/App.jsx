@@ -41,6 +41,16 @@ import AdminUsers from './pages/admin/Users'
 import AuditLogPage from './pages/admin/AuditLog'
 import ProfilePage from './pages/Profile'
 import NotFoundPage from './pages/NotFound'
+import DataEntryDashboard from './pages/data-entry/Dashboard'
+import InwardEntry from './pages/data-entry/InwardEntry'
+import OutwardEntry from './pages/data-entry/OutwardEntry'
+import PurchaseEntry from './pages/data-entry/PurchaseEntry'
+import DonationEntry from './pages/data-entry/DonationEntry'
+import MembershipEntry from './pages/data-entry/MembershipEntry'
+import PartnersEntry from './pages/data-entry/PartnersEntry'
+import MaterialInward from './pages/data-entry/MaterialInward'
+import MaterialOutward from './pages/data-entry/MaterialOutward'
+import ScheduledPayouts from './pages/shared/ScheduledPayouts'
 
 // ── Protected Route ───────────────────────────────────────
 function ProtectedRoute({ children, roles = [] }) {
@@ -59,6 +69,7 @@ function HomeRedirect() {
     CASHIER: '/cashier/pending',
     HR: '/hr/dashboard',
     ADMIN: '/admin/users',
+    DATA_ENTRY: '/data-entry',
   }
   return <Navigate to={roleHome[user?.role] || '/login'} replace />
 }
@@ -76,6 +87,11 @@ export default function App() {
   useEffect(() => {
     if (isAuthenticated && user?.id) {
       connectWebSocket(user.id)
+      
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission()
+      }
+      
       return () => disconnect()
     }
   }, [isAuthenticated, user?.id])
@@ -136,12 +152,24 @@ export default function App() {
           <Route path="hr/complaints" element={<ProtectedRoute roles={['HR','ADMIN']}><Complaints /></ProtectedRoute>} />
 
           {/* Shared */}
+          <Route path="payouts" element={<ProtectedRoute roles={['MANAGER','ACCOUNTANT','DATA_ENTRY','ADMIN']}><ScheduledPayouts /></ProtectedRoute>} />
           <Route path="reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
           <Route path="profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
 
           {/* Admin */}
           <Route path="admin/users" element={<ProtectedRoute roles={['ADMIN']}><AdminUsers /></ProtectedRoute>} />
           <Route path="admin/audit-log" element={<ProtectedRoute roles={['ADMIN']}><AuditLogPage /></ProtectedRoute>} />
+
+          {/* Data Entry */}
+          <Route path="data-entry" element={<ProtectedRoute roles={['MANAGER','ACCOUNTANT','HR','ADMIN','DATA_ENTRY']}><DataEntryDashboard /></ProtectedRoute>} />
+          <Route path="data-entry/inward" element={<ProtectedRoute roles={['MANAGER','ACCOUNTANT','HR','ADMIN','DATA_ENTRY']}><InwardEntry /></ProtectedRoute>} />
+          <Route path="data-entry/outward" element={<ProtectedRoute roles={['MANAGER','ACCOUNTANT','HR','ADMIN','DATA_ENTRY']}><OutwardEntry /></ProtectedRoute>} />
+          <Route path="data-entry/purchase" element={<ProtectedRoute roles={['MANAGER','ACCOUNTANT','HR','ADMIN','DATA_ENTRY']}><PurchaseEntry /></ProtectedRoute>} />
+          <Route path="data-entry/donation" element={<ProtectedRoute roles={['MANAGER','ACCOUNTANT','HR','ADMIN','DATA_ENTRY']}><DonationEntry /></ProtectedRoute>} />
+          <Route path="data-entry/membership" element={<ProtectedRoute roles={['MANAGER','ACCOUNTANT','HR','ADMIN','DATA_ENTRY']}><MembershipEntry /></ProtectedRoute>} />
+          <Route path="data-entry/partners" element={<ProtectedRoute roles={['MANAGER','ACCOUNTANT','HR','ADMIN','DATA_ENTRY']}><PartnersEntry /></ProtectedRoute>} />
+          <Route path="data-entry/material-inward" element={<ProtectedRoute roles={['MANAGER','ACCOUNTANT','HR','ADMIN','DATA_ENTRY']}><MaterialInward /></ProtectedRoute>} />
+          <Route path="data-entry/material-outward" element={<ProtectedRoute roles={['MANAGER','ACCOUNTANT','HR','ADMIN','DATA_ENTRY']}><MaterialOutward /></ProtectedRoute>} />
 
           <Route path="*" element={<NotFoundPage />} />
         </Route>

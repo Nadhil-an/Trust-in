@@ -99,6 +99,10 @@ export const managerApi = {
     update: (id, data) => api.patch(`/manager/inventory/${id}/`, data),
     delete: (id) => api.delete(`/manager/inventory/${id}/`),
   },
+  inventoryTransactions: {
+    list: (params) => api.get('/manager/inventory-transactions/', { params }),
+    create: (data) => api.post('/manager/inventory-transactions/', data),
+  },
   minutes: {
     list: (params) => api.get('/manager/minutes/', { params }),
     create: (data) => api.post('/manager/minutes/', data),
@@ -113,12 +117,20 @@ export const managerApi = {
     update: (id, data) => api.patch(`/manager/partners/${id}/`, data),
     delete: (id) => api.delete(`/manager/partners/${id}/`),
   },
+  scheduledPayouts: {
+    list: (params) => api.get('/manager/payouts/', { params }),
+    create: (data) => api.post('/manager/payouts/', data),
+    get: (id) => api.get(`/manager/payouts/${id}/`),
+    update: (id, data) => api.patch(`/manager/payouts/${id}/`, data),
+    delete: (id) => api.delete(`/manager/payouts/${id}/`),
+  },
 }
 
 
 // ── Accounts ───────────────────────────────────────────────
 export const accountsApi = {
   dashboard: () => api.get('/accounts/dashboard/'),
+  totalFunds: () => api.get('/accounts/total-funds/'),
   cash: {
     accounts: () => api.get('/accounts/cash/'),
     transactions: (params) => api.get('/accounts/cash/transactions/', { params }),
@@ -179,7 +191,8 @@ export const cashierApi = {
 
 // ── HR ─────────────────────────────────────────────────────
 export const hrApi = {
-  dashboard: () => api.get('/hr/dashboard/'),
+  dashboard:      () => api.get('/hr/dashboard/'),
+  birthdayAlerts: () => api.get('/hr/birthday-alerts/'),
   members: {
     list: (params) => api.get('/hr/members/', { params }),
     create: (data) => api.post('/hr/members/', data, { headers: { 'Content-Type': 'multipart/form-data' } }),

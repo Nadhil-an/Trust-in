@@ -28,15 +28,13 @@ export default function Partners() {
 
   return (
     <div>
-      <PageHeader title="Partners" subtitle="Clubs, Groups, Associations and Local Teams">
-        <button className="btn btn-primary" onClick={() => { setSelected(null); setShowModal(true) }}>+ Add Partner</button>
-      </PageHeader>
+      <PageHeader title="Partners" subtitle="Clubs, Groups, Associations and Local Teams" />
       <div className="data-card">
         <FilterBar search={search} onSearch={setSearch} />
         {loading ? <LoadingState /> : (
           <div className="table-wrap">
             <table>
-              <thead><tr><th>ID</th><th>Organization</th><th>Type</th><th>Contact</th><th>Phone</th><th>Status</th><th>Actions</th></tr></thead>
+              <thead><tr><th>ID</th><th>Organization</th><th>Type</th><th>Contact</th><th>Phone</th><th>Status</th></tr></thead>
               <tbody>
                 {items.length === 0 ? <tr><td colSpan={7}><EmptyState icon="🤝" title="No partners found" /></td></tr>
                   : items.map(p => (
@@ -47,7 +45,6 @@ export default function Partners() {
                     <td>{p.contact_person}</td>
                     <td>{p.phone}</td>
                     <td><StatusBadge status={p.status} /></td>
-                    <td><button className="btn btn-sm btn-secondary" onClick={() => { setSelected(p); setShowModal(true) }}>Edit</button></td>
                   </tr>
                 ))}
               </tbody>

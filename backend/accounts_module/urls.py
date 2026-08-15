@@ -3,6 +3,7 @@ from accounts_module import views
 
 urlpatterns = [
     path('dashboard/', views.AccountsDashboardView.as_view()),
+    path('total-funds/', views.TotalFundsView.as_view()),
     # Cash
     path('cash/', views.CashAccountListView.as_view()),
     path('cash/transactions/', views.CashTransactionListCreateView.as_view()),

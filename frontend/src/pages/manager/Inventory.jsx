@@ -185,18 +185,8 @@ export default function Inventory() {
     <div>
       <PageHeader
         title="Charity Inventory"
-        subtitle="Manage items available for distribution to beneficiaries"
-      >
-        {isManager && (
-          <button
-            className="btn btn-primary"
-            id="add-inventory-btn"
-            onClick={() => { setEditItem(null); setShowModal(true) }}
-          >
-            + Add Item
-          </button>
-        )}
-      </PageHeader>
+        subtitle="View items available for distribution to beneficiaries"
+      />
 
       {/* Summary Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 20 }}>
@@ -267,16 +257,10 @@ export default function Inventory() {
                     <td>
                       <div style={{ display: 'flex', gap: 4 }}>
                         {isManager && (
-                          <>
-                            <button
-                              className="btn btn-sm btn-secondary"
-                              onClick={() => { setAdjustItem(item); setAdjustQty(String(item.quantity_available)) }}
-                            >Adjust</button>
-                            <button
-                              className="btn btn-sm btn-primary"
-                              onClick={() => { setEditItem(item); setShowModal(true) }}
-                            >Edit</button>
-                          </>
+                          <button
+                            className="btn btn-sm btn-secondary"
+                            onClick={() => { setAdjustItem(item); setAdjustQty(String(item.quantity_available)) }}
+                          >Adjust Stock</button>
                         )}
                       </div>
                     </td>

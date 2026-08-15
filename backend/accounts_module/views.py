@@ -4,6 +4,7 @@ from django.utils import timezone
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 from core.permissions import IsAccountant, IsManagerOrAccountant, IsAccountantOrCashier, IsAnyStaff, IsOwnerOrManager
@@ -24,6 +25,8 @@ class AccountsDashboardView(APIView):
 
     def get(self, request):
         from manager_module.models import AssessmentRequest, RequestStatus
+        from hr_module.models import MonthlyPayroll
+        from dateutil.relativedelta import relativedelta
 
         cash_bal = sum(a.current_balance for a in CashAccount.objects.filter(is_active=True))
         bank_bal = sum(b.current_balance for b in BankAccount.objects.filter(is_active=True))
@@ -39,6 +42,18 @@ class AccountsDashboardView(APIView):
         today_income = Income.objects.filter(date=today).aggregate(t=Sum('amount'))['t'] or 0
         today_expense = Expense.objects.filter(date=today).aggregate(t=Sum('amount'))['t'] or 0
 
+        # Pending salaries
+        pending_salaries = MonthlyPayroll.objects.filter(status='APPROVED').count()
+
+        # Monthly trend (last 6 months)
+        monthly_trend = []
+        for i in range(5, -1, -1):
+            ms = (today.replace(day=1) - relativedelta(months=i))
+            me = ms + relativedelta(months=1)
+            inc = float(Income.objects.filter(date__gte=ms, date__lt=me).aggregate(t=Sum('amount'))['t'] or 0)
+            exp = float(Expense.objects.filter(date__gte=ms, date__lt=me).aggregate(t=Sum('amount'))['t'] or 0)
+            monthly_trend.append({'month': ms.strftime('%b'), 'income': inc, 'expense': exp, 'net': inc - exp})
+
         return Response({
             'cash_balance': float(cash_bal),
             'bank_balance': float(bank_bal),
@@ -47,8 +62,10 @@ class AccountsDashboardView(APIView):
             'expenses_this_month': float(expense_month),
             'net_this_month': float(income_month - expense_month),
             'pending_money_requests': pending_requests,
+            'pending_salaries': pending_salaries,
             'today_income': float(today_income),
             'today_expense': float(today_expense),
+            'monthly_trend': monthly_trend,
             'cash_accounts': CashAccountSerializer(CashAccount.objects.filter(is_active=True), many=True).data,
             'bank_accounts': BankAccountSerializer(BankAccount.objects.filter(is_active=True), many=True).data,
         })
@@ -132,7 +149,7 @@ class BankTransactionListCreateView(generics.ListCreateAPIView):
 class IncomeListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAnyStaff]
     serializer_class = IncomeSerializer
-    filterset_fields = ['source', 'payment_method', 'account_type']
+    filterset_fields = ['source', 'payment_method', 'account_type', 'date']
     search_fields = ['receipt_number', 'donor_name', 'purpose', 'reference_number']
     ordering_fields = ['date', 'amount']
     parser_classes = [MultiPartParser, FormParser, JSONParser]
@@ -185,7 +202,7 @@ class IncomeDetailView(generics.RetrieveUpdateDestroyAPIView):
 # ── Expenses ──────────────────────────────────────────────────────
 
 class ExpenseListCreateView(generics.ListCreateAPIView):
-    permission_classes = [IsAccountant]
+    permission_classes = [IsAnyStaff]
     serializer_class = ExpenseSerializer
     queryset = Expense.objects.select_related('created_by').all()
     filterset_fields = ['category', 'payment_method', 'account_type', 'status']
@@ -406,3 +423,13 @@ class ProcessPaymentView(APIView):
         )
 
         return Response({'message': 'Salary paid successfully.', 'payroll_id': payroll.payroll_id})
+
+# ── Total Funds (for Programs Check) ──────────────────────────────
+
+class TotalFundsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        cash_bal = sum(a.current_balance for a in CashAccount.objects.filter(is_active=True))
+        bank_bal = sum(b.current_balance for b in BankAccount.objects.filter(is_active=True))
+        return Response({'total': cash_bal + bank_bal})

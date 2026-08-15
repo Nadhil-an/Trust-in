@@ -367,6 +367,41 @@ class CharityInventory(models.Model):
         super().save(*args, **kwargs)
 
 
+class InventoryTransaction(models.Model):
+    """Log of material movements (Inward/Outward)."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    transaction_id = models.CharField(max_length=20, unique=True, db_index=True)
+    item = models.ForeignKey(CharityInventory, on_delete=models.CASCADE, related_name='transactions')
+    transaction_type = models.CharField(max_length=10, choices=[('INWARD', 'Inward'), ('OUTWARD', 'Outward')])
+    quantity = models.PositiveIntegerField()
+    reference_number = models.CharField(max_length=100, blank=True)
+    remarks = models.TextField(blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = 'manager_inventory_transactions'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.transaction_id} — {self.transaction_type} {self.quantity} {self.item.unit} of {self.item.item_name}"
+
+    def save(self, *args, **kwargs):
+        if not self.transaction_id:
+            year = timezone.now().year
+            count = InventoryTransaction.objects.filter(created_at__year=year).count() + 1
+            self.transaction_id = f"ITX-{year}-{count:05d}"
+            
+            # Update inventory quantity
+            if self.transaction_type == 'INWARD':
+                self.item.quantity_available += self.quantity
+            elif self.transaction_type == 'OUTWARD':
+                self.item.quantity_available -= self.quantity
+            self.item.save(update_fields=['quantity_available'])
+            
+        super().save(*args, **kwargs)
+
+
 # ── Minutes Registry ─────────────────────────────────────────────
 
 class MeetingType(models.TextChoices):
@@ -458,3 +493,41 @@ class Partner(models.Model):
             count = Partner.objects.count() + 1
             self.partner_id = f"PTR-{count:04d}"
         super().save(*args, **kwargs)
+
+
+# ── Scheduled Payouts ──────────────────────────────────────────────
+
+class PayoutStatus(models.TextChoices):
+    PLANNED = 'PLANNED', 'Planned'
+    ACTIVE = 'ACTIVE', 'Active'
+    COMPLETED = 'COMPLETED', 'Completed'
+    CANCELLED = 'CANCELLED', 'Cancelled'
+
+
+class ScheduledPayout(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    payout_id = models.CharField(max_length=20, unique=True, db_index=True)
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    allocated_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    issue_date = models.DateField()
+    payment_date = models.DateField()
+    status = models.CharField(max_length=20, choices=PayoutStatus.choices, default=PayoutStatus.PLANNED)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_payouts')
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'manager_scheduled_payouts'
+        ordering = ['payment_date']
+
+    def __str__(self):
+        return f"{self.payout_id} - {self.name} (₹{self.allocated_amount})"
+
+    def save(self, *args, **kwargs):
+        if not self.payout_id:
+            year = timezone.now().year
+            count = ScheduledPayout.objects.filter(created_at__year=year).count() + 1
+            self.payout_id = f"PAY-{year}-{count:04d}"
+        super().save(*args, **kwargs)
+

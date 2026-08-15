@@ -10,6 +10,7 @@ const NAV_CONFIG = {
   MANAGER: [
     { label: 'Dashboard', icon: '📊', path: '/manager/dashboard' },
     { label: 'Assessment Requests', icon: '📋', path: '/manager/requests', badge: 'requests' },
+    { label: 'Scheduled Payouts', icon: '🎯', path: '/payouts' },
     { label: 'Charity Inventory', icon: '📦', path: '/manager/inventory' },
     { label: 'Minutes Registry', icon: '📝', path: '/manager/minutes' },
     { label: 'Partners', icon: '🤝', path: '/manager/partners' },
@@ -18,6 +19,7 @@ const NAV_CONFIG = {
   ACCOUNTANT: [
     { type: 'header', label: 'OVERVIEW' },
     { label: 'Dashboard', icon: '📊', path: '/accounts/dashboard' },
+    { label: 'Scheduled Payouts', icon: '🎯', path: '/payouts' },
     { label: 'Money Requests', icon: '💰', path: '/accounts/money-requests', badge: 'pending' },
     { type: 'header', label: 'LEDGERS' },
     { label: 'Cash Book', icon: '💵', path: '/accounts/cash' },
@@ -64,11 +66,37 @@ const NAV_CONFIG = {
     { label: 'Audit Log', icon: '🔍', path: '/admin/audit-log' },
     { label: 'Reports', icon: '📈', path: '/reports' },
   ],
+  DATA_ENTRY: [
+    { type: 'header', label: 'MAIN' },
+    { label: 'Data Entry Hub', icon: '📝', path: '/data-entry' },
+    { label: 'Scheduled Payouts', icon: '🎯', path: '/payouts' },
+
+    { type: 'header', label: 'FINANCE & DONATIONS' },
+    { label: 'Donation Entry', icon: '💝', path: '/data-entry/donation' },
+    { label: 'Purchase Entry', icon: '🛒', path: '/data-entry/purchase' },
+
+    { type: 'header', label: 'PEOPLE & RELATIONS' },
+    { label: 'Membership Entry', icon: '🪪', path: '/data-entry/membership' },
+    { label: 'Partners Entry', icon: '🤝', path: '/data-entry/partners' },
+
+    { type: 'header', label: 'CHARITY ASSETS' },
+    { label: 'Inward Entry', icon: '📥', path: '/data-entry/inward' },
+    { label: 'Outward Entry', icon: '📤', path: '/data-entry/outward' },
+
+    { type: 'header', label: 'MATERIAL INVENTORY' },
+    { label: 'Material Inward', icon: '📦', path: '/data-entry/material-inward' },
+    { label: 'Material Outward', icon: '📤', path: '/data-entry/material-outward' },
+  ],
 }
 
 function NotificationDrawer({ onClose }) {
-  const { notifications, markRead, markAllRead } = useNotificationStore()
-  const { coreApi: cApi } = { coreApi }
+  const { notifications, setNotifications, markRead, markAllRead } = useNotificationStore()
+
+  React.useEffect(() => {
+    coreApi.notifications().then(res => {
+      setNotifications(res.data.results || res.data)
+    }).catch(console.error)
+  }, [setNotifications])
 
   const handleMarkRead = async (id) => {
     try {
@@ -82,6 +110,17 @@ function NotificationDrawer({ onClose }) {
       await coreApi.markAllRead('all')
       markAllRead()
     } catch (_) {}
+  }
+
+  const safeFormatDate = (dateStr) => {
+    if (!dateStr) return ''
+    try {
+      const d = new Date(dateStr)
+      if (isNaN(d.getTime())) return ''
+      return format(d, 'dd MMM, HH:mm')
+    } catch (e) {
+      return ''
+    }
   }
 
   return (
@@ -105,7 +144,7 @@ function NotificationDrawer({ onClose }) {
             <div className="notif-item-title">{n.title}</div>
             <div className="notif-item-msg">{n.message}</div>
             <div className="notif-item-time">
-              {n.created_at ? format(new Date(n.created_at), 'dd MMM, HH:mm') : ''}
+              {safeFormatDate(n.created_at)}
             </div>
           </div>
         ))}
@@ -205,19 +244,27 @@ export default function AppLayout() {
 
         <div className="sidebar-nav">
           <div className="nav-section-label">{user?.role} MODULE</div>
-          {navItems.map((item, idx) => {
-            if (item.type === 'header') {
-              return <div key={`header-${idx}`} className="nav-section-label" style={{ marginTop: 8 }}>{item.label}</div>
-            }
-            return (
-              <div key={item.path}
-                className={`nav-item ${location.pathname.startsWith(item.path) ? 'active' : ''}`}
-                onClick={() => { navigate(item.path); setMobileOpen(false) }}>
-                <span className="nav-icon">{item.icon}</span>
-                <span>{item.label}</span>
-              </div>
-            )
-          })}
+          {(() => {
+            const activeItem = [...navItems]
+              .filter(i => i.path)
+              .sort((a, b) => b.path.length - a.path.length)
+              .find(i => location.pathname === i.path || location.pathname.startsWith(i.path + '/'));
+
+            return navItems.map((item, idx) => {
+              if (item.type === 'header') {
+                return <div key={`header-${idx}`} className="nav-section-label" style={{ marginTop: 8 }}>{item.label}</div>
+              }
+              const isActive = activeItem && activeItem.path === item.path;
+              return (
+                <div key={item.path}
+                  className={`nav-item ${isActive ? 'active' : ''}`}
+                  onClick={() => { navigate(item.path); setMobileOpen(false) }}>
+                  <span className="nav-icon">{item.icon}</span>
+                  <span>{item.label}</span>
+                </div>
+              )
+            })
+          })()}
         </div>
 
         <div style={{ position: 'relative' }}>

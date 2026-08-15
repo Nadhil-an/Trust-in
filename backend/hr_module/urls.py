@@ -37,4 +37,6 @@ urlpatterns = [
     # Complaints
     path('complaints/', views.ComplaintListCreateView.as_view()),
     path('complaints/<uuid:pk>/', views.ComplaintDetailView.as_view()),
+    # Birthday Alerts
+    path('birthday-alerts/', views.BirthdayAlertView.as_view()),
 ]

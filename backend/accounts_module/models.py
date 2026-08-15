@@ -117,13 +117,14 @@ class BankTransaction(models.Model):
 # ── Income / Expenses ─────────────────────────────────────────────
 
 class IncomeSource(models.TextChoices):
-    DONATION = 'DONATION', 'Donation'
-    GRANT = 'GRANT', 'Grant'
-    SPONSORSHIP = 'SPONSORSHIP', 'Sponsorship'
+    DONATION   = 'DONATION',   'Donation'
+    GRANT      = 'GRANT',      'Grant'
+    SPONSORSHIP= 'SPONSORSHIP','Sponsorship'
     MEMBERSHIP = 'MEMBERSHIP', 'Membership Fees'
-    FUNDRAISING = 'FUNDRAISING', 'Fundraising'
-    INTEREST = 'INTEREST', 'Interest'
-    OTHER = 'OTHER', 'Other Income'
+    FUNDRAISING= 'FUNDRAISING','Fundraising'
+    INTEREST   = 'INTEREST',   'Interest'
+    INWARD     = 'INWARD',     'Inward Receipt'
+    OTHER      = 'OTHER',      'Other Income'
 
 
 class Income(models.Model):
@@ -156,17 +157,18 @@ class Income(models.Model):
 
 
 class ExpenseCategory(models.TextChoices):
-    MEDICAL = 'MEDICAL', 'Medical Assistance'
-    EDUCATION = 'EDUCATION', 'Education Assistance'
-    FOOD = 'FOOD', 'Food Distribution'
-    CHARITY = 'CHARITY', 'Charity Programs'
-    TRANSPORT = 'TRANSPORT', 'Transportation'
-    OFFICE = 'OFFICE', 'Office Expenses'
-    UTILITIES = 'UTILITIES', 'Utilities'
+    MEDICAL     = 'MEDICAL',     'Medical Assistance'
+    EDUCATION   = 'EDUCATION',   'Education Assistance'
+    FOOD        = 'FOOD',        'Food Distribution'
+    CHARITY     = 'CHARITY',     'Charity Programs'
+    TRANSPORT   = 'TRANSPORT',   'Transportation'
+    OFFICE      = 'OFFICE',      'Office Expenses'
+    UTILITIES   = 'UTILITIES',   'Utilities'
     MAINTENANCE = 'MAINTENANCE', 'Maintenance'
-    PURCHASE = 'PURCHASE', 'Purchases'
-    SALARY = 'SALARY', 'Salary'
-    OTHER = 'OTHER', 'Other'
+    PURCHASE    = 'PURCHASE',    'Purchases'
+    OUTWARD     = 'OUTWARD',     'Outward Dispatch'
+    SALARY      = 'SALARY',      'Salary'
+    OTHER       = 'OTHER',       'Other'
 
 
 class Expense(models.Model):

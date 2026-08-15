@@ -5,8 +5,8 @@ from manager_module.models import (
     FAOReport, FAOPhoto,
     ACOCalculation,
     GEOReport, GEOPhoto,
-    CharityInventory,
-    MinutesRegistry, Partner,
+    CharityInventory, InventoryTransaction,
+    MinutesRegistry, Partner, ScheduledPayout,
 )
 from core.serializers import UserSerializer
 
@@ -242,6 +242,21 @@ class CharityInventorySerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'item_code', 'last_updated', 'created_at']
 
 
+class InventoryTransactionSerializer(serializers.ModelSerializer):
+    item_name = serializers.CharField(source='item.item_name', read_only=True)
+    item_unit = serializers.CharField(source='item.unit', read_only=True)
+    item_code = serializers.CharField(source='item.item_code', read_only=True)
+    created_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = InventoryTransaction
+        fields = '__all__'
+        read_only_fields = ['id', 'transaction_id', 'created_by', 'created_at']
+
+    def get_created_by_name(self, obj):
+        return obj.created_by.full_name if obj.created_by else ''
+
+
 # ── Minutes ───────────────────────────────────────────────────────
 
 class MinutesSerializer(serializers.ModelSerializer):
@@ -263,3 +278,14 @@ class PartnerSerializer(serializers.ModelSerializer):
         model = Partner
         fields = '__all__'
         read_only_fields = ['id', 'partner_id', 'created_by', 'created_at', 'updated_at']
+
+
+# ── Scheduled Payouts ───────────────────────────────────────────────
+
+class ScheduledPayoutSerializer(serializers.ModelSerializer):
+    created_by_name = serializers.CharField(source='created_by.get_full_name', read_only=True)
+
+    class Meta:
+        model = ScheduledPayout
+        fields = '__all__'
+        read_only_fields = ['id', 'payout_id', 'created_by', 'created_at', 'updated_at']

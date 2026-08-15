@@ -17,6 +17,7 @@ class Role(models.TextChoices):
     ACCOUNTANT = 'ACCOUNTANT', 'Accountant'
     CASHIER = 'CASHIER', 'Cashier'
     HR = 'HR', 'HR'
+    DATA_ENTRY = 'DATA_ENTRY', 'Data Entry'
     # Mobile application roles
     FIELD_ASSESSMENT_OFFICER = 'FIELD_ASSESSMENT_OFFICER', 'Field Assessment Officer'
     ASSESSMENT_CALCULATION_OFFICER = 'ASSESSMENT_CALCULATION_OFFICER', 'Assessment Calculation Officer'

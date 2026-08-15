@@ -485,3 +485,46 @@ class EmployeeDocumentView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(employee_id=self.kwargs['emp_pk'], uploaded_by=self.request.user)
+
+
+# ── Birthday Alerts ────────────────────────────────────────────────
+
+class BirthdayAlertView(APIView):
+    """
+    Returns staff members whose birthday is today or tomorrow.
+    Used by Manager/HR dashboards and mobile staff home screen.
+    """
+    permission_classes = [IsAnyStaff]
+
+    def get(self, request):
+        from datetime import date, timedelta
+        today = date.today()
+        tomorrow = today + timedelta(days=1)
+
+        def get_bday_people(target_date):
+            officers = ExecutiveOfficer.objects.filter(
+                date_of_birth__month=target_date.month,
+                date_of_birth__day=target_date.day,
+                status='ACTIVE',
+            ).values('id', 'full_name', 'designation', 'employee_id', 'date_of_birth')
+
+            result = []
+            for o in officers:
+                dob = o['date_of_birth']
+                age = target_date.year - dob.year if dob else None
+                result.append({
+                    'id': str(o['id']),
+                    'name': o['full_name'],
+                    'designation': o['designation'],
+                    'employee_id': o['employee_id'],
+                    'age': age,
+                    'type': 'staff',
+                })
+            return result
+
+        return Response({
+            'today': get_bday_people(today),
+            'tomorrow': get_bday_people(tomorrow),
+            'today_date': today.strftime('%d %B %Y'),
+            'tomorrow_date': tomorrow.strftime('%d %B %Y'),
+        })
