@@ -1,4 +1,4 @@
-﻿import React, { useState, useCallback, useEffect } from "react"
+import React, { useState, useCallback, useEffect } from "react"
 import { managerApi } from "../../api"
 import { StatusBadge, LoadingState, EmptyState, PageHeader, FilterBar, Modal } from "../../components/shared"
 import toast from "react-hot-toast"
@@ -75,9 +75,9 @@ function PartnerModal({ initial, onClose, onSave }) {
         <button className="btn btn-primary" form="partner-form" type="submit" disabled={saving}>{saving?"Saving...":"Save"}</button></>}>
       <form id="partner-form" onSubmit={handleSubmit}>
         <div className="form-grid-2">
-          {[["organization_name","Organization Name",true],["contact_person","Contact Person",true],["phone","Phone",false],["email","Email",false]].map(([k,l,r])=>(
+          {[["organization_name","Organization Name",true],["contact_person","Contact Person",true],["phone","Phone",true],["email","Email",false]].map(([k,l,r])=>(
             <div className="form-group" key={k}><label className={`form-label${r?" required":""}`}>{l}</label>
-              <input className="form-control" required={r} value={form[k]} onChange={e=>setForm(f=>({...f,[k]:e.target.value}))} /></div>
+              <input className="form-control" required={r} value={form[k]} onChange={e=>setForm(f=>({...f,[k]: k === 'phone' ? e.target.value.replace(/\D/g, '').slice(0, 10) : e.target.value}))} /></div>
           ))}
           <div className="form-group"><label className="form-label">Partner Type</label>
             <select className="form-control" value={form.partner_type} onChange={e=>setForm(f=>({...f,partner_type:e.target.value}))}>

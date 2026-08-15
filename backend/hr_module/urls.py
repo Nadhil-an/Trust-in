@@ -17,6 +17,8 @@ urlpatterns = [
     # Executive Officers
     path('officers/', views.ExecutiveOfficerListCreateView.as_view()),
     path('officers/<uuid:pk>/', views.ExecutiveOfficerDetailView.as_view()),
+    path('officers/<uuid:pk>/attendance-graph/', views.OfficerAttendanceGraphView.as_view()),
+    path('officers/<uuid:pk>/payroll-data/', views.OfficerPayrollDataView.as_view()),
     path('officers/<uuid:emp_pk>/documents/', views.EmployeeDocumentView.as_view()),
     # Salary
     path('salary-structures/', views.SalaryStructureListCreateView.as_view()),
@@ -32,5 +34,7 @@ urlpatterns = [
     # Payroll
     path('payroll/', views.PayrollListCreateView.as_view()),
     path('payroll/<uuid:pk>/', views.PayrollDetailView.as_view()),
-    path('payroll/<uuid:pk>/pay/', views.ProcessPaymentView.as_view()),
+    # Complaints
+    path('complaints/', views.ComplaintListCreateView.as_view()),
+    path('complaints/<uuid:pk>/', views.ComplaintDetailView.as_view()),
 ]

@@ -340,3 +340,69 @@ class BankReconciliationView(APIView):
             'total_withdrawals': float(total_withdrawals),
             'transactions': BankTransactionSerializer(txns, many=True).data,
         })
+
+
+# ── Pending Salaries (Accountant side) ────────────────────────────
+
+class PendingPayrollListView(generics.ListAPIView):
+    """Accountant view of all approved payrolls waiting to be paid."""
+    permission_classes = [IsAccountant]
+    filterset_fields = ['status', 'month', 'year']
+    search_fields = ['employee__full_name', 'payroll_id']
+
+    def get_serializer_class(self):
+        from hr_module.serializers import MonthlyPayrollSerializer
+        return MonthlyPayrollSerializer
+
+    def get_queryset(self):
+        from hr_module.models import MonthlyPayroll
+        return MonthlyPayroll.objects.filter(
+            status__in=['APPROVED', 'PAID']
+        ).select_related('employee').order_by('-created_at')
+
+
+class ProcessPaymentView(APIView):
+    """Mark payroll as PAID and create Accounts transaction."""
+    permission_classes = [IsAccountant]
+
+    def post(self, request, pk):
+        from hr_module.models import MonthlyPayroll
+        try:
+            payroll = MonthlyPayroll.objects.get(pk=pk, status='APPROVED')
+        except MonthlyPayroll.DoesNotExist:
+            return Response({'error': 'Payroll not found or not approved.'}, status=404)
+
+        payroll.status = 'PAID'
+        payroll.payment_method = request.data.get('payment_method', 'BANK')
+        payroll.payment_date = timezone.now().date()
+        payroll.payment_reference = request.data.get('payment_reference', '')
+        payroll.save()
+
+        # Create Accounts Transaction
+        Transaction.objects.create(
+            date=payroll.payment_date, transaction_type='SALARY',
+            category='SALARY',
+            description=f"Salary: {payroll.employee.full_name} — {payroll.month}/{payroll.year}",
+            account_type='BANK' if payroll.payment_method == 'BANK' else 'CASH',
+            debit=payroll.net_salary,
+            payment_method=payroll.payment_method,
+            reference_id=payroll.payroll_id,
+            created_by=request.user,
+        )
+        Expense.objects.create(
+            date=payroll.payment_date, payee=payroll.employee.full_name,
+            category='SALARY', amount=payroll.net_salary,
+            payment_method=payroll.payment_method, purpose=f"Salary {payroll.month}/{payroll.year}",
+            account_type='BANK' if payroll.payment_method == 'BANK' else 'CASH',
+            status='COMPLETED', created_by=request.user,
+        )
+
+        AuditLog.objects.create(
+            user=request.user, action='PAY_SALARY', module='ACCOUNTS',
+            record_type='MonthlyPayroll', record_id=str(payroll.id),
+            reference_number=payroll.payroll_id,
+            description=f"Salary paid to {payroll.employee.full_name}: ₹{payroll.net_salary}",
+            ip_address=getattr(request, 'audit_ip', None)
+        )
+
+        return Response({'message': 'Salary paid successfully.', 'payroll_id': payroll.payroll_id})

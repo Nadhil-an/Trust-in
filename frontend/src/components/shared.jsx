@@ -2,9 +2,9 @@
 
 import React from 'react'
 
-export function StatCard({ label, value, icon, variant = '', sub = '' }) {
+export function StatCard({ label, value, icon, variant = '', sub = '', onClick }) {
   return (
-    <div className={`stat-card ${variant}`}>
+    <div className={`stat-card ${variant}`} onClick={onClick} style={{ cursor: onClick ? 'pointer' : 'default' }}>
       <div className="stat-card-header">
         <div className="stat-card-label">{label}</div>
         <div className="stat-card-icon">{icon}</div>
@@ -83,10 +83,10 @@ export function FilterBar({ search, onSearch, children }) {
   )
 }
 
-export function Modal({ isOpen, onClose, title, children, footer, size = '' }) {
+export function Modal({ isOpen, onClose, title, children, footer, size = '', overlayClass = '' }) {
   if (!isOpen) return null
   return (
-    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+    <div className={`modal-overlay ${overlayClass}`} onClick={e => e.target === e.currentTarget && onClose()}>
       <div className={`modal ${size}`}>
         <div className="modal-header">
           <div className="modal-title">{title}</div>

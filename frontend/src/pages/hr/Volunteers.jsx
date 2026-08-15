@@ -64,7 +64,7 @@ export default function Volunteers() {
           <form id="vol-form" onSubmit={handleSave}>
             <div className="form-grid-2">
               <div className="form-group"><label className="form-label required">Full Name</label><input className="form-control" required value={form.full_name} onChange={e=>F("full_name",e.target.value)} /></div>
-              <div className="form-group"><label className="form-label required">Phone</label><input className="form-control" required value={form.phone} onChange={e=>F("phone",e.target.value)} /></div>
+              <div className="form-group"><label className="form-label required">Phone</label><input className="form-control" required value={form.phone} onChange={e=>F("phone",e.target.value.replace(/\D/g, '').slice(0, 10))} /></div>
               <div className="form-group"><label className="form-label">Email</label><input className="form-control" type="email" value={form.email} onChange={e=>F("email",e.target.value)} /></div>
               <div className="form-group"><label className="form-label">Joining Date</label><input className="form-control" type="date" value={form.joining_date} onChange={e=>F("joining_date",e.target.value)} /></div>
               <div className="form-group"><label className="form-label">Availability</label><select className="form-control" value={form.availability} onChange={e=>F("availability",e.target.value)}>{["FULL_TIME","PART_TIME","WEEKENDS","ON_CALL"].map(a=><option key={a}>{a}</option>)}</select></div>

@@ -155,6 +155,10 @@ export const accountsApi = {
     get: (id) => api.get(`/accounts/transactions/${id}/`),
   },
   moneyRequests: () => api.get('/accounts/money-requests/'),
+  pendingSalaries: {
+    list: () => api.get('/accounts/pending-salaries/'),
+    pay: (id, data) => api.post(`/accounts/salaries/${id}/pay/`, data),
+  }
 }
 
 // ── Cashier ────────────────────────────────────────────────
@@ -202,6 +206,8 @@ export const hrApi = {
     get: (id) => api.get(`/hr/officers/${id}/`),
     update: (id, data) => api.patch(`/hr/officers/${id}/`, data),
     documents: (id) => api.get(`/hr/officers/${id}/documents/`),
+    attendanceGraph: (id, params) => api.get(`/hr/officers/${id}/attendance-graph/`, { params }),
+    payrollData: (id, params) => api.get(`/hr/officers/${id}/payroll-data/`, { params }),
   },
   attendance: {
     list: (params) => api.get('/hr/attendance/', { params }),
@@ -217,11 +223,17 @@ export const hrApi = {
     list: (params) => api.get('/hr/payroll/', { params }),
     create: (data) => api.post('/hr/payroll/', data),
     get: (id) => api.get(`/hr/payroll/${id}/`),
-    pay: (id, data) => api.post(`/hr/payroll/${id}/pay/`, data),
+    update: (id, data) => api.patch(`/hr/payroll/${id}/`, data),
   },
   salaryStructures: {
     list: (params) => api.get('/hr/salary-structures/', { params }),
     create: (data) => api.post('/hr/salary-structures/', data),
+  },
+  complaints: {
+    list: (params) => api.get('/hr/complaints/', { params }),
+    create: (data) => api.post('/hr/complaints/', data),
+    get: (id) => api.get(`/hr/complaints/${id}/`),
+    update: (id, data) => api.patch(`/hr/complaints/${id}/`, data),
   },
 }
 

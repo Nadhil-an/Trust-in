@@ -47,6 +47,9 @@ class Member(models.Model):
     joining_date = models.DateField(default=date.today)
     membership_type = models.CharField(max_length=20, choices=MembershipType.choices, default=MembershipType.GENERAL)
     status = models.CharField(max_length=20, choices=MemberStatus.choices, default=MemberStatus.ACTIVE)
+    blood_group = models.CharField(max_length=5, blank=True)
+    occupation = models.CharField(max_length=255, blank=True)
+    monthly_fee = models.DecimalField(max_digits=10, decimal_places=2, default=100.00)
     emergency_contact_name = models.CharField(max_length=255, blank=True)
     emergency_contact_phone = models.CharField(max_length=20, blank=True)
     remarks = models.TextField(blank=True)
@@ -370,3 +373,39 @@ class EmployeeDocument(models.Model):
 
     class Meta:
         db_table = 'hr_employee_documents'
+
+
+class ComplaintStatus(models.TextChoices):
+    PENDING = 'PENDING', 'Pending'
+    IN_PROGRESS = 'IN_PROGRESS', 'In Progress'
+    RESOLVED = 'RESOLVED', 'Resolved'
+    REJECTED = 'REJECTED', 'Rejected'
+
+
+class Complaint(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    complaint_id = models.CharField(max_length=20, unique=True, db_index=True)
+    employee = models.ForeignKey(ExecutiveOfficer, on_delete=models.CASCADE, related_name='complaints')
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    status = models.CharField(max_length=20, choices=ComplaintStatus.choices, default=ComplaintStatus.PENDING)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'hr_complaints'
+        ordering = ['-created_at']
+
+    def save(self, *args, **kwargs):
+        if not self.complaint_id:
+            # Generate a unique ID like CMP-XXXXXX
+            last_complaint = Complaint.objects.order_by('-created_at').first()
+            if last_complaint and last_complaint.complaint_id.startswith('CMP-'):
+                try:
+                    last_num = int(last_complaint.complaint_id.split('-')[1])
+                    self.complaint_id = f"CMP-{last_num + 1:06d}"
+                except ValueError:
+                    self.complaint_id = f"CMP-{uuid.uuid4().hex[:6].upper()}"
+            else:
+                self.complaint_id = "CMP-000001"
+        super().save(*args, **kwargs)

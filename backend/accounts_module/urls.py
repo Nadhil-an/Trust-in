@@ -27,4 +27,7 @@ urlpatterns = [
     path('transactions/<uuid:pk>/', views.TransactionDetailView.as_view()),
     # Money Requests (Accountant view)
     path('money-requests/', views.MoneyRequestListView.as_view()),
+    # Pending Salaries (Accountant view)
+    path('pending-salaries/', views.PendingPayrollListView.as_view()),
+    path('salaries/<uuid:pk>/pay/', views.ProcessPaymentView.as_view()),
 ]

@@ -6,17 +6,19 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
-from core.permissions import IsHR, IsAnyStaff, IsOwnerOrManager
+from core.permissions import IsHR, IsAnyStaff, IsOwnerOrManager, IsOwnerOrManagerOrHR
 from core.models import AuditLog
 from notify.service import push_notification, push_to_role, push_dashboard_refresh
 from hr_module.models import (Member, MemberDocument, Volunteer, ExecutiveMember,
                                ExecutiveOfficer, SalaryStructure, Attendance,
-                               LeaveRequest, MonthlyPayroll, EmployeeDocument)
+                               LeaveRequest, MonthlyPayroll, EmployeeDocument,
+                               Complaint)
 from hr_module.serializers import (MemberSerializer, MemberDocumentSerializer,
                                     VolunteerSerializer, ExecutiveMemberSerializer,
                                     ExecutiveOfficerSerializer, SalaryStructureSerializer,
                                     AttendanceSerializer, LeaveRequestSerializer,
-                                    MonthlyPayrollSerializer, EmployeeDocumentSerializer)
+                                    MonthlyPayrollSerializer, EmployeeDocumentSerializer,
+                                    ComplaintSerializer)
 
 
 class HRDashboardView(APIView):
@@ -24,9 +26,17 @@ class HRDashboardView(APIView):
 
     def get(self, request):
         today = timezone.now().date()
-        present_today = Attendance.objects.filter(date=today, status='PRESENT').count()
-        absent_today = Attendance.objects.filter(date=today, status='ABSENT').count()
-        on_leave = Attendance.objects.filter(date=today, status='LEAVE').count()
+        present_qs = Attendance.objects.filter(date=today, status='PRESENT')
+        absent_qs = Attendance.objects.filter(date=today, status='ABSENT')
+        leave_qs = Attendance.objects.filter(date=today, status='LEAVE')
+
+        present_today = present_qs.count()
+        absent_today = absent_qs.count()
+        on_leave = leave_qs.count()
+        
+        present_list = [{'id': str(x.employee.id), 'name': x.employee.full_name, 'emp_id': x.employee.employee_id} for x in present_qs.select_related('employee')]
+        absent_list = [{'id': str(x.employee.id), 'name': x.employee.full_name, 'emp_id': x.employee.employee_id} for x in absent_qs.select_related('employee')]
+        leave_list = [{'id': str(x.employee.id), 'name': x.employee.full_name, 'emp_id': x.employee.employee_id} for x in leave_qs.select_related('employee')]
         pending_leave = LeaveRequest.objects.filter(status='PENDING').count()
         expiring_docs = EmployeeDocument.objects.filter(
             expiry_date__lte=today + timezone.timedelta(days=30),
@@ -36,15 +46,29 @@ class HRDashboardView(APIView):
             date_of_birth__month=today.month
         ).count()
 
+        attendance_history = []
+        for i in range(6, -1, -1):
+            d = today - timezone.timedelta(days=i)
+            attendance_history.append({
+                'date': d.strftime('%d %b'),
+                'present': Attendance.objects.filter(date=d, status='PRESENT').count(),
+                'absent': Attendance.objects.filter(date=d, status='ABSENT').count(),
+                'leave': Attendance.objects.filter(date=d, status='LEAVE').count(),
+            })
+
         return Response({
             'members': {'total': Member.objects.count(), 'active': Member.objects.filter(status='ACTIVE').count()},
             'volunteers': {'total': Volunteer.objects.count(), 'active': Volunteer.objects.filter(status='ACTIVE').count()},
             'executive_members': ExecutiveMember.objects.filter(status='ACTIVE').count(),
-            'executive_officers': ExecutiveOfficer.objects.filter(status='ACTIVE').count(),
+            'executive_officers': ExecutiveOfficer.objects.filter(status='ACTIVE', employment_type='FULL_TIME').count(),
             'attendance': {
                 'present_today': present_today,
                 'absent_today': absent_today,
                 'on_leave': on_leave,
+                'present_list': present_list,
+                'absent_list': absent_list,
+                'leave_list': leave_list,
+                'history': attendance_history,
             },
             'leave': {'pending': pending_leave},
             'alerts': {
@@ -104,7 +128,7 @@ class MemberListCreateView(generics.ListCreateAPIView):
         push_dashboard_refresh(['HR', 'MANAGER', 'ADMIN', 'STAFF'])
 
 class MemberDetailView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsAnyStaff, IsOwnerOrManager]
+    permission_classes = [IsAnyStaff, IsOwnerOrManagerOrHR]
     serializer_class = MemberSerializer
     queryset = Member.objects.all()
     parser_classes = [MultiPartParser, FormParser, JSONParser]
@@ -189,6 +213,50 @@ class ExecutiveOfficerDetailView(generics.RetrieveUpdateDestroyAPIView):
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
 
+class OfficerPayrollDataView(APIView):
+    permission_classes = [IsHR]
+
+    def get(self, request, pk):
+        try:
+            employee = ExecutiveOfficer.objects.get(pk=pk)
+        except ExecutiveOfficer.DoesNotExist:
+            return Response({'error': 'Employee not found.'}, status=404)
+        
+        try:
+            month = int(request.query_params.get('month'))
+            year = int(request.query_params.get('year'))
+        except (TypeError, ValueError):
+            return Response({'error': 'Valid month and year required.'}, status=400)
+
+        # Get active salary structure
+        try:
+            salary = SalaryStructure.objects.get(employee=employee, is_active=True)
+            salary_data = SalaryStructureSerializer(salary).data
+        except SalaryStructure.DoesNotExist:
+            return Response({'error': 'No active salary structure found for this employee.'}, status=404)
+
+        # Get attendance summary
+        attendance = Attendance.objects.filter(
+            employee=employee,
+            date__year=year,
+            date__month=month
+        ).values('status').annotate(count=Count('id'))
+        
+        att_counts = {item['status']: item['count'] for item in attendance}
+        
+        return Response({
+            'employee_name': employee.full_name,
+            'employment_type': employee.employment_type,
+            'salary_structure': salary_data,
+            'attendance': {
+                'present': att_counts.get('PRESENT', 0),
+                'absent': att_counts.get('ABSENT', 0),
+                'leave': att_counts.get('LEAVE', 0),
+                'late': att_counts.get('LATE', 0),
+            }
+        })
+
+
 # ── Salary Structure ──────────────────────────────────────────────
 class SalaryStructureListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsHR]
@@ -226,6 +294,47 @@ class AttendanceDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsHR]
     serializer_class = AttendanceSerializer
     queryset = Attendance.objects.all()
+
+
+class OfficerAttendanceGraphView(APIView):
+    permission_classes = [IsHR]
+
+    def get(self, request, pk):
+        try:
+            officer = ExecutiveOfficer.objects.get(pk=pk)
+        except ExecutiveOfficer.DoesNotExist:
+            return Response({'error': 'Officer not found'}, status=404)
+
+        try:
+            days = int(request.query_params.get('days', 7))
+        except ValueError:
+            days = 7
+
+        today = timezone.now().date()
+        history = []
+        for i in range(days - 1, -1, -1):
+            d = today - timezone.timedelta(days=i)
+            att = Attendance.objects.filter(employee=officer, date=d).first()
+            
+            val = 0
+            status_text = 'NOT_MARKED'
+            if att:
+                status_text = att.status
+                if att.status == 'PRESENT':
+                    val = 1
+                elif att.status == 'HALF_DAY':
+                    val = 0.5
+                elif att.status in ['ABSENT', 'LEAVE']:
+                    val = 0
+            
+            history.append({
+                'date': d.strftime('%d %b'),
+                'full_date': d.isoformat(),
+                'status': status_text,
+                'value': val
+            })
+
+        return Response({'history': history})
 
 
 class BulkAttendanceView(APIView):
@@ -329,51 +438,40 @@ class PayrollDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = MonthlyPayroll.objects.all()
 
 
-class ProcessPaymentView(APIView):
-    """Mark payroll as PAID and create Accounts transaction."""
-    permission_classes = [IsHR]
 
-    def post(self, request, pk):
-        try:
-            payroll = MonthlyPayroll.objects.get(pk=pk, status='APPROVED')
-        except MonthlyPayroll.DoesNotExist:
-            return Response({'error': 'Payroll not found or not approved.'}, status=404)
+# ── Complaints ────────────────────────────────────────────────────
+class ComplaintListCreateView(generics.ListCreateAPIView):
+    # Allow any staff to create complaints (e.g. from mobile), but HR needs to see them
+    permission_classes = [IsAnyStaff]
+    serializer_class = ComplaintSerializer
+    queryset = Complaint.objects.select_related('employee').all()
+    filterset_fields = ['status', 'employee']
+    search_fields = ['complaint_id', 'title']
 
-        payroll.status = 'PAID'
-        payroll.payment_method = request.data.get('payment_method', 'BANK')
-        payroll.payment_date = timezone.now().date()
-        payroll.payment_reference = request.data.get('payment_reference', '')
-        payroll.save()
+    def perform_create(self, serializer):
+        # We can auto-assign employee based on request.user if they are an ExecutiveOfficer
+        # For now we assume the payload contains the employee ID or is provided by mobile app.
+        serializer.save()
+        push_to_role('HR', {
+            'type': 'NEW_COMPLAINT',
+            'title': 'New Complaint Raised',
+            'message': f"A new complaint has been submitted."
+        })
 
-        # Create Accounts Transaction
-        from accounts_module.models import Transaction, Expense
-        Transaction.objects.create(
-            date=payroll.payment_date, transaction_type='SALARY',
-            category='SALARY',
-            description=f"Salary: {payroll.employee.full_name} — {payroll.month}/{payroll.year}",
-            account_type='BANK' if payroll.payment_method == 'BANK' else 'CASH',
-            debit=payroll.net_salary,
-            payment_method=payroll.payment_method,
-            reference_id=payroll.payroll_id,
-            created_by=request.user,
-        )
-        Expense.objects.create(
-            date=payroll.payment_date, payee=payroll.employee.full_name,
-            category='SALARY', amount=payroll.net_salary,
-            payment_method=payroll.payment_method, purpose=f"Salary {payroll.month}/{payroll.year}",
-            account_type='BANK' if payroll.payment_method == 'BANK' else 'CASH',
-            status='COMPLETED', created_by=request.user,
-        )
 
-        AuditLog.objects.create(
-            user=request.user, action='PAY_SALARY', module='HR',
-            record_type='MonthlyPayroll', record_id=str(payroll.id),
-            reference_number=payroll.payroll_id,
-            description=f"Salary paid to {payroll.employee.full_name}: ₹{payroll.net_salary}",
-            ip_address=getattr(request, 'audit_ip', None)
-        )
+class ComplaintDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAnyStaff]
+    serializer_class = ComplaintSerializer
+    queryset = Complaint.objects.all()
 
-        return Response({'message': 'Salary paid successfully.', 'payroll_id': payroll.payroll_id})
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        if instance.status in ['RESOLVED', 'REJECTED']:
+            push_to_role('STAFF', {
+                'type': 'COMPLAINT_UPDATE',
+                'title': f"Complaint {instance.status}",
+                'message': f"Your complaint '{instance.complaint_id}' has been marked as {instance.status}."
+            })
 
 
 # ── Employee Documents ────────────────────────────────────────────

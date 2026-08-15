@@ -29,6 +29,7 @@ const NAV_CONFIG = {
     { label: 'Transfers', icon: '🔄', path: '/accounts/transfers' },
     { label: 'Transactions', icon: '📋', path: '/accounts/transactions' },
     { type: 'header', label: 'PAYOUTS & CLOSING' },
+    { label: 'Pending Salaries', icon: '🧑‍💼', path: '/accounts/pending-salaries' },
     { label: 'Pending Payouts', icon: '⏳', path: '/cashier/pending', badge: 'pending' },
     { label: 'Payouts', icon: '💸', path: '/cashier/disbursements' },
     { label: 'Cash Closing', icon: '🔒', path: '/cashier/closing' },
@@ -43,14 +44,19 @@ const NAV_CONFIG = {
     { label: 'Reports', icon: '📈', path: '/reports' },
   ],
   HR: [
+    { type: 'header', label: 'OVERVIEW' },
     { label: 'Dashboard', icon: '📊', path: '/hr/dashboard' },
+    { type: 'header', label: 'DIRECTORY' },
     { label: 'Members', icon: '👥', path: '/hr/members' },
     { label: 'Volunteers', icon: '🙋', path: '/hr/volunteers' },
     { label: 'Executive Members', icon: '👔', path: '/hr/executive-members' },
-    { label: 'Executive Officers', icon: '👨‍💼', path: '/hr/officers' },
+    { label: 'Staff Members', icon: '👨‍💼', path: '/hr/officers' },
+    { type: 'header', label: 'TIME & PAYROLL' },
     { label: 'Attendance', icon: '✅', path: '/hr/attendance' },
     { label: 'Leave Management', icon: '📅', path: '/hr/leave', badge: 'leave' },
     { label: 'Salary & Payroll', icon: '💰', path: '/hr/payroll' },
+    { type: 'header', label: 'SUPPORT & ANALYTICS' },
+    { label: 'Complaints', icon: '🗣️', path: '/hr/complaints' },
     { label: 'Reports', icon: '📈', path: '/reports' },
   ],
   ADMIN: [
@@ -188,10 +194,12 @@ export default function AppLayout() {
       {/* Sidebar */}
       <nav className={`sidebar ${mobileOpen ? 'open' : ''}`}>
         <div className="sidebar-logo" style={{ display: 'flex', alignItems: 'center' }}>
-          <img src="/logo-only.png" alt="Sree Lakshmi Logo" style={{ height: 42, marginRight: 12, objectFit: 'contain' }} />
+          <div style={{ background: 'white', borderRadius: '50%', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, marginRight: 12, flexShrink: 0, boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
+            <img src="/logo-only.png" alt="Sree Lakshmi Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '50%' }} />
+          </div>
           <div className="sidebar-logo-text">
-            <h1>Sree Lakshmi</h1>
-            <p>Charitable Trust</p>
+            <h1 style={{ fontSize: '16px', fontWeight: 800, letterSpacing: '0px' }}>Sree Lakshmi</h1>
+            <p style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.7)', marginTop: '2px', fontWeight: 500 }}>Charitable Trust</p>
           </div>
         </div>
 

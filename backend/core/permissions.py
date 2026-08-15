@@ -68,6 +68,25 @@ class IsOwnerOrManager(BasePermission):
         return owner == request.user
 
 
+class IsOwnerOrManagerOrHR(BasePermission):
+    """
+    Object-level permission to only allow owners of an object to edit it,
+    unless they are a Manager/Admin or HR.
+    """
+    def has_object_permission(self, request, view, obj):
+        if request.method in ['GET', 'HEAD', 'OPTIONS']:
+            return True
+
+        if request.user.role in [Role.MANAGER, Role.ADMIN, Role.HR]:
+            return True
+
+        owner = getattr(obj, 'created_by', None)
+        if not owner:
+            owner = getattr(obj, 'requested_by', None)
+            
+        return owner == request.user
+
+
 # ── Mobile Role Permissions ───────────────────────────────────────
 
 class IsFAO(BasePermission):

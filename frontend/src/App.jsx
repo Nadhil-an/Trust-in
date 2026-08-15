@@ -23,6 +23,7 @@ import ExpenseList from './pages/accounts/Expenses'
 import ChequeList from './pages/accounts/Cheques'
 import TransferList from './pages/accounts/Transfers'
 import TransactionList from './pages/accounts/Transactions'
+import PendingSalaries from './pages/accounts/PendingSalaries'
 import PendingDisbursements from './pages/cashier/PendingDisbursements'
 import DisbursementList from './pages/cashier/Disbursements'
 import CashClosing from './pages/cashier/CashClosing'
@@ -34,6 +35,7 @@ import Officers from './pages/hr/Officers'
 import AttendancePage from './pages/hr/Attendance'
 import LeavePage from './pages/hr/Leave'
 import PayrollPage from './pages/hr/Payroll'
+import Complaints from './pages/hr/Complaints'
 import ReportsPage from './pages/Reports'
 import AdminUsers from './pages/admin/Users'
 import AuditLogPage from './pages/admin/AuditLog'
@@ -115,6 +117,7 @@ export default function App() {
           <Route path="accounts/cheques" element={<ProtectedRoute roles={['ACCOUNTANT','ADMIN']}><ChequeList /></ProtectedRoute>} />
           <Route path="accounts/transfers" element={<ProtectedRoute roles={['ACCOUNTANT','ADMIN']}><TransferList /></ProtectedRoute>} />
           <Route path="accounts/transactions" element={<ProtectedRoute roles={['ACCOUNTANT','CASHIER','ADMIN']}><TransactionList /></ProtectedRoute>} />
+          <Route path="accounts/pending-salaries" element={<ProtectedRoute roles={['ACCOUNTANT','ADMIN']}><PendingSalaries /></ProtectedRoute>} />
 
           {/* Cashier */}
           <Route path="cashier/pending" element={<ProtectedRoute roles={['CASHIER','ACCOUNTANT','ADMIN']}><PendingDisbursements /></ProtectedRoute>} />
@@ -130,6 +133,7 @@ export default function App() {
           <Route path="hr/attendance" element={<ProtectedRoute roles={['HR','ADMIN']}><AttendancePage /></ProtectedRoute>} />
           <Route path="hr/leave" element={<ProtectedRoute roles={['HR','ADMIN']}><LeavePage /></ProtectedRoute>} />
           <Route path="hr/payroll" element={<ProtectedRoute roles={['HR','ADMIN']}><PayrollPage /></ProtectedRoute>} />
+          <Route path="hr/complaints" element={<ProtectedRoute roles={['HR','ADMIN']}><Complaints /></ProtectedRoute>} />
 
           {/* Shared */}
           <Route path="reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />

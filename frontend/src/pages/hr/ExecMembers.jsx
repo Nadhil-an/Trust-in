@@ -29,8 +29,12 @@ export default function ExecMembers() {
     
     setSaving(true)
     try {
-      if (selected) await hrApi.execMembers.update(selected.id, form)
-      else await hrApi.execMembers.create(form)
+      const payload = { ...form };
+      if (!payload.appointment_date) payload.appointment_date = payload.term_start || format(new Date(), "yyyy-MM-dd");
+      if (payload.term_end === "") payload.term_end = null;
+      
+      if (selected) await hrApi.execMembers.update(selected.id, payload)
+      else await hrApi.execMembers.create(payload)
       toast.success("Saved."); setShowModal(false); load()
     } catch (_) { toast.error("Save failed") } finally { setSaving(false) }
   }
@@ -59,11 +63,11 @@ export default function ExecMembers() {
           <form id="em-form" onSubmit={handleSave}>
             <div className="form-grid-2">
               <div className="form-group"><label className="form-label required">Name</label><input className="form-control" required value={form.full_name} onChange={e=>F("full_name",e.target.value)} /></div>
-              <div className="form-group"><label className="form-label">Designation</label><select className="form-control" value={form.designation} onChange={e=>F("designation",e.target.value)}>{["PRESIDENT","VICE_PRESIDENT","SECRETARY","JOINT_SECRETARY","TREASURER","MEMBER"].map(d=><option key={d}>{d}</option>)}</select></div>
-              <div className="form-group"><label className="form-label">Phone</label><input className="form-control" value={form.phone} onChange={e=>F("phone",e.target.value)} /></div>
+              <div className="form-group"><label className="form-label">Designation</label><select className="form-control" value={form.designation} onChange={e=>F("designation",e.target.value)}>{["PRESIDENT","VICE_PRESIDENT","SECRETARY","JOINT_SECRETARY","TREASURER","COMMITTEE_MEMBER"].map(d=><option key={d} value={d}>{d.replace('_', ' ')}</option>)}</select></div>
+              <div className="form-group"><label className="form-label required">Phone</label><input className="form-control" required value={form.phone} onChange={e=>F("phone",e.target.value.replace(/\D/g, '').slice(0, 10))} /></div>
               <div className="form-group"><label className="form-label">Email</label><input className="form-control" type="email" value={form.email} onChange={e=>F("email",e.target.value)} /></div>
-              <div className="form-group"><label className="form-label">Term Start</label><input className="form-control" type="date" value={form.term_start} onChange={e=>F("term_start",e.target.value)} /></div>
-              <div className="form-group"><label className="form-label">Term End</label><input className="form-control" type="date" value={form.term_end} onChange={e=>F("term_end",e.target.value)} /></div>
+              <div className="form-group"><label className="form-label required">Term Start</label><input className="form-control" type="date" required value={form.term_start} onChange={e=>F("term_start",e.target.value)} /></div>
+              <div className="form-group"><label className="form-label">Term End</label><input className="form-control" type="date" value={form.term_end || ''} onChange={e=>F("term_end",e.target.value)} /></div>
               <div className="form-group"><label className="form-label">Status</label><select className="form-control" value={form.status} onChange={e=>F("status",e.target.value)}>{["ACTIVE","INACTIVE"].map(s=><option key={s}>{s}</option>)}</select></div>
             </div>
           </form>

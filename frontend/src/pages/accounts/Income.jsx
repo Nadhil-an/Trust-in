@@ -78,10 +78,10 @@ export default function IncomeList() {
                 ["phone","Phone","text",null],["payment_method","Payment Method","select",["CASH","CHEQUE","DD","NEFT","RTGS","IMPS","UPI"]],
                 ["account_type","Account Type","select",["CASH","BANK"]],["reference_number","Reference Number","text",null]].map(([k,l,t,opts])=>(
                 <div className="form-group" key={k}>
-                  <label className="form-label">{l}</label>
+                  <label className={`form-label ${["date","amount","phone"].includes(k)?"required":""}`}>{l}</label>
                   {t==="select" ? <select className="form-control" name={k} value={form[k]} onChange={e=>setForm(f=>({...f,[k]:e.target.value}))}>
                     {opts.map(o=><option key={o}>{o}</option>)}</select>
-                  : <input className="form-control" type={t} name={k} value={form[k]} onChange={e=>setForm(f=>({...f,[k]:e.target.value}))} required={["date","amount"].includes(k)} />}
+                  : <input className="form-control" type={t} name={k} value={form[k]} onChange={e=>setForm(f=>({...f,[k]: k === 'phone' ? e.target.value.replace(/\D/g, '').slice(0, 10) : e.target.value}))} required={["date","amount","phone"].includes(k)} />}
                 </div>
               ))}
               <div className="form-group"><label className="form-label">Address</label>

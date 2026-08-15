@@ -2,7 +2,8 @@
 from rest_framework import serializers
 from hr_module.models import (Member, MemberDocument, Volunteer, ExecutiveMember,
                                ExecutiveOfficer, SalaryStructure, Attendance,
-                               LeaveRequest, MonthlyPayroll, EmployeeDocument)
+                               LeaveRequest, MonthlyPayroll, EmployeeDocument,
+                               Complaint)
 
 
 class MemberSerializer(serializers.ModelSerializer):
@@ -34,10 +35,20 @@ class ExecutiveMemberSerializer(serializers.ModelSerializer):
 
 
 class ExecutiveOfficerSerializer(serializers.ModelSerializer):
+    salary_structure = serializers.SerializerMethodField()
+
     class Meta:
         model = ExecutiveOfficer
         fields = '__all__'
         read_only_fields = ['id', 'employee_id', 'created_by', 'created_at', 'updated_at']
+
+    def get_salary_structure(self, obj):
+        try:
+            salary = SalaryStructure.objects.get(employee=obj, is_active=True)
+            from hr_module.serializers import SalaryStructureSerializer
+            return SalaryStructureSerializer(salary).data
+        except SalaryStructure.DoesNotExist:
+            return None
 
 
 class SalaryStructureSerializer(serializers.ModelSerializer):
@@ -99,3 +110,15 @@ class EmployeeDocumentSerializer(serializers.ModelSerializer):
         model = EmployeeDocument
         fields = '__all__'
         read_only_fields = ['id', 'uploaded_by', 'uploaded_at']
+
+
+class ComplaintSerializer(serializers.ModelSerializer):
+    employee_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Complaint
+        fields = '__all__'
+        read_only_fields = ['id', 'complaint_id', 'created_at', 'updated_at']
+
+    def get_employee_name(self, obj):
+        return obj.employee.full_name if obj.employee else ''

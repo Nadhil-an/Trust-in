@@ -5,7 +5,7 @@ import { format } from "date-fns"
 import toast from "react-hot-toast"
 import { isValidPhone, isValidEmail, isPositiveNumber } from "../../utils/validators"
 
-const init = { full_name:"", date_of_birth:"", gender:"MALE", phone:"", email:"", address:"", occupation:"", membership_type:"GENERAL", joining_date:format(new Date(),"yyyy-MM-dd"), annual_fee:"", status:"ACTIVE", blood_group:"", notes:"" }
+const init = { full_name:"", date_of_birth:"", gender:"MALE", phone:"", email:"", address:"", occupation:"", membership_type:"GENERAL", joining_date:format(new Date(),"yyyy-MM-dd"), monthly_fee:"100", status:"ACTIVE", blood_group:"", notes:"" }
 
 export default function Members() {
   const [items, setItems] = useState([])
@@ -32,7 +32,7 @@ export default function Members() {
     e.preventDefault();
     if (!isValidPhone(form.phone)) return toast.error("Enter a valid 10-digit phone number");
     if (form.email && !isValidEmail(form.email)) return toast.error("Enter a valid email");
-    if (form.annual_fee && !isPositiveNumber(form.annual_fee)) return toast.error("Fee must be positive");
+    if (form.monthly_fee && !isPositiveNumber(form.monthly_fee)) return toast.error("Fee must be positive");
     
     setSaving(true)
     try {
@@ -80,12 +80,12 @@ export default function Members() {
               <div className="form-group"><label className="form-label required">Full Name</label><input className="form-control" required value={form.full_name} onChange={e=>F("full_name",e.target.value)} /></div>
               <div className="form-group"><label className="form-label">Date of Birth</label><input className="form-control" type="date" value={form.date_of_birth} onChange={e=>F("date_of_birth",e.target.value)} /></div>
               <div className="form-group"><label className="form-label">Gender</label><select className="form-control" value={form.gender} onChange={e=>F("gender",e.target.value)}>{["MALE","FEMALE","OTHER"].map(g=><option key={g}>{g}</option>)}</select></div>
-              <div className="form-group"><label className="form-label required">Phone</label><input className="form-control" required value={form.phone} onChange={e=>F("phone",e.target.value)} /></div>
+              <div className="form-group"><label className="form-label required">Phone</label><input className="form-control" required value={form.phone} onChange={e=>F("phone",e.target.value.replace(/\D/g, '').slice(0, 10))} /></div>
               <div className="form-group"><label className="form-label">Email</label><input className="form-control" type="email" value={form.email} onChange={e=>F("email",e.target.value)} /></div>
               <div className="form-group"><label className="form-label">Blood Group</label><select className="form-control" value={form.blood_group} onChange={e=>F("blood_group",e.target.value)}><option value="">Select</option>{["A+","A-","B+","B-","O+","O-","AB+","AB-"].map(g=><option key={g}>{g}</option>)}</select></div>
               <div className="form-group"><label className="form-label">Membership Type</label><select className="form-control" value={form.membership_type} onChange={e=>F("membership_type",e.target.value)}>{["GENERAL","LIFE","HONORARY","PATRON","ASSOCIATE"].map(t=><option key={t}>{t}</option>)}</select></div>
               <div className="form-group"><label className="form-label required">Joining Date</label><input className="form-control" type="date" required value={form.joining_date} onChange={e=>F("joining_date",e.target.value)} /></div>
-              <div className="form-group"><label className="form-label">Annual Fee (₹)</label><input className="form-control" type="number" value={form.annual_fee} onChange={e=>F("annual_fee",e.target.value)} /></div>
+              <div className="form-group"><label className="form-label">Monthly Fee (₹)</label><input className="form-control" type="number" value={form.monthly_fee} onChange={e=>F("monthly_fee",e.target.value)} /></div>
               <div className="form-group"><label className="form-label">Occupation</label><input className="form-control" value={form.occupation} onChange={e=>F("occupation",e.target.value)} /></div>
               <div className="form-group"><label className="form-label">Status</label><select className="form-control" value={form.status} onChange={e=>F("status",e.target.value)}>{["ACTIVE","INACTIVE","SUSPENDED","DECEASED"].map(s=><option key={s}>{s}</option>)}</select></div>
             </div>
@@ -117,7 +117,7 @@ export default function Members() {
             <div><strong style={{display:'block', fontSize:'0.75rem', color:'#6b7280', textTransform:'uppercase'}}>Blood Group</strong><div>{viewItem.blood_group || '-'}</div></div>
             <div><strong style={{display:'block', fontSize:'0.75rem', color:'#6b7280', textTransform:'uppercase'}}>Membership Type</strong><div><span className="badge badge-blue">{viewItem.membership_type || '-'}</span></div></div>
             <div><strong style={{display:'block', fontSize:'0.75rem', color:'#6b7280', textTransform:'uppercase'}}>Joining Date</strong><div>{viewItem.joining_date ? format(new Date(viewItem.joining_date), "dd MMM yyyy") : '-'}</div></div>
-            <div><strong style={{display:'block', fontSize:'0.75rem', color:'#6b7280', textTransform:'uppercase'}}>Annual Fee (₹)</strong><div>{viewItem.annual_fee || '-'}</div></div>
+            <div><strong style={{display:'block', fontSize:'0.75rem', color:'#6b7280', textTransform:'uppercase'}}>Monthly Fee (₹)</strong><div>{viewItem.monthly_fee || '-'}</div></div>
             <div><strong style={{display:'block', fontSize:'0.75rem', color:'#6b7280', textTransform:'uppercase'}}>Occupation</strong><div>{viewItem.occupation || '-'}</div></div>
             <div><strong style={{display:'block', fontSize:'0.75rem', color:'#6b7280', textTransform:'uppercase'}}>Status</strong><div><span className={`badge ${viewItem.status==="ACTIVE"?"badge-green":"badge-gray"}`}>{viewItem.status}</span></div></div>
             <div style={{ gridColumn: '1 / -1' }}><strong style={{display:'block', fontSize:'0.75rem', color:'#6b7280', textTransform:'uppercase'}}>Address</strong><div>{viewItem.address || '-'}</div></div>

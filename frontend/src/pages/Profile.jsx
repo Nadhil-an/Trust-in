@@ -42,7 +42,7 @@ export default function ProfilePage() {
           <div className="form-group"><label className="form-label">Role (Read Only)</label><input className="form-control" value={user?.role||""} disabled /></div>
           <div className="form-group"><label className="form-label required">Full Name</label><input className="form-control" required value={form.full_name} onChange={e=>setForm(f=>({...f,full_name:e.target.value}))} /></div>
           <div className="form-group"><label className="form-label">Email</label><input className="form-control" type="email" value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))} /></div>
-          <div className="form-group"><label className="form-label">Phone</label><input className="form-control" value={form.phone} onChange={e=>setForm(f=>({...f,phone:e.target.value}))} /></div>
+          <div className="form-group"><label className="form-label required">Phone</label><input className="form-control" required value={form.phone} onChange={e=>setForm(f=>({...f,phone:e.target.value.replace(/\D/g, '').slice(0, 10)}))} /></div>
           <button className="btn btn-primary" type="submit" disabled={saving}>{saving?"Saving...":"Update Profile"}</button>
         </form>
       </div>
