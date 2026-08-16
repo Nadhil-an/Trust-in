@@ -3,7 +3,7 @@ from rest_framework import serializers
 from hr_module.models import (Member, MemberDocument, Volunteer, ExecutiveMember,
                                ExecutiveOfficer, SalaryStructure, Attendance,
                                LeaveRequest, MonthlyPayroll, EmployeeDocument,
-                               Complaint)
+                               Complaint, StaffReport, PaymentAdvanceRequest, PerformancePoint)
 
 
 class MemberSerializer(serializers.ModelSerializer):
@@ -118,7 +118,67 @@ class ComplaintSerializer(serializers.ModelSerializer):
     class Meta:
         model = Complaint
         fields = '__all__'
-        read_only_fields = ['id', 'complaint_id', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'complaint_id', 'created_at', 'updated_at', 'employee']
+
+    def get_employee_name(self, obj):
+        if obj.employee:
+            return obj.employee.full_name
+        return ''
+
+
+class StaffReportSerializer(serializers.ModelSerializer):
+    employee_name = serializers.SerializerMethodField()
+    submitted_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = StaffReport
+        fields = '__all__'
+        read_only_fields = ['id', 'report_id', 'submitted_by', 'created_at', 'updated_at', 'employee']
+
+    def get_employee_name(self, obj):
+        if obj.employee:
+            return obj.employee.full_name
+        if obj.submitted_by:
+            return obj.submitted_by.full_name
+        return 'Unknown'
+
+    def get_submitted_by_name(self, obj):
+        return obj.submitted_by.full_name if obj.submitted_by else ''
+
+
+class PaymentAdvanceRequestSerializer(serializers.ModelSerializer):
+    employee_name = serializers.SerializerMethodField()
+    requested_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PaymentAdvanceRequest
+        fields = '__all__'
+        read_only_fields = ['id', 'request_id', 'requested_by', 'created_at', 'updated_at', 'employee']
+
+    def get_employee_name(self, obj):
+        if obj.employee:
+            return obj.employee.full_name
+        if obj.requested_by:
+            return obj.requested_by.full_name
+        return 'Unknown'
+
+    def get_requested_by_name(self, obj):
+        return obj.requested_by.full_name if obj.requested_by else ''
+
+
+
+class PerformancePointSerializer(serializers.ModelSerializer):
+    employee_name = serializers.SerializerMethodField()
+    awarded_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PerformancePoint
+        fields = '__all__'
+        read_only_fields = ['id', 'awarded_by', 'created_at']
 
     def get_employee_name(self, obj):
         return obj.employee.full_name if obj.employee else ''
+
+    def get_awarded_by_name(self, obj):
+        return obj.awarded_by.full_name if obj.awarded_by else ''
+

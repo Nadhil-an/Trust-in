@@ -27,6 +27,7 @@ urlpatterns = [
     path('attendance/', views.AttendanceListCreateView.as_view()),
     path('attendance/<uuid:pk>/', views.AttendanceDetailView.as_view()),
     path('attendance/bulk/', views.BulkAttendanceView.as_view()),
+    path('attendance/my-attendance/', views.StaffAttendanceView.as_view()),
     # Leave
     path('leave/', views.LeaveRequestListCreateView.as_view()),
     path('leave/<uuid:pk>/', views.LeaveRequestDetailView.as_view()),
@@ -37,6 +38,20 @@ urlpatterns = [
     # Complaints
     path('complaints/', views.ComplaintListCreateView.as_view()),
     path('complaints/<uuid:pk>/', views.ComplaintDetailView.as_view()),
+    # Staff Reports
+    path('staff-reports/', views.StaffReportListCreateView.as_view()),
+    path('staff-reports/<uuid:pk>/', views.StaffReportDetailView.as_view()),
+
+    path('salary-balance/', views.SalaryBalanceView.as_view(), name='salary-balance'),
+
+    # Payment Advances
+    path('payment-advances/', views.PaymentAdvanceListCreateView.as_view()),
+    path('payment-advances/<uuid:pk>/', views.PaymentAdvanceDetailView.as_view()),
+    path('payment-advances/<uuid:pk>/action/', views.PaymentAdvanceApprovalView.as_view()),
+    # Performance Points
+    path('performance-points/', views.PerformancePointListCreateView.as_view()),
+    path('performance-points/leaderboard/', views.PerformancePointLeaderboardView.as_view()),
     # Birthday Alerts
     path('birthday-alerts/', views.BirthdayAlertView.as_view()),
 ]
+

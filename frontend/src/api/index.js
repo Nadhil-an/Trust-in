@@ -248,7 +248,26 @@ export const hrApi = {
     get: (id) => api.get(`/hr/complaints/${id}/`),
     update: (id, data) => api.patch(`/hr/complaints/${id}/`, data),
   },
+  staffReports: {
+    list: (params) => api.get('/hr/staff-reports/', { params }),
+    create: (data) => api.post('/hr/staff-reports/', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+    get: (id) => api.get(`/hr/staff-reports/${id}/`),
+    update: (id, data) => api.patch(`/hr/staff-reports/${id}/`, data),
+  },
+  paymentAdvances: {
+    list: (params) => api.get('/hr/payment-advances/', { params }),
+    create: (data) => api.post('/hr/payment-advances/', data),
+    get: (id) => api.get(`/hr/payment-advances/${id}/`),
+    update: (id, data) => api.patch(`/hr/payment-advances/${id}/`, data),
+    action: (id, data) => api.post(`/hr/payment-advances/${id}/action/`, data),
+  },
+  performancePoints: {
+    list: (params) => api.get('/hr/performance-points/', { params }),
+    create: (data) => api.post('/hr/performance-points/', data),
+    leaderboard: (params) => api.get('/hr/performance-points/leaderboard/', { params }),
+  },
 }
+
 
 // ── Reports ────────────────────────────────────────────────
 export const reportsApi = {

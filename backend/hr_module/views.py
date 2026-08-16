@@ -12,13 +12,33 @@ from notify.service import push_notification, push_to_role, push_dashboard_refre
 from hr_module.models import (Member, MemberDocument, Volunteer, ExecutiveMember,
                                ExecutiveOfficer, SalaryStructure, Attendance,
                                LeaveRequest, MonthlyPayroll, EmployeeDocument,
-                               Complaint)
+                               Complaint, StaffReport, PaymentAdvanceRequest, PerformancePoint)
 from hr_module.serializers import (MemberSerializer, MemberDocumentSerializer,
                                     VolunteerSerializer, ExecutiveMemberSerializer,
                                     ExecutiveOfficerSerializer, SalaryStructureSerializer,
                                     AttendanceSerializer, LeaveRequestSerializer,
                                     MonthlyPayrollSerializer, EmployeeDocumentSerializer,
-                                    ComplaintSerializer)
+                                    ComplaintSerializer, StaffReportSerializer,
+                                    PaymentAdvanceRequestSerializer, PerformancePointSerializer)
+
+
+def get_officer_for_user(user):
+    """Find or create ExecutiveOfficer corresponding to logged in User."""
+    if not user:
+        return None
+    officer = ExecutiveOfficer.objects.filter(
+        Q(email__iexact=user.email) | Q(full_name__iexact=user.full_name)
+    ).first()
+    if not officer:
+        officer = ExecutiveOfficer.objects.create(
+            full_name=user.full_name,
+            email=user.email,
+            phone=getattr(user, 'phone', '') or '',
+            designation=getattr(user, 'role', 'Staff'),
+            created_by=user
+        )
+    return officer
+
 
 
 class HRDashboardView(APIView):
@@ -440,23 +460,33 @@ class PayrollDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 # ── Complaints ────────────────────────────────────────────────────
+# ── Complaints ────────────────────────────────────────────────────
 class ComplaintListCreateView(generics.ListCreateAPIView):
-    # Allow any staff to create complaints (e.g. from mobile), but HR needs to see them
     permission_classes = [IsAnyStaff]
     serializer_class = ComplaintSerializer
-    queryset = Complaint.objects.select_related('employee').all()
     filterset_fields = ['status', 'employee']
     search_fields = ['complaint_id', 'title']
 
+    def get_queryset(self):
+        qs = Complaint.objects.select_related('employee').all()
+        # If user is regular STAFF, show their own complaints or complaints of their officer profile
+        if hasattr(self.request.user, 'role') and self.request.user.role == 'STAFF':
+            officer = get_officer_for_user(self.request.user)
+            if officer:
+                qs = qs.filter(employee=officer)
+        return qs
+
     def perform_create(self, serializer):
-        # We can auto-assign employee based on request.user if they are an ExecutiveOfficer
-        # For now we assume the payload contains the employee ID or is provided by mobile app.
-        serializer.save()
-        push_to_role('HR', {
-            'type': 'NEW_COMPLAINT',
-            'title': 'New Complaint Raised',
-            'message': f"A new complaint has been submitted."
-        })
+        emp = serializer.validated_data.get('employee')
+        if not emp:
+            emp = get_officer_for_user(self.request.user)
+        instance = serializer.save(employee=emp)
+        push_to_role(
+            role='HR',
+            notification_type='NEW_COMPLAINT',
+            title='New Complaint Raised',
+            message=f"Complaint {instance.complaint_id} raised by {emp.full_name if emp else self.request.user.full_name}."
+        )
 
 
 class ComplaintDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -467,11 +497,287 @@ class ComplaintDetailView(generics.RetrieveUpdateDestroyAPIView):
     def perform_update(self, serializer):
         instance = serializer.save()
         if instance.status in ['RESOLVED', 'REJECTED']:
-            push_to_role('STAFF', {
-                'type': 'COMPLAINT_UPDATE',
-                'title': f"Complaint {instance.status}",
-                'message': f"Your complaint '{instance.complaint_id}' has been marked as {instance.status}."
-            })
+            push_to_role(
+                role='STAFF',
+                notification_type='COMPLAINT_UPDATE',
+                title=f"Complaint {instance.status}",
+                message=f"Your complaint '{instance.complaint_id}' has been marked as {instance.status}."
+            )
+
+
+# ── Staff Reports ──────────────────────────────────────────────────
+class StaffReportListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAnyStaff]
+    serializer_class = StaffReportSerializer
+    filterset_fields = ['status', 'employee']
+    search_fields = ['report_id', 'title']
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def get_queryset(self):
+        qs = StaffReport.objects.select_related('employee', 'submitted_by').all()
+        if hasattr(self.request.user, 'role') and self.request.user.role == 'STAFF':
+            officer = get_officer_for_user(self.request.user)
+            qs = qs.filter(Q(submitted_by=self.request.user) | Q(employee=officer))
+        return qs
+
+    def perform_create(self, serializer):
+        emp = serializer.validated_data.get('employee')
+        if not emp:
+            emp = get_officer_for_user(self.request.user)
+        report = serializer.save(submitted_by=self.request.user, employee=emp)
+        push_to_role(
+            role='HR',
+            notification_type='NEW_STAFF_REPORT',
+            title='New Staff Report Submitted',
+            message=f"Report '{report.title}' submitted by {self.request.user.full_name}."
+        )
+
+# ── Staff Reports ──────────────────────────────────────────────────
+class StaffReportDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAnyStaff]
+    serializer_class = StaffReportSerializer
+    queryset = StaffReport.objects.all()
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+
+class SalaryBalanceView(APIView):
+    permission_classes = [IsAnyStaff]
+
+    def get(self, request):
+        officer = get_officer_for_user(request.user)
+        if not officer:
+            return Response({'salary': 0, 'balance': 0}, status=200)
+
+        from hr_module.models import SalaryStructure
+        try:
+            salary_struct = SalaryStructure.objects.get(employee=officer, is_active=True)
+            net_salary = float(salary_struct.net_salary)
+        except SalaryStructure.DoesNotExist:
+            net_salary = 0
+
+        # Calculate current month's approved advances to determine balance
+        from django.utils import timezone
+        now = timezone.now()
+        advances = PaymentAdvanceRequest.objects.filter(
+            employee=officer,
+            created_at__year=now.year,
+            created_at__month=now.month,
+            status__in=['APPROVED', 'DISBURSED']
+        )
+        total_advances = sum(float(a.amount) for a in advances)
+        balance = net_salary - total_advances
+
+        return Response({
+            'salary': net_salary,
+            'balance': balance if balance > 0 else 0,
+            'total_advances': total_advances
+        })
+
+# ── Payment Advance Requests ──────────────────────────────────────
+class PaymentAdvanceListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAnyStaff]
+    serializer_class = PaymentAdvanceRequestSerializer
+    filterset_fields = ['status', 'employee']
+    search_fields = ['request_id', 'reason']
+
+    def get_queryset(self):
+        qs = PaymentAdvanceRequest.objects.select_related('employee', 'requested_by').all()
+        if hasattr(self.request.user, 'role') and self.request.user.role == 'STAFF':
+            officer = get_officer_for_user(self.request.user)
+            qs = qs.filter(Q(requested_by=self.request.user) | Q(employee=officer))
+        return qs
+
+    def perform_create(self, serializer):
+        emp = serializer.validated_data.get('employee')
+        if not emp:
+            emp = get_officer_for_user(self.request.user)
+        advance = serializer.save(requested_by=self.request.user, employee=emp)
+        push_to_role(
+            role='HR',
+            notification_type='NEW_PAYMENT_ADVANCE',
+            title='Salary Advance Request Received',
+            message=f"{self.request.user.full_name} requested ₹{advance.amount} needed by {advance.needed_by_date}."
+        )
+
+
+class PaymentAdvanceDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAnyStaff]
+    serializer_class = PaymentAdvanceRequestSerializer
+    queryset = PaymentAdvanceRequest.objects.all()
+
+
+class PaymentAdvanceApprovalView(APIView):
+    permission_classes = [IsHR]
+
+    def post(self, request, pk):
+        action = request.data.get('action')  # approve / reject / disburse
+        payout_date = request.data.get('payout_date')
+        remarks = request.data.get('hr_remarks', '')
+
+        try:
+            advance = PaymentAdvanceRequest.objects.get(pk=pk)
+        except PaymentAdvanceRequest.DoesNotExist:
+            return Response({'error': 'Advance request not found.'}, status=404)
+
+        if action == 'approve':
+            advance.status = 'APPROVED'
+            if payout_date:
+                advance.payout_date = payout_date
+            advance.hr_remarks = remarks
+        elif action == 'reject':
+            advance.status = 'REJECTED'
+            advance.hr_remarks = remarks
+        elif action == 'disburse':
+            advance.status = 'DISBURSED'
+            advance.hr_remarks = remarks
+        else:
+            return Response({'error': 'Invalid action'}, status=400)
+
+        advance.save()
+        push_to_role(
+            role='STAFF',
+            notification_type='ADVANCE_STATUS_UPDATE',
+            title=f"Advance Request {advance.status}",
+            message=f"Your advance request {advance.request_id} is now {advance.status}."
+        )
+        return Response(PaymentAdvanceRequestSerializer(advance).data)
+
+
+# ── Performance Points (Achieved Points) ──────────────────────────
+class PerformancePointListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAnyStaff]
+    serializer_class = PerformancePointSerializer
+    filterset_fields = ['employee', 'month', 'year']
+
+    def get_queryset(self):
+        qs = PerformancePoint.objects.select_related('employee', 'awarded_by').all()
+        return qs
+
+    def perform_create(self, serializer):
+        serializer.save(awarded_by=self.request.user)
+
+
+class PerformancePointLeaderboardView(APIView):
+    permission_classes = [IsAnyStaff]
+
+    def get(self, request):
+        from django.db.models import Sum
+        today = timezone.now().date()
+        try:
+            month = int(request.query_params.get('month', today.month))
+            year = int(request.query_params.get('year', today.year))
+        except (ValueError, TypeError):
+            month = today.month
+            year = today.year
+
+        # Aggregate points per employee for the specified month/year
+        scores = (
+            PerformancePoint.objects.filter(month=month, year=year)
+            .values('employee', 'employee__full_name', 'employee__employee_id', 'employee__designation')
+            .annotate(total_points=Sum('points'))
+            .order_by('-total_points')
+        )
+
+        leaderboard = []
+        best_performer = None
+
+        for rank, s in enumerate(scores, 1):
+            item = {
+                'rank': rank,
+                'employee_id': str(s['employee']),
+                'emp_code': s['employee__employee_id'],
+                'full_name': s['employee__full_name'],
+                'designation': s['employee__designation'],
+                'total_points': s['total_points'],
+            }
+            leaderboard.append(item)
+            if rank == 1:
+                best_performer = item
+
+        # Also get current user's personal stats
+        user_officer = get_officer_for_user(request.user)
+        my_stats = None
+        if user_officer:
+            my_m_points = PerformancePoint.objects.filter(
+                employee=user_officer, month=month, year=year
+            ).aggregate(t=Sum('points'))['t'] or 0
+
+            my_total_all_time = PerformancePoint.objects.filter(
+                employee=user_officer
+            ).aggregate(t=Sum('points'))['t'] or 0
+
+            history_qs = PerformancePoint.objects.filter(employee=user_officer)[:10]
+
+            my_stats = {
+                'officer_id': str(user_officer.id),
+                'full_name': user_officer.full_name,
+                'month_points': my_m_points,
+                'all_time_points': my_total_all_time,
+                'history': PerformancePointSerializer(history_qs, many=True).data
+            }
+
+        return Response({
+            'month': month,
+            'year': year,
+            'best_performer': best_performer,
+            'leaderboard': leaderboard,
+            'my_stats': my_stats
+        })
+
+
+# ── Staff Attendance View ──────────────────────────────────────────
+class StaffAttendanceView(APIView):
+    permission_classes = [IsAnyStaff]
+
+    def get(self, request):
+        officer = get_officer_for_user(request.user)
+        if not officer:
+            return Response({'error': 'No officer profile found.'}, status=404)
+
+        today = timezone.now().date()
+        today_record = Attendance.objects.filter(employee=officer, date=today).first()
+
+        # Monthly records
+        records = Attendance.objects.filter(
+            employee=officer,
+            date__month=today.month,
+            date__year=today.year
+        ).order_by('-date')
+
+        return Response({
+            'officer_name': officer.full_name,
+            'today': AttendanceSerializer(today_record).data if today_record else None,
+            'monthly_records': AttendanceSerializer(records, many=True).data,
+        })
+
+    def post(self, request):
+        officer = get_officer_for_user(request.user)
+        if not officer:
+            return Response({'error': 'No officer profile found.'}, status=404)
+
+        today = timezone.now().date()
+        now_time = timezone.localtime(timezone.now()).time()
+        action = request.data.get('action', 'check_in')  # check_in or check_out
+
+        att, created = Attendance.objects.get_or_create(
+            employee=officer, date=today,
+            defaults={'status': 'PRESENT', 'marked_by': request.user}
+        )
+
+        if action == 'check_in':
+            if not att.check_in:
+                att.check_in = now_time
+                att.status = 'PRESENT'
+                att.save()
+        elif action == 'check_out':
+            att.check_out = now_time
+            if att.check_in:
+                # calculate working hours simple estimate
+                h = (now_time.hour - att.check_in.hour) + (now_time.minute - att.check_in.minute)/60.0
+                att.working_hours = round(max(0, h), 2)
+            att.save()
+
+        return Response(AttendanceSerializer(att).data)
 
 
 # ── Employee Documents ────────────────────────────────────────────
@@ -490,10 +796,6 @@ class EmployeeDocumentView(generics.ListCreateAPIView):
 # ── Birthday Alerts ────────────────────────────────────────────────
 
 class BirthdayAlertView(APIView):
-    """
-    Returns staff members whose birthday is today or tomorrow.
-    Used by Manager/HR dashboards and mobile staff home screen.
-    """
     permission_classes = [IsAnyStaff]
 
     def get(self, request):
@@ -528,3 +830,4 @@ class BirthdayAlertView(APIView):
             'today_date': today.strftime('%d %B %Y'),
             'tomorrow_date': tomorrow.strftime('%d %B %Y'),
         })
+

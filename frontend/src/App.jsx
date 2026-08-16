@@ -36,6 +36,9 @@ import AttendancePage from './pages/hr/Attendance'
 import LeavePage from './pages/hr/Leave'
 import PayrollPage from './pages/hr/Payroll'
 import Complaints from './pages/hr/Complaints'
+import StaffReports from './pages/hr/StaffReports'
+import PaymentAdvances from './pages/hr/PaymentAdvances'
+import PerformancePoints from './pages/hr/PerformancePoints'
 import ReportsPage from './pages/Reports'
 import AdminUsers from './pages/admin/Users'
 import AuditLogPage from './pages/admin/AuditLog'
@@ -150,6 +153,10 @@ export default function App() {
           <Route path="hr/leave" element={<ProtectedRoute roles={['HR','ADMIN']}><LeavePage /></ProtectedRoute>} />
           <Route path="hr/payroll" element={<ProtectedRoute roles={['HR','ADMIN']}><PayrollPage /></ProtectedRoute>} />
           <Route path="hr/complaints" element={<ProtectedRoute roles={['HR','ADMIN']}><Complaints /></ProtectedRoute>} />
+          <Route path="hr/staff-reports" element={<ProtectedRoute roles={['HR','ADMIN']}><StaffReports /></ProtectedRoute>} />
+          <Route path="hr/payment-advances" element={<ProtectedRoute roles={['HR','ADMIN']}><PaymentAdvances /></ProtectedRoute>} />
+          <Route path="hr/performance-points" element={<ProtectedRoute roles={['HR','ADMIN']}><PerformancePoints /></ProtectedRoute>} />
+
 
           {/* Shared */}
           <Route path="payouts" element={<ProtectedRoute roles={['MANAGER','ACCOUNTANT','DATA_ENTRY','ADMIN']}><ScheduledPayouts /></ProtectedRoute>} />

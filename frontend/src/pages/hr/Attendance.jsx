@@ -33,6 +33,15 @@ export default function AttendancePage() {
     catch (_) { toast.error("Save failed") } finally { setSaving(false) }
   }
 
+  const formatTime = (timeString) => {
+    if (!timeString) return "-";
+    const [h, m] = timeString.split(":");
+    let hr = parseInt(h, 10);
+    const ampm = hr >= 12 ? "PM" : "AM";
+    hr = hr % 12 || 12;
+    return `${hr}:${m} ${ampm}`;
+  };
+
   return (
     <div>
       <PageHeader title="Attendance" subtitle="Daily attendance management">
@@ -46,7 +55,7 @@ export default function AttendancePage() {
               <thead><tr><th>Employee</th><th>Date</th><th>Status</th><th>Check In</th><th>Check Out</th><th>Remarks</th></tr></thead>
               <tbody>
                 {records.length===0 ? <tr><td colSpan={6}><EmptyState icon="✅" title="No attendance marked for this date" /></td></tr>
-                  : records.map(r=>(<tr key={r.id}><td>{r.employee_name}</td><td>{r.date}</td><td><span className={`badge ${r.status==="PRESENT"?"badge-green":r.status==="ABSENT"?"badge-red":"badge-yellow"}`}>{r.status}</span></td><td>{r.check_in||"-"}</td><td>{r.check_out||"-"}</td><td>{r.remarks||"-"}</td></tr>))}
+                  : records.map(r=>(<tr key={r.id}><td>{r.employee_name}</td><td>{r.date}</td><td><span className={`badge ${r.status==="PRESENT"?"badge-green":r.status==="ABSENT"?"badge-red":"badge-yellow"}`}>{r.status}</span></td><td>{formatTime(r.check_in)}</td><td>{formatTime(r.check_out)}</td><td>{r.remarks||"-"}</td></tr>))}
               </tbody>
             </table>
           </div>

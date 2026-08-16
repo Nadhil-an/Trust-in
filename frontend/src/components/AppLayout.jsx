@@ -57,10 +57,14 @@ const NAV_CONFIG = {
     { label: 'Attendance', icon: '✅', path: '/hr/attendance' },
     { label: 'Leave Management', icon: '📅', path: '/hr/leave', badge: 'leave' },
     { label: 'Salary & Payroll', icon: '💰', path: '/hr/payroll' },
-    { type: 'header', label: 'SUPPORT & ANALYTICS' },
+    { label: 'Payment Advances', icon: '💵', path: '/hr/payment-advances' },
+    { type: 'header', label: 'SUPPORT & PERFORMANCE' },
     { label: 'Complaints', icon: '🗣️', path: '/hr/complaints' },
-    { label: 'Reports', icon: '📈', path: '/reports' },
+    { label: 'Staff Reports', icon: '📄', path: '/hr/staff-reports' },
+    { label: 'Achieved Points', icon: '🏆', path: '/hr/performance-points' },
+    { label: 'Analytics Reports', icon: '📈', path: '/reports' },
   ],
+
   ADMIN: [
     { label: 'User Management', icon: '👤', path: '/admin/users' },
     { label: 'Audit Log', icon: '🔍', path: '/admin/audit-log' },

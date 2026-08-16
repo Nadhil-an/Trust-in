@@ -409,3 +409,103 @@ class Complaint(models.Model):
             else:
                 self.complaint_id = "CMP-000001"
         super().save(*args, **kwargs)
+
+
+# ── Staff Reports ──────────────────────────────────────────────────
+
+class StaffReportStatus(models.TextChoices):
+    PENDING = 'PENDING', 'Pending'
+    UNDER_REVIEW = 'UNDER_REVIEW', 'Under Review'
+    APPROVED = 'APPROVED', 'Approved'
+    REJECTED = 'REJECTED', 'Rejected'
+
+
+class StaffReport(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    report_id = models.CharField(max_length=20, unique=True, db_index=True)
+    employee = models.ForeignKey(ExecutiveOfficer, on_delete=models.SET_NULL, null=True, blank=True, related_name='reports')
+    submitted_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='submitted_reports')
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    file = models.FileField(upload_to='hr/reports/', null=True, blank=True)
+    report_date = models.DateField(default=date.today)
+    status = models.CharField(max_length=20, choices=StaffReportStatus.choices, default=StaffReportStatus.PENDING)
+    admin_notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'hr_staff_reports'
+        ordering = ['-created_at']
+
+    def save(self, *args, **kwargs):
+        if not self.report_id:
+            last = StaffReport.objects.order_by('-created_at').first()
+            if last and last.report_id.startswith('REP-'):
+                try:
+                    last_num = int(last.report_id.split('-')[1])
+                    self.report_id = f"REP-{last_num + 1:06d}"
+                except ValueError:
+                    self.report_id = f"REP-{uuid.uuid4().hex[:6].upper()}"
+            else:
+                self.report_id = "REP-000001"
+        super().save(*args, **kwargs)
+
+
+# ── Payment Advance Requests ──────────────────────────────────────
+
+class PaymentAdvanceStatus(models.TextChoices):
+    PENDING = 'PENDING', 'Pending'
+    APPROVED = 'APPROVED', 'Approved'
+    REJECTED = 'REJECTED', 'Rejected'
+    DISBURSED = 'DISBURSED', 'Disbursed'
+
+
+class PaymentAdvanceRequest(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    request_id = models.CharField(max_length=20, unique=True, db_index=True)
+    employee = models.ForeignKey(ExecutiveOfficer, on_delete=models.SET_NULL, null=True, blank=True, related_name='advance_requests')
+    requested_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='payment_advances')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    reason = models.TextField()
+    needed_by_date = models.DateField()  # Date staff requests to receive the payment
+    payout_date = models.DateField(null=True, blank=True)  # Date HR agrees/schedules to disburse it
+    status = models.CharField(max_length=20, choices=PaymentAdvanceStatus.choices, default=PaymentAdvanceStatus.PENDING)
+    hr_remarks = models.TextField(blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'hr_payment_advance_requests'
+        ordering = ['-created_at']
+
+    def save(self, *args, **kwargs):
+        if not self.request_id:
+            last = PaymentAdvanceRequest.objects.order_by('-created_at').first()
+            if last and last.request_id.startswith('ADV-'):
+                try:
+                    last_num = int(last.request_id.split('-')[1])
+                    self.request_id = f"ADV-{last_num + 1:06d}"
+                except ValueError:
+                    self.request_id = f"ADV-{uuid.uuid4().hex[:6].upper()}"
+            else:
+                self.request_id = "ADV-000001"
+        super().save(*args, **kwargs)
+
+
+# ── Performance Points (Achieved Points) ──────────────────────────
+
+class PerformancePoint(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    employee = models.ForeignKey(ExecutiveOfficer, on_delete=models.CASCADE, related_name='performance_points')
+    points = models.PositiveIntegerField(default=0)
+    month = models.PositiveSmallIntegerField()  # 1-12
+    year = models.PositiveSmallIntegerField()   # e.g. 2026
+    reason = models.TextField(blank=True)
+    awarded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='awarded_points')
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = 'hr_performance_points'
+        ordering = ['-year', '-month', '-created_at']
+

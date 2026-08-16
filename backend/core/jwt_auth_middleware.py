@@ -21,7 +21,8 @@ def get_user(token_key):
             algorithm=settings.SIMPLE_JWT['ALGORITHM']
         ).decode(token_key, verify=True)
         return User.objects.get(id=data['user_id'])
-    except Exception:
+    except Exception as e:
+        print(f"WebSocket Auth Error: {e}")
         return AnonymousUser()
 
 
@@ -42,7 +43,9 @@ class JwtAuthMiddleware(BaseMiddleware):
             qs = parse_qs(scope.get('query_string', b'').decode())
             token = qs.get('token', [None])[0]
 
-        scope['user'] = await get_user(token) if token else AnonymousUser()
+        print(f"WS Auth Debug - Token: {token}")
+
+        scope['user'] = await get_user(token) if token and token not in ('null', 'undefined') else AnonymousUser()
         return await super().__call__(scope, receive, send)
 
 
