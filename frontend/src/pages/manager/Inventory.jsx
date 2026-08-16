@@ -191,7 +191,7 @@ export default function Inventory() {
       {/* Summary Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 20 }}>
         {[
-          { label: 'Total Items', value: totalItems, icon: '📦', color: '#3B82F6', bg: '#DBEAFE' },
+          { label: 'Total Items', value: totalItems, icon: '📦', color: '#1E4DB7', bg: '#DBEAFE' },
           { label: 'In Stock', value: inStockItems, icon: '✅', color: '#10B981', bg: '#D1FAE5' },
           { label: 'Low Stock', value: lowStockItems, icon: '⚠️', color: '#F59E0B', bg: '#FEF3C7' },
           { label: 'Out of Stock', value: outOfStockItems, icon: '❌', color: '#EF4444', bg: '#FEE2E2' },

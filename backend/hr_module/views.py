@@ -725,6 +725,14 @@ class PerformancePointLeaderboardView(APIView):
         })
 
 
+def get_attendance_effective_date():
+    """Returns the effective attendance date based on an 8:00 AM daily reset cycle."""
+    now_local = timezone.localtime(timezone.now())
+    if now_local.hour < 8:
+        return (now_local - timezone.timedelta(days=1)).date()
+    return now_local.date()
+
+
 # ── Staff Attendance View ──────────────────────────────────────────
 class StaffAttendanceView(APIView):
     permission_classes = [IsAnyStaff]
@@ -734,20 +742,22 @@ class StaffAttendanceView(APIView):
         if not officer:
             return Response({'error': 'No officer profile found.'}, status=404)
 
-        today = timezone.now().date()
-        today_record = Attendance.objects.filter(employee=officer, date=today).first()
+        effective_date = get_attendance_effective_date()
+        today_record = Attendance.objects.filter(employee=officer, date=effective_date).first()
 
         # Monthly records
+        now_local = timezone.localtime(timezone.now())
         records = Attendance.objects.filter(
             employee=officer,
-            date__month=today.month,
-            date__year=today.year
+            date__month=now_local.month,
+            date__year=now_local.year
         ).order_by('-date')
 
         return Response({
             'officer_name': officer.full_name,
             'today': AttendanceSerializer(today_record).data if today_record else None,
             'monthly_records': AttendanceSerializer(records, many=True).data,
+            'effective_date': effective_date.isoformat(),
         })
 
     def post(self, request):
@@ -755,12 +765,12 @@ class StaffAttendanceView(APIView):
         if not officer:
             return Response({'error': 'No officer profile found.'}, status=404)
 
-        today = timezone.now().date()
+        effective_date = get_attendance_effective_date()
         now_time = timezone.localtime(timezone.now()).time()
         action = request.data.get('action', 'check_in')  # check_in or check_out
 
         att, created = Attendance.objects.get_or_create(
-            employee=officer, date=today,
+            employee=officer, date=effective_date,
             defaults={'status': 'PRESENT', 'marked_by': request.user}
         )
 

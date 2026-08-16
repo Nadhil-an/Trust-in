@@ -9,7 +9,7 @@ const ENTRIES = [
     icon: '📥', label: 'Inward Entry',
     desc: 'Record incoming goods, materials & receipts',
     path: '/data-entry/inward',
-    color: '#3B82F6', bg: '#EFF6FF', border: '#BFDBFE',
+    color: '#1E4DB7', bg: '#EFF6FF', border: '#BFDBFE',
   },
   {
     icon: '📤', label: 'Outward Entry',
@@ -105,7 +105,7 @@ export default function DataEntryDashboard() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 6 }}>
           <div style={{
             width: 48, height: 48, borderRadius: 14,
-            background: 'linear-gradient(135deg, #3B82F6, #6366F1)',
+            background: 'linear-gradient(135deg, #1E4DB7, #6366F1)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22,
           }}>📝</div>
           <div>

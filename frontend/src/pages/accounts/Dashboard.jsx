@@ -13,7 +13,7 @@ import {
 // ── colour tokens ────────────────────────────────────────────────
 const C = {
   green:  '#22C55E', red: '#EF4444', yellow: '#F59E0B',
-  blue:   '#3B82F6', purple: '#A855F7', indigo: '#6366F1', gray: '#94A3B8',
+  blue:   '#1E4DB7', purple: '#A855F7', indigo: '#6366F1', gray: '#94A3B8',
 }
 
 // ── Shared tooltip ───────────────────────────────────────────────

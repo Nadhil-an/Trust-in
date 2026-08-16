@@ -12,7 +12,7 @@ import BirthdayBanner from '../../components/BirthdayBanner'
 
 // ── colour tokens ────────────────────────────────────────────────
 const CLR = {
-  blue:   '#3B82F6',
+  blue:   '#1E4DB7',
   indigo: '#6366F1',
   green:  '#22C55E',
   yellow: '#F59E0B',
