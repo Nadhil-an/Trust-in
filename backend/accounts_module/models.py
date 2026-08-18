@@ -132,6 +132,7 @@ class Income(models.Model):
     receipt_number = models.CharField(max_length=20, unique=True, db_index=True)
     date = models.DateField(default=date.today)
     donor_name = models.CharField(max_length=255, blank=True)
+    donor_phone = models.CharField(max_length=20, blank=True)
     source = models.CharField(max_length=20, choices=IncomeSource.choices)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     payment_method = models.CharField(max_length=20, choices=PaymentMethod.choices)
@@ -141,6 +142,9 @@ class Income(models.Model):
     cash_account = models.ForeignKey(CashAccount, on_delete=models.SET_NULL, null=True, blank=True)
     bank_account = models.ForeignKey(BankAccount, on_delete=models.SET_NULL, null=True, blank=True)
     document = models.FileField(upload_to='income/', null=True, blank=True)
+    whatsapp_status = models.CharField(max_length=20, default='PENDING', choices=[
+        ('PENDING', 'Pending'), ('SENT', 'Sent'), ('FAILED', 'Failed')
+    ])
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(default=timezone.now)
 

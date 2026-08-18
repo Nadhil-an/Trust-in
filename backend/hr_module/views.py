@@ -1,4 +1,5 @@
 """HR Module Views"""
+from django.http import HttpResponse
 from django.utils import timezone
 from django.db.models import Count, Q
 from rest_framework import generics, status
@@ -9,6 +10,9 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from core.permissions import IsHR, IsAnyStaff, IsOwnerOrManager, IsOwnerOrManagerOrHR
 from core.models import AuditLog
 from notify.service import push_notification, push_to_role, push_dashboard_refresh
+from hr_module.member_receipt_service import generate_member_certificate_html
+from hr_module.member_pdf_generator import generate_member_receipt_pdf_bytes
+from hr_module.member_image_generator import generate_member_receipt_image_bytes
 from hr_module.models import (Member, MemberDocument, Volunteer, ExecutiveMember,
                                ExecutiveOfficer, SalaryStructure, Attendance,
                                LeaveRequest, MonthlyPayroll, EmployeeDocument,
@@ -144,8 +148,88 @@ class MemberListCreateView(generics.ListCreateAPIView):
         return qs
 
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
+        member = serializer.save(created_by=self.request.user)
         push_dashboard_refresh(['HR', 'MANAGER', 'ADMIN', 'STAFF'])
+
+        # Automated Membership Payment & Receipt Workflow
+        if member.phone:
+            try:
+                from hr_module.models import MembershipReceipt
+                from django.core.files.base import ContentFile
+                from notify.whatsapp_service import send_whatsapp_message
+
+                # 1. Create Receipt Record & Unique Receipt Number
+                receipt = MembershipReceipt.objects.create(
+                    member=member,
+                    amount=getattr(member, 'monthly_fee', 100.00) or 100.00
+                )
+
+                # 2. Generate A4 PDF Document
+                try:
+                    num_val = int(str(member.member_id).replace('MEM-', ''))
+                    formatted_mem_id = f"{num_val:04d}"
+                except Exception:
+                    formatted_mem_id = f"{member.member_id}"
+
+                pdf_bytes = generate_member_receipt_pdf_bytes(
+                    member,
+                    receipt_number=receipt.receipt_number,
+                    membership_id=formatted_mem_id,
+                    amount=float(receipt.amount)
+                )
+
+                # 3. Save PDF File & Dynamic Image Card File securely
+                file_name = f"SLCT_Membership_Receipt_{member.member_id}_{member.joining_date}.pdf"
+                receipt.pdf_file.save(file_name, ContentFile(pdf_bytes), save=True)
+
+                # Save dynamic PNG Receipt Image Card
+                img_bytes = generate_member_receipt_image_bytes(
+                    member,
+                    receipt_number=receipt.receipt_number,
+                    membership_id=formatted_mem_id,
+                    amount=float(receipt.amount)
+                )
+                img_file_name = f"SLCT_Receipt_Image_{member.member_id}_{member.joining_date}.png"
+                import os
+                from django.conf import settings
+                img_disk_path = os.path.join(settings.MEDIA_ROOT, 'membership_receipts', img_file_name)
+                os.makedirs(os.path.dirname(img_disk_path), exist_ok=True)
+                with open(img_disk_path, 'wb') as f:
+                    f.write(img_bytes)
+
+                # 4. Build absolute URIs for WhatsApp delivery
+                pdf_url = self.request.build_absolute_uri(receipt.pdf_file.url)
+                img_url = self.request.build_absolute_uri(f"/media/membership_receipts/{img_file_name}")
+
+                # 5. Formatted WhatsApp Message with Rich Image Card & Social Links
+                msg = (
+                    f"Dear {member.full_name},\n\n"
+                    f"Thank you for becoming a member of Sree Lakshmi Charitable Trust.\n\n"
+                    f"Your membership payment of ₹{receipt.amount:,.2f} has been successfully received.\n\n"
+                    f"🪪 Membership ID: {formatted_mem_id}\n"
+                    f"📄 Receipt No.: {receipt.receipt_number}\n\n"
+                    f"Please find your official membership receipt attached.\n\n"
+                    f"Thank you for supporting our mission.\n"
+                    f"Sree Lakshmi Charitable Trust\n\n"
+                    f"📱 Instagram: https://www.instagram.com/sreelakshmicharity?igsh=MWFna2dnYnFsdDRmbQ==\n"
+                    f"📘 Facebook: https://www.facebook.com/share/1BZ1MR7HzA/?mibextid=wwXIfr\n"
+                    f"🌐 Website: https://sreelakshmicharity.org"
+                )
+
+                res = send_whatsapp_message(
+                    to_phone=member.phone,
+                    message_body=msg,
+                    image_url=img_url
+                )
+
+                if res.get('success'):
+                    receipt.whatsapp_status = 'SENT'
+                else:
+                    receipt.whatsapp_status = 'FAILED'
+                receipt.save()
+
+            except Exception:
+                pass
 
 class MemberDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAnyStaff, IsOwnerOrManagerOrHR]
@@ -160,6 +244,130 @@ class MemberDetailView(generics.RetrieveUpdateDestroyAPIView):
     def perform_destroy(self, instance):
         instance.delete()
         push_dashboard_refresh(['HR', 'MANAGER', 'ADMIN', 'STAFF'])
+
+
+class MemberCertificateView(APIView):
+    """Public viewable digital membership card & printable certificate."""
+    permission_classes = []
+
+    def get(self, request, pk):
+        try:
+            member = Member.objects.get(pk=pk)
+        except Member.DoesNotExist:
+            return Response({'error': 'Member not found'}, status=404)
+
+        html_content = generate_member_certificate_html(member)
+        return HttpResponse(html_content, content_type='text/html')
+
+
+class MemberPdfView(APIView):
+    """Downloads binary PDF document for a member receipt."""
+    permission_classes = []
+
+    def get(self, request, pk):
+        try:
+            member = Member.objects.get(pk=pk)
+        except Member.DoesNotExist:
+            return Response({'error': 'Member not found'}, status=404)
+
+        pdf_bytes = generate_member_receipt_pdf_bytes(member)
+        response = HttpResponse(pdf_bytes, content_type='application/pdf')
+        response['Content-Disposition'] = f'inline; filename="SLCT_Membership_Receipt_{member.member_id}.pdf"'
+        return response
+
+
+class MemberImageView(APIView):
+    """Generates and serves binary PNG image card for a member receipt."""
+    permission_classes = []
+
+    def get(self, request, pk):
+        try:
+            member = Member.objects.get(pk=pk)
+        except Member.DoesNotExist:
+            return Response({'error': 'Member not found'}, status=404)
+
+        from hr_module.models import MembershipReceipt
+        last_receipt = MembershipReceipt.objects.filter(member=member).first()
+        receipt_no = last_receipt.receipt_number if last_receipt else None
+        amount = float(last_receipt.amount) if last_receipt else None
+        try:
+            num_val = int(member.member_id.replace('MEM-', ''))
+            mem_id_val = f"SLCT/MEM/{num_val:04d}"
+        except Exception:
+            mem_id_val = f"SLCT/MEM/{member.member_id}"
+
+        img_bytes = generate_member_receipt_image_bytes(member, receipt_number=receipt_no, membership_id=mem_id_val, amount=amount)
+        return HttpResponse(img_bytes, content_type='image/png')
+
+
+class RetryWhatsAppView(APIView):
+    """Retries WhatsApp dispatch for a MembershipReceipt if status was FAILED."""
+    permission_classes = [IsAnyStaff]
+
+    def post(self, request, pk):
+        try:
+            from hr_module.models import MembershipReceipt
+            receipt = MembershipReceipt.objects.get(pk=pk)
+        except MembershipReceipt.DoesNotExist:
+            return Response({'error': 'Receipt not found'}, status=404)
+
+        member = receipt.member
+        if not member or not member.phone:
+            return Response({'error': 'Member phone number missing'}, status=400)
+
+        from notify.whatsapp_service import send_whatsapp_message
+        img_file_name = f"SLCT_Receipt_Image_{member.member_id}_{member.joining_date}.png"
+        img_url = request.build_absolute_uri(f"/media/membership_receipts/{img_file_name}")
+
+        try:
+            num_val = int(str(member.member_id).replace('MEM-', ''))
+            formatted_mem_id = f"{num_val:04d}"
+        except Exception:
+            formatted_mem_id = f"{member.member_id}"
+
+        # Ensure dynamic PNG image card exists on disk
+        import os
+        from django.conf import settings
+        img_disk_path = os.path.join(settings.MEDIA_ROOT, 'membership_receipts', img_file_name)
+        if not os.path.exists(img_disk_path):
+            img_bytes = generate_member_receipt_image_bytes(
+                member,
+                receipt_number=receipt.receipt_number,
+                membership_id=formatted_mem_id,
+                amount=float(receipt.amount)
+            )
+            os.makedirs(os.path.dirname(img_disk_path), exist_ok=True)
+            with open(img_disk_path, 'wb') as f:
+                f.write(img_bytes)
+
+        msg = (
+            f"Dear {member.full_name},\n\n"
+            f"Thank you for becoming a member of Sree Lakshmi Charitable Trust.\n\n"
+            f"Your membership payment of ₹{receipt.amount:,.2f} has been successfully received.\n\n"
+            f"🪪 Membership ID: {formatted_mem_id}\n"
+            f"📄 Receipt No.: {receipt.receipt_number}\n\n"
+            f"Please find your official membership receipt attached.\n\n"
+            f"Thank you for supporting our mission.\n"
+            f"Sree Lakshmi Charitable Trust\n\n"
+            f"📱 Instagram: https://www.instagram.com/sreelakshmicharity?igsh=MWFna2dnYnFsdDRmbQ==\n"
+            f"📘 Facebook: https://www.facebook.com/share/1BZ1MR7HzA/?mibextid=wwXIfr\n"
+            f"🌐 Website: https://sreelakshmicharity.org"
+        )
+
+        res = send_whatsapp_message(
+            to_phone=member.phone,
+            message_body=msg,
+            image_url=img_url
+        )
+
+        if res.get('success'):
+            receipt.whatsapp_status = 'SENT'
+            receipt.save()
+            return Response({'message': 'WhatsApp receipt sent successfully', 'status': 'SENT'})
+        else:
+            receipt.whatsapp_status = 'FAILED'
+            receipt.save()
+            return Response({'error': 'WhatsApp dispatch failed', 'status': 'FAILED'}, status=500)
 
 
 class MemberDocumentView(generics.ListCreateAPIView):

@@ -207,3 +207,9 @@ LOGGING = {
     },
     'root': {'handlers': ['console', 'file'], 'level': 'INFO'},
 }
+
+# ── WhatsApp Gateway Settings ────────────────────────────────────
+WHATSAPP_ENABLED = os.getenv('WHATSAPP_ENABLED', 'True') == 'True'
+WHATSAPP_GATEWAY_URL = os.getenv('WHATSAPP_GATEWAY_URL', 'https://api.ultramsg.com/instance_id/messages/chat')
+WHATSAPP_GATEWAY_TOKEN = os.getenv('WHATSAPP_GATEWAY_TOKEN', '')
+

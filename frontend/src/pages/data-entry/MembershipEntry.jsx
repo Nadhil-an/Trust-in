@@ -49,8 +49,9 @@ export default function MembershipEntry() {
     try {
       const fd = new FormData()
       Object.entries(form).forEach(([k, v]) => fd.append(k, v))
+      if (form.phone) fd.append('donor_phone', form.phone)
       await accountsApi.income.create(fd)
-      toast.success('Membership fee recorded!')
+      toast.success(form.phone ? 'Membership fee recorded & WhatsApp e-receipt sent!' : 'Membership fee recorded!')
       setShowModal(false)
       setForm(EMPTY_FORM)
       load()

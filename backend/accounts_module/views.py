@@ -1,4 +1,5 @@
 """Accounts Module Views"""
+from django.http import HttpResponse
 from django.db.models import Sum, Q
 from django.utils import timezone
 from rest_framework import generics, status
@@ -10,6 +11,8 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from core.permissions import IsAccountant, IsManagerOrAccountant, IsAccountantOrCashier, IsAnyStaff, IsOwnerOrManager
 from core.models import AuditLog, Role
 from notify.service import push_dashboard_refresh
+from notify.whatsapp_service import send_whatsapp_receipt
+from accounts_module.receipt_service import generate_receipt_html
 from accounts_module.models import (CashAccount, CashTransaction, BankAccount, BankTransaction,
                                      Income, Expense, Cheque, Transfer, Transaction)
 from accounts_module.serializers import (CashAccountSerializer, CashTransactionSerializer,
@@ -174,14 +177,53 @@ class IncomeListCreateView(generics.ListCreateAPIView):
             )
             acc.current_balance = new_bal
             acc.save(update_fields=['current_balance'])
-        # Create central transaction record
-        Transaction.objects.create(
-            date=income.date, transaction_type='INCOME', category=income.source,
-            description=f"Income: {income.donor_name or income.source}",
-            account_type=income.account_type, credit=income.amount,
-            payment_method=income.payment_method, reference_id=income.receipt_number,
-            created_by=self.request.user
-        )
+        # Trigger WhatsApp e-receipt dispatch from central Trust number if donor_phone is provided
+        if income.donor_phone:
+            try:
+                from accounts_module.donation_image_generator import generate_donation_receipt_image_bytes
+                import os
+                from django.conf import settings
+                from django.core.files.base import ContentFile
+                
+                # Generate Image
+                img_bytes = generate_donation_receipt_image_bytes(income)
+                
+                # Format Date and Receipt number for file name
+                safe_date = income.date.strftime('%Y-%m-%d')
+                safe_rcp = income.receipt_number.replace('/', '-') if income.receipt_number else f"INC-{income.id}"
+                img_file_name = f"SLCT_Donation_Receipt_{safe_rcp}_{safe_date}.png"
+                
+                # Save to media/donation_receipts
+                img_disk_path = os.path.join(settings.MEDIA_ROOT, 'donation_receipts', img_file_name)
+                os.makedirs(os.path.dirname(img_disk_path), exist_ok=True)
+                with open(img_disk_path, 'wb') as f:
+                    f.write(img_bytes)
+
+                # Build Image URL and Receipt URL
+                img_url = self.request.build_absolute_uri(f"/media/donation_receipts/{img_file_name}")
+                receipt_url = self.request.build_absolute_uri(f"/api/accounts/income/{income.id}/receipt/")
+                
+                res = send_whatsapp_receipt(
+                    to_phone=income.donor_phone,
+                    donor_name=income.donor_name,
+                    receipt_number=income.receipt_number,
+                    amount=float(income.amount),
+                    source=income.source,
+                    date_str=income.date.strftime('%d %b %Y'),
+                    pdf_url=receipt_url,
+                    image_url=img_url
+                )
+                if res.get('success'):
+                    income.whatsapp_status = 'SENT'
+                else:
+                    income.whatsapp_status = 'FAILED'
+                income.save(update_fields=['whatsapp_status'])
+            except Exception as e:
+                import logging
+                logging.error(f"WhatsApp dispatch failed for donation: {e}")
+                income.whatsapp_status = 'FAILED'
+                income.save(update_fields=['whatsapp_status'])
+
         push_dashboard_refresh(['ACCOUNTANT', 'MANAGER', 'ADMIN', 'STAFF'])
 
 class IncomeDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -197,6 +239,72 @@ class IncomeDetailView(generics.RetrieveUpdateDestroyAPIView):
     def perform_destroy(self, instance):
         instance.delete()
         push_dashboard_refresh(['ACCOUNTANT', 'MANAGER', 'ADMIN', 'STAFF'])
+
+
+class IncomeReceiptView(APIView):
+    """Publicly viewable e-receipt page for donors/members."""
+    permission_classes = []
+
+    def get(self, request, pk):
+        try:
+            income = Income.objects.get(pk=pk)
+        except Income.DoesNotExist:
+            return Response({'error': 'Receipt not found'}, status=404)
+
+        html_content = generate_receipt_html(income)
+        return HttpResponse(html_content, content_type='text/html')
+
+class RetryWhatsAppDonationView(APIView):
+    """Retries WhatsApp dispatch for a Donation if status was FAILED."""
+    permission_classes = [IsAnyStaff]
+
+    def post(self, request, pk):
+        try:
+            income = Income.objects.get(pk=pk)
+        except Income.DoesNotExist:
+            return Response({'error': 'Receipt not found'}, status=404)
+
+        if not income.donor_phone:
+            return Response({'error': 'Donor phone number missing'}, status=400)
+
+        from accounts_module.donation_image_generator import generate_donation_receipt_image_bytes
+        import os
+        from django.conf import settings
+        from notify.whatsapp_service import send_whatsapp_receipt
+
+        safe_date = income.date.strftime('%Y-%m-%d')
+        safe_rcp = income.receipt_number.replace('/', '-') if income.receipt_number else f"INC-{income.id}"
+        img_file_name = f"SLCT_Donation_Receipt_{safe_rcp}_{safe_date}.png"
+        img_disk_path = os.path.join(settings.MEDIA_ROOT, 'donation_receipts', img_file_name)
+
+        if not os.path.exists(img_disk_path):
+            img_bytes = generate_donation_receipt_image_bytes(income)
+            os.makedirs(os.path.dirname(img_disk_path), exist_ok=True)
+            with open(img_disk_path, 'wb') as f:
+                f.write(img_bytes)
+
+        img_url = request.build_absolute_uri(f"/media/donation_receipts/{img_file_name}")
+        receipt_url = request.build_absolute_uri(f"/api/accounts/income/{income.id}/receipt/")
+
+        res = send_whatsapp_receipt(
+            to_phone=income.donor_phone,
+            donor_name=income.donor_name,
+            receipt_number=income.receipt_number,
+            amount=float(income.amount),
+            source=income.source,
+            date_str=income.date.strftime('%d %b %Y'),
+            pdf_url=receipt_url,
+            image_url=img_url
+        )
+
+        if res.get('success'):
+            income.whatsapp_status = 'SENT'
+            income.save(update_fields=['whatsapp_status'])
+            return Response({'message': 'WhatsApp receipt sent successfully'})
+        else:
+            income.whatsapp_status = 'FAILED'
+            income.save(update_fields=['whatsapp_status'])
+            return Response({'error': 'Failed to send WhatsApp message', 'details': res.get('error')}, status=500)
 
 
 # ── Expenses ──────────────────────────────────────────────────────

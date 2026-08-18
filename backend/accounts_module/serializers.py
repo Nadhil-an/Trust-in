@@ -38,6 +38,13 @@ class IncomeSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['id', 'receipt_number', 'created_by', 'created_at']
 
+    def to_internal_value(self, data):
+        if 'phone' in data and not data.get('donor_phone'):
+            mutable_data = data.copy()
+            mutable_data['donor_phone'] = mutable_data.get('phone')
+            data = mutable_data
+        return super().to_internal_value(data)
+
 
 class ExpenseSerializer(serializers.ModelSerializer):
     class Meta:

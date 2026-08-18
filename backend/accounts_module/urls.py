@@ -15,6 +15,8 @@ urlpatterns = [
     # Income
     path('income/', views.IncomeListCreateView.as_view()),
     path('income/<uuid:pk>/', views.IncomeDetailView.as_view()),
+    path('income/<uuid:pk>/receipt/', views.IncomeReceiptView.as_view()),
+    path('income/<uuid:pk>/resend-whatsapp/', views.RetryWhatsAppDonationView.as_view()),
     # Expenses
     path('expenses/', views.ExpenseListCreateView.as_view()),
     path('expenses/<uuid:pk>/', views.ExpenseDetailView.as_view()),

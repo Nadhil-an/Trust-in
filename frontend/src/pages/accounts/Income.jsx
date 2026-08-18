@@ -31,7 +31,14 @@ export default function IncomeList() {
     if (!isPositiveNumber(form.amount)) return toast.error("Amount must be a positive number");
     
     setSaving(true)
-    try { await accountsApi.income.create(new FormData(e.target)); toast.success("Income recorded."); setShowModal(false); load() }
+    try { 
+      const fd = new FormData(e.target);
+      if (fd.get('phone')) fd.append('donor_phone', fd.get('phone'));
+      await accountsApi.income.create(fd); 
+      toast.success("Income recorded."); 
+      setShowModal(false); 
+      load() 
+    }
     catch (err) { toast.error(err.response?.data?.detail || "Save failed") } finally { setSaving(false) }
   }
 

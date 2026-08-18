@@ -7,7 +7,11 @@ urlpatterns = [
     # Members
     path('members/', views.MemberListCreateView.as_view()),
     path('members/<uuid:pk>/', views.MemberDetailView.as_view()),
+    path('members/<uuid:pk>/certificate/', views.MemberCertificateView.as_view()),
+    path('members/<uuid:pk>/receipt-pdf/', views.MemberPdfView.as_view()),
+    path('members/<uuid:pk>/receipt-image/', views.MemberImageView.as_view()),
     path('members/<uuid:member_pk>/documents/', views.MemberDocumentView.as_view()),
+    path('receipts/<uuid:pk>/retry-whatsapp/', views.RetryWhatsAppView.as_view()),
     # Volunteers
     path('volunteers/', views.VolunteerListCreateView.as_view()),
     path('volunteers/<uuid:pk>/', views.VolunteerDetailView.as_view()),

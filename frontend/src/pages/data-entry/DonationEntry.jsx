@@ -49,8 +49,9 @@ export default function DonationEntry() {
     try {
       const fd = new FormData()
       Object.entries(form).forEach(([k, v]) => fd.append(k, v))
+      if (form.phone) fd.append('donor_phone', form.phone)
       await accountsApi.income.create(fd)
-      toast.success('Donation recorded!')
+      toast.success(form.phone ? 'Donation recorded & WhatsApp e-receipt sent!' : 'Donation recorded!')
       setShowModal(false)
       setForm(EMPTY_FORM)
       load()

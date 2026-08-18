@@ -64,7 +64,7 @@ class Member(models.Model):
     def save(self, *args, **kwargs):
         if not self.member_id:
             count = Member.objects.count() + 1
-            self.member_id = f"MEM-{count:05d}"
+            self.member_id = f"{count:04d}"
         super().save(*args, **kwargs)
 
 
@@ -79,6 +79,28 @@ class MemberDocument(models.Model):
 
     class Meta:
         db_table = 'hr_member_documents'
+
+
+class MembershipReceipt(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    receipt_number = models.CharField(max_length=50, unique=True, db_index=True)
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='receipts')
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=100.00)
+    pdf_file = models.FileField(upload_to='membership_receipts/')
+    whatsapp_status = models.CharField(max_length=20, default='PENDING', choices=[
+        ('PENDING', 'Pending'), ('SENT', 'Sent'), ('FAILED', 'Failed')
+    ])
+    generated_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = 'hr_membership_receipts'
+        ordering = ['-generated_at']
+
+    def save(self, *args, **kwargs):
+        if not self.receipt_number:
+            count = MembershipReceipt.objects.count() + 1
+            self.receipt_number = f"{count:06d}"
+        super().save(*args, **kwargs)
 
 
 # ── Volunteers ────────────────────────────────────────────────────
