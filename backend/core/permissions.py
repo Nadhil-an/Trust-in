@@ -21,10 +21,6 @@ class IsAccountant(BasePermission):
         return request.user.is_authenticated and request.user.role in [Role.ACCOUNTANT, Role.ADMIN]
 
 
-class IsCashier(BasePermission):
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role in [Role.CASHIER, Role.ACCOUNTANT, Role.ADMIN]
-
 
 class IsHR(BasePermission):
     def has_permission(self, request, view):
@@ -35,10 +31,6 @@ class IsManagerOrAccountant(BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.role in [Role.MANAGER, Role.ACCOUNTANT, Role.ADMIN]
 
-
-class IsAccountantOrCashier(BasePermission):
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role in [Role.ACCOUNTANT, Role.CASHIER, Role.ADMIN]
 
 
 class IsAnyStaff(BasePermission):

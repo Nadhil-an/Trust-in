@@ -9,7 +9,7 @@ import { isValidPhone, isPositiveNumber } from '../../utils/validators'
 
 const CATEGORIES = ['MEDICAL','EDUCATION','FOOD','CHARITY','TRANSPORT','OFFICE','UTILITIES','MAINTENANCE','PURCHASE','OTHER']
 const PRIORITIES = ['LOW','NORMAL','HIGH','URGENT']
-const STATUSES = ['DRAFT','SUBMITTED','UNDER_REVIEW','ON_HOLD','APPROVED','REJECTED','CASHIER_PENDING','DISBURSED','COMPLETED','CANCELLED']
+const STATUSES = ['DRAFT','SUBMITTED','UNDER_REVIEW','ON_HOLD','APPROVED','REJECTED','PENDING_DISBURSEMENT','DISBURSED','COMPLETED','CANCELLED']
 
 function RequestForm({ onClose, onSaved, initial = null }) {
   const [form, setForm] = useState(initial || {
@@ -42,7 +42,7 @@ function RequestForm({ onClose, onSaved, initial = null }) {
       onSaved()
       onClose()
     } catch (err) {
-      console.log('Save Error:', err.response?.data);
+      console.error('Save Error:', err.response?.data);
       const data = err.response?.data;
       let msg = 'Save failed.';
       if (data) {

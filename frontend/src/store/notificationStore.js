@@ -38,7 +38,7 @@ export const useNotificationStore = create((set, get) => ({
     const wsUrl = `ws://${window.location.host}/ws/notify/`
     const socket = new WebSocket(wsUrl)
 
-    socket.onopen = () => console.log('[WS] Connected to notification channel')
+    socket.onopen = () => {}
 
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data)
@@ -59,7 +59,7 @@ export const useNotificationStore = create((set, get) => ({
     }
 
     socket.onclose = (event) => {
-      console.log('[WS] Disconnected')
+      // Disconnected
       if (event.code === 4001) {
         console.error('[WS] Unauthorized connection')
         set({ ws: null })

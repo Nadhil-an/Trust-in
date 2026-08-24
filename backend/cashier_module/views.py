@@ -6,7 +6,7 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.utils import timezone
 from django.db.models import Sum
 
-from core.permissions import IsCashier, IsAccountantOrCashier, IsAnyStaff
+from core.permissions import IsAccountant, IsAnyStaff
 from core.models import AuditLog
 from notify.service import push_to_role, push_request_update, push_dashboard_refresh
 from cashier_module.models import Disbursement, CashClosing, CashHandover
@@ -34,6 +34,7 @@ class DisbursementSerializer(serializers.ModelSerializer):
 
 class CashClosingSerializer(serializers.ModelSerializer):
     difference = serializers.SerializerMethodField()
+    bank_difference = serializers.SerializerMethodField()
 
     class Meta:
         model = CashClosing
@@ -42,6 +43,9 @@ class CashClosingSerializer(serializers.ModelSerializer):
 
     def get_difference(self, obj):
         return float(obj.system_balance - obj.physical_cash)
+        
+    def get_bank_difference(self, obj):
+        return float(obj.system_bank_balance - obj.physical_bank)
 
 
 class CashHandoverSerializer(serializers.ModelSerializer):
@@ -63,7 +67,7 @@ class CashHandoverSerializer(serializers.ModelSerializer):
 # ── Views ─────────────────────────────────────────────────────────
 
 class CashierDashboardView(APIView):
-    permission_classes = [IsCashier]
+    permission_classes = [IsAccountant]
 
     def get(self, request):
         today = timezone.now().date()
@@ -89,26 +93,26 @@ class CashierDashboardView(APIView):
 
 class PendingDisbursementsView(APIView):
     """Returns all Accountant-approved requests waiting for cashier."""
-    permission_classes = [IsCashier]
+    permission_classes = [IsAccountant]
 
     def get(self, request):
         from manager_module.serializers import AssessmentRequestSerializer
         pending = AssessmentRequest.objects.filter(
-            status=RequestStatus.CASHIER_PENDING
+            status__in=[RequestStatus.CASHIER_PENDING, RequestStatus.APPROVED]
         ).select_related('requested_by', 'reviewed_by').order_by('-approved_at')
         return Response(AssessmentRequestSerializer(pending, many=True).data)
 
 
 class DisburseMoneyView(APIView):
     """Cashier disburses approved request — creates disbursement record + updates all linked tables."""
-    permission_classes = [IsCashier]
+    permission_classes = [IsAccountant]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def post(self, request, pk):
         try:
-            req = AssessmentRequest.objects.get(pk=pk, status=RequestStatus.CASHIER_PENDING)
+            req = AssessmentRequest.objects.get(pk=pk, status__in=[RequestStatus.CASHIER_PENDING, RequestStatus.APPROVED])
         except AssessmentRequest.DoesNotExist:
-            return Response({'error': 'Request not found or not in Cashier Pending status.'}, status=404)
+            return Response({'error': 'Request not found or not in an approved status ready for disbursement.'}, status=404)
 
         amount = request.data.get('amount_disbursed', req.amount_approved or req.amount_requested)
         amount = float(amount)
@@ -223,7 +227,7 @@ class DisburseMoneyView(APIView):
 
 
 class DisbursementListView(generics.ListAPIView):
-    permission_classes = [IsAccountantOrCashier]
+    permission_classes = [IsAccountant]
     serializer_class = DisbursementSerializer
     queryset = Disbursement.objects.select_related('request', 'disbursed_by').all()
     filterset_fields = ['payment_method', 'date']
@@ -232,24 +236,33 @@ class DisbursementListView(generics.ListAPIView):
 
 
 class CashClosingListCreateView(generics.ListCreateAPIView):
-    permission_classes = [IsCashier]
+    permission_classes = [IsAccountant]
     serializer_class = CashClosingSerializer
     queryset = CashClosing.objects.select_related('closed_by').all()
     ordering_fields = ['date']
 
     def perform_create(self, serializer):
+        from accounts_module.models import BankAccount
         system_bal = sum(a.current_balance for a in CashAccount.objects.filter(is_active=True))
+        system_bank_bal = sum(a.current_balance for a in BankAccount.objects.filter(is_active=True))
+        
         physical = serializer.validated_data['physical_cash']
+        physical_bank = serializer.validated_data.get('physical_bank', 0)
+        
         diff = float(system_bal) - float(physical)
+        bank_diff = float(system_bank_bal) - float(physical_bank)
+        
         serializer.save(
             closed_by=self.request.user,
             system_balance=system_bal,
             difference=diff,
+            system_bank_balance=system_bank_bal,
+            bank_difference=bank_diff
         )
 
 
 class CashHandoverListCreateView(generics.ListCreateAPIView):
-    permission_classes = [IsCashier]
+    permission_classes = [IsAccountant]
     serializer_class = CashHandoverSerializer
     queryset = CashHandover.objects.select_related('from_cashier', 'to_person').all()
 

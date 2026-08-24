@@ -65,12 +65,15 @@ class ManagerDashboardView(APIView):
 
         # Today's donations
         from accounts_module.models import Income
-        todays_donations = Income.objects.filter(source='DONATION', date=today).aggregate(total=Sum('amount'))['total'] or 0
+        todays_donations_qs = Income.objects.filter(source='DONATION', date=today)
+        todays_donations = todays_donations_qs.aggregate(total=Sum('amount'))['total'] or 0
+        todays_donations_cash = todays_donations_qs.filter(account_type='CASH').aggregate(total=Sum('amount'))['total'] or 0
+        todays_donations_bank = todays_donations_qs.filter(account_type='BANK').aggregate(total=Sum('amount'))['total'] or 0
 
         # Total approved amount
         total_approved_amount = float(
             reqs.filter(status__in=[
-                RequestStatus.APPROVED, RequestStatus.CASHIER_PENDING, RequestStatus.COMPLETED
+                RequestStatus.APPROVED, RequestStatus.PENDING_DISBURSEMENT, RequestStatus.COMPLETED
             ]).aggregate(total=Sum('amount_requested'))['total'] or 0
         )
 
@@ -84,7 +87,7 @@ class ManagerDashboardView(APIView):
                 'approved': reqs.filter(status=RequestStatus.APPROVED).count(),
                 'rejected': reqs.filter(status=RequestStatus.REJECTED).count(),
                 'on_hold': reqs.filter(status=RequestStatus.ON_HOLD).count(),
-                'cashier_pending': reqs.filter(status=RequestStatus.CASHIER_PENDING).count(),
+                'cashier_pending': reqs.filter(status=RequestStatus.PENDING_DISBURSEMENT).count(),
                 'completed': reqs.filter(status=RequestStatus.COMPLETED).count(),
                 'total': reqs.count(),
                 'total_approved_amount': total_approved_amount,
@@ -94,6 +97,8 @@ class ManagerDashboardView(APIView):
                 'bank_balance': float(bank_bal),
                 'total_balance': float(cash_bal + bank_bal),
                 'todays_donations': float(todays_donations),
+                'todays_donations_cash': float(todays_donations_cash),
+                'todays_donations_bank': float(todays_donations_bank),
             },
             'hr': {
                 'members': Member.objects.filter(status='ACTIVE').count(),
@@ -198,9 +203,19 @@ class AssessmentRequestListCreateView(generics.ListCreateAPIView):
         user = self.request.user
         role = getattr(user, 'role', None)
         if role == Role.FIELD_ASSESSMENT_OFFICER:
-            qs = qs.filter(status=RequestStatus.WITH_FAO)
+            fao_tab = self.request.query_params.get('fao_tab')
+            if fao_tab == 'completed':
+                qs = qs.filter(fao_report__isnull=False, fao_report__eligibility='ELIGIBLE').exclude(status=RequestStatus.WITH_FAO)
+            elif fao_tab == 'rejected':
+                qs = qs.filter(fao_report__isnull=False, fao_report__eligibility='NOT_ELIGIBLE')
+            else:
+                qs = qs.filter(status=RequestStatus.WITH_FAO)
         elif role == Role.ASSESSMENT_CALCULATION_OFFICER:
-            qs = qs.filter(status=RequestStatus.WITH_ACO)
+            aco_tab = self.request.query_params.get('aco_tab')
+            if aco_tab == 'completed':
+                qs = qs.filter(aco_calculation__isnull=False).exclude(status=RequestStatus.WITH_ACO)
+            else:
+                qs = qs.filter(status=RequestStatus.WITH_ACO)
         elif role == Role.GENERAL_ENQUIRY_OFFICER:
             qs = qs.filter(status=RequestStatus.WITH_GEO)
         elif role in [Role.STAFF, Role.MEMBER]:
@@ -350,11 +365,26 @@ class RequestActionView(APIView):
             'to': RequestStatus.WITH_GEO,
             'roles': [Role.GENERAL_ENQUIRY_OFFICER, Role.MANAGER, Role.ADMIN],
         },
-        # Cashier
-        'disburse': {
-            'from': [RequestStatus.APPROVED, RequestStatus.CASHIER_PENDING],
+        # Accountant
+        'mark_disbursed': {
+            'from': [RequestStatus.APPROVED, RequestStatus.PENDING_DISBURSEMENT],
             'to': RequestStatus.DISBURSED,
-            'roles': [Role.CASHIER, Role.ADMIN],
+            'roles': [Role.ACCOUNTANT, Role.ADMIN],
+        },
+        'mark_completed': {
+            'from': [RequestStatus.APPROVED, RequestStatus.PENDING_DISBURSEMENT],
+            'to': RequestStatus.COMPLETED,
+            'roles': [Role.ACCOUNTANT, Role.ADMIN],
+        },
+        'schedule_payout': {
+            'from': [RequestStatus.APPROVED, RequestStatus.PENDING_DISBURSEMENT],
+            'to': None,
+            'roles': [Role.ACCOUNTANT, Role.ADMIN],
+        },
+        'accountant_reject': {
+            'from': [RequestStatus.APPROVED, RequestStatus.PENDING_DISBURSEMENT],
+            'to': RequestStatus.REJECTED,
+            'roles': [Role.ACCOUNTANT, Role.ADMIN],
         },
     }
 
@@ -402,8 +432,25 @@ class RequestActionView(APIView):
             req.status = RequestStatus.APPROVED
         elif action == 'hold':
             req.hold_reason = request.data.get('hold_reason', remarks)
-        elif action in ['reject', 'fao_reject', 'geo_reject']:
+        elif action in ['reject', 'fao_reject', 'geo_reject', 'accountant_reject']:
             req.rejection_reason = request.data.get('rejection_reason', remarks)
+            if action == 'accountant_reject':
+                req.cashier_remarks = remarks
+        elif action == 'schedule_payout':
+            scheduled_date = request.data.get('scheduled_payout_date')
+            if scheduled_date:
+                req.scheduled_payout_date = scheduled_date
+                from manager_module.models import ScheduledPayout
+                ScheduledPayout.objects.create(
+                    name=f"Request {req.request_number} - {req.beneficiary_name}",
+                    description=req.purpose,
+                    allocated_amount=req.amount_approved or req.amount_requested,
+                    issue_date=timezone.now().date(),
+                    payment_date=scheduled_date,
+                    status='PLANNED',
+                    created_by=request.user
+                )
+            req.cashier_remarks = remarks
         elif action == 'cancel':
             req.manager_remarks = remarks
         elif action == 'forward_to_manager':
@@ -483,7 +530,7 @@ class RequestActionView(APIView):
                          f'GEO Verification Done: {num}',
                          f'GEO recommends approval for {name}', 'GEO_APPROVED', num)
         elif action == 'approve':
-            push_to_role(Role.CASHIER,
+            push_to_role(Role.ACCOUNTANT,
                          f'Ready for Disbursement: {num}',
                          f'₹{req.amount_approved or req.amount_requested} for {name}',
                          'ASSESSMENT_APPROVED', num)

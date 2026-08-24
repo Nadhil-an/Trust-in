@@ -29,8 +29,7 @@ export default function ScheduledPayouts() {
   const [markConfirmItem, setMarkConfirmItem] = useState(null)
   
   const [statusFilter, setStatusFilter] = useState('')
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
+  const [dateFilter, setDateFilter] = useState('WEEK')
   
   const [form, setForm] = useState(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
@@ -40,8 +39,6 @@ export default function ScheduledPayouts() {
     try {
       const params = { search }
       if (statusFilter) params.status = statusFilter
-      if (startDate) params.start_date = startDate
-      if (endDate) params.end_date = endDate
 
       const [res, fundsRes] = await Promise.all([
         managerApi.scheduledPayouts.list(params),
@@ -54,7 +51,7 @@ export default function ScheduledPayouts() {
     } finally {
       setLoading(false)
     }
-  }, [search, statusFilter, startDate, endDate])
+  }, [search, statusFilter])
 
   useEffect(() => { loadData() }, [loadData])
 
@@ -157,24 +154,13 @@ export default function ScheduledPayouts() {
             <option value="CANCELLED">Cancelled</option>
           </select>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '12px', color: 'var(--gray-500)', fontWeight: 600 }}>FROM</span>
-            <input 
-              type="date" 
-              className="form-control" 
-              style={{ width: 'auto' }} 
-              value={startDate}
-              onChange={e => setStartDate(e.target.value)}
-            />
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '12px', color: 'var(--gray-500)', fontWeight: 600 }}>TO</span>
-            <input 
-              type="date" 
-              className="form-control" 
-              style={{ width: 'auto' }} 
-              value={endDate}
-              onChange={e => setEndDate(e.target.value)}
-            />
+            <span style={{ fontSize: '13px', color: 'var(--gray-600)', fontWeight: 600 }}>Date:</span>
+            <select className="form-control" style={{ width: 'auto' }} value={dateFilter} onChange={e=>setDateFilter(e.target.value)}>
+              <option value="DAY">Today</option>
+              <option value="WEEK">One Week</option>
+              <option value="MONTH">This Month</option>
+              <option value="ALL">All Time</option>
+            </select>
           </div>
         </div>
         {loading ? <LoadingState /> : (
@@ -192,13 +178,35 @@ export default function ScheduledPayouts() {
                 </tr>
               </thead>
               <tbody>
-                {payouts.length === 0 ? (
+                {payouts.filter(item => {
+                  if (dateFilter === "ALL") return true;
+                  const targetDate = new Date(item.payment_date);
+                  const now = new Date();
+                  if (dateFilter === "DAY") return targetDate.toDateString() === now.toDateString();
+                  if (dateFilter === "WEEK") {
+                    const diffDays = (targetDate - now) / (1000 * 60 * 60 * 24);
+                    return diffDays >= -30 && diffDays <= 7;
+                  }
+                  if (dateFilter === "MONTH") return targetDate.getMonth() === now.getMonth() && targetDate.getFullYear() === now.getFullYear();
+                  return true;
+                }).length === 0 ? (
                   <tr>
                     <td colSpan={(isDataEntry || isAccountant) ? 7 : 6}>
                       <EmptyState title="No scheduled payouts found" />
                     </td>
                   </tr>
-                ) : payouts.map(item => {
+                ) : payouts.filter(item => {
+                  if (dateFilter === "ALL") return true;
+                  const targetDate = new Date(item.payment_date);
+                  const now = new Date();
+                  if (dateFilter === "DAY") return targetDate.toDateString() === now.toDateString();
+                  if (dateFilter === "WEEK") {
+                    const diffDays = (targetDate - now) / (1000 * 60 * 60 * 24);
+                    return diffDays >= -30 && diffDays <= 7;
+                  }
+                  if (dateFilter === "MONTH") return targetDate.getMonth() === now.getMonth() && targetDate.getFullYear() === now.getFullYear();
+                  return true;
+                }).map(item => {
                   const fundCheck = checkFundWarning(item)
                   return (
                     <React.Fragment key={item.id}>

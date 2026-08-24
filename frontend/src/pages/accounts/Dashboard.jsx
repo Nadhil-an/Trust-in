@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { accountsApi } from '../../api'
+import { accountsApi, coreApi } from '../../api'
 import { LoadingState, formatINR } from '../../components/shared'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
@@ -96,7 +96,8 @@ function NetBadge({ value }) {
   )
 }
 
-// ──────────────────────────────────────────────────────────────────
+// ── Staff Collections Filter Table ───────────────────────────────
+
 export default function AccountsDashboard() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -149,6 +150,12 @@ export default function AccountsDashboard() {
               💰 {acc.pending_money_requests} Pending Requests
             </button>
           )}
+          {(acc.cashier_pending || 0) > 0 && (
+            <button onClick={() => navigate('/cashier/pending')}
+              style={{ background: '#ECFDF5', color: '#059669', border: '1px solid #A7F3D0', borderRadius: 10, padding: '8px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+              💸 {acc.cashier_pending} Pending Payouts
+            </button>
+          )}
           {(acc.pending_salaries || 0) > 0 && (
             <button onClick={() => navigate('/accounts/pending-salaries')}
               style={{ background: '#FEF9C3', color: '#CA8A04', border: '1px solid #FDE047', borderRadius: 10, padding: '8px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
@@ -158,13 +165,19 @@ export default function AccountsDashboard() {
         </div>
       </div>
 
-      {/* ── 3 SUMMARY CARDS ──────────────────────────────────── */}
-      <div style={{ display: 'flex', gap: 14, marginBottom: 18, flexWrap: 'wrap' }}>
+      {/* ── 4 SUMMARY CARDS ──────────────────────────────────── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 18 }}>
         <SummaryCard
           icon="💰" label="Total Funds" color={C.indigo} active={active === 'balance'}
           value={formatINR(acc.total_balance)}
           sub={`Cash ${formatINR(acc.cash_balance)} · Bank ${formatINR(acc.bank_balance)}`}
           onClick={() => toggle('balance')}
+        />
+        <SummaryCard
+          icon="💝" label="Today's Donations" color={C.yellow} active={false}
+          value={formatINR(acc.today_donations_total)}
+          sub={`Cash ${formatINR(acc.today_donations_cash)} · Bank ${formatINR(acc.today_donations_bank)}`}
+          onClick={() => navigate('/accounts/donations')}
         />
         <SummaryCard
           icon="📥" label="This Month — Income" color={C.green} active={active === 'income'}
@@ -188,6 +201,7 @@ export default function AccountsDashboard() {
           Income {formatINR(acc.income_this_month)} − Expenses {formatINR(acc.expenses_this_month)}
         </span>
       </div>
+
 
       {/* ── EXPANDED: BALANCE ─────────────────────────────────── */}
       {active === 'balance' && (
@@ -248,19 +262,36 @@ export default function AccountsDashboard() {
             <MiniTile icon="📅" label="This Month"   value={formatINR(acc.income_this_month)} color={C.green} />
             <MiniTile icon="📆" label="Today"        value={formatINR(acc.today_income)}       color={C.blue}  />
           </div>
-          <div style={{ background: 'white', borderRadius: 12, padding: '18px 14px', border: '1px solid #f0f0f4' }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', marginBottom: 10 }}>INCOME — LAST 6 MONTHS</div>
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={trend} barSize={30}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} />
-                <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 10 }} tickFormatter={v => v >= 1000 ? `₹${(v/1000).toFixed(0)}k` : `₹${v}`} />
-                <Tooltip content={<ChartTip money />} />
-                <Bar dataKey="income" name="Income" fill={C.green} radius={[5, 5, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <div style={{ background: 'white', borderRadius: 12, padding: '18px 14px', border: '1px solid #f0f0f4' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', marginBottom: 10 }}>INCOME — LAST 6 MONTHS</div>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={trend} barSize={30}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} />
+                  <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+                  <YAxis tick={{ fontSize: 10 }} tickFormatter={v => v >= 1000 ? `₹${(v/1000).toFixed(0)}k` : `₹${v}`} />
+                  <Tooltip content={<ChartTip money />} />
+                  <Bar dataKey="income" name="Income" fill={C.green} radius={[5, 5, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            
+            <div style={{ background: 'white', borderRadius: 12, padding: '18px 16px', border: '1px solid #f0f0f4', maxHeight: 260, overflowY: 'auto' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>DONATION COLLECTIONS</span>
+                <span style={{ fontSize: 10, background: '#f3f4f6', padding: '2px 6px', borderRadius: 4 }}>THIS MONTH</span>
+              </div>
+              {(acc.staff_collections || []).length === 0 ? (
+                <div style={{ color: '#9ca3af', fontSize: 13, textAlign: 'center', marginTop: 40 }}>No collections recorded</div>
+              ) : (acc.staff_collections || []).map((s, idx) => (
+                <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #f3f4f6' }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#111' }}>{s.staff_name}</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: C.green }}>{formatINR(s.amount)}</div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div style={{ marginTop: 12 }}>
+          <div style={{ marginTop: 16 }}>
             <button className="btn btn-sm btn-primary" onClick={() => navigate('/accounts/income')}>View All Income →</button>
           </div>
         </Panel>

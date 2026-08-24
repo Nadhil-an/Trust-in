@@ -3,6 +3,8 @@ import uuid
 from django.db import models
 from django.utils import timezone
 from core.models import User
+from hr_module.models import Member
+from core.validators import validate_image_file, validate_document_file
 
 
 class RequestStatus(models.TextChoices):
@@ -16,7 +18,7 @@ class RequestStatus(models.TextChoices):
     ON_HOLD = 'ON_HOLD', 'On Hold'
     APPROVED = 'APPROVED', 'Approved'
     REJECTED = 'REJECTED', 'Rejected'
-    CASHIER_PENDING = 'CASHIER_PENDING', 'Cashier Pending'
+    PENDING_DISBURSEMENT = 'PENDING_DISBURSEMENT', 'Pending Disbursement'
     DISBURSED = 'DISBURSED', 'Disbursed'
     COMPLETED = 'COMPLETED', 'Completed'
     CANCELLED = 'CANCELLED', 'Cancelled'
@@ -100,6 +102,7 @@ class AssessmentRequest(models.Model):
     amount_approved = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     amount_disbursed = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     required_date = models.DateField(null=True, blank=True)
+    scheduled_payout_date = models.DateField(null=True, blank=True)
 
     # Beneficiary (filled by STAFF/MEMBER initially)
     beneficiary_name = models.CharField(max_length=255, blank=True)
@@ -132,7 +135,7 @@ class AssessmentRequest(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     # Supporting document
-    document = models.FileField(upload_to=request_doc_path, null=True, blank=True)
+    document = models.FileField(upload_to=request_doc_path, null=True, blank=True, validators=[validate_document_file])
 
     class Meta:
         db_table = 'manager_requests'
@@ -170,7 +173,7 @@ class RequestStatusHistory(models.Model):
 class FAOPhoto(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     report = models.ForeignKey('FAOReport', on_delete=models.CASCADE, related_name='photos')
-    image = models.ImageField(upload_to=fao_photo_path)
+    image = models.ImageField(upload_to=fao_photo_path, validators=[validate_image_file])
     caption = models.CharField(max_length=255, blank=True)
     uploaded_at = models.DateTimeField(default=timezone.now)
 
@@ -193,13 +196,13 @@ class FAOReport(models.Model):
     ex_ward_member_name = models.CharField(max_length=255, blank=True)
     ex_ward_member_position = models.CharField(max_length=255, blank=True)
     ex_ward_member_report = models.TextField(blank=True)
-    ex_ward_member_signature_photo = models.ImageField(upload_to='fao_signatures/', null=True, blank=True)
+    ex_ward_member_signature_photo = models.ImageField(upload_to='fao_signatures/', null=True, blank=True, validators=[validate_image_file])
 
     # ── Current Ward Member Report ────────────────────────
     current_ward_member_name = models.CharField(max_length=255, blank=True)
     current_ward_member_position = models.CharField(max_length=255, blank=True)
     current_ward_member_report = models.TextField(blank=True)
-    current_ward_member_signature_photo = models.ImageField(upload_to='fao_signatures/', null=True, blank=True)
+    current_ward_member_signature_photo = models.ImageField(upload_to='fao_signatures/', null=True, blank=True, validators=[validate_image_file])
 
     # ── Neighbour Statements ──────────────────────────────
     neighbour_1_name = models.CharField(max_length=255, blank=True)
@@ -285,7 +288,7 @@ class GEORecommendation(models.TextChoices):
 class GEOPhoto(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     report = models.ForeignKey('GEOReport', on_delete=models.CASCADE, related_name='photos')
-    image = models.ImageField(upload_to=geo_photo_path)
+    image = models.ImageField(upload_to=geo_photo_path, validators=[validate_image_file])
     caption = models.CharField(max_length=255, blank=True)
     uploaded_at = models.DateTimeField(default=timezone.now)
 
@@ -436,7 +439,7 @@ class MinutesRegistry(models.Model):
     status = models.CharField(max_length=20, choices=MinutesStatus.choices, default=MinutesStatus.DRAFT)
     created_by = models.ForeignKey(User, on_delete=models.PROTECT, related_name='created_minutes')
     approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_minutes')
-    attachment = models.FileField(upload_to='minutes/', null=True, blank=True)
+    attachment = models.FileField(upload_to='minutes/', null=True, blank=True, validators=[validate_document_file])
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -479,7 +482,7 @@ class Partner(models.Model):
         ('ACTIVE', 'Active'), ('INACTIVE', 'Inactive'), ('SUSPENDED', 'Suspended')
     ])
     notes = models.TextField(blank=True)
-    document = models.FileField(upload_to='partners/', null=True, blank=True)
+    document = models.FileField(upload_to='partners/', null=True, blank=True, validators=[validate_document_file])
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)

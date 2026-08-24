@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { accountsApi } from '../../api'
-import { PageHeader, LoadingState, EmptyState, Modal, formatINR } from '../../components/shared'
+import { PageHeader, LoadingState, EmptyState, Modal, formatINR, FilterBar } from '../../components/shared'
 import { toast } from 'react-hot-toast'
 import { format } from 'date-fns'
 

@@ -14,7 +14,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'sree-lakshmi-insecure-dev-key')
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 # Allow all hosts in development — includes LAN IP for mobile app access
 _allowed = os.getenv('ALLOWED_HOSTS', '')
-ALLOWED_HOSTS = _allowed.split(',') if _allowed else ['*', 'localhost', '127.0.0.1', '10.252.22.21', '10.252.22.21:8000']
+ALLOWED_HOSTS = _allowed.split(',') if _allowed else ['*', 'localhost', '127.0.0.1', '10.108.62.21', '10.108.62.21:8000']
 
 # ── Apps ──────────────────────────────────────────────────────────
 INSTALLED_APPS = [
@@ -161,9 +161,9 @@ REST_FRAMEWORK = {
 # ── CORS ──────────────────────────────────────────────────────────
 CORS_ALLOWED_ORIGINS = os.getenv(
     'CORS_ALLOWED_ORIGINS',
-    'http://localhost:5173,http://127.0.0.1:5173,http://localhost:8081,http://10.252.22.21:8081'
+    'http://localhost:5173,http://127.0.0.1:5173,http://localhost:8081,http://10.108.62.21:8081,http://10.108.62.21:19000,http://10.108.62.21:19006'
 ).split(',')
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 
 # ── Static & Media ────────────────────────────────────────────────
@@ -185,6 +185,12 @@ SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
 SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+
+if not DEBUG:
+    SECURE_HSTS_SECONDS = 31536000        # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_SSL_REDIRECT = True
 
 # ── Internationalisation ──────────────────────────────────────────
 LANGUAGE_CODE = 'en-us'

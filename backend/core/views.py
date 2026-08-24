@@ -32,39 +32,43 @@ def set_auth_cookies(response, access_token, refresh_token):
     return response
 
 
+class LoginThrottle(AnonRateThrottle):
+    rate = '5/minute'
+
 class LoginView(APIView):
     permission_classes = [AllowAny]
-    throttle_classes = [AnonRateThrottle]
+    throttle_classes = [LoginThrottle]
 
     def post(self, request):
+        import time, random
+        time.sleep(random.uniform(0.05, 0.15))
+
         username = request.data.get('username', '').strip()
         password = request.data.get('password', '')
 
         if not username or not password:
             return Response({'error': 'Username and password are required.'}, status=400)
 
-        try:
-            user_obj = User.objects.get(username=username)
-        except User.DoesNotExist:
-            return Response({'error': 'Invalid credentials.'}, status=401)
+        # First check if user exists to handle lockout safely without leaking existence
+        user_obj = User.objects.filter(username=username).first()
 
-        # Account lockout check
-        if user_obj.is_account_locked():
+        if user_obj and user_obj.is_account_locked():
             return Response({'error': 'Account is temporarily locked. Try again later.'}, status=403)
 
         user = authenticate(request, username=username, password=password)
         if not user:
-            user_obj.failed_login_attempts += 1
-            if user_obj.failed_login_attempts >= 5:
-                user_obj.locked_until = timezone.now() + timedelta(minutes=15)
-            user_obj.save(update_fields=['failed_login_attempts', 'locked_until'])
-            # Log failed attempt
-            AuditLog.objects.create(
-                user=None, action='LOGIN_FAILED', module='AUTH',
-                record_type='User', record_id=str(user_obj.id),
-                description=f"Failed login for {username}",
-                ip_address=getattr(request, 'audit_ip', None)
-            )
+            if user_obj:
+                user_obj.failed_login_attempts += 1
+                if user_obj.failed_login_attempts >= 5:
+                    user_obj.locked_until = timezone.now() + timedelta(minutes=15)
+                user_obj.save(update_fields=['failed_login_attempts', 'locked_until'])
+                # Log failed attempt
+                AuditLog.objects.create(
+                    user=None, action='LOGIN_FAILED', module='AUTH',
+                    record_type='User', record_id=str(user_obj.id),
+                    description=f"Failed login for {username}",
+                    ip_address=getattr(request, 'audit_ip', None)
+                )
             return Response({'error': 'Invalid credentials.'}, status=401)
 
         if not user.is_active:
@@ -181,8 +185,13 @@ class ChangePasswordView(APIView):
 # ── Admin: User Management ─────────────────────────────────────────
 
 class UserListCreateView(generics.ListCreateAPIView):
-    permission_classes = [IsAdmin]
     queryset = User.objects.all().order_by('full_name')
+    filterset_fields = ['role', 'is_active']
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [IsAnyStaff()]
+        return [IsAdmin()]
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -275,20 +284,20 @@ class GlobalSearchView(APIView):
         for r in AssessmentRequest.objects.filter(request_number__icontains=q)[:5]:
             results.append({'type': 'Money Request', 'id': str(r.id),
                             'ref': r.request_number, 'label': r.purpose,
-                            'status': r.status, 'url': f'/manager/requests/{r.id}'})
+                            'status': r.status, 'url': f'/slt/mgr/requests/{r.id}'})
 
         # Search Members
         from hr_module.models import Member
         for m in Member.objects.filter(member_id__icontains=q)[:5]:
             results.append({'type': 'Member', 'id': str(m.id),
                             'ref': m.member_id, 'label': m.full_name,
-                            'status': m.status, 'url': f'/hr/members/{m.id}'})
+                            'status': m.status, 'url': f'/slt/hr/members/{m.id}'})
 
         # Search Transactions
         from accounts_module.models import Transaction
         for t in Transaction.objects.filter(transaction_id__icontains=q)[:5]:
             results.append({'type': 'Transaction', 'id': str(t.id),
                             'ref': t.transaction_id, 'label': t.description,
-                            'status': t.status, 'url': f'/accounts/transactions/{t.id}'})
+                            'status': t.status, 'url': f'/slt/finance/transactions/{t.id}'})
 
         return Response({'results': results, 'query': q})

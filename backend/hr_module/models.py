@@ -4,7 +4,7 @@ from datetime import date
 from django.db import models
 from django.utils import timezone
 from core.models import User
-
+from core.validators import validate_image_file, validate_document_file
 
 
 def hr_doc_path(instance, filename):
@@ -38,7 +38,7 @@ class Member(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     member_id = models.CharField(max_length=20, unique=True, db_index=True)
     full_name = models.CharField(max_length=255)
-    photo = models.ImageField(upload_to='hr/members/', null=True, blank=True)
+    photo = models.ImageField(upload_to='hr/members/', null=True, blank=True, validators=[validate_image_file])
     date_of_birth = models.DateField(null=True, blank=True)
     gender = models.CharField(max_length=10, choices=Gender.choices, blank=True)
     phone = models.CharField(max_length=20, blank=True)
@@ -72,7 +72,7 @@ class MemberDocument(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='documents')
     doc_type = models.CharField(max_length=50)
-    file = models.FileField(upload_to='hr/member_docs/')
+    file = models.FileField(upload_to='hr/member_docs/', validators=[validate_document_file])
     expiry_date = models.DateField(null=True, blank=True)
     uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     uploaded_at = models.DateTimeField(default=timezone.now)
@@ -86,7 +86,7 @@ class MembershipReceipt(models.Model):
     receipt_number = models.CharField(max_length=50, unique=True, db_index=True)
     member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='receipts')
     amount = models.DecimalField(max_digits=10, decimal_places=2, default=100.00)
-    pdf_file = models.FileField(upload_to='membership_receipts/')
+    pdf_file = models.FileField(upload_to='membership_receipts/', validators=[validate_document_file])
     whatsapp_status = models.CharField(max_length=20, default='PENDING', choices=[
         ('PENDING', 'Pending'), ('SENT', 'Sent'), ('FAILED', 'Failed')
     ])
@@ -115,7 +115,7 @@ class Volunteer(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     volunteer_id = models.CharField(max_length=20, unique=True, db_index=True)
     full_name = models.CharField(max_length=255)
-    photo = models.ImageField(upload_to='hr/volunteers/', null=True, blank=True)
+    photo = models.ImageField(upload_to='hr/volunteers/', null=True, blank=True, validators=[validate_image_file])
     phone = models.CharField(max_length=20, blank=True)
     email = models.EmailField(blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
@@ -157,7 +157,7 @@ class ExecutiveMember(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     exec_id = models.CharField(max_length=20, unique=True, db_index=True)
     full_name = models.CharField(max_length=255)
-    photo = models.ImageField(upload_to='hr/exec_members/', null=True, blank=True)
+    photo = models.ImageField(upload_to='hr/exec_members/', null=True, blank=True, validators=[validate_image_file])
     designation = models.CharField(max_length=30, choices=Position.choices)
     phone = models.CharField(max_length=20, blank=True)
     email = models.EmailField(blank=True)
@@ -206,7 +206,7 @@ class ExecutiveOfficer(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     employee_id = models.CharField(max_length=20, unique=True, db_index=True)
     full_name = models.CharField(max_length=255)
-    photo = models.ImageField(upload_to='hr/officers/', null=True, blank=True)
+    photo = models.ImageField(upload_to='hr/officers/', null=True, blank=True, validators=[validate_image_file])
     designation = models.CharField(max_length=255)
     department = models.CharField(max_length=100, blank=True)
     phone = models.CharField(max_length=20, blank=True)
@@ -314,7 +314,7 @@ class LeaveRequest(models.Model):
     to_date = models.DateField()
     number_of_days = models.PositiveSmallIntegerField()
     reason = models.TextField()
-    attachment = models.FileField(upload_to='hr/leaves/', null=True, blank=True)
+    attachment = models.FileField(upload_to='hr/leaves/', null=True, blank=True, validators=[validate_document_file])
     status = models.CharField(max_length=20, default='PENDING', choices=[
         ('PENDING', 'Pending'), ('APPROVED', 'Approved'), ('REJECTED', 'Rejected'), ('CANCELLED', 'Cancelled')
     ])
@@ -385,7 +385,7 @@ class EmployeeDocument(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     employee = models.ForeignKey(ExecutiveOfficer, on_delete=models.CASCADE, related_name='documents')
     doc_type = models.CharField(max_length=100)
-    file = models.FileField(upload_to='hr/employee_docs/')
+    file = models.FileField(upload_to='hr/employee_docs/', validators=[validate_document_file])
     expiry_date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=20, default='VALID', choices=[
         ('VALID', 'Valid'), ('EXPIRED', 'Expired'), ('REPLACED', 'Replaced')
@@ -449,7 +449,7 @@ class StaffReport(models.Model):
     submitted_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='submitted_reports')
     title = models.CharField(max_length=255)
     description = models.TextField()
-    file = models.FileField(upload_to='hr/reports/', null=True, blank=True)
+    file = models.FileField(upload_to='hr/reports/', null=True, blank=True, validators=[validate_document_file])
     report_date = models.DateField(default=date.today)
     status = models.CharField(max_length=20, choices=StaffReportStatus.choices, default=StaffReportStatus.PENDING)
     admin_notes = models.TextField(blank=True)

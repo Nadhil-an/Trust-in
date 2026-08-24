@@ -8,88 +8,82 @@ import { format } from 'date-fns'
 
 const NAV_CONFIG = {
   MANAGER: [
-    { label: 'Dashboard', icon: '📊', path: '/manager/dashboard' },
-    { label: 'Assessment Requests', icon: '📋', path: '/manager/requests', badge: 'requests' },
-    { label: 'Scheduled Payouts', icon: '🎯', path: '/payouts' },
-    { label: 'Charity Inventory', icon: '📦', path: '/manager/inventory' },
-    { label: 'Minutes Registry', icon: '📝', path: '/manager/minutes' },
-    { label: 'Partners', icon: '🤝', path: '/manager/partners' },
-    { label: 'Reports', icon: '📈', path: '/reports' },
+    { label: 'Dashboard', icon: '📊', path: '/slt/mgr/overview' },
+    { label: 'Assessment Requests', icon: '📋', path: '/slt/mgr/requests', badge: 'requests' },
+    { label: 'Scheduled Payouts', icon: '🎯', path: '/slt/shared/scheduled-payouts' },
+    { label: 'Charity Inventory', icon: '📦', path: '/slt/mgr/inventory' },
+    { label: 'Minutes Registry', icon: '📝', path: '/slt/mgr/minutes' },
+    { label: 'Partners', icon: '🤝', path: '/slt/mgr/partners' },
+    { label: 'Reports', icon: '📈', path: '/slt/shared/analytics' },
   ],
   ACCOUNTANT: [
     { type: 'header', label: 'OVERVIEW' },
-    { label: 'Dashboard', icon: '📊', path: '/accounts/dashboard' },
-    { label: 'Scheduled Payouts', icon: '🎯', path: '/payouts' },
-    { label: 'Money Requests', icon: '💰', path: '/accounts/money-requests', badge: 'pending' },
+    { label: 'Dashboard', icon: '📊', path: '/slt/finance/overview' },
+    { label: 'Pending Payouts', icon: '⏳', path: '/slt/disburse/pending', badge: 'pending' },
+    { label: 'Scheduled Payouts', icon: '🎯', path: '/slt/shared/scheduled-payouts' },
+    { label: 'Money Requests', icon: '💰', path: '/slt/finance/fund-requests', badge: 'pending' },
     { type: 'header', label: 'LEDGERS' },
-    { label: 'Cash Book', icon: '💵', path: '/accounts/cash' },
-    { label: 'Bank', icon: '🏦', path: '/accounts/bank' },
-    { label: 'Income', icon: '📥', path: '/accounts/income' },
-    { label: 'Expenses', icon: '📤', path: '/accounts/expenses' },
+    { label: 'Donations', icon: '💝', path: '/slt/finance/donations' },
+    { label: 'Cash Book', icon: '💵', path: '/slt/finance/cash-ledger' },
+    { label: 'Bank', icon: '🏦', path: '/slt/finance/bank-ledger' },
+    { label: 'Income', icon: '📥', path: '/slt/finance/income' },
+    { label: 'Expenses', icon: '📤', path: '/slt/finance/expenditure' },
     { type: 'header', label: 'TRANSACTIONS' },
-    { label: 'Cheques', icon: '🧾', path: '/accounts/cheques' },
-    { label: 'Transfers', icon: '🔄', path: '/accounts/transfers' },
-    { label: 'Transactions', icon: '📋', path: '/accounts/transactions' },
+    { label: 'Cheques', icon: '🧾', path: '/slt/finance/cheques' },
+    { label: 'Transfers', icon: '🔄', path: '/slt/finance/transfers' },
+    { label: 'Transactions', icon: '📋', path: '/slt/finance/transactions' },
     { type: 'header', label: 'PAYOUTS & CLOSING' },
-    { label: 'Pending Salaries', icon: '🧑‍💼', path: '/accounts/pending-salaries' },
-    { label: 'Pending Payouts', icon: '⏳', path: '/cashier/pending', badge: 'pending' },
-    { label: 'Payouts', icon: '💸', path: '/cashier/disbursements' },
-    { label: 'Cash Closing', icon: '🔒', path: '/cashier/closing' },
+    { label: 'Pending Salaries', icon: '🧑‍💼', path: '/slt/finance/salary-review' },
+    { label: 'Payouts', icon: '💸', path: '/slt/disburse/payouts' },
+    { label: 'Cash Closing', icon: '🔒', path: '/slt/disburse/daily-close' },
     { type: 'header', label: 'ANALYTICS' },
-    { label: 'Reports', icon: '📈', path: '/reports' },
-  ],
-  CASHIER: [
-    { label: 'Pending Payouts', icon: '⏳', path: '/cashier/pending', badge: 'pending' },
-    { label: 'Cash Book', icon: '💵', path: '/accounts/cash' },
-    { label: 'Payouts', icon: '💸', path: '/cashier/disbursements' },
-    { label: 'Cash Closing', icon: '🔒', path: '/cashier/closing' },
-    { label: 'Reports', icon: '📈', path: '/reports' },
+    { label: 'Reports', icon: '📈', path: '/slt/shared/analytics' },
   ],
   HR: [
     { type: 'header', label: 'OVERVIEW' },
-    { label: 'Dashboard', icon: '📊', path: '/hr/dashboard' },
+    { label: 'Dashboard', icon: '📊', path: '/slt/hr/overview' },
     { type: 'header', label: 'DIRECTORY' },
-    { label: 'Members', icon: '👥', path: '/hr/members' },
-    { label: 'Volunteers', icon: '🙋', path: '/hr/volunteers' },
-    { label: 'Executive Members', icon: '👔', path: '/hr/executive-members' },
-    { label: 'Staff Members', icon: '👨‍💼', path: '/hr/officers' },
+    { label: 'Members', icon: '👥', path: '/slt/hr/members' },
+    { label: 'Volunteers', icon: '🙋', path: '/slt/hr/volunteers' },
+    { label: 'Executive Members', icon: '👔', path: '/slt/hr/executive-members' },
+    { label: 'Staff Members', icon: '👨‍💼', path: '/slt/hr/officers' },
     { type: 'header', label: 'TIME & PAYROLL' },
-    { label: 'Attendance', icon: '✅', path: '/hr/attendance' },
-    { label: 'Leave Management', icon: '📅', path: '/hr/leave', badge: 'leave' },
-    { label: 'Salary & Payroll', icon: '💰', path: '/hr/payroll' },
-    { label: 'Payment Advances', icon: '💵', path: '/hr/payment-advances' },
+    { label: 'Attendance', icon: '✅', path: '/slt/hr/attendance' },
+    { label: 'Leave Management', icon: '📅', path: '/slt/hr/leave', badge: 'leave' },
+    { label: 'Salary & Payroll', icon: '💰', path: '/slt/hr/payroll' },
+    { label: 'Payment Advances', icon: '💵', path: '/slt/hr/payment-advances' },
     { type: 'header', label: 'SUPPORT & PERFORMANCE' },
-    { label: 'Complaints', icon: '🗣️', path: '/hr/complaints' },
-    { label: 'Staff Reports', icon: '📄', path: '/hr/staff-reports' },
-    { label: 'Achieved Points', icon: '🏆', path: '/hr/performance-points' },
-    { label: 'Analytics Reports', icon: '📈', path: '/reports' },
+    { label: 'Complaints', icon: '🗣️', path: '/slt/hr/complaints' },
+    { label: 'Staff Reports', icon: '📄', path: '/slt/hr/staff-reports' },
+    { label: 'Achieved Points', icon: '🏆', path: '/slt/hr/performance' },
+    { label: 'Analytics Reports', icon: '📈', path: '/slt/shared/analytics' },
   ],
 
   ADMIN: [
-    { label: 'User Management', icon: '👤', path: '/admin/users' },
-    { label: 'Audit Log', icon: '🔍', path: '/admin/audit-log' },
-    { label: 'Reports', icon: '📈', path: '/reports' },
+    { label: 'User Management', icon: '👤', path: '/slt/sys/user-control' },
+    { label: 'Audit Log', icon: '🔍', path: '/slt/sys/audit-trail' },
+    { label: 'Reports', icon: '📈', path: '/slt/shared/analytics' },
   ],
   DATA_ENTRY: [
     { type: 'header', label: 'MAIN' },
-    { label: 'Data Entry Hub', icon: '📝', path: '/data-entry' },
-    { label: 'Scheduled Payouts', icon: '🎯', path: '/payouts' },
+    { label: 'Data Entry Hub', icon: '📝', path: '/slt/entry/hub' },
+    { label: 'Scheduled Payouts', icon: '🎯', path: '/slt/shared/scheduled-payouts' },
 
     { type: 'header', label: 'FINANCE & DONATIONS' },
-    { label: 'Donation Entry', icon: '💝', path: '/data-entry/donation' },
-    { label: 'Purchase Entry', icon: '🛒', path: '/data-entry/purchase' },
+    { label: 'Donation Entry', icon: '💝', path: '/slt/entry/donation' },
+    { label: 'Purchase Entry', icon: '🛒', path: '/slt/entry/purchase' },
 
     { type: 'header', label: 'PEOPLE & RELATIONS' },
-    { label: 'Membership Entry', icon: '🪪', path: '/data-entry/membership' },
-    { label: 'Partners Entry', icon: '🤝', path: '/data-entry/partners' },
+    { label: 'Membership Entry', icon: '🪪', path: '/slt/entry/membership' },
+    { label: 'Partners Entry', icon: '🤝', path: '/slt/entry/partners' },
 
     { type: 'header', label: 'CHARITY ASSETS' },
-    { label: 'Inward Entry', icon: '📥', path: '/data-entry/inward' },
-    { label: 'Outward Entry', icon: '📤', path: '/data-entry/outward' },
+    { label: 'Inward Entry', icon: '📥', path: '/slt/entry/inward' },
+    { label: 'Outward Entry', icon: '📤', path: '/slt/entry/outward' },
 
     { type: 'header', label: 'MATERIAL INVENTORY' },
-    { label: 'Material Inward', icon: '📦', path: '/data-entry/material-inward' },
-    { label: 'Material Outward', icon: '📤', path: '/data-entry/material-outward' },
+    { label: 'Material Inward', icon: '📦', path: '/slt/entry/material-inward' },
+    { label: 'Material Outward', icon: '📤', path: '/slt/entry/material-outward' },
   ],
 }
 
@@ -226,7 +220,7 @@ export default function AppLayout() {
 
   const handleLogout = async () => {
     await logout()
-    navigate('/login')
+    navigate('/slt/portal/auth')
     toast.success('Logged out successfully.')
   }
 
@@ -274,7 +268,7 @@ export default function AppLayout() {
         <div style={{ position: 'relative' }}>
           {userMenuOpen && (
             <div className="sidebar-user-menu">
-              <div className="sidebar-user-menu-item" onClick={() => { navigate('/profile'); setUserMenuOpen(false); setMobileOpen(false); }}>
+              <div className="sidebar-user-menu-item" onClick={() => { navigate('/slt/account/profile'); setUserMenuOpen(false); setMobileOpen(false); }}>
                 <span className="nav-icon">👤</span> Profile
               </div>
               <div className="sidebar-user-menu-item" onClick={handleLogout}>

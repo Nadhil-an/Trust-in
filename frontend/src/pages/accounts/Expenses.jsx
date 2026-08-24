@@ -9,15 +9,25 @@ export default function ExpenseList() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
+  const [dateFilter, setDateFilter] = useState(format(new Date(), "yyyy-MM-dd"))
+  const [methodFilter, setMethodFilter] = useState("ALL")
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState({ category:"OTHER", date:format(new Date(),"yyyy-MM-dd"), amount:"", payee:"", purpose:"", payment_method:"CASH", account_type:"CASH", bill_number:"", remarks:"" })
   const [saving, setSaving] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
-    try { const res = await accountsApi.expenses.list({search}); setItems(res.data.results || res.data) }
+    try {
+      const params = {}
+      if (search) params.search = search
+      if (dateFilter) params.date = dateFilter
+      if (methodFilter !== "ALL") params.account_type = methodFilter
+
+      const res = await accountsApi.expenses.list(params)
+      setItems(res.data.results || res.data)
+    }
     catch (_) { toast.error("Load failed") } finally { setLoading(false) }
-  }, [search])
+  }, [search, dateFilter, methodFilter])
 
   useEffect(() => { load() }, [load])
 
@@ -35,11 +45,19 @@ export default function ExpenseList() {
   return (
     <div>
       <PageHeader title="Expense Records" subtitle="All expense entries">
-        <span className="badge badge-red" style={{fontSize:14,padding:"6px 14px"}}>Total: {formatINR(total)}</span>
         <button className="btn btn-primary" onClick={()=>setShowModal(true)}>+ Add Expense</button>
       </PageHeader>
-      <div className="data-card">
-        <FilterBar search={search} onSearch={setSearch} />
+      <div className="data-card" style={{ display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 150px)' }}>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--gray-200)', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: 200 }}><FilterBar search={search} onSearch={setSearch} /></div>
+          <input type="date" className="form-control" style={{ width: 'auto' }} value={dateFilter} onChange={e=>setDateFilter(e.target.value)} />
+          <button className="btn btn-secondary btn-sm" onClick={()=>setDateFilter("")}>Clear Date</button>
+          <select className="form-control" style={{ width: 'auto' }} value={methodFilter} onChange={e=>setMethodFilter(e.target.value)}>
+            <option value="ALL">All Methods</option>
+            <option value="CASH">Cash</option>
+            <option value="BANK">Online / Bank</option>
+          </select>
+        </div>
         {loading ? <LoadingState /> : (
           <div className="table-wrap">
             <table>
@@ -61,6 +79,10 @@ export default function ExpenseList() {
             </table>
           </div>
         )}
+        <div style={{ padding: '16px 20px', borderTop: '1px solid var(--gray-200)', background: 'var(--gray-50)', position: 'sticky', bottom: 0, borderBottomLeftRadius: 12, borderBottomRightRadius: 12, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+          <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--gray-600)', marginRight: 12 }}>Total Expenses:</span>
+          <span style={{ fontSize: 20, fontWeight: 700, color: '#DC2626' }}>{formatINR(total)}</span>
+        </div>
       </div>
       {showModal && (
         <Modal isOpen={true} onClose={()=>setShowModal(false)} title="Add Expense Record" size="modal-lg"

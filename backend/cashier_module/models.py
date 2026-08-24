@@ -4,6 +4,7 @@ from django.db import models
 from django.utils import timezone
 from core.models import User
 from manager_module.models import AssessmentRequest
+from core.validators import validate_image_file, validate_document_file
 
 
 class Disbursement(models.Model):
@@ -17,11 +18,11 @@ class Disbursement(models.Model):
     ], default='CASH')
     voucher_number = models.CharField(max_length=50, blank=True)
     receiver_name = models.CharField(max_length=255)
-    receiver_signature = models.ImageField(upload_to='disbursements/signatures/', null=True, blank=True)
+    receiver_signature = models.ImageField(upload_to='disbursements/signatures/', null=True, blank=True, validators=[validate_image_file])
     reference = models.CharField(max_length=100, blank=True)
     date = models.DateField(default=timezone.now)
     remarks = models.TextField(blank=True)
-    document = models.FileField(upload_to='disbursements/', null=True, blank=True)
+    document = models.FileField(upload_to='disbursements/', null=True, blank=True, validators=[validate_document_file])
     disbursed_by = models.ForeignKey(User, on_delete=models.PROTECT, related_name='disbursements')
     created_at = models.DateTimeField(default=timezone.now)
 
@@ -46,6 +47,9 @@ class CashClosing(models.Model):
     system_balance = models.DecimalField(max_digits=12, decimal_places=2)
     physical_cash = models.DecimalField(max_digits=12, decimal_places=2)
     difference = models.DecimalField(max_digits=12, decimal_places=2)
+    system_bank_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    physical_bank = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    bank_difference = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     difference_reason = models.TextField(blank=True)
     closed_by = models.ForeignKey(User, on_delete=models.PROTECT, related_name='cash_closings')
     approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_closings')

@@ -19,7 +19,7 @@ export function StatusBadge({ status }) {
   const map = {
     DRAFT: 'badge-gray', SUBMITTED: 'badge-blue', UNDER_REVIEW: 'badge-info',
     ON_HOLD: 'badge-yellow', APPROVED: 'badge-green', REJECTED: 'badge-red',
-    CASHIER_PENDING: 'badge-yellow', DISBURSED: 'badge-green', COMPLETED: 'badge-green',
+    PENDING_DISBURSEMENT: 'badge-yellow', DISBURSED: 'badge-green', COMPLETED: 'badge-green',
     CANCELLED: 'badge-gray', ACTIVE: 'badge-green', INACTIVE: 'badge-gray',
     SUSPENDED: 'badge-red', PENDING: 'badge-yellow', PAID: 'badge-green',
     GENERATED: 'badge-blue', PRESENT: 'badge-green', ABSENT: 'badge-red',

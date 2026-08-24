@@ -19,37 +19,32 @@ const Confetti = ({ color, left, delay, duration }) => (
 
 const COLORS = ['#FF6B6B', '#FFD93D', '#6BCB77', '#4D96FF', '#FF922B', '#CC5DE8', '#F06595']
 
-// ── 🧪 DEMO MODE ─────────────────────────────────────────────────
-// Remove this block when done testing
-const DEMO_BIRTHDAY = {
-  id: 'demo-001',
-  name: 'Naizamali',           // ← your name
-  designation: 'Manager',
-  employee_id: 'EMP-00001',
-  age: 25,                      // ← your age (update if needed)
-  type: 'staff',
-}
-// ─────────────────────────────────────────────────────────────────
-
 export default function BirthdayBanner() {
   const [data, setData] = useState(null)
   const [dismissed, setDismissed] = useState(false)
 
   useEffect(() => {
+    const todayStr = new Date().toDateString()
+    const lastSeen = localStorage.getItem('birthdayBannerSeenDate')
+    
+    if (lastSeen === todayStr) {
+      setDismissed(true)
+      return
+    }
+
+    // Fetch the real birthday data
     hrApi.birthdayAlerts()
       .then(res => {
         const d = res.data || {}
-        // Merge real API + demo person in today's list
-        setData({
-          ...d,
-          today: [DEMO_BIRTHDAY, ...(d.today || [])],
-          tomorrow: d.tomorrow || [],
-        })
+        setData(d)
+        
+        // If there is actual birthday data to show, mark as seen and set auto-dismiss
+        if ((d.today && d.today.length > 0) || (d.tomorrow && d.tomorrow.length > 0)) {
+          localStorage.setItem('birthdayBannerSeenDate', todayStr)
+          setTimeout(() => setDismissed(true), 120000) // Auto-dismiss after 2 minutes
+        }
       })
-      .catch(() => {
-        // Even if API fails, show the demo birthday
-        setData({ today: [DEMO_BIRTHDAY], tomorrow: [] })
-      })
+      .catch(() => setData(null))
   }, [])
 
   if (dismissed || !data) return null

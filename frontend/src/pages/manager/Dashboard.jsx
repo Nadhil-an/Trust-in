@@ -217,13 +217,13 @@ export default function ManagerDashboard() {
       {/* ── 5 SUMMARY CARDS ──────────────────────────────────── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 16, marginBottom: 20 }}>
         <SummaryCard
-          icon="📋"
-          label="Assessment Requests"
-          value={requests.pending || 0}
-          sub={`${requests.total || 0} total · ${requests.completed || 0} completed`}
-          color={CLR.blue}
-          active={active === 'requests'}
-          onClick={() => toggle('requests')}
+          icon="💝"
+          label="Today's Donations"
+          value={formatINR(finance.todays_donations)}
+          sub={`Cash ₹${(finance.todays_donations_cash||0).toLocaleString('en-IN')} · Bank ₹${(finance.todays_donations_bank||0).toLocaleString('en-IN')}`}
+          color={CLR.yellow}
+          active={active === 'donations'}
+          onClick={() => toggle('donations')}
         />
         <SummaryCard
           icon="💰"
@@ -235,6 +235,15 @@ export default function ManagerDashboard() {
           onClick={() => toggle('finance')}
         />
         <SummaryCard
+          icon="📋"
+          label="Assessment Requests"
+          value={requests.pending || 0}
+          sub={`${requests.total || 0} total · ${requests.completed || 0} completed`}
+          color={CLR.blue}
+          active={active === 'requests'}
+          onClick={() => toggle('requests')}
+        />
+        <SummaryCard
           icon="👥"
           label="Today's Attendance"
           value={`${attendance.present || 0} / ${attendance.total_staff || 0}`}
@@ -242,15 +251,6 @@ export default function ManagerDashboard() {
           color={CLR.purple}
           active={active === 'attendance'}
           onClick={() => toggle('attendance')}
-        />
-        <SummaryCard
-          icon="💝"
-          label="Today's Donations"
-          value={formatINR(finance.todays_donations)}
-          sub="Total donation amount received today"
-          color={CLR.yellow}
-          active={active === 'donations'}
-          onClick={() => toggle('donations')}
         />
         <SummaryCard
           icon="🎯"

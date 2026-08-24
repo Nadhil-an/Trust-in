@@ -4,6 +4,7 @@ from datetime import date
 from django.db import models
 from django.utils import timezone
 from core.models import User
+from core.validators import validate_document_file
 
 
 class PaymentMethod(models.TextChoices):
@@ -137,11 +138,15 @@ class Income(models.Model):
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     payment_method = models.CharField(max_length=20, choices=PaymentMethod.choices)
     purpose = models.CharField(max_length=255, blank=True)
+    place = models.CharField(max_length=255, blank=True)
     reference_number = models.CharField(max_length=100, blank=True)
+    bill_book_no = models.CharField(max_length=50, blank=True)
+    bill_book_start = models.CharField(max_length=50, blank=True)
+    bill_book_end = models.CharField(max_length=50, blank=True)
     account_type = models.CharField(max_length=10, choices=[('CASH', 'Cash'), ('BANK', 'Bank')], default='CASH')
     cash_account = models.ForeignKey(CashAccount, on_delete=models.SET_NULL, null=True, blank=True)
     bank_account = models.ForeignKey(BankAccount, on_delete=models.SET_NULL, null=True, blank=True)
-    document = models.FileField(upload_to='income/', null=True, blank=True)
+    document = models.FileField(upload_to='income/', null=True, blank=True, validators=[validate_document_file])
     whatsapp_status = models.CharField(max_length=20, default='PENDING', choices=[
         ('PENDING', 'Pending'), ('SENT', 'Sent'), ('FAILED', 'Failed')
     ])
@@ -192,7 +197,7 @@ class Expense(models.Model):
     status = models.CharField(max_length=20, default='COMPLETED', choices=[
         ('PENDING', 'Pending'), ('COMPLETED', 'Completed'), ('CANCELLED', 'Cancelled')
     ])
-    document = models.FileField(upload_to='expenses/', null=True, blank=True)
+    document = models.FileField(upload_to='expenses/', null=True, blank=True, validators=[validate_document_file])
     approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_expenses')
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_expenses')
     created_at = models.DateTimeField(default=timezone.now)

@@ -129,7 +129,7 @@ export const managerApi = {
 
 // ── Accounts ───────────────────────────────────────────────
 export const accountsApi = {
-  dashboard: () => api.get('/accounts/dashboard/'),
+  dashboard: (params) => api.get('/accounts/dashboard/', { params }),
   totalFunds: () => api.get('/accounts/total-funds/'),
   cash: {
     accounts: () => api.get('/accounts/cash/'),
@@ -283,7 +283,7 @@ export const reportsApi = {
 // ── Core ───────────────────────────────────────────────────
 export const coreApi = {
   users: {
-    list: () => api.get('/core/users/'),
+    list: (params) => api.get('/core/users/', { params }),
     create: (data) => api.post('/core/users/', data),
     update: (id, data) => api.patch(`/core/users/${id}/`, data),
     delete: (id) => api.delete(`/core/users/${id}/`),

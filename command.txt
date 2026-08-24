@@ -11,4 +11,4 @@ npm run dev -- --port 5174
 
 
 cd mobile
-set REACT_NATIVE_PACKAGER_HOSTNAME=172.18.166.21 && npm start
+set REACT_NATIVE_PACKAGER_HOSTNAME=10.108.62.21 && npm start

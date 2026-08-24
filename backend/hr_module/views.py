@@ -677,8 +677,9 @@ class ComplaintListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         qs = Complaint.objects.select_related('employee').all()
-        # If user is regular STAFF, show their own complaints or complaints of their officer profile
-        if hasattr(self.request.user, 'role') and self.request.user.role == 'STAFF':
+        user_role = getattr(self.request.user, 'role', '')
+        # If user is a regular mobile app user (not admin/manager/hr), only show their own complaints
+        if user_role not in ['ADMIN', 'MANAGER', 'HR', 'ACCOUNTANT']:
             officer = get_officer_for_user(self.request.user)
             if officer:
                 qs = qs.filter(employee=officer)
@@ -723,7 +724,8 @@ class StaffReportListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         qs = StaffReport.objects.select_related('employee', 'submitted_by').all()
-        if hasattr(self.request.user, 'role') and self.request.user.role == 'STAFF':
+        user_role = getattr(self.request.user, 'role', '')
+        if user_role not in ['ADMIN', 'MANAGER', 'HR', 'ACCOUNTANT']:
             officer = get_officer_for_user(self.request.user)
             qs = qs.filter(Q(submitted_by=self.request.user) | Q(employee=officer))
         return qs
@@ -790,7 +792,8 @@ class PaymentAdvanceListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         qs = PaymentAdvanceRequest.objects.select_related('employee', 'requested_by').all()
-        if hasattr(self.request.user, 'role') and self.request.user.role == 'STAFF':
+        user_role = getattr(self.request.user, 'role', '')
+        if user_role not in ['ADMIN', 'MANAGER', 'HR', 'ACCOUNTANT']:
             officer = get_officer_for_user(self.request.user)
             qs = qs.filter(Q(requested_by=self.request.user) | Q(employee=officer))
         return qs
@@ -859,6 +862,11 @@ class PerformancePointListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         qs = PerformancePoint.objects.select_related('employee', 'awarded_by').all()
+        user_role = getattr(self.request.user, 'role', '')
+        if user_role not in ['ADMIN', 'MANAGER', 'HR', 'ACCOUNTANT']:
+            officer = get_officer_for_user(self.request.user)
+            if officer:
+                qs = qs.filter(employee=officer)
         return qs
 
     def perform_create(self, serializer):

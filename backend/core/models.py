@@ -8,6 +8,7 @@ import uuid
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.db import models
 from django.utils import timezone
+from .validators import validate_image_file
 
 
 class Role(models.TextChoices):
@@ -15,7 +16,6 @@ class Role(models.TextChoices):
     ADMIN = 'ADMIN', 'Admin'
     MANAGER = 'MANAGER', 'Manager'
     ACCOUNTANT = 'ACCOUNTANT', 'Accountant'
-    CASHIER = 'CASHIER', 'Cashier'
     HR = 'HR', 'HR'
     DATA_ENTRY = 'DATA_ENTRY', 'Data Entry'
     # Mobile application roles
@@ -50,7 +50,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     full_name = models.CharField(max_length=255)
     role = models.CharField(max_length=35, choices=Role.choices, default=Role.MANAGER)
     phone = models.CharField(max_length=20, blank=True)
-    photo = models.ImageField(upload_to='users/', blank=True, null=True)
+    photo = models.ImageField(upload_to='users/', blank=True, null=True, validators=[validate_image_file])
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)

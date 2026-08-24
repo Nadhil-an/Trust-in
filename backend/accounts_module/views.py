@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
-from core.permissions import IsAccountant, IsManagerOrAccountant, IsAccountantOrCashier, IsAnyStaff, IsOwnerOrManager
+from core.permissions import IsAccountant, IsManagerOrAccountant, IsAnyStaff, IsOwnerOrManager
 from core.models import AuditLog, Role
 from notify.service import push_dashboard_refresh
 from notify.whatsapp_service import send_whatsapp_receipt
@@ -33,13 +33,26 @@ class AccountsDashboardView(APIView):
 
         cash_bal = sum(a.current_balance for a in CashAccount.objects.filter(is_active=True))
         bank_bal = sum(b.current_balance for b in BankAccount.objects.filter(is_active=True))
-        today = timezone.now().date()
+        date_str = request.query_params.get('date')
+        if date_str:
+            try:
+                from datetime import datetime
+                today = datetime.strptime(date_str, '%Y-%m-%d').date()
+            except ValueError:
+                today = timezone.now().date()
+        else:
+            today = timezone.now().date()
+            
         month_start = today.replace(day=1)
 
         income_month = Income.objects.filter(date__gte=month_start).aggregate(t=Sum('amount'))['t'] or 0
         expense_month = Expense.objects.filter(date__gte=month_start).aggregate(t=Sum('amount'))['t'] or 0
         pending_requests = AssessmentRequest.objects.filter(
             status__in=['SUBMITTED', 'UNDER_REVIEW']
+        ).count()
+
+        cashier_pending = AssessmentRequest.objects.filter(
+            status__in=['APPROVED', 'CASHIER_PENDING']
         ).count()
 
         today_income = Income.objects.filter(date=today).aggregate(t=Sum('amount'))['t'] or 0
@@ -57,6 +70,28 @@ class AccountsDashboardView(APIView):
             exp = float(Expense.objects.filter(date__gte=ms, date__lt=me).aggregate(t=Sum('amount'))['t'] or 0)
             monthly_trend.append({'month': ms.strftime('%b'), 'income': inc, 'expense': exp, 'net': inc - exp})
 
+        # Staff donation collections (This month & Today)
+        staff_coll_month_qs = Income.objects.filter(
+            source='DONATION', date__gte=month_start, created_by__isnull=False
+        ).values('created_by__full_name').annotate(total=Sum('amount')).order_by('-total')
+        staff_collections = [{'staff_name': s['created_by__full_name'] or 'Unknown', 'amount': float(s['total'])} for s in staff_coll_month_qs]
+
+        staff_coll_today_qs = Income.objects.filter(
+            source='DONATION', date=today, created_by__isnull=False
+        ).values('created_by__full_name').annotate(total=Sum('amount')).order_by('-total')
+        staff_collections_today = [{'staff_name': s['created_by__full_name'] or 'Unknown', 'amount': float(s['total'])} for s in staff_coll_today_qs]
+
+        # Today's Donations & Memberships
+        td_qs = Income.objects.filter(source='DONATION', date=today)
+        today_donations_total = td_qs.aggregate(t=Sum('amount'))['t'] or 0
+        today_donations_cash = td_qs.filter(account_type='CASH').aggregate(t=Sum('amount'))['t'] or 0
+        today_donations_bank = td_qs.filter(account_type='BANK').aggregate(t=Sum('amount'))['t'] or 0
+
+        tm_qs = Income.objects.filter(source='MEMBERSHIP', date=today)
+        today_memberships_total = tm_qs.aggregate(t=Sum('amount'))['t'] or 0
+        today_memberships_cash = tm_qs.filter(account_type='CASH').aggregate(t=Sum('amount'))['t'] or 0
+        today_memberships_bank = tm_qs.filter(account_type='BANK').aggregate(t=Sum('amount'))['t'] or 0
+
         return Response({
             'cash_balance': float(cash_bal),
             'bank_balance': float(bank_bal),
@@ -66,9 +101,18 @@ class AccountsDashboardView(APIView):
             'net_this_month': float(income_month - expense_month),
             'pending_money_requests': pending_requests,
             'pending_salaries': pending_salaries,
+            'cashier_pending': cashier_pending,
             'today_income': float(today_income),
             'today_expense': float(today_expense),
             'monthly_trend': monthly_trend,
+            'staff_collections': staff_collections,
+            'staff_collections_today': staff_collections_today,
+            'today_donations_total': float(today_donations_total),
+            'today_donations_cash': float(today_donations_cash),
+            'today_donations_bank': float(today_donations_bank),
+            'today_memberships_total': float(today_memberships_total),
+            'today_memberships_cash': float(today_memberships_cash),
+            'today_memberships_bank': float(today_memberships_bank),
             'cash_accounts': CashAccountSerializer(CashAccount.objects.filter(is_active=True), many=True).data,
             'bank_accounts': BankAccountSerializer(BankAccount.objects.filter(is_active=True), many=True).data,
         })
@@ -77,13 +121,13 @@ class AccountsDashboardView(APIView):
 # ── Cash ──────────────────────────────────────────────────────────
 
 class CashAccountListView(generics.ListCreateAPIView):
-    permission_classes = [IsAccountantOrCashier]
+    permission_classes = [IsAccountant]
     serializer_class = CashAccountSerializer
     queryset = CashAccount.objects.all()
 
 
 class CashTransactionListCreateView(generics.ListCreateAPIView):
-    permission_classes = [IsAccountantOrCashier]
+    permission_classes = [IsAccountant]
     serializer_class = CashTransactionSerializer
     filterset_fields = ['transaction_type', 'date', 'cash_account']
     search_fields = ['description', 'reference_id', 'voucher_number']
@@ -152,7 +196,7 @@ class BankTransactionListCreateView(generics.ListCreateAPIView):
 class IncomeListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAnyStaff]
     serializer_class = IncomeSerializer
-    filterset_fields = ['source', 'payment_method', 'account_type', 'date']
+    filterset_fields = ['source', 'payment_method', 'account_type', 'date', 'created_by']
     search_fields = ['receipt_number', 'donor_name', 'purpose', 'reference_number']
     ordering_fields = ['date', 'amount']
     parser_classes = [MultiPartParser, FormParser, JSONParser]
@@ -164,7 +208,16 @@ class IncomeListCreateView(generics.ListCreateAPIView):
         return qs
 
     def perform_create(self, serializer):
-        income = serializer.save(created_by=self.request.user)
+        staff_id = self.request.data.get('staff_id')
+        if staff_id and self.request.user.role in [Role.ADMIN, Role.DATA_ENTRY, Role.ACCOUNTANT]:
+            from core.models import User
+            try:
+                user = User.objects.get(id=staff_id)
+                income = serializer.save(created_by=user)
+            except User.DoesNotExist:
+                income = serializer.save(created_by=self.request.user)
+        else:
+            income = serializer.save(created_by=self.request.user)
         # Auto-update account balance
         if income.account_type == 'CASH' and income.cash_account:
             acc = income.cash_account
@@ -313,7 +366,7 @@ class ExpenseListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAnyStaff]
     serializer_class = ExpenseSerializer
     queryset = Expense.objects.select_related('created_by').all()
-    filterset_fields = ['category', 'payment_method', 'account_type', 'status']
+    filterset_fields = ['category', 'payment_method', 'account_type', 'status', 'date']
     search_fields = ['expense_id', 'payee', 'purpose']
     ordering_fields = ['date', 'amount']
     parser_classes = [MultiPartParser, FormParser, JSONParser]
@@ -402,7 +455,7 @@ class TransferListCreateView(generics.ListCreateAPIView):
 # ── Transactions ──────────────────────────────────────────────────
 
 class TransactionListView(generics.ListAPIView):
-    permission_classes = [IsAccountantOrCashier]
+    permission_classes = [IsAccountant]
     serializer_class = TransactionSerializer
     queryset = Transaction.objects.select_related('created_by').all()
     filterset_fields = ['transaction_type', 'account_type', 'payment_method', 'status']
@@ -411,7 +464,7 @@ class TransactionListView(generics.ListAPIView):
 
 
 class TransactionDetailView(generics.RetrieveAPIView):
-    permission_classes = [IsAccountantOrCashier]
+    permission_classes = [IsAccountant]
     serializer_class = TransactionSerializer
     queryset = Transaction.objects.all()
 

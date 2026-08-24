@@ -64,6 +64,16 @@ def send_whatsapp_message(to_phone: str, message_body: str, document_url: str = 
         payload['file_name'] = file_name
         payload['mimetype'] = 'application/pdf'
 
+    from urllib.parse import urlparse
+    def is_safe_url(url: str) -> bool:
+        parsed = urlparse(url)
+        allowed_hosts = {'api.ultramsg.com', 'localhost', '127.0.0.1'}
+        return parsed.scheme in ('http', 'https') and parsed.hostname in allowed_hosts
+
+    if not is_safe_url(gateway_url):
+        logger.error("Blocked SSRF attempt to: %s", gateway_url)
+        return {'success': False, 'reason': 'invalid_gateway'}
+
     try:
         response = requests.post(gateway_url, json=payload, timeout=15)
         res_json = response.json()

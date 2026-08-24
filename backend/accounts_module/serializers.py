@@ -33,6 +33,8 @@ class BankTransactionSerializer(serializers.ModelSerializer):
 
 
 class IncomeSerializer(serializers.ModelSerializer):
+    created_by_name = serializers.CharField(source='created_by.full_name', read_only=True)
+    
     class Meta:
         model = Income
         fields = '__all__'
