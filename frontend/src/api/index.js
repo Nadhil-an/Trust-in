@@ -47,8 +47,9 @@ api.interceptors.response.use(
         return api(originalRequest)
       } catch (refreshError) {
         processQueue(refreshError, null)
-        // Redirect to login
-        window.location.href = '/login'
+        // Clear Zustand auth state so it doesn't infinite loop
+        localStorage.removeItem('slt-auth')
+        window.location.href = '/slt/portal/auth'
         return Promise.reject(refreshError)
       } finally {
         isRefreshing = false
