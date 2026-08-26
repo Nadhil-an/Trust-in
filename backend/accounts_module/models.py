@@ -3,6 +3,7 @@ import uuid
 from datetime import date
 from django.db import models
 from django.utils import timezone
+from encrypted_model_fields.fields import EncryptedCharField
 from core.models import User
 from core.validators import validate_document_file
 
@@ -67,9 +68,9 @@ class BankAccount(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     bank_name = models.CharField(max_length=100)
     account_name = models.CharField(max_length=255)
-    account_number = models.CharField(max_length=50, unique=True)
+    account_number = EncryptedCharField(max_length=50, blank=True)   # Encrypted FINANCIAL (unique enforced at serializer level)
     branch = models.CharField(max_length=255, blank=True)
-    ifsc_code = models.CharField(max_length=20, blank=True)
+    ifsc_code = EncryptedCharField(max_length=20, blank=True)        # Encrypted FINANCIAL
     opening_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     current_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     is_active = models.BooleanField(default=True)
@@ -133,7 +134,7 @@ class Income(models.Model):
     receipt_number = models.CharField(max_length=20, unique=True, db_index=True)
     date = models.DateField(default=date.today)
     donor_name = models.CharField(max_length=255, blank=True)
-    donor_phone = models.CharField(max_length=20, blank=True)
+    donor_phone = EncryptedCharField(max_length=20, blank=True)  # Encrypted PII — donor contact
     source = models.CharField(max_length=20, choices=IncomeSource.choices)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     payment_method = models.CharField(max_length=20, choices=PaymentMethod.choices)

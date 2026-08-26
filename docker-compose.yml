@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # 1. Database Service (PostgreSQL)
+  # We use PostgreSQL for the backend database instead of SQLite for production-readiness.
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: sreelakshmi_trust
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  # 2. Redis Service
+  # Redis is used as an in-memory store for Django Channels (WebSockets) and caching.
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  # 3. Backend Service (Django)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: >
+      bash -c "python manage.py migrate && 
+               daphne -b 0.0.0.0 -p 8000 sreelakshmi_trust.asgi:application"
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgres://user:password@db:5432/sreelakshmi_trust
+      - REDIS_URL=redis://redis:6379/0
+      - USE_REDIS=True
+      - DEBUG=True
+    depends_on:
+      - db
+      - redis
+
+  # 4. Frontend Service (React/Vite + Nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+# Define named volumes to persist database data even if the container stops
+volumes:
+  postgres_data:

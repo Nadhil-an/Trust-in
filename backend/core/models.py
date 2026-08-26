@@ -8,6 +8,7 @@ import uuid
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.db import models
 from django.utils import timezone
+from encrypted_model_fields.fields import EncryptedCharField
 from .validators import validate_image_file
 
 
@@ -49,7 +50,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     full_name = models.CharField(max_length=255)
     role = models.CharField(max_length=35, choices=Role.choices, default=Role.MANAGER)
-    phone = models.CharField(max_length=20, blank=True)
+    phone = EncryptedCharField(max_length=20, blank=True)  # Encrypted PII
     photo = models.ImageField(upload_to='users/', blank=True, null=True, validators=[validate_image_file])
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)

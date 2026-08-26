@@ -3,6 +3,7 @@ import uuid
 from datetime import date
 from django.db import models
 from django.utils import timezone
+from encrypted_model_fields.fields import EncryptedCharField, EncryptedTextField
 from core.models import User
 from core.validators import validate_image_file, validate_document_file
 
@@ -41,9 +42,9 @@ class Member(models.Model):
     photo = models.ImageField(upload_to='hr/members/', null=True, blank=True, validators=[validate_image_file])
     date_of_birth = models.DateField(null=True, blank=True)
     gender = models.CharField(max_length=10, choices=Gender.choices, blank=True)
-    phone = models.CharField(max_length=20, blank=True)
+    phone = EncryptedCharField(max_length=20, blank=True)           # Encrypted PII
     email = models.EmailField(blank=True)
-    address = models.TextField(blank=True)
+    address = EncryptedTextField(blank=True)                         # Encrypted PII
     joining_date = models.DateField(default=date.today)
     membership_type = models.CharField(max_length=20, choices=MembershipType.choices, default=MembershipType.GENERAL)
     status = models.CharField(max_length=20, choices=MemberStatus.choices, default=MemberStatus.ACTIVE)
@@ -51,7 +52,7 @@ class Member(models.Model):
     occupation = models.CharField(max_length=255, blank=True)
     monthly_fee = models.DecimalField(max_digits=10, decimal_places=2, default=100.00)
     emergency_contact_name = models.CharField(max_length=255, blank=True)
-    emergency_contact_phone = models.CharField(max_length=20, blank=True)
+    emergency_contact_phone = EncryptedCharField(max_length=20, blank=True)  # Encrypted PII
     remarks = models.TextField(blank=True)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(default=timezone.now)
@@ -116,15 +117,15 @@ class Volunteer(models.Model):
     volunteer_id = models.CharField(max_length=20, unique=True, db_index=True)
     full_name = models.CharField(max_length=255)
     photo = models.ImageField(upload_to='hr/volunteers/', null=True, blank=True, validators=[validate_image_file])
-    phone = models.CharField(max_length=20, blank=True)
+    phone = EncryptedCharField(max_length=20, blank=True)           # Encrypted PII
     email = models.EmailField(blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
-    address = models.TextField(blank=True)
+    address = EncryptedTextField(blank=True)                         # Encrypted PII
     joining_date = models.DateField(default=date.today)
     skills = models.TextField(blank=True)
     availability = models.CharField(max_length=100, blank=True)
     emergency_contact_name = models.CharField(max_length=255, blank=True)
-    emergency_contact_phone = models.CharField(max_length=20, blank=True)
+    emergency_contact_phone = EncryptedCharField(max_length=20, blank=True)  # Encrypted PII
     assigned_programs = models.JSONField(default=list)
     total_hours = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     status = models.CharField(max_length=20, choices=VolunteerStatus.choices, default=VolunteerStatus.ACTIVE)
@@ -159,9 +160,9 @@ class ExecutiveMember(models.Model):
     full_name = models.CharField(max_length=255)
     photo = models.ImageField(upload_to='hr/exec_members/', null=True, blank=True, validators=[validate_image_file])
     designation = models.CharField(max_length=30, choices=Position.choices)
-    phone = models.CharField(max_length=20, blank=True)
+    phone = EncryptedCharField(max_length=20, blank=True)           # Encrypted PII
     email = models.EmailField(blank=True)
-    address = models.TextField(blank=True)
+    address = EncryptedTextField(blank=True)                         # Encrypted PII
     appointment_date = models.DateField()
     term_start = models.DateField()
     term_end = models.DateField(null=True, blank=True)
@@ -209,20 +210,20 @@ class ExecutiveOfficer(models.Model):
     photo = models.ImageField(upload_to='hr/officers/', null=True, blank=True, validators=[validate_image_file])
     designation = models.CharField(max_length=255)
     department = models.CharField(max_length=100, blank=True)
-    phone = models.CharField(max_length=20, blank=True)
+    phone = EncryptedCharField(max_length=20, blank=True)                  # Encrypted PII
     email = models.EmailField(blank=True)
-    address = models.TextField(blank=True)
+    address = EncryptedTextField(blank=True)                                # Encrypted PII
     date_of_birth = models.DateField(null=True, blank=True)
     gender = models.CharField(max_length=10, choices=Gender.choices, blank=True)
     joining_date = models.DateField(default=date.today)
     employment_type = models.CharField(max_length=20, choices=EmploymentType.choices, default=EmploymentType.FULL_TIME)
     status = models.CharField(max_length=20, choices=EmployeeStatus.choices, default=EmployeeStatus.ACTIVE)
     bank_name = models.CharField(max_length=100, blank=True)
-    bank_account_number = models.CharField(max_length=50, blank=True)
-    ifsc_code = models.CharField(max_length=20, blank=True)
-    pan_number = models.CharField(max_length=20, blank=True)
+    bank_account_number = EncryptedCharField(max_length=50, blank=True)     # Encrypted FINANCIAL
+    ifsc_code = EncryptedCharField(max_length=20, blank=True)               # Encrypted FINANCIAL
+    pan_number = EncryptedCharField(max_length=20, blank=True)              # Encrypted GOVT ID
     emergency_contact_name = models.CharField(max_length=255, blank=True)
-    emergency_contact_phone = models.CharField(max_length=20, blank=True)
+    emergency_contact_phone = EncryptedCharField(max_length=20, blank=True) # Encrypted PII
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)

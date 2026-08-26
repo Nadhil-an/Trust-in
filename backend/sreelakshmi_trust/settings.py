@@ -12,6 +12,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'sree-lakshmi-insecure-dev-key')
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
+
+# ── Field-Level Encryption ────────────────────────────────────────
+FIELD_ENCRYPTION_KEY = os.getenv('FIELD_ENCRYPTION_KEY', '')
 # Allow all hosts in development — includes LAN IP for mobile app access
 _allowed = os.getenv('ALLOWED_HOSTS', '')
 ALLOWED_HOSTS = _allowed.split(',') if _allowed else ['*', 'localhost', '127.0.0.1', '10.108.62.21', '10.108.62.21:8000']
@@ -78,11 +81,11 @@ WSGI_APPLICATION = 'sreelakshmi_trust.wsgi.application'
 ASGI_APPLICATION = 'sreelakshmi_trust.asgi.application'
 
 # ── Database ──────────────────────────────────────────────────────
+import dj_database_url
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=os.getenv('DATABASE_URL', f"sqlite:///{BASE_DIR / 'db.sqlite3'}")
+    )
 }
 
 # ── Django Channels / WebSocket ───────────────────────────────────

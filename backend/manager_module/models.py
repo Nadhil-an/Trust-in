@@ -2,6 +2,7 @@
 import uuid
 from django.db import models
 from django.utils import timezone
+from encrypted_model_fields.fields import EncryptedCharField, EncryptedTextField
 from core.models import User
 from hr_module.models import Member
 from core.validators import validate_image_file, validate_document_file
@@ -107,8 +108,8 @@ class AssessmentRequest(models.Model):
     # Beneficiary (filled by STAFF/MEMBER initially)
     beneficiary_name = models.CharField(max_length=255, blank=True)
     beneficiary_age = models.PositiveSmallIntegerField(null=True, blank=True)
-    beneficiary_phone = models.CharField(max_length=20, blank=True)
-    beneficiary_address = models.TextField(blank=True)
+    beneficiary_phone = EncryptedCharField(max_length=20, blank=True)    # Encrypted PII — vulnerable person
+    beneficiary_address = EncryptedTextField(blank=True)                  # Encrypted PII — vulnerable person
     beneficiary_latitude = models.FloatField(null=True, blank=True)
     beneficiary_longitude = models.FloatField(null=True, blank=True)
     member = models.ForeignKey('hr_module.Member', on_delete=models.SET_NULL, null=True, blank=True,
@@ -188,8 +189,8 @@ class FAOReport(models.Model):
 
     # ── Beneficiary Verification ──────────────────────────
     beneficiary_verified_name = models.CharField(max_length=255, blank=True)
-    beneficiary_verified_address = models.TextField(blank=True)
-    beneficiary_verified_phone = models.CharField(max_length=20, blank=True)
+    beneficiary_verified_address = EncryptedTextField(blank=True)                # Encrypted PII
+    beneficiary_verified_phone = EncryptedCharField(max_length=20, blank=True)   # Encrypted PII
     address_corrections = models.TextField(blank=True)
 
     # ── Ex-Ward Member Report ─────────────────────────────
@@ -473,7 +474,7 @@ class Partner(models.Model):
     organization_name = models.CharField(max_length=255)
     partner_type = models.CharField(max_length=20, choices=PartnerType.choices)
     contact_person = models.CharField(max_length=255)
-    phone = models.CharField(max_length=20, blank=True)
+    phone = EncryptedCharField(max_length=20, blank=True)  # Encrypted PII
     email = models.EmailField(blank=True)
     address = models.TextField(blank=True)
     registration_number = models.CharField(max_length=100, blank=True)
