@@ -172,8 +172,25 @@ CORS_ALLOW_CREDENTIALS = True
 # ── Static & Media ────────────────────────────────────────────────
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+
+# Cloudflare R2 / AWS S3 Storage for Media
+AWS_ACCESS_KEY_ID = os.getenv('R2_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('R2_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = os.getenv('R2_BUCKET_NAME', 'trustmedia')
+AWS_S3_ENDPOINT_URL = os.getenv('R2_ENDPOINT_URL')
+AWS_S3_CUSTOM_DOMAIN = os.getenv('R2_PUBLIC_URL', '').replace('https://', '').replace('http://', '') or None
+
+if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY:
+    # Use R2 for user-uploaded media files
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
+    AWS_DEFAULT_ACL = None # R2 doesn't support ACLs in the same way, rely on bucket policies
+    AWS_S3_SIGNATURE_VERSION = 's3v4'
+    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/" if AWS_S3_CUSTOM_DOMAIN else f"{AWS_S3_ENDPOINT_URL}/{AWS_STORAGE_BUCKET_NAME}/"
+else:
+    # Fallback to local storage (Development/Docker)
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = BASE_DIR / 'media'
 
 # ── Cache ──────────────────────────────────────────────────
 CACHES = {

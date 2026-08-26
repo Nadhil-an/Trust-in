@@ -1,0 +1,56 @@
+// constants/Colors.js — Trust Field Assessment Mobile Theme
+export const Colors = {
+  primary: '#1B2F6B',
+  primaryLight: '#EEF1FA',
+  primaryDark: '#111E4A',
+  navy: '#1B2F6B',
+  white: '#FFFFFF',
+  black: '#111827',
+  gray50: '#F9FAFB',
+  gray100: '#F3F4F6',
+  gray200: '#E5E7EB',
+  gray300: '#D1D5DB',
+  gray400: '#9CA3AF',
+  gray500: '#6B7280',
+  gray600: '#4B5563',
+  gray700: '#374151',
+  success: '#10B981',
+  successLight: '#D1FAE5',
+  warning: '#F59E0B',
+  warningLight: '#FEF3C7',
+  error: '#EF4444',
+  errorLight: '#FEE2E2',
+  danger: '#DC2626',
+  info: '#1B2F6B',
+  infoLight: '#EEF1FA',
+  purple: '#8B5CF6',
+  purpleLight: '#EDE9FE',
+  orange: '#F97316',
+  orangeLight: '#FFEDD5',
+  // Status colors
+  statusNew: '#1B2F6B',
+  statusFAO: '#F59E0B',
+  statusACO: '#F97316',
+  statusGEO: '#8B5CF6',
+  statusApproved: '#10B981',
+  statusRejected: '#EF4444',
+  // Backgrounds
+  background: '#F0F7FF',
+  surface: '#FFFFFF',
+  card: '#FFFFFF',
+  border: '#E5E7EB',
+  // Text
+  textPrimary: '#111827',
+  textSecondary: '#6B7280',
+  textMuted: '#9CA3AF',
+  textWhite: '#FFFFFF',
+  // Tabs
+  tabActive: '#1B2F6B',
+  tabInactive: '#9CA3AF',
+};
+
+export const Gradients = {
+  primary: ['#111E4A', '#1B2F6B'],
+  light: ['#EEF1FA', '#F0F7FF'],
+  header: ['#111E4A', '#1B2F6B'],
+};
