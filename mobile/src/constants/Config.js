@@ -1,10 +1,10 @@
 // constants/Config.js
 // Configuration and constants
 
-// ── Production EC2 Server ─────────────────────────────────────────────────────
-// EC2 Public IP: 13.235.70.127
-// Backend runs on port 8000 inside Docker, exposed to host
-const PRODUCTION_HOST = '13.235.70.127';
+// ── Production Server ─────────────────────────────────────────────────────────
+// Domain: sreelakshmicharity.org
+// Backend Django/Daphne runs on port 8000
+const PRODUCTION_HOST = 'sreelakshmicharity.org';
 
 export const Config = {
   API_BASE_URL: `http://${PRODUCTION_HOST}:8000/api`,
