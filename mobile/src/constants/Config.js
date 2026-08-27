@@ -1,13 +1,14 @@
 // constants/Config.js
 // Configuration and constants
 
-// IMPORTANT: For physical device testing, change localhost to your computer's local IP address (e.g. 192.168.1.5)
-const LOCAL_IP = '10.108.62.21';
+// ── Production EC2 Server ─────────────────────────────────────────────────────
+// EC2 Public IP: 13.235.70.127
+// Backend runs on port 8000 inside Docker, exposed to host
+const PRODUCTION_HOST = '13.235.70.127';
 
 export const Config = {
-  // Use 10.0.2.2 for Android Emulator, or your Local IP for physical device testing
-  API_BASE_URL: `http://${LOCAL_IP}:8000/api`,
-  WS_BASE_URL: `ws://${LOCAL_IP}:8000/ws`,
+  API_BASE_URL: `http://${PRODUCTION_HOST}:8000/api`,
+  WS_BASE_URL:  `ws://${PRODUCTION_HOST}:8000/ws`,
   
   // Storage Keys
   ACCESS_TOKEN_KEY: 'sl_access_token',
