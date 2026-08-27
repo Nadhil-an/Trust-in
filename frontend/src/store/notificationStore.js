@@ -35,45 +35,52 @@ export const useNotificationStore = create((set, get) => ({
     const { ws } = get()
     if (ws) ws.close()
 
-    const wsUrl = `ws://${window.location.host}/ws/notify/`
-    const socket = new WebSocket(wsUrl)
-
-    socket.onopen = () => {}
-
-    socket.onmessage = (event) => {
-      const data = JSON.parse(event.data)
-      if (data.type === 'INIT') {
-        set({ unreadCount: data.unread_count })
-      } else if (data.type === 'NOTIFICATION') {
-        get().addNotification(data.notification)
-        // Browser notification if permitted
-        if (Notification.permission === 'granted') {
-          new Notification(data.notification.title, { body: data.notification.message })
+    const apiHost = import.meta.env.VITE_API_URL ? new URL(import.meta.env.VITE_API_URL).host : window.location.host
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+    const wsUrl = `${protocol}//${apiHost}/ws/notify/`
+    try {
+      const socket = new WebSocket(wsUrl)
+  
+      socket.onopen = () => {}
+  
+      socket.onmessage = (event) => {
+        const data = JSON.parse(event.data)
+        if (data.type === 'INIT') {
+          set({ unreadCount: data.unread_count })
+        } else if (data.type === 'NOTIFICATION') {
+          get().addNotification(data.notification)
+          // Browser notification if permitted
+          if (Notification.permission === 'granted') {
+            new Notification(data.notification.title, { body: data.notification.message })
+          }
+        } else if (data.type === 'REQUEST_UPDATE') {
+          // Dispatch custom event for dashboard components to listen
+          window.dispatchEvent(new CustomEvent('request-update', { detail: data.data }))
+        } else if (data.type === 'DASHBOARD_REFRESH') {
+          window.dispatchEvent(new CustomEvent('dashboard-refresh', { detail: data }))
         }
-      } else if (data.type === 'REQUEST_UPDATE') {
-        // Dispatch custom event for dashboard components to listen
-        window.dispatchEvent(new CustomEvent('request-update', { detail: data.data }))
-      } else if (data.type === 'DASHBOARD_REFRESH') {
-        window.dispatchEvent(new CustomEvent('dashboard-refresh', { detail: data }))
       }
-    }
-
-    socket.onclose = (event) => {
-      // Disconnected
-      if (event.code === 4001) {
-        console.error('[WS] Unauthorized connection')
-        set({ ws: null })
-        return
+  
+      socket.onclose = (event) => {
+        // Disconnected
+        if (event.code === 4001) {
+          console.error('[WS] Unauthorized connection')
+          set({ ws: null })
+          return
+        }
+        // Auto-reconnect after 3s
+        setTimeout(() => {
+          if (get().ws === socket) get().connectWebSocket(userId)
+        }, 3000)
       }
-      // Auto-reconnect after 3s
-      setTimeout(() => {
-        if (get().ws === socket) get().connectWebSocket(userId)
-      }, 3000)
+  
+      socket.onerror = (err) => console.error('[WS] Error:', err)
+  
+      set({ ws: socket })
+    } catch (err) {
+      console.error('[WS] Failed to construct WebSocket:', err)
+      set({ ws: null })
     }
-
-    socket.onerror = (err) => console.error('[WS] Error:', err)
-
-    set({ ws: socket })
   },
 
   disconnect: () => {
