@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
+    "name": "Trust",
+    "slug": "nadiiiiiiiiii",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -13,7 +13,8 @@
       "adaptiveIcon": {
         "backgroundColor": "#ffffff",
         "foregroundImage": "./assets/android-icon-foreground.png"
-      }
+      },
+      "package": "com.sreelakshmiappsteam.mobile"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -25,6 +26,11 @@
     },
     "plugins": [
       "expo-secure-store"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "5f773548-6ce7-48a6-a853-7bc68bd656b8"
+      }
+    }
   }
 }

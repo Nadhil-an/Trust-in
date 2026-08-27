@@ -72,7 +72,7 @@ class CashierDashboardView(APIView):
     def get(self, request):
         today = timezone.now().date()
         cash_bal = sum(a.current_balance for a in CashAccount.objects.filter(is_active=True))
-        pending = AssessmentRequest.objects.filter(status=RequestStatus.CASHIER_PENDING).count()
+        pending = AssessmentRequest.objects.filter(status=RequestStatus.PENDING_DISBURSEMENT).count()
         today_payments = CashTransaction.objects.filter(
             date=today, transaction_type='PAYMENT').aggregate(t=Sum('amount'))['t'] or 0
         today_receipts = CashTransaction.objects.filter(
@@ -98,7 +98,7 @@ class PendingDisbursementsView(APIView):
     def get(self, request):
         from manager_module.serializers import AssessmentRequestSerializer
         pending = AssessmentRequest.objects.filter(
-            status__in=[RequestStatus.CASHIER_PENDING, RequestStatus.APPROVED]
+            status__in=[RequestStatus.PENDING_DISBURSEMENT, RequestStatus.APPROVED]
         ).select_related('requested_by', 'reviewed_by').order_by('-approved_at')
         return Response(AssessmentRequestSerializer(pending, many=True).data)
 
@@ -110,7 +110,7 @@ class DisburseMoneyView(APIView):
 
     def post(self, request, pk):
         try:
-            req = AssessmentRequest.objects.get(pk=pk, status__in=[RequestStatus.CASHIER_PENDING, RequestStatus.APPROVED])
+            req = AssessmentRequest.objects.get(pk=pk, status__in=[RequestStatus.PENDING_DISBURSEMENT, RequestStatus.APPROVED])
         except AssessmentRequest.DoesNotExist:
             return Response({'error': 'Request not found or not in an approved status ready for disbursement.'}, status=404)
 

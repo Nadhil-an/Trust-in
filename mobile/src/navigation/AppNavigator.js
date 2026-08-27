@@ -10,6 +10,7 @@ import { View, Text } from 'react-native';
 
 // Auth Screens
 import LoginScreen from '../screens/auth/LoginScreen';
+import SignupScreen from '../screens/auth/SignupScreen';
 
 // Staff Screens
 import StaffHomeScreen from '../screens/staff/HomeScreen';
@@ -191,7 +192,11 @@ export const AppNavigator = () => {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {!isAuthenticated ? (
-          <Stack.Screen name="Auth" component={LoginScreen} options={{ animationTypeForReplace: 'pop' }} />
+          // Auth Stack — Login + Signup share a stack so navigation.navigate() works between them
+          <>
+            <Stack.Screen name="Auth" component={LoginScreen} options={{ animationTypeForReplace: 'pop' }} />
+            <Stack.Screen name="Signup" component={SignupScreen} options={{ animation: 'slide_from_right' }} />
+          </>
         ) : (
           <Stack.Screen name="Main" component={MainStack} />
         )}

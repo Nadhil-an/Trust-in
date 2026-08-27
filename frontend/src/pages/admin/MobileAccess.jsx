@@ -1,0 +1,113 @@
+import React, { useState, useEffect, useCallback } from "react"
+import { coreApi } from "../../api"
+import { LoadingState, EmptyState, PageHeader, Modal, ConfirmModal } from "../../components/shared"
+import { format } from "date-fns"
+import toast from "react-hot-toast"
+
+const MOBILE_ROLES = ["STAFF", "MEMBER", "FIELD_ASSESSMENT_OFFICER", "ASSESSMENT_CALCULATION_OFFICER", "GENERAL_ENQUIRY_OFFICER"]
+
+export default function MobileAccess() {
+  const [users, setUsers] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showModal, setShowModal] = useState(false)
+  const [selected, setSelected] = useState(null)
+  const [form, setForm] = useState({ username:"", full_name:"", role:"STAFF", email:"", phone:"", is_active:true, password:"" })
+  const [saving, setSaving] = useState(false)
+  const [showPass, setShowPass] = useState(false)
+  const [userToDelete, setUserToDelete] = useState(null)
+
+  const load = useCallback(async () => {
+    setLoading(true)
+    try { 
+      const res = await coreApi.users.list()
+      const allUsers = res.data.results || res.data
+      setUsers(allUsers.filter(u => MOBILE_ROLES.includes(u.role)))
+    }
+    catch (_) { toast.error("Load failed") } 
+    finally { setLoading(false) }
+  }, [])
+  
+  useEffect(() => { load() }, [load])
+
+  const handleSave = async (e) => {
+    e.preventDefault(); setSaving(true)
+    try {
+      const submitData = { ...form }
+      
+      if (selected) await coreApi.users.update(selected.id, submitData)
+      else await coreApi.users.create(submitData)
+      toast.success("Saved."); setShowModal(false); load()
+    } catch (err) { 
+      const data = err.response?.data || {};
+      const errorMsg = data.username?.[0] || data.email?.[0] || data.password?.[0] || data.phone?.[0] || data.non_field_errors?.[0] || "Save failed";
+      toast.error(errorMsg);
+    } 
+    finally { setSaving(false) }
+  }
+
+  const executeDelete = async () => {
+    if (!userToDelete) return
+    try { await coreApi.users.delete(userToDelete); toast.success("Deleted"); load() }
+    catch (_) { toast.error("Delete failed") }
+    setUserToDelete(null)
+  }
+
+  return (
+    <div>
+      <PageHeader title="Mobile Access Control" subtitle="Manage mobile app access and passwords">
+        <button className="btn btn-primary" onClick={()=>{setSelected(null);setForm({username:"",full_name:"",role:"STAFF",email:"",phone:"",is_active:true,password:""});setShowModal(true)}}>+ Add Mobile User</button>
+      </PageHeader>
+      
+      <div className="data-card">
+        {loading ? <LoadingState /> : (
+          <div className="table-wrap">
+            <table>
+              <thead><tr><th>Username</th><th>Name</th><th>Mobile Role</th><th>Status</th><th>Last Login</th><th>Actions</th></tr></thead>
+              <tbody>
+                {users.length===0 ? <tr><td colSpan={6}><EmptyState icon="📱" title="No mobile users found" /></td></tr>
+                  : users.map(u=>(<tr key={u.id}>
+                    <td><strong>{u.username}</strong></td>
+                    <td>{u.full_name}</td>
+                    <td><span className="badge badge-blue">{u.role.replace(/_/g, ' ')}</span></td>
+                    <td><span className={`badge ${u.is_active?"badge-green":"badge-gray"}`}>{u.is_active?"Active":"Suspended"}</span></td>
+                    <td style={{fontSize:12,color:"var(--gray-500)"}}>{u.last_login?format(new Date(u.last_login),"dd MMM yy, HH:mm"):"Never"}</td>
+                    <td>
+                      <button className="btn btn-sm btn-secondary" onClick={()=>{setSelected(u);setForm({...u,password:""});setShowModal(true)}}>Edit / Reset Password</button>{" "}
+                      <button className="btn btn-sm btn-danger" onClick={()=>setUserToDelete(u.id)}>Delete</button>
+                    </td>
+                  </tr>))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {showModal && (
+        <Modal isOpen={true} onClose={()=>setShowModal(false)} title={selected?"Edit Mobile User":"Add Mobile User"}
+          footer={<><button className="btn btn-secondary" onClick={()=>setShowModal(false)}>Cancel</button><button className="btn btn-primary" form="mob-usr-form" type="submit" disabled={saving}>{saving?"Saving...":"Save"}</button></>}>
+          <form id="mob-usr-form" onSubmit={handleSave}>
+            <div className="form-group"><label className="form-label required">Username</label><input className="form-control" required value={form.username} onChange={e=>setForm(f=>({...f,username:e.target.value}))} disabled={!!selected} /></div>
+            <div className="form-group"><label className="form-label required">Full Name</label><input className="form-control" required value={form.full_name} onChange={e=>setForm(f=>({...f,full_name:e.target.value}))} /></div>
+            <div className="form-group"><label className="form-label required">Role</label>
+              <select className="form-control" value={form.role} onChange={e=>setForm(f=>({...f,role:e.target.value}))}>
+                {MOBILE_ROLES.map(r=><option key={r} value={r}>{r.replace(/_/g, ' ')}</option>)}
+              </select>
+            </div>
+            <div className="form-group"><label className="form-label required">Email</label><input className="form-control" type="email" required value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))} /></div>
+            <div className="form-group"><label className="form-label required">Phone Number</label><input className="form-control" type="tel" required value={form.phone} onChange={e=>setForm(f=>({...f,phone:e.target.value}))} /></div>
+            <div className="form-group"><label className="form-label">Password {selected?"(leave blank to keep current)":""}</label><div style={{position:'relative'}}><input className="form-control" type={showPass?"text":"password"} required={!selected} value={form.password} onChange={e=>setForm(f=>({...f,password:e.target.value}))} minLength={6} style={{paddingRight:40}} /><button type="button" onClick={()=>setShowPass(!showPass)} style={{position:'absolute',right:12,top:'50%',transform:'translateY(-50%)',border:'none',background:'none',cursor:'pointer',color:'var(--gray-500)',padding:0,display:'flex',alignItems:'center',justifyContent:'center'}}>{showPass ? <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg> : <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>}</button></div></div>
+            <div className="form-group" style={{marginTop:16}}><label style={{display:"flex",alignItems:"center",gap:8,cursor:"pointer"}}><input type="checkbox" checked={form.is_active} onChange={e=>setForm(f=>({...f,is_active:e.target.checked}))} /> <span>Active Account (uncheck to suspend)</span></label></div>
+          </form>
+        </Modal>
+      )}
+
+      <ConfirmModal 
+        isOpen={!!userToDelete} 
+        onClose={() => setUserToDelete(null)} 
+        onConfirm={executeDelete} 
+        title="Delete Mobile User"
+        message="Are you sure you want to delete this user? They will immediately lose access to the mobile app."
+      />
+    </div>
+  )
+}

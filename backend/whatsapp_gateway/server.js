@@ -10,9 +10,28 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 const PORT = process.env.PORT || 3001;
+const GATEWAY_TOKEN = process.env.WHATSAPP_GATEWAY_TOKEN;
+
+// ── Token Authentication Middleware ───────────────────────────────────
+// Protects all POST endpoints from unauthorized access.
+function requireToken(req, res, next) {
+  if (!GATEWAY_TOKEN) {
+    console.error('❌ GATEWAY_TOKEN is not set! Refusing all requests for security.');
+    return res.status(500).json({ success: false, error: 'Gateway is not configured securely.' });
+  }
+  const authHeader = req.headers['authorization'] || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  if (token !== GATEWAY_TOKEN) {
+    console.warn(`⛔ Unauthorized request from ${req.ip}`);
+    return res.status(401).json({ success: false, error: 'Unauthorized' });
+  }
+  next();
+}
+
 let sock = null;
 let currentQR = null;
 let isConnected = false;
+
 
 async function connectToWhatsApp() {
   const { state, saveCreds } = await useMultiFileAuthState(path.join(__dirname, 'auth_info_baileys'));
@@ -97,8 +116,8 @@ function getMediaPayload(mediaUrlOrPath) {
   return { url: mediaUrlOrPath };
 }
 
-// Send message API endpoint
-app.post('/send-message', async (req, res) => {
+// Send message API endpoint — protected by Bearer token auth
+app.post('/send-message', requireToken, async (req, res) => {
   try {
     if (!isConnected) {
       return res.status(503).json({ success: false, error: 'WhatsApp gateway is not connected. Scan QR code first.' });

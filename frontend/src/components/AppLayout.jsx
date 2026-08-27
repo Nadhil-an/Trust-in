@@ -61,6 +61,7 @@ const NAV_CONFIG = {
 
   ADMIN: [
     { label: 'User Management', icon: '👤', path: '/slt/sys/user-control' },
+    { label: 'Mobile Access', icon: '📱', path: '/slt/sys/mobile-access' },
     { label: 'Audit Log', icon: '🔍', path: '/slt/sys/audit-trail' },
     { label: 'Reports', icon: '📈', path: '/slt/shared/analytics' },
   ],

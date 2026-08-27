@@ -10,8 +10,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 from django.conf import settings
 from django.contrib.auth import authenticate
+import re
 
-from core.models import User, AuditLog, SystemNotification
+from core.models import User, AuditLog, SystemNotification, Role
 from core.serializers import (UserSerializer, UserCreateSerializer,
                                 UserUpdateSerializer, ChangePasswordSerializer,
                                 AuditLogSerializer, NotificationSerializer)
@@ -129,14 +130,18 @@ class TokenRefreshView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        refresh_token = request.COOKIES.get('refresh_token') or request.data.get('refresh_token')
+        refresh_token = request.COOKIES.get('refresh_token') or request.data.get('refresh')
         if not refresh_token:
             return Response({'error': 'Refresh token not provided.'}, status=401)
         try:
             token = RefreshToken(refresh_token)
             access = token.access_token
-            response = Response({'message': 'Token refreshed.'})
             jwt_settings = settings.SIMPLE_JWT
+            # Return access token in both JSON body (for mobile app) and cookie (for web)
+            response = Response({
+                'access': str(access),
+                'message': 'Token refreshed.'
+            })
             response.set_cookie('access_token', str(access),
                                 max_age=int(jwt_settings['ACCESS_TOKEN_LIFETIME'].total_seconds()),
                                 httponly=True,
@@ -145,6 +150,99 @@ class TokenRefreshView(APIView):
             return response
         except TokenError as e:
             return Response({'error': str(e)}, status=401)
+
+
+class MemberSignupThrottle(AnonRateThrottle):
+    rate = '3/minute'
+
+
+class MemberSignupView(APIView):
+    """Public endpoint — allows anyone to self-register as a MEMBER."""
+    permission_classes = [AllowAny]
+    throttle_classes = [MemberSignupThrottle]
+
+    def post(self, request):
+        data = request.data
+
+        full_name  = (data.get('full_name') or '').strip()
+        phone      = (data.get('phone') or '').strip()
+        email      = (data.get('email') or '').strip()
+        place      = (data.get('place') or '').strip()
+        pincode    = (data.get('pincode') or '').strip()
+        occupation = (data.get('occupation') or '').strip()
+        password   = data.get('password') or ''
+
+        # Combine place and pincode for address
+        full_address = place
+        if pincode:
+            full_address += f" - {pincode}"
+
+        # Validate required fields
+        errors = {}
+        if not full_name:
+            errors['full_name'] = 'Full name is required.'
+        if not phone:
+            errors['phone'] = 'Phone number is required.'
+        elif not re.match(r'^\d{10}$', phone):
+            errors['phone'] = 'Phone number must be exactly 10 digits.'
+        if not password or len(password) < 6:
+            errors['password'] = 'Password must be at least 6 characters.'
+        if errors:
+            return Response(errors, status=400)
+
+        # Build a unique username from phone number
+        base_username = re.sub(r'[^0-9]', '', phone)[-10:] or full_name.lower().replace(' ', '_')
+        username = base_username
+        counter = 1
+        while User.objects.filter(username=username).exists():
+            username = f"{base_username}_{counter}"
+            counter += 1
+
+        # Fallback for optional email
+        if not email:
+            email = f"{username}@member.local"
+
+        # Create the auth User
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password,
+            full_name=full_name,
+            phone=phone,
+            role=Role.MEMBER,
+            is_active=True,
+        )
+
+        # Create the corresponding Member profile
+        from hr_module.models import Member
+        Member.objects.create(
+            full_name=full_name,
+            phone=phone,
+            email=email,
+            address=full_address,
+            occupation=occupation,
+            created_by=user,
+        )
+
+        # Auto-login — generate tokens
+        refresh = RefreshToken.for_user(user)
+        access  = refresh.access_token
+
+        AuditLog.objects.create(
+            user=user, action='MEMBER_SIGNUP', module='AUTH',
+            record_type='User', record_id=str(user.id),
+            description=f"New member self-registered: {user.full_name}",
+            ip_address=getattr(request, 'audit_ip', None)
+        )
+
+        response = Response({
+            'user':    UserSerializer(user).data,
+            'access':  str(access),
+            'refresh': str(refresh),
+            'message': 'Account created successfully!'
+        }, status=201)
+        set_auth_cookies(response, access, refresh)
+        return response
 
 
 class ProfileView(APIView):

@@ -182,24 +182,24 @@ class MemberListCreateView(generics.ListCreateAPIView):
                 file_name = f"SLCT_Membership_Receipt_{member.member_id}_{member.joining_date}.pdf"
                 receipt.pdf_file.save(file_name, ContentFile(pdf_bytes), save=True)
 
-                # Save dynamic PNG Receipt Image Card
+                # Save dynamic PNG Receipt Image Card using default_storage
+                from django.core.files.storage import default_storage
                 img_bytes = generate_member_receipt_image_bytes(
                     member,
                     receipt_number=receipt.receipt_number,
                     membership_id=formatted_mem_id,
                     amount=float(receipt.amount)
                 )
-                img_file_name = f"SLCT_Receipt_Image_{member.member_id}_{member.joining_date}.png"
-                import os
-                from django.conf import settings
-                img_disk_path = os.path.join(settings.MEDIA_ROOT, 'membership_receipts', img_file_name)
-                os.makedirs(os.path.dirname(img_disk_path), exist_ok=True)
-                with open(img_disk_path, 'wb') as f:
-                    f.write(img_bytes)
+                img_file_path = f"membership_receipts/SLCT_Receipt_Image_{member.member_id}_{member.joining_date}.png"
+                if default_storage.exists(img_file_path):
+                    default_storage.delete(img_file_path)
+                saved_path = default_storage.save(img_file_path, ContentFile(img_bytes))
 
                 # 4. Build absolute URIs for WhatsApp delivery
                 pdf_url = self.request.build_absolute_uri(receipt.pdf_file.url)
-                img_url = self.request.build_absolute_uri(f"/media/membership_receipts/{img_file_name}")
+                img_url = default_storage.url(saved_path)
+                if img_url.startswith('/'):
+                    img_url = self.request.build_absolute_uri(img_url)
 
                 # 5. Formatted WhatsApp Message with Rich Image Card & Social Links
                 msg = (
@@ -316,8 +316,10 @@ class RetryWhatsAppView(APIView):
             return Response({'error': 'Member phone number missing'}, status=400)
 
         from notify.whatsapp_service import send_whatsapp_message
-        img_file_name = f"SLCT_Receipt_Image_{member.member_id}_{member.joining_date}.png"
-        img_url = request.build_absolute_uri(f"/media/membership_receipts/{img_file_name}")
+        from django.core.files.storage import default_storage
+        from django.core.files.base import ContentFile
+
+        img_file_path = f"membership_receipts/SLCT_Receipt_Image_{member.member_id}_{member.joining_date}.png"
 
         try:
             num_val = int(str(member.member_id).replace('MEM-', ''))
@@ -325,20 +327,19 @@ class RetryWhatsAppView(APIView):
         except Exception:
             formatted_mem_id = f"{member.member_id}"
 
-        # Ensure dynamic PNG image card exists on disk
-        import os
-        from django.conf import settings
-        img_disk_path = os.path.join(settings.MEDIA_ROOT, 'membership_receipts', img_file_name)
-        if not os.path.exists(img_disk_path):
+        # Ensure dynamic PNG image card exists in storage
+        if not default_storage.exists(img_file_path):
             img_bytes = generate_member_receipt_image_bytes(
                 member,
                 receipt_number=receipt.receipt_number,
                 membership_id=formatted_mem_id,
                 amount=float(receipt.amount)
             )
-            os.makedirs(os.path.dirname(img_disk_path), exist_ok=True)
-            with open(img_disk_path, 'wb') as f:
-                f.write(img_bytes)
+            default_storage.save(img_file_path, ContentFile(img_bytes))
+
+        img_url = default_storage.url(img_file_path)
+        if img_url.startswith('/'):
+            img_url = request.build_absolute_uri(img_url)
 
         msg = (
             f"Dear {member.full_name},\n\n"

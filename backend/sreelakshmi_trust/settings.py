@@ -180,6 +180,8 @@ AWS_STORAGE_BUCKET_NAME = os.getenv('R2_BUCKET_NAME', 'trustmedia')
 AWS_S3_ENDPOINT_URL = os.getenv('R2_ENDPOINT_URL')
 AWS_S3_CUSTOM_DOMAIN = os.getenv('R2_PUBLIC_URL', '').replace('https://', '').replace('http://', '') or None
 
+MEDIA_ROOT = BASE_DIR / 'media'
+
 if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY:
     # Use R2 for user-uploaded media files
     DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
@@ -190,7 +192,6 @@ if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY:
 else:
     # Fallback to local storage (Development/Docker)
     MEDIA_URL = '/media/'
-    MEDIA_ROOT = BASE_DIR / 'media'
 
 # ── Cache ──────────────────────────────────────────────────
 CACHES = {

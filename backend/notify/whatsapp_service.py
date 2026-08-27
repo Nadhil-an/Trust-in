@@ -50,7 +50,6 @@ def send_whatsapp_message(to_phone: str, message_body: str, document_url: str = 
         return {'success': False, 'reason': 'config_missing'}
     
     payload = {
-        'token': token,
         'to': phone,
         'body': message_body,
         'priority': 10
@@ -64,19 +63,44 @@ def send_whatsapp_message(to_phone: str, message_body: str, document_url: str = 
         payload['file_name'] = file_name
         payload['mimetype'] = 'application/pdf'
 
+    # Send the token as Authorization Bearer header (as the gateway expects)
+    headers = {}
+    if token:
+        headers['Authorization'] = f'Bearer {token}'
+
     from urllib.parse import urlparse
     def is_safe_url(url: str) -> bool:
         parsed = urlparse(url)
-        allowed_hosts = {'api.ultramsg.com', 'localhost', '127.0.0.1'}
-        return parsed.scheme in ('http', 'https') and parsed.hostname in allowed_hosts
+        if not parsed.hostname:
+            return False
+        hostname = parsed.hostname.lower()
+        allowed_hosts = {
+            'api.ultramsg.com', 
+            'localhost', 
+            '127.0.0.1', 
+            'whatsapp-gateway', 
+            'host.docker.internal'
+        }
+        r2_domain = getattr(settings, 'AWS_S3_CUSTOM_DOMAIN', None)
+        if r2_domain:
+            allowed_hosts.add(r2_domain.lower())
+        for h in getattr(settings, 'ALLOWED_HOSTS', []):
+            if h:
+                clean_h = h.split(':')[0].strip().lower()
+                if clean_h and clean_h != '*':
+                    allowed_hosts.add(clean_h)
+        return parsed.scheme in ('http', 'https') and (hostname in allowed_hosts)
 
     if not is_safe_url(gateway_url):
         logger.error("Blocked SSRF attempt to: %s", gateway_url)
         return {'success': False, 'reason': 'invalid_gateway'}
 
     try:
-        response = requests.post(gateway_url, json=payload, timeout=15)
+        response = requests.post(gateway_url, json=payload, headers=headers, timeout=15)
         res_json = response.json()
+        if response.status_code == 401:
+            logger.error(f"WhatsApp gateway rejected token — check WHATSAPP_GATEWAY_TOKEN in .env")
+            return {'success': False, 'reason': 'auth_failed', 'response': res_json}
         logger.info(f"WhatsApp message/document dispatched to {phone}: {res_json}")
         return {'success': True, 'response': res_json}
     except Exception as e:
@@ -99,7 +123,10 @@ def send_whatsapp_receipt(to_phone: str, donor_name: str, receipt_number: str,
         f"🏷️ *Category:* {source.title()}\n"
         f"💰 *Amount Received:* *₹{amount:,.2f}*\n"
         f"Your support helps us serve our community better.\n"
-        f"May divine blessings be with you and your family! 🙏\n"
+        f"May divine blessings be with you and your family! 🙏\n\n"
+        f"📱 Instagram: https://www.instagram.com/sreelakshmicharity?igsh=MWFna2dnYnFsdDRmbQ==\n"
+        f"📘 Facebook: https://www.facebook.com/share/1BZ1MR7HzA/?mibextid=wwXIfr\n"
+        f"🌐 Website: https://sreelakshmicharity.org\n"
         f"━━━━━━━━━━━━━━━━━━━━━━\n"
         f"This is an automated e-receipt sent from Sree Lakshmi Trust Official Number."
     )

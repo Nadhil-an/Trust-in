@@ -42,6 +42,7 @@ import PaymentAdvances from './pages/hr/PaymentAdvances'
 import PerformancePoints from './pages/hr/PerformancePoints'
 import ReportsPage from './pages/Reports'
 import AdminUsers from './pages/admin/Users'
+import MobileAccess from './pages/admin/MobileAccess'
 import AuditLogPage from './pages/admin/AuditLog'
 import ProfilePage from './pages/Profile'
 import NotFoundPage from './pages/NotFound'
@@ -168,6 +169,7 @@ export default function App() {
 
           {/* Admin */}
           <Route path="slt/sys/user-control"         element={<ProtectedRoute roles={['ADMIN']}><AdminUsers /></ProtectedRoute>} />
+          <Route path="slt/sys/mobile-access"        element={<ProtectedRoute roles={['ADMIN']}><MobileAccess /></ProtectedRoute>} />
           <Route path="slt/sys/audit-trail"          element={<ProtectedRoute roles={['ADMIN']}><AuditLogPage /></ProtectedRoute>} />
 
           {/* Data Entry */}

@@ -10,7 +10,7 @@ import { Button, Input } from '../../components/shared';
 import { authApi } from '../../api';
 import { useAuthStore } from '../../store/authStore';
 
-const LoginScreen = () => {
+const LoginScreen = ({ navigation }) => {
   const { t, i18n } = useTranslation();
   const { login } = useAuthStore();
   const [form, setForm] = useState({ username: '', password: '' });
@@ -88,6 +88,11 @@ const LoginScreen = () => {
             size="lg"
             style={styles.loginBtn}
           />
+
+          <TouchableOpacity onPress={() => navigation.navigate('Signup')} style={styles.signupLink}>
+            <Text style={styles.signupLinkText}>Don't have an account? </Text>
+            <Text style={[styles.signupLinkText, styles.signupLinkBold]}>Sign up as a Member →</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Footer */}
@@ -113,6 +118,9 @@ const styles = StyleSheet.create({
   title: { fontSize: 22, fontWeight: '800', color: Colors.textPrimary, marginBottom: 4 },
   subtitle: { fontSize: 14, color: Colors.gray500, marginBottom: 24 },
   loginBtn: { marginTop: 8 },
+  signupLink: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 18, flexWrap: 'wrap' },
+  signupLinkText: { color: Colors.gray500, fontSize: 13 },
+  signupLinkBold: { color: Colors.primary, fontWeight: '700' },
   langBtn: { alignItems: 'center', padding: 12 },
   langText: { color: Colors.primary, fontSize: 14, fontWeight: '600' },
   footer: { textAlign: 'center', color: Colors.gray400, fontSize: 12, marginTop: 16 },

@@ -61,6 +61,7 @@ export const authApi = {
   logout:         ()            => api.post('/auth/logout/'),
   getProfile:     ()            => api.get('/auth/profile/'),
   changePassword: (data)        => api.post('/auth/change-password/', data),
+  signup:         (data)        => api.post('/auth/signup/', data),
 };
 
 // ── Members  (api/hr/members/) ───────────────────────────────────────────────

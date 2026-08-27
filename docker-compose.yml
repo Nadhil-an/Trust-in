@@ -31,8 +31,9 @@ services:
       - ./backend/media:/app/../media
     env_file:
       - ./backend/.env
-    # ⚠️ SECURITY: No 'ports' mapping here.
-    # Gateway only accessible from the backend service internally.
+    # Exposing port 3001 to host so Windows native runserver can reach it
+    ports:
+      - "3001:3001"
 
   # ── 4. Backend (Django/Daphne) ────────────────────────────────────────
   backend:

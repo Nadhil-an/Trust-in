@@ -52,7 +52,7 @@ class AccountsDashboardView(APIView):
         ).count()
 
         cashier_pending = AssessmentRequest.objects.filter(
-            status__in=['APPROVED', 'CASHIER_PENDING']
+            status__in=[RequestStatus.APPROVED, RequestStatus.PENDING_DISBURSEMENT]
         ).count()
 
         today_income = Income.objects.filter(date=today).aggregate(t=Sum('amount'))['t'] or 0
@@ -234,8 +234,7 @@ class IncomeListCreateView(generics.ListCreateAPIView):
         if income.donor_phone:
             try:
                 from accounts_module.donation_image_generator import generate_donation_receipt_image_bytes
-                import os
-                from django.conf import settings
+                from django.core.files.storage import default_storage
                 from django.core.files.base import ContentFile
                 
                 # Generate Image
@@ -244,16 +243,16 @@ class IncomeListCreateView(generics.ListCreateAPIView):
                 # Format Date and Receipt number for file name
                 safe_date = income.date.strftime('%Y-%m-%d')
                 safe_rcp = income.receipt_number.replace('/', '-') if income.receipt_number else f"INC-{income.id}"
-                img_file_name = f"SLCT_Donation_Receipt_{safe_rcp}_{safe_date}.png"
+                img_file_path = f"donation_receipts/SLCT_Donation_Receipt_{safe_rcp}_{safe_date}.png"
                 
-                # Save to media/donation_receipts
-                img_disk_path = os.path.join(settings.MEDIA_ROOT, 'donation_receipts', img_file_name)
-                os.makedirs(os.path.dirname(img_disk_path), exist_ok=True)
-                with open(img_disk_path, 'wb') as f:
-                    f.write(img_bytes)
+                if default_storage.exists(img_file_path):
+                    default_storage.delete(img_file_path)
+                saved_path = default_storage.save(img_file_path, ContentFile(img_bytes))
 
                 # Build Image URL and Receipt URL
-                img_url = self.request.build_absolute_uri(f"/media/donation_receipts/{img_file_name}")
+                img_url = default_storage.url(saved_path)
+                if img_url.startswith('/'):
+                    img_url = self.request.build_absolute_uri(img_url)
                 receipt_url = self.request.build_absolute_uri(f"/api/accounts/income/{income.id}/receipt/")
                 
                 res = send_whatsapp_receipt(
@@ -327,16 +326,18 @@ class RetryWhatsAppDonationView(APIView):
 
         safe_date = income.date.strftime('%Y-%m-%d')
         safe_rcp = income.receipt_number.replace('/', '-') if income.receipt_number else f"INC-{income.id}"
-        img_file_name = f"SLCT_Donation_Receipt_{safe_rcp}_{safe_date}.png"
-        img_disk_path = os.path.join(settings.MEDIA_ROOT, 'donation_receipts', img_file_name)
+        img_file_path = f"donation_receipts/SLCT_Donation_Receipt_{safe_rcp}_{safe_date}.png"
 
-        if not os.path.exists(img_disk_path):
+        from django.core.files.storage import default_storage
+        from django.core.files.base import ContentFile
+
+        if not default_storage.exists(img_file_path):
             img_bytes = generate_donation_receipt_image_bytes(income)
-            os.makedirs(os.path.dirname(img_disk_path), exist_ok=True)
-            with open(img_disk_path, 'wb') as f:
-                f.write(img_bytes)
+            default_storage.save(img_file_path, ContentFile(img_bytes))
 
-        img_url = request.build_absolute_uri(f"/media/donation_receipts/{img_file_name}")
+        img_url = default_storage.url(img_file_path)
+        if img_url.startswith('/'):
+            img_url = request.build_absolute_uri(img_url)
         receipt_url = request.build_absolute_uri(f"/api/accounts/income/{income.id}/receipt/")
 
         res = send_whatsapp_receipt(

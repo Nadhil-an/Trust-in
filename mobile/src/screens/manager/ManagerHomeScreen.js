@@ -54,6 +54,7 @@ const AssessmentRow = ({ item, onPress }) => {
     APPROVED:       { color: '#16B978', bg: '#ECFDF5', label: t('status.approved', 'Approved') },
     REJECTED:       { color: '#EF4444', bg: '#FEF2F2', label: t('status.rejected', 'Rejected') },
     CASHIER_PENDING:{ color: Colors.primary, bg: Colors.primaryLight, label: t('status.cashier', 'Cashier') },
+    PENDING_DISBURSEMENT:{ color: Colors.primary, bg: Colors.primaryLight, label: t('status.cashier', 'Cashier') },
     COMPLETED:      { color: '#10B981', bg: '#D1FAE5', label: t('status.completed', 'Completed') },
     ON_HOLD:        { color: '#9CA3AF', bg: '#F3F4F6', label: t('status.on_hold', 'On Hold') },
   };
