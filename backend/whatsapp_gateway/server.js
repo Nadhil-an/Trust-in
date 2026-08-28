@@ -122,13 +122,15 @@ function getMediaPayload(mediaUrlOrPath) {
     } else if (relPath.includes('/media/')) {
       relPath = relPath.split('/media/')[1];
     }
-    
-    const localPath = path.join(__dirname, '..', 'media', relPath);
+
+    // MEDIA_ROOT env var is set to /app/media in Docker, falls back to local path in dev
+    const mediaRoot = process.env.MEDIA_ROOT || path.join(__dirname, '..', 'media');
+    const localPath = path.join(mediaRoot, relPath);
     if (fs.existsSync(localPath)) {
-      console.log(`📁 Resolved local media file directly from disk: ${localPath}`);
+      console.log(`📁 Resolved local media file: ${localPath}`);
       return fs.readFileSync(localPath);
     }
-    console.warn(`⚠️ Local file path does not exist on disk: ${localPath}`);
+    console.warn(`⚠️ Local file not found on disk: ${localPath}`);
   } catch (err) {
     console.error('Error resolving local media file:', err);
   }

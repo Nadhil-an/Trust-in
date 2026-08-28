@@ -1,0 +1,30 @@
+# Never include secrets or local dev files in Docker image
+.env
+.env.*
+!.env.example
+
+# SQLite dev database — production uses PostgreSQL
+db.sqlite3
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+.cache/
+
+# Logs
+logs/
+*.log
+
+# Media (mounted as volume at runtime)
+media/
+
+# Alembic / migration caches
+*.pyc
+
+# Test files
+test_*.py
+
+# Git
+.git/
+.gitignore

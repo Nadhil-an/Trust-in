@@ -5,20 +5,27 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_DB: sreelakshmi_trust
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
+      POSTGRES_USER: ${DB_USER:-trust_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-trust_pass_2026}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    # ⚠️ SECURITY: No 'ports' mapping here.
-    # DB is only accessible inside the Docker private network.
-    # Use 'docker-compose exec db psql' for admin access.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-trust_user} -d sreelakshmi_trust"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # ⚠️ SECURITY: No 'ports' mapping — DB only accessible inside Docker network
 
   # ── 2. Redis ─────────────────────────────────────────────────────────
   redis:
     image: redis:7-alpine
     restart: unless-stopped
-    # ⚠️ SECURITY: No 'ports' mapping here.
-    # Redis is only accessible inside the Docker private network.
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    # ⚠️ SECURITY: No 'ports' mapping — Redis only accessible inside Docker network
 
   # ── 3. WhatsApp Gateway ───────────────────────────────────────────────
   whatsapp-gateway:
@@ -27,11 +34,18 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     volumes:
+      # WhatsApp session — MUST persist across restarts (no QR re-scan)
       - ./backend/whatsapp_gateway/auth_info_baileys:/app/auth_info_baileys
-      - ./backend/media:/app/../media
+      # Shared media folder — SAME bind mount as backend so receipt images are readable
+      - ./backend/media:/app/media
     env_file:
       - ./backend/.env
-    # Exposing port 3001 to host so Windows native runserver can reach it
+    environment:
+      # Path to media folder inside the container
+      MEDIA_ROOT: /app/media
+      # Internal Docker network URL — backend reaches gateway by container name
+      WHATSAPP_GATEWAY_URL: http://whatsapp-gateway:3001/send-message
+    # Exposing 3001 to host for QR scan page: http://<EC2-IP>:3001/qr
     ports:
       - "3001:3001"
 
@@ -42,23 +56,31 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     command: >
-      bash -c "python manage.py migrate &&
+      bash -c "python manage.py migrate --noinput &&
+               python manage.py collectstatic --noinput &&
                daphne -b 0.0.0.0 -p 8000 sreelakshmi_trust.asgi:application"
     volumes:
-      - media_data:/app/media
+      # Shared media folder — same bind mount as whatsapp-gateway
+      - ./backend/media:/app/media
     ports:
       - "8000:8000"
     env_file:
       - ./backend/.env
     environment:
-      - DATABASE_URL=postgres://user:password@db:5432/sreelakshmi_trust
-      - REDIS_URL=redis://redis:6379/0
-      - USE_REDIS=True
-      - WHATSAPP_GATEWAY_URL=http://whatsapp-gateway:3001/send-message
+      # Override .env with Docker-internal service URLs
+      DATABASE_URL: postgres://${DB_USER:-trust_user}:${DB_PASSWORD:-trust_pass_2026}@db:5432/sreelakshmi_trust
+      REDIS_URL: redis://redis:6379/0
+      USE_REDIS: "True"
+      # Gateway URL uses Docker internal network — NOT localhost
+      WHATSAPP_GATEWAY_URL: http://whatsapp-gateway:3001/send-message
+      DEBUG: "False"
     depends_on:
-      - db
-      - redis
-      - whatsapp-gateway
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      whatsapp-gateway:
+        condition: service_started
 
   # ── 5. Frontend (React + Nginx) ───────────────────────────────────────
   frontend:
@@ -68,10 +90,13 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
+      - "443:443"
+    volumes:
+      # SSL certificates from Let's Encrypt (certbot)
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - backend
 
 # ── Persistent Volumes ────────────────────────────────────────────────
 volumes:
   postgres_data:   # PostgreSQL data — survives container restarts
-  media_data:      # User uploaded files — survives container restarts

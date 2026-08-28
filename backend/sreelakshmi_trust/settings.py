@@ -211,7 +211,10 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = 31536000        # 1 year
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
-    SECURE_SSL_REDIRECT = True
+    # Nginx terminates SSL — Django sits behind it, so we don't redirect internally
+    SECURE_SSL_REDIRECT = False
+    # Tell Django that X-Forwarded-Proto: https header means the request is secure
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # ── Internationalisation ──────────────────────────────────────────
 LANGUAGE_CODE = 'en-us'

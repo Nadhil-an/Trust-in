@@ -1,0 +1,13 @@
+# Never include WhatsApp session in Docker image — it's mounted as a volume
+auth_info_baileys/
+
+# Node modules
+node_modules/
+
+# Logs
+logs/
+*.log
+
+# Git
+.git/
+.gitignore
