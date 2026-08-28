@@ -14,7 +14,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    # ⚠️ SECURITY: No 'ports' mapping — DB only accessible inside Docker network
+    # No ports exposed — DB only accessible inside Docker network
 
   # ── 2. Redis ─────────────────────────────────────────────────────────
   redis:
@@ -25,27 +25,27 @@ services:
       interval: 10s
       timeout: 3s
       retries: 5
-    # ⚠️ SECURITY: No 'ports' mapping — Redis only accessible inside Docker network
+    # No ports exposed — Redis only accessible inside Docker network
 
   # ── 3. WhatsApp Gateway ───────────────────────────────────────────────
+  # Internal service — NOT exposed to internet directly
+  # Backend reaches it via Docker network: http://whatsapp-gateway:3001
   whatsapp-gateway:
     build:
       context: ./backend/whatsapp_gateway
       dockerfile: Dockerfile
     restart: unless-stopped
     volumes:
-      # WhatsApp session — MUST persist across restarts (no QR re-scan)
+      # WhatsApp session files — MUST persist (no QR re-scan after restart)
       - ./backend/whatsapp_gateway/auth_info_baileys:/app/auth_info_baileys
-      # Shared media folder — SAME bind mount as backend so receipt images are readable
+      # Shared media — same bind mount as backend to read receipt images
       - ./backend/media:/app/media
     env_file:
       - ./backend/.env
     environment:
-      # Path to media folder inside the container
       MEDIA_ROOT: /app/media
-      # Internal Docker network URL — backend reaches gateway by container name
-      WHATSAPP_GATEWAY_URL: http://whatsapp-gateway:3001/send-message
-    # Exposing 3001 to host for QR scan page: http://<EC2-IP>:3001/qr
+    # Port 3001 only exposed for QR scan page on first setup
+    # After WhatsApp is connected, you can remove this port mapping
     ports:
       - "3001:3001"
 
@@ -60,18 +60,20 @@ services:
                python manage.py collectstatic --noinput &&
                daphne -b 0.0.0.0 -p 8000 sreelakshmi_trust.asgi:application"
     volumes:
-      # Shared media folder — same bind mount as whatsapp-gateway
+      # Shared media — same bind mount as whatsapp-gateway
       - ./backend/media:/app/media
-    ports:
-      - "8000:8000"
+      - ./backend/staticfiles:/app/staticfiles
+    # No external port — only accessible through frontend nginx proxy
+    expose:
+      - "8000"
     env_file:
       - ./backend/.env
     environment:
-      # Override .env with Docker-internal service URLs
+      # These override any values in .env for Docker deployment
       DATABASE_URL: postgres://${DB_USER:-trust_user}:${DB_PASSWORD:-trust_pass_2026}@db:5432/sreelakshmi_trust
       REDIS_URL: redis://redis:6379/0
       USE_REDIS: "True"
-      # Gateway URL uses Docker internal network — NOT localhost
+      # Internal Docker network URL — never use localhost here
       WHATSAPP_GATEWAY_URL: http://whatsapp-gateway:3001/send-message
       DEBUG: "False"
     depends_on:
@@ -82,7 +84,9 @@ services:
       whatsapp-gateway:
         condition: service_started
 
-  # ── 5. Frontend (React + Nginx) ───────────────────────────────────────
+  # ── 5. Frontend Nginx (serves React + proxies /api/ and /ws/) ─────────
+  # This is the ONLY service exposed to the internet (port 80)
+  # System Nginx on EC2 handles HTTPS (443) and proxies to this container (80)
   frontend:
     build:
       context: ./frontend
@@ -90,10 +94,6 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
-      - "443:443"
-    volumes:
-      # SSL certificates from Let's Encrypt (certbot)
-      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - backend
 
