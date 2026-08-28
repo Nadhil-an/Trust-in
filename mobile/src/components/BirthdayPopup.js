@@ -140,15 +140,18 @@ const PersonCard = ({ person, index }) => (
 export default function BirthdayPopup({ visible, birthdays = [], onClose }) {
   const today = birthdays.filter(b => b.when === 'today');
   const tomorrow = birthdays.filter(b => b.when === 'tomorrow');
+  const currentUserObj = today.find(b => b.isCurrentUser);
   const hasBirthdays = today.length > 0;
 
-  const wishes = [
-    "May your day be as bright as your smile! ✨",
-    "Wishing you joy, laughter, and amazing memories! 🎊",
-    "Another year wiser, another year better! 🌟",
-    "May all your birthday dreams come true! 🌈",
-    "Here's to a wonderful journey ahead! 🥂",
-  ];
+  const wishes = currentUserObj 
+    ? [`Dear ${currentUserObj.name}, Sree Lakshmi Charitable Trust wishes you a joyous and blessed Birthday filled with happiness & prosperity! 💖🎂`]
+    : [
+        "May your day be as bright as your smile! ✨",
+        "Wishing you joy, laughter, and amazing memories! 🎊",
+        "Another year wiser, another year better! 🌟",
+        "May all your birthday dreams come true! 🌈",
+        "Here's to a wonderful journey ahead! 🥂",
+      ];
   const wish = wishes[Math.floor(Math.random() * wishes.length)];
 
   if (!visible || (!hasBirthdays && tomorrow.length === 0)) return null;
@@ -167,7 +170,7 @@ export default function BirthdayPopup({ visible, birthdays = [], onClose }) {
             <View style={styles.header}>
               <BouncingCake />
               <ShimmerText style={styles.title}>
-                {hasBirthdays ? '🎉 Happy Birthday! 🎉' : '🔔 Birthday Tomorrow!'}
+                {currentUserObj ? `🎉 Happy Birthday, ${currentUserObj.name}! 🎉` : (hasBirthdays ? '🎉 Happy Birthday! 🎉' : '🔔 Birthday Tomorrow!')}
               </ShimmerText>
               {hasBirthdays && (
                 <Text style={styles.subtitle}>{wish}</Text>

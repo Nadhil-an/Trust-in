@@ -14,6 +14,7 @@ import Toast from 'react-native-toast-message';
 import BirthdayPopup from '../../components/BirthdayPopup';
 import SideDrawer from '../../components/SideDrawer';
 import { LinearGradient } from 'expo-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width } = Dimensions.get('window');
 
@@ -98,15 +99,80 @@ const StaffHomeScreen = ({ navigation, route }) => {
   const fetchBirthdays = useCallback(async () => {
     try {
       const res = await staffApi.birthdayAlerts();
-      const todayList = (res.data.today || []).map(p => ({ ...p, when: 'today' }));
-      const tomorrowList = (res.data.tomorrow || []).map(p => ({ ...p, when: 'tomorrow' }));
+      let todayList = (res.data?.today || []).map(p => ({ ...p, when: 'today' }));
+      const tomorrowList = (res.data?.tomorrow || []).map(p => ({ ...p, when: 'tomorrow' }));
+      
+      // Check if logged-in user's birthday is today
+      const userDob = user?.date_of_birth || user?.dob;
+      if (userDob) {
+        const parts = userDob.split('-');
+        if (parts.length === 3) {
+          const dobMonth = parseInt(parts[1], 10);
+          const dobDay = parseInt(parts[2], 10);
+          const now = new Date();
+          if (now.getMonth() + 1 === dobMonth && now.getDate() === dobDay) {
+            const exists = todayList.some(p => p.name === user.full_name);
+            if (!exists) {
+              todayList.unshift({
+                id: 'my-bday',
+                name: user?.full_name || 'You',
+                designation: 'Special Birthday Wish 🎉',
+                when: 'today',
+                isCurrentUser: true,
+              });
+            }
+          }
+        }
+      }
+
       const all = [...todayList, ...tomorrowList];
       if (all.length > 0) {
         setBirthdays(all);
-        setBdayVisible(true);
+        const todayStr = new Date().toISOString().split('T')[0];
+        const lastShownDate = await AsyncStorage.getItem('@bday_popup_shown_date');
+        if (lastShownDate !== todayStr) {
+          setBdayVisible(true);
+          await AsyncStorage.setItem('@bday_popup_shown_date', todayStr);
+        }
       }
-    } catch (_) {}
-  }, []);
+    } catch (_) {
+      const userDob = user?.date_of_birth || user?.dob;
+      if (userDob) {
+        const parts = userDob.split('-');
+        if (parts.length === 3) {
+          const dobMonth = parseInt(parts[1], 10);
+          const dobDay = parseInt(parts[2], 10);
+          const now = new Date();
+          if (now.getMonth() + 1 === dobMonth && now.getDate() === dobDay) {
+            setBirthdays([{
+              id: 'my-bday',
+              name: user?.full_name || 'You',
+              designation: 'Special Birthday Wish 🎉',
+              when: 'today',
+              isCurrentUser: true,
+            }]);
+            const todayStr = new Date().toISOString().split('T')[0];
+            const lastShownDate = await AsyncStorage.getItem('@bday_popup_shown_date');
+            if (lastShownDate !== todayStr) {
+              setBdayVisible(true);
+              await AsyncStorage.setItem('@bday_popup_shown_date', todayStr);
+            }
+          }
+        }
+      }
+    }
+  }, [user]);
+
+  const isUserBirthday = React.useMemo(() => {
+    const userDob = user?.date_of_birth || user?.dob;
+    if (!userDob) return false;
+    const parts = userDob.split('-');
+    if (parts.length !== 3) return false;
+    const dobMonth = parseInt(parts[1], 10);
+    const dobDay = parseInt(parts[2], 10);
+    const now = new Date();
+    return now.getMonth() + 1 === dobMonth && now.getDate() === dobDay;
+  }, [user]);
 
   useFocusEffect(
     useCallback(() => {
@@ -156,11 +222,44 @@ const StaffHomeScreen = ({ navigation, route }) => {
             {unreadCount > 0 && <View style={styles.badge} />}
           </TouchableOpacity>
           <TouchableOpacity 
-            style={styles.avatarWrap} 
+            style={[styles.avatarWrap, isUserBirthday && { position: 'relative' }]} 
             activeOpacity={0.8} 
-            onPress={() => navigation.navigate('Profile')}
+            onPress={() => {
+              if (isUserBirthday) {
+                setBdayVisible(true);
+              } else {
+                navigation.navigate('Profile');
+              }
+            }}
           >
-            <Ionicons name="person-circle" size={38} color="#94A3B8" />
+            {isUserBirthday && (
+              <View style={styles.birthdayHatBadge}>
+                <Text style={{ fontSize: 16 }}>👑</Text>
+              </View>
+            )}
+
+            {user?.avatar ? (
+              <Image 
+                source={{ uri: user.avatar }} 
+                style={[
+                  { width: 38, height: 38, borderRadius: 19, borderWidth: 1.5, borderColor: '#0284C7' },
+                  isUserBirthday && { borderColor: '#F59E0B', borderWidth: 2.5 }
+                ]} 
+              />
+            ) : (
+              <View style={[
+                styles.defaultAvatarCircle,
+                isUserBirthday && { borderColor: '#F59E0B', borderWidth: 2.5, backgroundColor: '#FEF3C7' }
+              ]}>
+                <Ionicons name="person" size={20} color={isUserBirthday ? '#D97706' : '#0284C7'} />
+              </View>
+            )}
+
+            {isUserBirthday && (
+              <View style={styles.birthdayCakeBadge}>
+                <Text style={{ fontSize: 11 }}>🎂</Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -819,6 +918,38 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
     fontWeight: '500',
+  },
+
+  /* Special Birthday Profile Badges */
+  birthdayHatBadge: {
+    position: 'absolute',
+    top: -14,
+    left: 8,
+    zIndex: 10,
+  },
+  birthdayCakeBadge: {
+    position: 'absolute',
+    bottom: -4,
+    right: -4,
+    backgroundColor: '#FFF1F2',
+    borderRadius: 10,
+    width: 18,
+    height: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#F43F5E',
+    zIndex: 10,
+  },
+  defaultAvatarCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#E0F2FE',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: '#0284C7',
   },
 });
 

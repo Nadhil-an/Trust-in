@@ -16,7 +16,7 @@ from core.models import User, AuditLog, SystemNotification, Role
 from core.serializers import (UserSerializer, UserCreateSerializer,
                                 UserUpdateSerializer, ChangePasswordSerializer,
                                 AuditLogSerializer, NotificationSerializer)
-from core.permissions import IsAdmin, IsAnyStaff
+from core.permissions import IsAdmin, IsHR, IsAnyStaff
 
 
 def set_auth_cookies(response, access_token, refresh_token):
@@ -289,7 +289,7 @@ class UserListCreateView(generics.ListCreateAPIView):
     def get_permissions(self):
         if self.request.method == 'GET':
             return [IsAnyStaff()]
-        return [IsAdmin()]
+        return [IsHR()]
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -298,26 +298,66 @@ class UserListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         user = serializer.save()
+        from django.db.models import Q
+        from hr_module.models import ExecutiveOfficer
+        dob = self.request.data.get('date_of_birth') if hasattr(self.request, 'data') else None
+        if not ExecutiveOfficer.objects.filter(
+            Q(email__iexact=user.email) | Q(full_name__iexact=user.full_name)
+        ).exists():
+            ExecutiveOfficer.objects.create(
+                full_name=user.full_name,
+                email=user.email,
+                phone=user.phone or '',
+                designation=user.role.replace('_', ' ').title(),
+                department='General',
+                date_of_birth=dob if dob else None,
+                status='ACTIVE' if user.is_active else 'INACTIVE',
+                created_by=self.request.user if hasattr(self.request, 'user') and self.request.user.is_authenticated else None
+            )
         AuditLog.objects.create(
-            user=self.request.user, action='CREATE_USER', module='ADMIN',
+            user=self.request.user if hasattr(self.request, 'user') and self.request.user.is_authenticated else None,
+            action='CREATE_USER', module='ADMIN',
             record_type='User', record_id=str(user.id),
-            description=f"User {user.username} ({user.role}) created by {self.request.user.full_name}",
+            description=f"User {user.username} ({user.role}) created",
             ip_address=getattr(self.request, 'audit_ip', None)
         )
 
 
 class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsAdmin]
+    permission_classes = [IsHR]
     queryset = User.objects.all()
 
     def get_serializer_class(self):
         return UserSerializer
 
+    def perform_update(self, serializer):
+        user = serializer.save()
+        from django.db.models import Q
+        from hr_module.models import ExecutiveOfficer
+        dob = self.request.data.get('date_of_birth') if hasattr(self.request, 'data') else None
+        update_kwargs = {
+            'full_name': user.full_name,
+            'email': user.email,
+            'phone': user.phone or '',
+            'status': 'ACTIVE' if user.is_active else 'INACTIVE'
+        }
+        if dob:
+            update_kwargs['date_of_birth'] = dob
+        ExecutiveOfficer.objects.filter(
+            Q(email__iexact=user.email) | Q(full_name__iexact=user.full_name)
+        ).update(**update_kwargs)
+
     def perform_destroy(self, instance):
         instance.is_active = False
         instance.save()
+        from django.db.models import Q
+        from hr_module.models import ExecutiveOfficer
+        ExecutiveOfficer.objects.filter(
+            Q(email__iexact=instance.email) | Q(full_name__iexact=instance.full_name)
+        ).update(status='INACTIVE')
         AuditLog.objects.create(
-            user=self.request.user, action='DEACTIVATE_USER', module='ADMIN',
+            user=self.request.user if hasattr(self.request, 'user') and self.request.user.is_authenticated else None,
+            action='DEACTIVATE_USER', module='ADMIN',
             record_type='User', record_id=str(instance.id),
             description=f"User {instance.username} deactivated",
             ip_address=getattr(self.request, 'audit_ip', None)

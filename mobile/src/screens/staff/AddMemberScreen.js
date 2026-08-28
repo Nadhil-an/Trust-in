@@ -82,7 +82,7 @@ const AddMemberScreen = ({ navigation, route }) => {
     blood_group: editItem?.blood_group || '',
     id_type: editItem?.id_type || '',
     id_number: editItem?.id_number || '',
-    payment_mode: editItem?.payment_mode || '',
+    payment_mode: editItem?.payment_mode || 'Cash',
     amount: '100', // Fixed at 100
     payment_date: new Date().toISOString().split('T')[0],
     transaction_id: editItem?.transaction_id || '',
@@ -102,7 +102,7 @@ const AddMemberScreen = ({ navigation, route }) => {
         address: editItem.address || '', district: editItem.district || 'Kozhikode', state: editItem.state || 'Kerala', pincode: editItem.pincode || '',
         membership_type: editItem.membership_type || '', blood_group: editItem.blood_group || '',
         id_type: editItem.id_type || '', id_number: editItem.id_number || '',
-        payment_mode: editItem.payment_mode || '', amount: '100', payment_date: new Date().toISOString().split('T')[0],
+        payment_mode: editItem.payment_mode || 'Cash', amount: '100', payment_date: new Date().toISOString().split('T')[0],
         transaction_id: editItem.transaction_id || '', notes: '', temp_password: '',
       });
     }
@@ -141,14 +141,10 @@ const AddMemberScreen = ({ navigation, route }) => {
     
     if (step === 1) {
       if (!form.membership_type) errs.membership_type = t('common.required');
-      if (!form.id_type) errs.id_type = t('common.required');
     }
 
     if (step === 2) {
       if (!form.payment_mode) errs.payment_mode = t('common.required');
-      if (form.payment_mode === 'GPay' && !form.transaction_id.trim()) {
-        errs.transaction_id = 'Transaction ID is required for GPay';
-      }
     }
 
     setErrors(errs);
@@ -277,8 +273,8 @@ const AddMemberScreen = ({ navigation, route }) => {
             <View style={styles.card}>
               <SelectField label="Blood Group" icon="water-outline" value={form.blood_group} placeholder="Select blood group" onPress={() => openSheet('Select Blood Group', BLOOD_GROUPS, 'blood_group')} />
               <SelectField label="Membership Type" icon="star-outline" value={form.membership_type} placeholder="Select membership type" onPress={() => openSheet('Select Membership Type', MEMBER_TYPES, 'membership_type')} required error={errors.membership_type} />
-              <SelectField label="ID Proof Type" icon="card-outline" value={form.id_type} placeholder="Select ID proof type" onPress={() => openSheet('Select ID Proof Type', ID_TYPES, 'id_type')} required error={errors.id_type} />
-              <Text style={styles.inputLabel}>Upload ID Proof <Text style={{ color: Colors.error }}>*</Text></Text>
+              <SelectField label="ID Proof Type (Optional)" icon="card-outline" value={form.id_type} placeholder="Select ID proof type" onPress={() => openSheet('Select ID Proof Type', ID_TYPES, 'id_type')} />
+              <Text style={styles.inputLabel}>Upload ID Proof (Optional)</Text>
               <View style={styles.idUploadBox}>
                 <PhotoPicker photos={idPhotos} onPhotosChange={setIdPhotos} maxPhotos={1} customIcon="cloud-upload-outline" customLabel="Upload Document" />
                 <Text style={styles.photoHint}>JPG, PNG, PDF (Max 5MB)</Text>
@@ -366,18 +362,19 @@ const AddMemberScreen = ({ navigation, route }) => {
                 <View style={styles.previewLine}><Text style={styles.previewKey}>Name:</Text><Text style={styles.previewVal}>{form.full_name}</Text></View>
                 <View style={styles.previewLine}><Text style={styles.previewKey}>Phone:</Text><Text style={styles.previewVal}>{form.phone}</Text></View>
                 <View style={styles.previewLine}><Text style={styles.previewKey}>Email:</Text><Text style={styles.previewVal}>{form.email || '-'}</Text></View>
-                <View style={styles.previewLine}><Text style={styles.previewKey}>Age/Gender:</Text><Text style={styles.previewVal}>{form.age} / {form.gender}</Text></View>
+                <View style={styles.previewLine}><Text style={styles.previewKey}>Age:</Text><Text style={styles.previewVal}>{form.age || '-'}</Text></View>
+                <View style={styles.previewLine}><Text style={styles.previewKey}>Gender:</Text><Text style={styles.previewVal}>{form.gender || '-'}</Text></View>
                 <View style={styles.previewLine}><Text style={styles.previewKey}>Address:</Text><Text style={styles.previewVal}>{form.address}, {form.district}, {form.state} - {form.pincode}</Text></View>
                 
                 <Text style={styles.previewSectionTitle}>Membership</Text>
                 <View style={styles.previewLine}><Text style={styles.previewKey}>Type:</Text><Text style={styles.previewVal}>{form.membership_type}</Text></View>
                 <View style={styles.previewLine}><Text style={styles.previewKey}>Blood Group:</Text><Text style={styles.previewVal}>{form.blood_group || '-'}</Text></View>
-                <View style={styles.previewLine}><Text style={styles.previewKey}>ID Proof:</Text><Text style={styles.previewVal}>{form.id_type}</Text></View>
+                <View style={styles.previewLine}><Text style={styles.previewKey}>ID Proof:</Text><Text style={styles.previewVal}>{form.id_type || '-'}</Text></View>
                 
                 <Text style={styles.previewSectionTitle}>Payment</Text>
-                <View style={styles.previewLine}><Text style={styles.previewKey}>Method:</Text><Text style={styles.previewVal}>{form.payment_mode}</Text></View>
+                <View style={styles.previewLine}><Text style={styles.previewKey}>Method:</Text><Text style={styles.previewVal}>{form.payment_mode || 'Cash'}</Text></View>
                 <View style={styles.previewLine}><Text style={styles.previewKey}>Amount:</Text><Text style={styles.previewVal}>₹{form.amount}</Text></View>
-                {form.payment_mode === 'GPay' && <View style={styles.previewLine}><Text style={styles.previewKey}>Txn ID:</Text><Text style={styles.previewVal}>{form.transaction_id || '-'}</Text></View>}
+                <View style={styles.previewLine}><Text style={styles.previewKey}>Txn ID:</Text><Text style={styles.previewVal}>{form.transaction_id || '-'}</Text></View>
               </View>
             </KeyboardAwareScrollView>
             <View style={{ width: '100%', marginTop: 20 }}>

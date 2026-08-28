@@ -1,13 +1,32 @@
+=========================================================
+  SREE LAKSHMI TRUST - STARTUP COMMANDS
+=========================================================
+
+== STEP 1 - Django Backend ==
 cd backend
 python manage.py runserver 0.0.0.0:8000
 
+== STEP 2 - WhatsApp Gateway (PM2 - Auto-restarts if crashed) ==
+(AUTO-STARTS ON PC LOGIN via Windows Startup folder)
+To start manually if needed:
+cd "C:\Users\NADIL\OneDrive\Desktop\sree Trust"
+pm2 start ecosystem.config.js
 
+To check gateway status:
+pm2 list
 
+To see gateway logs:
+pm2 logs sree-trust-whatsapp-gateway
+
+To restart gateway if needed:
+pm2 restart sree-trust-whatsapp-gateway
+
+To stop gateway:
+pm2 stop sree-trust-whatsapp-gateway
+
+== STEP 3 - Frontend (Web Dashboard) ==
 cd frontend
 npm run dev -- --port 5174
-
-
-
 
 == MOBILE SETUP (Run these in ORDER in a new terminal) ==
 
@@ -18,3 +37,20 @@ rmdir /s /q node_modules & del /f /q package-lock.json & npm install --legacy-pe
 STEP 2 - Start Expo (run every time):
 cd mobile
 set REACT_NATIVE_PACKAGER_HOSTNAME=10.108.62.21 && npx expo start -c
+
+=========================================================
+  PRODUCTION NOTES
+=========================================================
+
+1. WhatsApp Gateway (PM2):
+   - Auto-restarts if it crashes (no manual restart needed)
+   - Auto-starts when you log into Windows
+   - Check status: pm2 list
+
+2. Check gateway connection status:
+   Open browser: http://localhost:3001/qr
+   (Shows "Connected" if working, QR code if needs scan)
+
+3. If WhatsApp disconnects and needs re-login:
+   - Open browser: http://localhost:3001/qr
+   - Scan QR with Trust phone

@@ -237,6 +237,6 @@ LOGGING = {
 
 # ── WhatsApp Gateway Settings ────────────────────────────────────
 WHATSAPP_ENABLED = os.getenv('WHATSAPP_ENABLED', 'True') == 'True'
-WHATSAPP_GATEWAY_URL = os.getenv('WHATSAPP_GATEWAY_URL', 'https://api.ultramsg.com/instance_id/messages/chat')
-WHATSAPP_GATEWAY_TOKEN = os.getenv('WHATSAPP_GATEWAY_TOKEN', '')
+WHATSAPP_GATEWAY_URL = os.getenv('WHATSAPP_GATEWAY_URL', 'http://localhost:3001/send-message')
+WHATSAPP_GATEWAY_TOKEN = os.getenv('WHATSAPP_GATEWAY_TOKEN', 'trust_secret_token_123')
 

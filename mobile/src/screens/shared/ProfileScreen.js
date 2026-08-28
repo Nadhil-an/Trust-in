@@ -10,6 +10,7 @@ import {
   TextInput,
   ActivityIndicator
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
 import { useAuthStore } from '../../store/authStore';
@@ -17,17 +18,107 @@ import { authApi } from '../../api';
 import Toast from 'react-native-toast-message';
 
 const ProfileScreen = ({ navigation }) => {
-  const { user, logout } = useAuthStore();
+  const { user, updateUser, logout } = useAuthStore();
+  
+  // Change Password Modal state
   const [pwdModal, setPwdModal] = useState(false);
   const [passwords, setPasswords] = useState({ old: '', new: '', confirm: '' });
   const [pwdLoading, setPwdLoading] = useState(false);
 
-  const memberName = user?.full_name || 'Arun Kumar';
-  const memberId = user?.username || 'SKCT24568';
+  // Edit Profile Modal state
+  const [editModal, setEditModal] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
+  const [editForm, setEditForm] = useState({
+    full_name: '',
+    phone: '',
+    email: '',
+    address: '',
+    date_of_birth: '',
+    avatar: ''
+  });
+
+  const memberName = user?.full_name || user?.username || 'Staff Member';
+  const memberId = user?.username || 'ST1001';
   const memberSince = 'May 2024';
-  const email = user?.email || 'arunkumar@email.com';
+  const email = user?.email || 'staff@sreetrust.org';
   const phone = user?.phone || '+91 98765 43210';
-  const location = 'Kochi, Kerala, India';
+  const location = user?.address || 'Kochi, Kerala, India';
+  const dateOfBirth = user?.date_of_birth || user?.dob || 'Not set';
+  const avatar = user?.avatar;
+
+  const openEditModal = () => {
+    setEditForm({
+      full_name: user?.full_name || '',
+      phone: user?.phone || '',
+      email: user?.email || '',
+      address: user?.address || '',
+      date_of_birth: user?.date_of_birth || user?.dob || '',
+      avatar: user?.avatar || ''
+    });
+    setEditModal(true);
+  };
+
+  const pickImage = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Toast.show({ type: 'error', text1: 'Permission denied', text2: 'Gallery permission required to upload photo.' });
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setEditForm(prev => ({ ...prev, avatar: result.assets[0].uri }));
+      }
+    } catch (e) {
+      Toast.show({ type: 'error', text1: 'Image selection error' });
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    if (!editForm.full_name.trim()) {
+      return Toast.show({ type: 'error', text1: 'Name required', text2: 'Please enter your full name' });
+    }
+
+    setEditLoading(true);
+    try {
+      const updatedUser = {
+        ...user,
+        full_name: editForm.full_name,
+        phone: editForm.phone,
+        email: editForm.email,
+        address: editForm.address,
+        date_of_birth: editForm.date_of_birth,
+        dob: editForm.date_of_birth,
+        avatar: editForm.avatar
+      };
+
+      await updateUser(updatedUser);
+
+      try {
+        await authApi.updateProfile({
+          full_name: editForm.full_name,
+          phone: editForm.phone,
+          email: editForm.email,
+          address: editForm.address,
+          date_of_birth: editForm.date_of_birth,
+        });
+      } catch (_) {}
+
+      Toast.show({ type: 'success', text1: 'Profile Updated', text2: 'Changes saved across all dashboards!' });
+      setEditModal(false);
+    } catch (e) {
+      Toast.show({ type: 'error', text1: 'Failed to update profile' });
+    } finally {
+      setEditLoading(false);
+    }
+  };
 
   const handleChangePassword = async () => {
     if (!passwords.old || !passwords.new || !passwords.confirm) {
@@ -62,7 +153,7 @@ const ProfileScreen = ({ navigation }) => {
           <Ionicons name="arrow-back" size={24} color={Colors.white} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Profile</Text>
-        <TouchableOpacity style={styles.editHeaderBtn}>
+        <TouchableOpacity style={styles.editHeaderBtn} onPress={openEditModal}>
           <Ionicons name="create-outline" size={22} color={Colors.white} />
         </TouchableOpacity>
       </View>
@@ -71,9 +162,13 @@ const ProfileScreen = ({ navigation }) => {
         {/* Profile Card Header */}
         <View style={styles.profileCard}>
           <View style={styles.avatarRow}>
-            <View style={styles.avatarContainer}>
-              <Ionicons name="person" size={44} color="#0284c7" />
-            </View>
+            <TouchableOpacity style={styles.avatarContainer} onPress={openEditModal} activeOpacity={0.8}>
+              {avatar ? (
+                <Image source={{ uri: avatar }} style={{ width: 60, height: 60, borderRadius: 30 }} />
+              ) : (
+                <Ionicons name="person" size={40} color="#0284c7" />
+              )}
+            </TouchableOpacity>
             <View style={styles.profileHeaderInfo}>
               <Text style={styles.name}>{memberName}</Text>
               <Text style={styles.metaText}>Member ID: {memberId}</Text>
@@ -99,21 +194,18 @@ const ProfileScreen = ({ navigation }) => {
               <Ionicons name="location-outline" size={18} color="#0284c7" />
               <Text style={styles.infoValue}>{location}</Text>
             </View>
-          </View>
 
-          {/* View Membership Card Button */}
-          <TouchableOpacity
-            style={styles.cardBtn}
-            onPress={() => navigation.navigate('MembershipCard')}
-          >
-            <Text style={styles.cardBtnText}>View Membership Card</Text>
-          </TouchableOpacity>
+            <View style={styles.infoRow}>
+              <Ionicons name="calendar-outline" size={18} color="#0284c7" />
+              <Text style={styles.infoValue}>DOB: {dateOfBirth}</Text>
+            </View>
+          </View>
         </View>
 
         {/* Account Details Section */}
         <Text style={styles.sectionTitle}>Account Details</Text>
         <View style={styles.menuBox}>
-          <TouchableOpacity style={styles.menuRow}>
+          <TouchableOpacity style={styles.menuRow} onPress={openEditModal}>
             <View style={styles.menuLeft}>
               <Ionicons name="person-outline" size={20} color={Colors.gray600} />
               <Text style={styles.menuText}>Edit Profile</Text>
@@ -144,6 +236,101 @@ const ProfileScreen = ({ navigation }) => {
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* Edit Profile Modal */}
+      <Modal visible={editModal} transparent animationType="slide" onRequestClose={() => setEditModal(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { maxHeight: '90%' }]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Edit Profile</Text>
+              <TouchableOpacity onPress={() => setEditModal(false)}>
+                <Ionicons name="close" size={24} color={Colors.gray500} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {/* Photo Upload Avatar Picker */}
+              <View style={{ alignItems: 'center', marginBottom: 20 }}>
+                <TouchableOpacity onPress={pickImage} activeOpacity={0.8} style={styles.avatarPickerWrapper}>
+                  {editForm.avatar ? (
+                    <Image source={{ uri: editForm.avatar }} style={styles.avatarPickerImg} />
+                  ) : (
+                    <View style={styles.avatarPickerPlaceholder}>
+                      <Ionicons name="person" size={44} color="#0284c7" />
+                    </View>
+                  )}
+                  <View style={styles.cameraBadge}>
+                    <Ionicons name="camera" size={14} color="#FFFFFF" />
+                  </View>
+                </TouchableOpacity>
+                <Text style={{ fontSize: 12, color: '#0284c7', fontWeight: '700', marginTop: 8 }}>
+                  Tap to Upload Photo
+                </Text>
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Full Name</Text>
+                <TextInput
+                  style={styles.input}
+                  value={editForm.full_name}
+                  onChangeText={v => setEditForm(p => ({ ...p, full_name: v }))}
+                  placeholder="Enter full name"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Phone Number</Text>
+                <TextInput
+                  style={styles.input}
+                  value={editForm.phone}
+                  onChangeText={v => setEditForm(p => ({ ...p, phone: v }))}
+                  placeholder="Enter phone number"
+                  keyboardType="phone-pad"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Email Address</Text>
+                <TextInput
+                  style={styles.input}
+                  value={editForm.email}
+                  onChangeText={v => setEditForm(p => ({ ...p, email: v }))}
+                  placeholder="Enter email address"
+                  keyboardType="email-address"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Address / Location</Text>
+                <TextInput
+                  style={styles.input}
+                  value={editForm.address}
+                  onChangeText={v => setEditForm(p => ({ ...p, address: v }))}
+                  placeholder="Enter address or location"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Date of Birth (YYYY-MM-DD)</Text>
+                <TextInput
+                  style={styles.input}
+                  value={editForm.date_of_birth}
+                  onChangeText={v => setEditForm(p => ({ ...p, date_of_birth: v }))}
+                  placeholder="e.g. 1995-08-15"
+                />
+              </View>
+
+              <TouchableOpacity style={styles.submitBtn} onPress={handleSaveProfile} disabled={editLoading}>
+                {editLoading ? (
+                  <ActivityIndicator color={Colors.white} />
+                ) : (
+                  <Text style={styles.submitBtnText}>Save Profile Changes</Text>
+                )}
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
 
       {/* Change Password Modal */}
       <Modal visible={pwdModal} transparent animationType="slide">
@@ -215,6 +402,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 2,
     borderColor: '#0284c7',
+    overflow: 'hidden',
   },
   profileHeaderInfo: { flex: 1 },
   name: { fontSize: 20, fontWeight: '800', color: Colors.textPrimary, marginBottom: 2 },
@@ -222,17 +410,9 @@ const styles = StyleSheet.create({
 
   divider: { height: 1, backgroundColor: '#bae6fd', marginVertical: 14 },
 
-  infoList: { gap: 10, marginBottom: 16 },
+  infoList: { gap: 10, marginBottom: 4 },
   infoRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   infoValue: { fontSize: 13, color: Colors.gray700, fontWeight: '600' },
-
-  cardBtn: {
-    backgroundColor: '#0284c7',
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  cardBtnText: { color: Colors.white, fontSize: 14, fontWeight: '700' },
 
   sectionTitle: { fontSize: 14, fontWeight: '700', color: Colors.gray600, marginLeft: 4, marginTop: 6 },
   menuBox: {
@@ -274,6 +454,19 @@ const styles = StyleSheet.create({
   input: { borderWidth: 1, borderColor: Colors.gray300, borderRadius: 12, padding: 14, fontSize: 15, backgroundColor: Colors.gray50 },
   submitBtn: { backgroundColor: '#0284c7', padding: 16, borderRadius: 12, alignItems: 'center', marginTop: 8 },
   submitBtnText: { color: Colors.white, fontSize: 16, fontWeight: '600' },
+
+  /* Avatar Picker Styling */
+  avatarPickerWrapper: { position: 'relative', width: 84, height: 84 },
+  avatarPickerImg: { width: 84, height: 84, borderRadius: 42, borderWidth: 2, borderColor: '#0284c7' },
+  avatarPickerPlaceholder: {
+    width: 84, height: 84, borderRadius: 42, backgroundColor: '#e0f2fe',
+    justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#0284c7'
+  },
+  cameraBadge: {
+    position: 'absolute', bottom: 0, right: 0, backgroundColor: '#0284c7',
+    width: 28, height: 28, borderRadius: 14, justifyContent: 'center', alignItems: 'center',
+    borderWidth: 2, borderColor: '#FFFFFF'
+  }
 });
 
 export default ProfileScreen;

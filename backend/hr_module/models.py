@@ -65,7 +65,11 @@ class Member(models.Model):
     def save(self, *args, **kwargs):
         if not self.member_id:
             count = Member.objects.count() + 1
-            self.member_id = f"{count:04d}"
+            candidate = f"{count:04d}"
+            while Member.objects.filter(member_id=candidate).exists():
+                count += 1
+                candidate = f"{count:04d}"
+            self.member_id = candidate
         super().save(*args, **kwargs)
 
 
@@ -100,7 +104,11 @@ class MembershipReceipt(models.Model):
     def save(self, *args, **kwargs):
         if not self.receipt_number:
             count = MembershipReceipt.objects.count() + 1
-            self.receipt_number = f"{count:06d}"
+            candidate = f"{count:06d}"
+            while MembershipReceipt.objects.filter(receipt_number=candidate).exists():
+                count += 1
+                candidate = f"{count:06d}"
+            self.receipt_number = candidate
         super().save(*args, **kwargs)
 
 
@@ -140,7 +148,11 @@ class Volunteer(models.Model):
     def save(self, *args, **kwargs):
         if not self.volunteer_id:
             count = Volunteer.objects.count() + 1
-            self.volunteer_id = f"VOL-{count:05d}"
+            candidate = f"VOL-{count:05d}"
+            while Volunteer.objects.filter(volunteer_id=candidate).exists():
+                count += 1
+                candidate = f"VOL-{count:05d}"
+            self.volunteer_id = candidate
         super().save(*args, **kwargs)
 
 
@@ -180,7 +192,11 @@ class ExecutiveMember(models.Model):
     def save(self, *args, **kwargs):
         if not self.exec_id:
             count = ExecutiveMember.objects.count() + 1
-            self.exec_id = f"EXEC-{count:04d}"
+            candidate = f"EXEC-{count:04d}"
+            while ExecutiveMember.objects.filter(exec_id=candidate).exists():
+                count += 1
+                candidate = f"EXEC-{count:04d}"
+            self.exec_id = candidate
         super().save(*args, **kwargs)
 
 
@@ -235,7 +251,11 @@ class ExecutiveOfficer(models.Model):
     def save(self, *args, **kwargs):
         if not self.employee_id:
             count = ExecutiveOfficer.objects.count() + 1
-            self.employee_id = f"EMP-{count:05d}"
+            candidate = f"EMP-{count:05d}"
+            while ExecutiveOfficer.objects.filter(employee_id=candidate).exists():
+                count += 1
+                candidate = f"EMP-{count:05d}"
+            self.employee_id = candidate
         super().save(*args, **kwargs)
 
 

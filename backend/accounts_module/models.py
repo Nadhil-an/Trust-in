@@ -162,7 +162,11 @@ class Income(models.Model):
         if not self.receipt_number:
             year = timezone.now().year
             count = Income.objects.filter(date__year=year).count() + 1
-            self.receipt_number = f"RCP-{year}-{count:05d}"
+            candidate = f"RCP-{year}-{count:05d}"
+            while Income.objects.filter(receipt_number=candidate).exists():
+                count += 1
+                candidate = f"RCP-{year}-{count:05d}"
+            self.receipt_number = candidate
         super().save(*args, **kwargs)
 
 
@@ -208,6 +212,14 @@ class Expense(models.Model):
         ordering = ['-date']
 
     def save(self, *args, **kwargs):
+        if not self.voucher_number:
+            year = timezone.now().year
+            count = Expense.objects.filter(date__year=year).count() + 1
+            candidate = f"VCH-{year}-{count:05d}"
+            while Expense.objects.filter(voucher_number=candidate).exists():
+                count += 1
+                candidate = f"VCH-{year}-{count:05d}"
+            self.voucher_number = candidate
         if not self.expense_id:
             year = timezone.now().year
             count = Expense.objects.filter(date__year=year).count() + 1
@@ -274,12 +286,21 @@ class Transfer(models.Model):
     approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_transfers')
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_transfers')
     created_at = models.DateTimeField(default=timezone.now)
+    reference_number = models.CharField(max_length=100, blank=True)
 
     class Meta:
         db_table = 'accounts_transfers'
         ordering = ['-date']
 
     def save(self, *args, **kwargs):
+        if not self.reference_number:
+            year = timezone.now().year
+            count = Transfer.objects.filter(date__year=year).count() + 1
+            candidate = f"TRF-{year}-{count:05d}"
+            while Transfer.objects.filter(reference_number=candidate).exists():
+                count += 1
+                candidate = f"TRF-{year}-{count:05d}"
+            self.reference_number = candidate
         if not self.transfer_id:
             year = timezone.now().year
             count = Transfer.objects.filter(date__year=year).count() + 1
@@ -321,5 +342,9 @@ class Transaction(models.Model):
         if not self.transaction_id:
             year = timezone.now().year
             count = Transaction.objects.filter(date__year=year).count() + 1
-            self.transaction_id = f"TXN-{year}-{count:06d}"
+            candidate = f"TXN-{year}-{count:06d}"
+            while Transaction.objects.filter(transaction_id=candidate).exists():
+                count += 1
+                candidate = f"TXN-{year}-{count:06d}"
+            self.transaction_id = candidate
         super().save(*args, **kwargs)

@@ -184209,3 +184209,2370 @@ WebSocket CONNECT /ws/notify/ [10.108.62.176:43458]
 [mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.03, 10.108.62.176:43464][0m
 [mHTTP GET /api/hr/birthday-alerts/ 200 [0.02, 10.108.62.176:43464][0m
 [mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.03, 10.108.62.176:43464][0m
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:22479]
+WebSocket REJECT /ws/notify/ [127.0.0.1:22479]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:22479]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:47880]
+WebSocket REJECT /ws/notify/ [127.0.0.1:47880]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:47880]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:57321]
+WebSocket REJECT /ws/notify/ [127.0.0.1:57321]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:57321]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:14595]
+WebSocket REJECT /ws/notify/ [127.0.0.1:14595]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:14595]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:56910]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:56910]
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.04, 10.108.62.176:56920][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.07, 10.108.62.176:56918][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.02, 10.108.62.176:56920][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.06, 10.108.62.176:56918][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.05, 10.108.62.176:56936][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.03, 10.108.62.176:56918][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.02, 10.108.62.176:56918][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:11167]
+WebSocket REJECT /ws/notify/ [127.0.0.1:11167]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:11167]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:3197]
+WebSocket REJECT /ws/notify/ [127.0.0.1:3197]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:3197]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:61992]
+WebSocket REJECT /ws/notify/ [127.0.0.1:61992]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:61992]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:53600]
+WebSocket REJECT /ws/notify/ [127.0.0.1:53600]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:53600]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:47757]
+WebSocket REJECT /ws/notify/ [127.0.0.1:47757]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:47757]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:51035]
+WebSocket REJECT /ws/notify/ [127.0.0.1:51035]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:51035]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:1067]
+WebSocket REJECT /ws/notify/ [127.0.0.1:1067]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:1067]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:23977]
+WebSocket REJECT /ws/notify/ [127.0.0.1:23977]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:23977]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:1287]
+WebSocket REJECT /ws/notify/ [127.0.0.1:1287]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:1287]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:12567]
+WebSocket REJECT /ws/notify/ [127.0.0.1:12567]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:12567]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:11362]
+WebSocket REJECT /ws/notify/ [127.0.0.1:11362]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:11362]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:8133]
+WebSocket REJECT /ws/notify/ [127.0.0.1:8133]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:8133]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:17150]
+WebSocket REJECT /ws/notify/ [127.0.0.1:17150]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:17150]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:1273]
+WebSocket REJECT /ws/notify/ [127.0.0.1:1273]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:1273]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.04, 10.108.62.176:37758][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.04, 10.108.62.176:37768][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.108.62.176:37758][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.02, 10.108.62.176:37758][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:12517]
+WebSocket REJECT /ws/notify/ [127.0.0.1:12517]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:12517]
+Not Found: /api/core/events/
+[33mHTTP GET /api/core/events/ 404 [0.02, 10.108.62.176:37758][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:31416]
+WebSocket REJECT /ws/notify/ [127.0.0.1:31416]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:31416]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:23213]
+WebSocket REJECT /ws/notify/ [127.0.0.1:23213]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:23213]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:64647]
+WebSocket REJECT /ws/notify/ [127.0.0.1:64647]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:64647]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:35306]
+WebSocket REJECT /ws/notify/ [127.0.0.1:35306]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:35306]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:56910]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:9794]
+WebSocket REJECT /ws/notify/ [127.0.0.1:9794]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:9794]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:2682]
+WebSocket REJECT /ws/notify/ [127.0.0.1:2682]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:2682]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:10371]
+WebSocket REJECT /ws/notify/ [127.0.0.1:10371]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:10371]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:6665]
+WebSocket REJECT /ws/notify/ [127.0.0.1:6665]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:6665]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:48900]
+WebSocket REJECT /ws/notify/ [127.0.0.1:48900]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:48900]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:25442]
+WebSocket REJECT /ws/notify/ [127.0.0.1:25442]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:25442]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:13507]
+WebSocket REJECT /ws/notify/ [127.0.0.1:13507]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:13507]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:12597]
+WebSocket REJECT /ws/notify/ [127.0.0.1:12597]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:12597]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:6969]
+WebSocket REJECT /ws/notify/ [127.0.0.1:6969]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:6969]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:61424]
+WebSocket REJECT /ws/notify/ [127.0.0.1:61424]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:61424]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:42913]
+WebSocket REJECT /ws/notify/ [127.0.0.1:42913]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:42913]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:24510]
+WebSocket REJECT /ws/notify/ [127.0.0.1:24510]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:24510]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:19545]
+WebSocket REJECT /ws/notify/ [127.0.0.1:19545]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:19545]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:8176]
+WebSocket REJECT /ws/notify/ [127.0.0.1:8176]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:8176]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:12988]
+WebSocket REJECT /ws/notify/ [127.0.0.1:12988]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:12988]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:56881]
+WebSocket REJECT /ws/notify/ [127.0.0.1:56881]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:56881]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:39562]
+WebSocket REJECT /ws/notify/ [127.0.0.1:39562]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:39562]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:13132]
+WebSocket REJECT /ws/notify/ [127.0.0.1:13132]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:13132]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:27067]
+WebSocket REJECT /ws/notify/ [127.0.0.1:27067]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:27067]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:50667]
+WebSocket REJECT /ws/notify/ [127.0.0.1:50667]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:50667]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:44518]
+WebSocket REJECT /ws/notify/ [127.0.0.1:44518]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:44518]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:38656]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:38656]
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.05, 10.108.62.176:38666][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.06, 10.108.62.176:38658][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:50802]
+WebSocket REJECT /ws/notify/ [127.0.0.1:50802]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:50802]
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.03, 10.108.62.176:38658][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:47258]
+WebSocket REJECT /ws/notify/ [127.0.0.1:47258]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:47258]
+[mHTTP GET /api/hr/leaderboard/?date=2026-08-29 200 [0.05, 10.108.62.176:38658][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.05, 10.108.62.176:38666][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.06, 10.108.62.176:38658][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.03, 10.108.62.176:38658][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.03, 10.108.62.176:38658][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:17510]
+WebSocket REJECT /ws/notify/ [127.0.0.1:17510]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:17510]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:4680]
+WebSocket REJECT /ws/notify/ [127.0.0.1:4680]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:4680]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:38656]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:48747]
+WebSocket REJECT /ws/notify/ [127.0.0.1:48747]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:48747]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:48354]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:48354]
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.03, 10.108.62.176:48368][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.04, 10.108.62.176:48374][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.108.62.176:48374][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.02, 10.108.62.176:48374][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:43996]
+WebSocket REJECT /ws/notify/ [127.0.0.1:43996]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:43996]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:57887]
+WebSocket REJECT /ws/notify/ [127.0.0.1:57887]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:57887]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:21473]
+WebSocket REJECT /ws/notify/ [127.0.0.1:21473]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:21473]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:63186]
+WebSocket REJECT /ws/notify/ [127.0.0.1:63186]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:63186]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:8704]
+WebSocket REJECT /ws/notify/ [127.0.0.1:8704]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:8704]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:6832]
+WebSocket REJECT /ws/notify/ [127.0.0.1:6832]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:6832]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:21358]
+WebSocket REJECT /ws/notify/ [127.0.0.1:21358]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:21358]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:37729]
+WebSocket REJECT /ws/notify/ [127.0.0.1:37729]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:37729]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:54954]
+WebSocket REJECT /ws/notify/ [127.0.0.1:54954]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:54954]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:50986]
+WebSocket REJECT /ws/notify/ [127.0.0.1:50986]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:50986]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:14127]
+WebSocket REJECT /ws/notify/ [127.0.0.1:14127]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:14127]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:3367]
+WebSocket REJECT /ws/notify/ [127.0.0.1:3367]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:3367]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:64881]
+WebSocket REJECT /ws/notify/ [127.0.0.1:64881]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:64881]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:52100]
+WebSocket REJECT /ws/notify/ [127.0.0.1:52100]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:52100]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:46495]
+WebSocket REJECT /ws/notify/ [127.0.0.1:46495]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:46495]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:15314]
+WebSocket REJECT /ws/notify/ [127.0.0.1:15314]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:15314]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:26251]
+WebSocket REJECT /ws/notify/ [127.0.0.1:26251]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:26251]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:57882]
+WebSocket REJECT /ws/notify/ [127.0.0.1:57882]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:57882]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:28444]
+WebSocket REJECT /ws/notify/ [127.0.0.1:28444]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:28444]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:65310]
+WebSocket REJECT /ws/notify/ [127.0.0.1:65310]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:65310]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:9665]
+WebSocket REJECT /ws/notify/ [127.0.0.1:9665]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:9665]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:46470]
+WebSocket REJECT /ws/notify/ [127.0.0.1:46470]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:46470]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:47953]
+WebSocket REJECT /ws/notify/ [127.0.0.1:47953]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:47953]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:48568]
+WebSocket REJECT /ws/notify/ [127.0.0.1:48568]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:48568]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:20515]
+WebSocket REJECT /ws/notify/ [127.0.0.1:20515]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:20515]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:17252]
+WebSocket REJECT /ws/notify/ [127.0.0.1:17252]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:17252]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:39510]
+WebSocket REJECT /ws/notify/ [127.0.0.1:39510]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:39510]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:12946]
+WebSocket REJECT /ws/notify/ [127.0.0.1:12946]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:12946]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:58130]
+WebSocket REJECT /ws/notify/ [127.0.0.1:58130]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:58130]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:1916]
+WebSocket REJECT /ws/notify/ [127.0.0.1:1916]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:1916]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:42203]
+WebSocket REJECT /ws/notify/ [127.0.0.1:42203]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:42203]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:3368]
+WebSocket REJECT /ws/notify/ [127.0.0.1:3368]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:3368]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:54072]
+WebSocket REJECT /ws/notify/ [127.0.0.1:54072]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:54072]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:48354]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:60575]
+WebSocket REJECT /ws/notify/ [127.0.0.1:60575]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:60575]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:57592]
+WebSocket REJECT /ws/notify/ [127.0.0.1:57592]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:57592]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:24722]
+WebSocket REJECT /ws/notify/ [127.0.0.1:24722]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:24722]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:59687]
+WebSocket REJECT /ws/notify/ [127.0.0.1:59687]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:59687]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:49671]
+WebSocket REJECT /ws/notify/ [127.0.0.1:49671]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:49671]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:29676]
+WebSocket REJECT /ws/notify/ [127.0.0.1:29676]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:29676]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:21390]
+WebSocket REJECT /ws/notify/ [127.0.0.1:21390]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:21390]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:65072]
+WebSocket REJECT /ws/notify/ [127.0.0.1:65072]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:65072]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:17491]
+WebSocket REJECT /ws/notify/ [127.0.0.1:17491]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:17491]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:37729]
+WebSocket REJECT /ws/notify/ [127.0.0.1:37729]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:37729]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:11806]
+WebSocket REJECT /ws/notify/ [127.0.0.1:11806]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:11806]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:1297]
+WebSocket REJECT /ws/notify/ [127.0.0.1:1297]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:1297]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:36570]
+WebSocket REJECT /ws/notify/ [127.0.0.1:36570]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:36570]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:41444]
+WebSocket REJECT /ws/notify/ [127.0.0.1:41444]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:41444]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:51555]
+WebSocket REJECT /ws/notify/ [127.0.0.1:51555]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:51555]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:47008]
+WebSocket REJECT /ws/notify/ [127.0.0.1:47008]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:47008]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:39723]
+WebSocket REJECT /ws/notify/ [127.0.0.1:39723]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:39723]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:5038]
+WebSocket REJECT /ws/notify/ [127.0.0.1:5038]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:5038]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:23315]
+WebSocket REJECT /ws/notify/ [127.0.0.1:23315]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:23315]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:17058]
+WebSocket REJECT /ws/notify/ [127.0.0.1:17058]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:17058]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:13837]
+WebSocket REJECT /ws/notify/ [127.0.0.1:13837]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:13837]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:4496]
+WebSocket REJECT /ws/notify/ [127.0.0.1:4496]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:4496]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:46515]
+WebSocket REJECT /ws/notify/ [127.0.0.1:46515]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:46515]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:17186]
+WebSocket REJECT /ws/notify/ [127.0.0.1:17186]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:17186]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:59787]
+WebSocket REJECT /ws/notify/ [127.0.0.1:59787]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:59787]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:4028]
+WebSocket REJECT /ws/notify/ [127.0.0.1:4028]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:4028]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:2855]
+WebSocket REJECT /ws/notify/ [127.0.0.1:2855]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:2855]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:32699]
+WebSocket REJECT /ws/notify/ [127.0.0.1:32699]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:32699]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:60488]
+WebSocket REJECT /ws/notify/ [127.0.0.1:60488]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:60488]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:47919]
+WebSocket REJECT /ws/notify/ [127.0.0.1:47919]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:47919]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:20592]
+WebSocket REJECT /ws/notify/ [127.0.0.1:20592]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:20592]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:1394]
+WebSocket REJECT /ws/notify/ [127.0.0.1:1394]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:1394]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:28078]
+WebSocket REJECT /ws/notify/ [127.0.0.1:28078]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:28078]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:16941]
+WebSocket REJECT /ws/notify/ [127.0.0.1:16941]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:16941]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:12975]
+WebSocket REJECT /ws/notify/ [127.0.0.1:12975]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:12975]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:30344]
+WebSocket REJECT /ws/notify/ [127.0.0.1:30344]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:30344]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:56269]
+WebSocket REJECT /ws/notify/ [127.0.0.1:56269]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:56269]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:14835]
+WebSocket REJECT /ws/notify/ [127.0.0.1:14835]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:14835]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:27938]
+WebSocket REJECT /ws/notify/ [127.0.0.1:27938]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:27938]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:1845]
+WebSocket REJECT /ws/notify/ [127.0.0.1:1845]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:1845]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:23361]
+WebSocket REJECT /ws/notify/ [127.0.0.1:23361]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:23361]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:36287]
+WebSocket REJECT /ws/notify/ [127.0.0.1:36287]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:36287]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:53918]
+WebSocket REJECT /ws/notify/ [10.108.62.176:53918]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:53918]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:53406]
+WebSocket REJECT /ws/notify/ [10.108.62.176:53406]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:53406]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:50204]
+WebSocket REJECT /ws/notify/ [127.0.0.1:50204]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:50204]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:53412]
+WebSocket REJECT /ws/notify/ [10.108.62.176:53412]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:53412]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:15079]
+WebSocket REJECT /ws/notify/ [127.0.0.1:15079]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:15079]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:52082]
+WebSocket REJECT /ws/notify/ [127.0.0.1:52082]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:52082]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:56370]
+WebSocket REJECT /ws/notify/ [10.108.62.176:56370]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:56370]
+Unauthorized: /api/hr/staff-dashboard/
+Unauthorized: /api/core/notifications/unread_count/
+[31;1mHTTP GET /api/hr/staff-dashboard/ 401 [0.02, 10.108.62.176:56372][0m
+[31;1mHTTP GET /api/core/notifications/unread_count/ 401 [0.03, 10.108.62.176:56376][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.04, 10.108.62.176:56372][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.04, 10.108.62.176:56376][0m
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:56384]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:56384]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.04, 10.108.62.176:56376][0m
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:56384]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:52752]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:52752]
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.03, 10.108.62.176:56376][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.04, 10.108.62.176:56376][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.04, 10.108.62.176:56372][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.04, 10.108.62.176:56376][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.03, 10.108.62.176:56372][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.108.62.176:56376][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:36215]
+WebSocket REJECT /ws/notify/ [127.0.0.1:36215]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:36215]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:56665]
+WebSocket REJECT /ws/notify/ [127.0.0.1:56665]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:56665]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:19953]
+WebSocket REJECT /ws/notify/ [127.0.0.1:19953]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:19953]
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.03, 10.108.62.176:56372][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.04, 10.108.62.176:56376][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.03, 10.108.62.176:56376][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.04, 10.108.62.176:56376][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.02, 10.108.62.176:56372][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.05, 10.108.62.176:56376][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:57005]
+WebSocket REJECT /ws/notify/ [127.0.0.1:57005]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:57005]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:52752]
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.03, 10.108.62.176:56376][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:29732]
+WebSocket REJECT /ws/notify/ [127.0.0.1:29732]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:29732]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:39669]
+WebSocket REJECT /ws/notify/ [127.0.0.1:39669]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:39669]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:33709]
+WebSocket REJECT /ws/notify/ [127.0.0.1:33709]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:33709]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:2298]
+WebSocket REJECT /ws/notify/ [127.0.0.1:2298]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:2298]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:29333]
+WebSocket REJECT /ws/notify/ [127.0.0.1:29333]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:29333]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:37107]
+WebSocket REJECT /ws/notify/ [127.0.0.1:37107]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:37107]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:40550]
+WebSocket REJECT /ws/notify/ [127.0.0.1:40550]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:40550]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:62612]
+WebSocket REJECT /ws/notify/ [127.0.0.1:62612]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:62612]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:60430]
+WebSocket REJECT /ws/notify/ [127.0.0.1:60430]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:60430]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:60035]
+WebSocket REJECT /ws/notify/ [127.0.0.1:60035]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:60035]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:20283]
+WebSocket REJECT /ws/notify/ [127.0.0.1:20283]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:20283]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:56609]
+WebSocket REJECT /ws/notify/ [127.0.0.1:56609]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:56609]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:9296]
+WebSocket REJECT /ws/notify/ [127.0.0.1:9296]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:9296]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:7510]
+WebSocket REJECT /ws/notify/ [127.0.0.1:7510]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:7510]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:29928]
+WebSocket REJECT /ws/notify/ [127.0.0.1:29928]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:29928]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:22535]
+WebSocket REJECT /ws/notify/ [127.0.0.1:22535]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:22535]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:55492]
+WebSocket REJECT /ws/notify/ [127.0.0.1:55492]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:55492]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:30868]
+WebSocket REJECT /ws/notify/ [127.0.0.1:30868]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:30868]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:56892]
+WebSocket REJECT /ws/notify/ [127.0.0.1:56892]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:56892]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:6587]
+WebSocket REJECT /ws/notify/ [127.0.0.1:6587]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:6587]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:28645]
+WebSocket REJECT /ws/notify/ [127.0.0.1:28645]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:28645]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:60953]
+WebSocket REJECT /ws/notify/ [127.0.0.1:60953]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:60953]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:8252]
+WebSocket REJECT /ws/notify/ [127.0.0.1:8252]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:8252]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:65365]
+WebSocket REJECT /ws/notify/ [127.0.0.1:65365]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:65365]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:64748]
+WebSocket REJECT /ws/notify/ [127.0.0.1:64748]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:64748]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:36556]
+WebSocket REJECT /ws/notify/ [127.0.0.1:36556]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:36556]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:36779]
+WebSocket REJECT /ws/notify/ [127.0.0.1:36779]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:36779]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:35338]
+WebSocket REJECT /ws/notify/ [127.0.0.1:35338]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:35338]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:2626]
+WebSocket REJECT /ws/notify/ [127.0.0.1:2626]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:2626]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:54886]
+WebSocket REJECT /ws/notify/ [127.0.0.1:54886]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:54886]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:1795]
+WebSocket REJECT /ws/notify/ [127.0.0.1:1795]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:1795]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:60050]
+WebSocket REJECT /ws/notify/ [127.0.0.1:60050]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:60050]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:19393]
+WebSocket REJECT /ws/notify/ [127.0.0.1:19393]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:19393]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:42594]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:42594]
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.03, 10.108.62.176:42600][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.04, 10.108.62.176:42598][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.108.62.176:42598][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.02, 10.108.62.176:42598][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:32603]
+WebSocket REJECT /ws/notify/ [127.0.0.1:32603]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:32603]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:19208]
+WebSocket REJECT /ws/notify/ [127.0.0.1:19208]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:19208]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.108.62.176:42598][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.108.62.176:42598][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.02, 10.108.62.176:42598][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:38332]
+WebSocket REJECT /ws/notify/ [127.0.0.1:38332]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:38332]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.108.62.176:42598][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.03, 10.108.62.176:42598][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.02, 10.108.62.176:42598][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:58302]
+WebSocket REJECT /ws/notify/ [127.0.0.1:58302]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:58302]
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.03, 10.108.62.176:42600][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.04, 10.108.62.176:42598][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.108.62.176:42598][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.02, 10.108.62.176:42598][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:33991]
+WebSocket REJECT /ws/notify/ [127.0.0.1:33991]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:33991]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:61018]
+WebSocket REJECT /ws/notify/ [127.0.0.1:61018]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:61018]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:29355]
+WebSocket REJECT /ws/notify/ [127.0.0.1:29355]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:29355]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:8283]
+WebSocket REJECT /ws/notify/ [127.0.0.1:8283]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:8283]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:41862]
+WebSocket REJECT /ws/notify/ [127.0.0.1:41862]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:41862]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:57106]
+WebSocket REJECT /ws/notify/ [127.0.0.1:57106]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:57106]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.03, 10.108.62.176:42598][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.108.62.176:42598][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.02, 10.108.62.176:42598][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:16899]
+WebSocket REJECT /ws/notify/ [127.0.0.1:16899]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:16899]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:27724]
+WebSocket REJECT /ws/notify/ [127.0.0.1:27724]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:27724]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:32103]
+WebSocket REJECT /ws/notify/ [127.0.0.1:32103]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:32103]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:22688]
+WebSocket REJECT /ws/notify/ [127.0.0.1:22688]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:22688]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:42594]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:44396]
+WebSocket REJECT /ws/notify/ [127.0.0.1:44396]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:44396]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:1794]
+WebSocket REJECT /ws/notify/ [127.0.0.1:1794]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:1794]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:54290]
+WebSocket REJECT /ws/notify/ [127.0.0.1:54290]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:54290]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:31093]
+WebSocket REJECT /ws/notify/ [127.0.0.1:31093]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:31093]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:63122]
+WebSocket REJECT /ws/notify/ [127.0.0.1:63122]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:63122]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:24203]
+WebSocket REJECT /ws/notify/ [127.0.0.1:24203]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:24203]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:35230]
+WebSocket REJECT /ws/notify/ [127.0.0.1:35230]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:35230]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:42856]
+WebSocket REJECT /ws/notify/ [127.0.0.1:42856]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:42856]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:58387]
+WebSocket REJECT /ws/notify/ [127.0.0.1:58387]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:58387]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:12690]
+WebSocket REJECT /ws/notify/ [127.0.0.1:12690]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:12690]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:64396]
+WebSocket REJECT /ws/notify/ [127.0.0.1:64396]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:64396]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:62125]
+WebSocket REJECT /ws/notify/ [127.0.0.1:62125]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:62125]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:13918]
+WebSocket REJECT /ws/notify/ [127.0.0.1:13918]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:13918]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:26640]
+WebSocket REJECT /ws/notify/ [127.0.0.1:26640]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:26640]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:49671]
+WebSocket REJECT /ws/notify/ [127.0.0.1:49671]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:49671]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:41334]
+WebSocket REJECT /ws/notify/ [127.0.0.1:41334]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:41334]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:56636]
+WebSocket REJECT /ws/notify/ [127.0.0.1:56636]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:56636]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:18383]
+WebSocket REJECT /ws/notify/ [127.0.0.1:18383]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:18383]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:56046]
+WebSocket REJECT /ws/notify/ [127.0.0.1:56046]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:56046]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:16512]
+WebSocket REJECT /ws/notify/ [127.0.0.1:16512]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:16512]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:8236]
+WebSocket REJECT /ws/notify/ [127.0.0.1:8236]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:8236]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:27952]
+WebSocket REJECT /ws/notify/ [127.0.0.1:27952]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:27952]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:37044]
+WebSocket REJECT /ws/notify/ [127.0.0.1:37044]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:37044]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:28323]
+WebSocket REJECT /ws/notify/ [127.0.0.1:28323]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:28323]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:32700]
+WebSocket REJECT /ws/notify/ [127.0.0.1:32700]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:32700]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:53621]
+WebSocket REJECT /ws/notify/ [127.0.0.1:53621]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:53621]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:26675]
+WebSocket REJECT /ws/notify/ [127.0.0.1:26675]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:26675]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:17571]
+WebSocket REJECT /ws/notify/ [127.0.0.1:17571]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:17571]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:62556]
+WebSocket REJECT /ws/notify/ [127.0.0.1:62556]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:62556]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:30080]
+WebSocket REJECT /ws/notify/ [127.0.0.1:30080]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:30080]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:15858]
+WebSocket REJECT /ws/notify/ [127.0.0.1:15858]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:15858]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:53229]
+WebSocket REJECT /ws/notify/ [127.0.0.1:53229]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:53229]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:62855]
+WebSocket REJECT /ws/notify/ [127.0.0.1:62855]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:62855]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:52546]
+WebSocket REJECT /ws/notify/ [127.0.0.1:52546]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:52546]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.108.62.176:54096][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:7999]
+WebSocket REJECT /ws/notify/ [127.0.0.1:7999]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:7999]
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.108.62.176:54096][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.02, 10.108.62.176:54096][0m
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:45166]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:45166]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.03, 10.108.62.176:54096][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.02, 10.108.62.176:45178][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.03, 10.108.62.176:54096][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:26135]
+WebSocket REJECT /ws/notify/ [127.0.0.1:26135]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:26135]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:20637]
+WebSocket REJECT /ws/notify/ [127.0.0.1:20637]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:20637]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:12598]
+WebSocket REJECT /ws/notify/ [127.0.0.1:12598]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:12598]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:1259]
+WebSocket REJECT /ws/notify/ [127.0.0.1:1259]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:1259]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:15770]
+WebSocket REJECT /ws/notify/ [127.0.0.1:15770]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:15770]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:40745]
+WebSocket REJECT /ws/notify/ [127.0.0.1:40745]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:40745]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:35714]
+WebSocket REJECT /ws/notify/ [127.0.0.1:35714]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:35714]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:41240]
+WebSocket REJECT /ws/notify/ [127.0.0.1:41240]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:41240]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:51462]
+WebSocket REJECT /ws/notify/ [127.0.0.1:51462]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:51462]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:54619]
+WebSocket REJECT /ws/notify/ [127.0.0.1:54619]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:54619]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:34437]
+WebSocket REJECT /ws/notify/ [127.0.0.1:34437]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:34437]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:17186]
+WebSocket REJECT /ws/notify/ [127.0.0.1:17186]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:17186]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:37849]
+WebSocket REJECT /ws/notify/ [127.0.0.1:37849]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:37849]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:29645]
+WebSocket REJECT /ws/notify/ [127.0.0.1:29645]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:29645]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:28352]
+WebSocket REJECT /ws/notify/ [127.0.0.1:28352]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:28352]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:64039]
+WebSocket REJECT /ws/notify/ [127.0.0.1:64039]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:64039]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:19799]
+WebSocket REJECT /ws/notify/ [127.0.0.1:19799]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:19799]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:13053]
+WebSocket REJECT /ws/notify/ [127.0.0.1:13053]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:13053]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:38807]
+WebSocket REJECT /ws/notify/ [127.0.0.1:38807]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:38807]
+Internal Server Error: /api/hr/members/
+Traceback (most recent call last):
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: UNIQUE constraint failed: hr_members.member_id
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 552, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 552, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 502, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\concurrent\futures\thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "C:\Python314\Lib\concurrent\futures\thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 556, in thread_handler
+    return func(*args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\generics.py", line 246, in post
+    return self.create(request, *args, **kwargs)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\mixins.py", line 19, in create
+    self.perform_create(serializer)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\hr_module\views.py", line 162, in perform_create
+    member = serializer.save(created_by=self.request.user)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\serializers.py", line 210, in save
+    self.instance = self.create(validated_data)
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\serializers.py", line 991, in create
+    instance = ModelClass._default_manager.create(**validated_data)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 663, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\hr_module\models.py", line 69, in save
+    super().save(*args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\base.py", line 902, in save
+    self.save_base(
+    ~~~~~~~~~~~~~~^
+        using=using,
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        update_fields=update_fields,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\base.py", line 1008, in save_base
+    updated = self._save_table(
+        raw,
+    ...<4 lines>...
+        update_fields,
+    )
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\base.py", line 1169, in _save_table
+    results = self._do_insert(
+        cls._base_manager, using, fields, returning_fields, raw
+    )
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\base.py", line 1210, in _do_insert
+    return manager._insert(
+           ~~~~~~~~~~~~~~~^
+        [self],
+        ^^^^^^^
+    ...<3 lines>...
+        raw=raw,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 1868, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\sql\compiler.py", line 1882, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.IntegrityError: UNIQUE constraint failed: hr_members.member_id
+[35;1mHTTP POST /api/hr/members/ 500 [0.19, 10.108.62.176:54812][0m
+Internal Server Error: /api/hr/members/
+Traceback (most recent call last):
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: UNIQUE constraint failed: hr_members.member_id
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 552, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 552, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 502, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\concurrent\futures\thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "C:\Python314\Lib\concurrent\futures\thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 556, in thread_handler
+    return func(*args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\generics.py", line 246, in post
+    return self.create(request, *args, **kwargs)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\mixins.py", line 19, in create
+    self.perform_create(serializer)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\hr_module\views.py", line 162, in perform_create
+    member = serializer.save(created_by=self.request.user)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\serializers.py", line 210, in save
+    self.instance = self.create(validated_data)
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\serializers.py", line 991, in create
+    instance = ModelClass._default_manager.create(**validated_data)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 663, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\hr_module\models.py", line 69, in save
+    super().save(*args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\base.py", line 902, in save
+    self.save_base(
+    ~~~~~~~~~~~~~~^
+        using=using,
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        update_fields=update_fields,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\base.py", line 1008, in save_base
+    updated = self._save_table(
+        raw,
+    ...<4 lines>...
+        update_fields,
+    )
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\base.py", line 1169, in _save_table
+    results = self._do_insert(
+        cls._base_manager, using, fields, returning_fields, raw
+    )
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\base.py", line 1210, in _do_insert
+    return manager._insert(
+           ~~~~~~~~~~~~~~~^
+        [self],
+        ^^^^^^^
+    ...<3 lines>...
+        raw=raw,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 1868, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\sql\compiler.py", line 1882, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.IntegrityError: UNIQUE constraint failed: hr_members.member_id
+[35;1mHTTP POST /api/hr/members/ 500 [0.08, 10.108.62.176:54812][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:39919]
+WebSocket REJECT /ws/notify/ [127.0.0.1:39919]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:39919]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:25170]
+WebSocket REJECT /ws/notify/ [127.0.0.1:25170]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:25170]
+Internal Server Error: /api/hr/members/
+Traceback (most recent call last):
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: UNIQUE constraint failed: hr_members.member_id
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 552, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 552, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 502, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\concurrent\futures\thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "C:\Python314\Lib\concurrent\futures\thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 556, in thread_handler
+    return func(*args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\generics.py", line 246, in post
+    return self.create(request, *args, **kwargs)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\mixins.py", line 19, in create
+    self.perform_create(serializer)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\hr_module\views.py", line 162, in perform_create
+    member = serializer.save(created_by=self.request.user)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\serializers.py", line 210, in save
+    self.instance = self.create(validated_data)
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\serializers.py", line 991, in create
+    instance = ModelClass._default_manager.create(**validated_data)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 663, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\hr_module\models.py", line 69, in save
+    super().save(*args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\base.py", line 902, in save
+    self.save_base(
+    ~~~~~~~~~~~~~~^
+        using=using,
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        update_fields=update_fields,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\base.py", line 1008, in save_base
+    updated = self._save_table(
+        raw,
+    ...<4 lines>...
+        update_fields,
+    )
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\base.py", line 1169, in _save_table
+    results = self._do_insert(
+        cls._base_manager, using, fields, returning_fields, raw
+    )
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\base.py", line 1210, in _do_insert
+    return manager._insert(
+           ~~~~~~~~~~~~~~~^
+        [self],
+        ^^^^^^^
+    ...<3 lines>...
+        raw=raw,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 1868, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\sql\compiler.py", line 1882, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.IntegrityError: UNIQUE constraint failed: hr_members.member_id
+[35;1mHTTP POST /api/hr/members/ 500 [0.08, 10.108.62.176:54812][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:52876]
+WebSocket REJECT /ws/notify/ [127.0.0.1:52876]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:52876]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:3527]
+WebSocket REJECT /ws/notify/ [127.0.0.1:3527]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:3527]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:12630]
+WebSocket REJECT /ws/notify/ [127.0.0.1:12630]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:12630]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:64051]
+WebSocket REJECT /ws/notify/ [127.0.0.1:64051]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:64051]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:45166]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:22895]
+WebSocket REJECT /ws/notify/ [127.0.0.1:22895]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:22895]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:61121]
+WebSocket REJECT /ws/notify/ [127.0.0.1:61121]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:61121]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:52665]
+WebSocket REJECT /ws/notify/ [127.0.0.1:52665]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:52665]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:4317]
+WebSocket REJECT /ws/notify/ [127.0.0.1:4317]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:4317]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:60320]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:60320]
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.04, 10.108.62.176:60322][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.05, 10.108.62.176:60324][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.108.62.176:60322][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.02, 10.108.62.176:60322][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:33479]
+WebSocket REJECT /ws/notify/ [127.0.0.1:33479]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:33479]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:48558]
+WebSocket REJECT /ws/notify/ [127.0.0.1:48558]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:48558]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:23840]
+WebSocket REJECT /ws/notify/ [127.0.0.1:23840]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:23840]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:53176]
+WebSocket REJECT /ws/notify/ [127.0.0.1:53176]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:53176]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:14047]
+WebSocket REJECT /ws/notify/ [127.0.0.1:14047]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:14047]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:46376]
+WebSocket REJECT /ws/notify/ [127.0.0.1:46376]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:46376]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:18174]
+WebSocket REJECT /ws/notify/ [127.0.0.1:18174]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:18174]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:60868]
+WebSocket REJECT /ws/notify/ [127.0.0.1:60868]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:60868]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:62234]
+WebSocket REJECT /ws/notify/ [127.0.0.1:62234]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:62234]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.03, 10.108.62.176:51528][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.03, 10.108.62.176:51528][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:51528][0m
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\hr_module\models.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:51542]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:51542]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.06, 10.108.62.176:51544][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.04, 10.108.62.176:51554][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.03, 10.108.62.176:51544][0m
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:51564]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:51564]
+[mHTTP GET /api/accounts/income/?limit=100 200 [0.05, 10.108.62.176:51544][0m
+[mHTTP GET /api/hr/members/?limit=100 200 [0.05, 10.108.62.176:51554][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:4109]
+WebSocket REJECT /ws/notify/ [127.0.0.1:4109]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:4109]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:29144]
+WebSocket REJECT /ws/notify/ [127.0.0.1:29144]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:29144]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:51564]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:51542]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:47917]
+WebSocket REJECT /ws/notify/ [127.0.0.1:47917]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:47917]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:31970]
+WebSocket REJECT /ws/notify/ [127.0.0.1:31970]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:31970]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:51118]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:51118]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:51124]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:51124]
+[mHTTP GET /api/accounts/income/?limit=100 200 [0.03, 10.108.62.176:51132][0m
+[mHTTP GET /api/hr/members/?limit=100 200 [0.14, 10.108.62.176:51144][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.15, 10.108.62.176:51132][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.13, 10.108.62.176:51148][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.03, 10.108.62.176:51132][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:8327]
+WebSocket REJECT /ws/notify/ [127.0.0.1:8327]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:8327]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:51124]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:51118]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:8886]
+WebSocket REJECT /ws/notify/ [127.0.0.1:8886]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:8886]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:39430]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:39430]
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.03, 10.108.62.176:39448][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.04, 10.108.62.176:39446][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.108.62.176:39446][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.02, 10.108.62.176:39446][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:41609]
+WebSocket REJECT /ws/notify/ [127.0.0.1:41609]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:41609]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:10111]
+WebSocket REJECT /ws/notify/ [127.0.0.1:10111]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:10111]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:20571]
+WebSocket REJECT /ws/notify/ [127.0.0.1:20571]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:20571]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:39430]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:58627]
+WebSocket REJECT /ws/notify/ [127.0.0.1:58627]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:58627]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:50550]
+WebSocket REJECT /ws/notify/ [127.0.0.1:50550]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:50550]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:35248]
+WebSocket REJECT /ws/notify/ [127.0.0.1:35248]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:35248]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:49034]
+WebSocket REJECT /ws/notify/ [127.0.0.1:49034]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:49034]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:56959]
+WebSocket REJECT /ws/notify/ [127.0.0.1:56959]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:56959]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:35846]
+WebSocket REJECT /ws/notify/ [127.0.0.1:35846]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:35846]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:56221]
+WebSocket REJECT /ws/notify/ [127.0.0.1:56221]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:56221]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:33061]
+WebSocket REJECT /ws/notify/ [127.0.0.1:33061]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:33061]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:48985]
+WebSocket REJECT /ws/notify/ [127.0.0.1:48985]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:48985]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:5418]
+WebSocket REJECT /ws/notify/ [127.0.0.1:5418]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:5418]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:15934]
+WebSocket REJECT /ws/notify/ [127.0.0.1:15934]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:15934]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:55708]
+WebSocket REJECT /ws/notify/ [127.0.0.1:55708]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:55708]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:6983]
+WebSocket REJECT /ws/notify/ [127.0.0.1:6983]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:6983]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:36126]
+WebSocket REJECT /ws/notify/ [127.0.0.1:36126]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:36126]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:54453]
+WebSocket REJECT /ws/notify/ [127.0.0.1:54453]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:54453]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:57424]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:57424]
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.04, 10.108.62.176:57444][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.05, 10.108.62.176:57430][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.03, 10.108.62.176:57444][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:36999]
+WebSocket REJECT /ws/notify/ [127.0.0.1:36999]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:36999]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:64304]
+WebSocket REJECT /ws/notify/ [127.0.0.1:64304]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:64304]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:44512]
+WebSocket REJECT /ws/notify/ [127.0.0.1:44512]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:44512]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:47419]
+WebSocket REJECT /ws/notify/ [127.0.0.1:47419]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:47419]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:30735]
+WebSocket REJECT /ws/notify/ [127.0.0.1:30735]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:30735]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:36479]
+WebSocket REJECT /ws/notify/ [127.0.0.1:36479]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:36479]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:9926]
+WebSocket REJECT /ws/notify/ [127.0.0.1:9926]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:9926]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:45290]
+WebSocket REJECT /ws/notify/ [127.0.0.1:45290]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:45290]
+Unauthorized: /api/core/notifications/unread_count/
+Unauthorized: /api/hr/staff-dashboard/
+[31;1mHTTP GET /api/core/notifications/unread_count/ 401 [0.03, 10.108.62.176:57430][0m
+[31;1mHTTP GET /api/hr/staff-dashboard/ 401 [0.04, 10.108.62.176:57444][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.02, 10.108.62.176:57444][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.02, 10.108.62.176:57430][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:40121]
+WebSocket REJECT /ws/notify/ [127.0.0.1:40121]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:40121]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:57424]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:46276]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:46276]
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.04, 10.108.62.176:57444][0m
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:46276]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:42700]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:42700]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.04, 10.108.62.176:57444][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.03, 10.108.62.176:57430][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.04, 10.108.62.176:57444][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.03, 10.108.62.176:42702][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.04, 10.108.62.176:57430][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.06, 10.108.62.176:57444][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.108.62.176:57444][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.108.62.176:57444][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.02, 10.108.62.176:57430][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:52307]
+WebSocket REJECT /ws/notify/ [127.0.0.1:52307]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:52307]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:39820]
+WebSocket REJECT /ws/notify/ [127.0.0.1:39820]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:39820]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:1479]
+WebSocket REJECT /ws/notify/ [127.0.0.1:1479]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:1479]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:10610]
+WebSocket REJECT /ws/notify/ [127.0.0.1:10610]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:10610]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:42569]
+WebSocket REJECT /ws/notify/ [127.0.0.1:42569]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:42569]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:13456]
+WebSocket REJECT /ws/notify/ [127.0.0.1:13456]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:13456]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:26500]
+WebSocket REJECT /ws/notify/ [127.0.0.1:26500]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:26500]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:17321]
+WebSocket REJECT /ws/notify/ [127.0.0.1:17321]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:17321]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:42700]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:15451]
+WebSocket REJECT /ws/notify/ [127.0.0.1:15451]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:15451]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:21342]
+WebSocket REJECT /ws/notify/ [127.0.0.1:21342]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:21342]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:38519]
+WebSocket REJECT /ws/notify/ [127.0.0.1:38519]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:38519]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:55287]
+WebSocket REJECT /ws/notify/ [127.0.0.1:55287]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:55287]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:30612]
+WebSocket REJECT /ws/notify/ [127.0.0.1:30612]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:30612]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:40491]
+WebSocket REJECT /ws/notify/ [127.0.0.1:40491]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:40491]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:16603]
+WebSocket REJECT /ws/notify/ [127.0.0.1:16603]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:16603]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:34169]
+WebSocket REJECT /ws/notify/ [127.0.0.1:34169]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:34169]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:20362]
+WebSocket REJECT /ws/notify/ [127.0.0.1:20362]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:20362]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:42757]
+WebSocket REJECT /ws/notify/ [127.0.0.1:42757]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:42757]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:37180]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:37180]
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.05, 10.108.62.176:37198][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.05, 10.108.62.176:37182][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.03, 10.108.62.176:37182][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.02, 10.108.62.176:37182][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:43916]
+WebSocket REJECT /ws/notify/ [127.0.0.1:43916]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:43916]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:33865]
+WebSocket REJECT /ws/notify/ [127.0.0.1:33865]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:33865]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:26035]
+WebSocket REJECT /ws/notify/ [127.0.0.1:26035]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:26035]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:39065]
+WebSocket REJECT /ws/notify/ [127.0.0.1:39065]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:39065]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:28438]
+WebSocket REJECT /ws/notify/ [127.0.0.1:28438]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:28438]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:8793]
+WebSocket REJECT /ws/notify/ [127.0.0.1:8793]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:8793]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:28726]
+WebSocket REJECT /ws/notify/ [127.0.0.1:28726]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:28726]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:12874]
+WebSocket REJECT /ws/notify/ [127.0.0.1:12874]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:12874]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:24430]
+WebSocket REJECT /ws/notify/ [127.0.0.1:24430]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:24430]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:30338]
+WebSocket REJECT /ws/notify/ [127.0.0.1:30338]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:30338]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:50226]
+WebSocket REJECT /ws/notify/ [127.0.0.1:50226]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:50226]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:9810]
+WebSocket REJECT /ws/notify/ [127.0.0.1:9810]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:9810]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:19272]
+WebSocket REJECT /ws/notify/ [127.0.0.1:19272]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:19272]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:50780]
+WebSocket REJECT /ws/notify/ [127.0.0.1:50780]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:50780]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:18816]
+WebSocket REJECT /ws/notify/ [127.0.0.1:18816]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:18816]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.108.62.176:56004][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:56020][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:56004][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.01, 10.108.62.176:56004][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.01, 10.108.62.176:56004][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:56004][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:56004][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:19416]
+WebSocket REJECT /ws/notify/ [127.0.0.1:19416]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:19416]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:25663]
+WebSocket REJECT /ws/notify/ [127.0.0.1:25663]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:25663]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:37180]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:17636]
+WebSocket REJECT /ws/notify/ [127.0.0.1:17636]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:17636]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:6625]
+WebSocket REJECT /ws/notify/ [127.0.0.1:6625]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:6625]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:45318]
+WebSocket REJECT /ws/notify/ [127.0.0.1:45318]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:45318]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:33634]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:33634]
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:33642][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.01, 10.108.62.176:33646][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:33642][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.01, 10.108.62.176:33642][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:13972]
+WebSocket REJECT /ws/notify/ [127.0.0.1:13972]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:13972]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:19648]
+WebSocket REJECT /ws/notify/ [127.0.0.1:19648]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:19648]
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.02, 10.108.62.176:33642][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.01, 10.108.62.176:33642][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:33642][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:33642][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.01, 10.108.62.176:33642][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:49086]
+WebSocket REJECT /ws/notify/ [127.0.0.1:49086]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:49086]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:31762]
+WebSocket REJECT /ws/notify/ [127.0.0.1:31762]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:31762]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:12993]
+WebSocket REJECT /ws/notify/ [127.0.0.1:12993]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:12993]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:42462]
+WebSocket REJECT /ws/notify/ [127.0.0.1:42462]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:42462]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:33634]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:62873]
+WebSocket REJECT /ws/notify/ [127.0.0.1:62873]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:62873]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:9028]
+WebSocket REJECT /ws/notify/ [127.0.0.1:9028]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:9028]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:18015]
+WebSocket REJECT /ws/notify/ [127.0.0.1:18015]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:18015]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:36233]
+WebSocket REJECT /ws/notify/ [127.0.0.1:36233]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:36233]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:10950]
+WebSocket REJECT /ws/notify/ [127.0.0.1:10950]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:10950]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:5288]
+WebSocket REJECT /ws/notify/ [127.0.0.1:5288]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:5288]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:57621]
+WebSocket REJECT /ws/notify/ [127.0.0.1:57621]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:57621]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:48933]
+WebSocket REJECT /ws/notify/ [127.0.0.1:48933]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:48933]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:5500]
+WebSocket REJECT /ws/notify/ [127.0.0.1:5500]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:5500]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:39782]
+WebSocket REJECT /ws/notify/ [127.0.0.1:39782]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:39782]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:60577]
+WebSocket REJECT /ws/notify/ [127.0.0.1:60577]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:60577]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:21128]
+WebSocket REJECT /ws/notify/ [127.0.0.1:21128]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:21128]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:29827]
+WebSocket REJECT /ws/notify/ [127.0.0.1:29827]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:29827]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:30273]
+WebSocket REJECT /ws/notify/ [127.0.0.1:30273]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:30273]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:17348]
+WebSocket REJECT /ws/notify/ [127.0.0.1:17348]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:17348]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:44359]
+WebSocket REJECT /ws/notify/ [127.0.0.1:44359]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:44359]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:11712]
+WebSocket REJECT /ws/notify/ [127.0.0.1:11712]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:11712]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:64383]
+WebSocket REJECT /ws/notify/ [127.0.0.1:64383]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:64383]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:37681]
+WebSocket REJECT /ws/notify/ [127.0.0.1:37681]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:37681]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:58310]
+WebSocket REJECT /ws/notify/ [127.0.0.1:58310]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:58310]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:31888]
+WebSocket REJECT /ws/notify/ [127.0.0.1:31888]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:31888]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:36609]
+WebSocket REJECT /ws/notify/ [127.0.0.1:36609]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:36609]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:48343]
+WebSocket REJECT /ws/notify/ [127.0.0.1:48343]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:48343]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:50848]
+WebSocket REJECT /ws/notify/ [127.0.0.1:50848]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:50848]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:40789]
+WebSocket REJECT /ws/notify/ [127.0.0.1:40789]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:40789]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:59039]
+WebSocket REJECT /ws/notify/ [127.0.0.1:59039]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:59039]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:20143]
+WebSocket REJECT /ws/notify/ [127.0.0.1:20143]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:20143]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:33907]
+WebSocket REJECT /ws/notify/ [127.0.0.1:33907]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:33907]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\hr_module\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:47768]
+WebSocket REJECT /ws/notify/ [127.0.0.1:47768]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:47768]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:12600]
+WebSocket REJECT /ws/notify/ [127.0.0.1:12600]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:12600]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:55428]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:55428]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.108.62.176:55440][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:55456][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:55440][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:49880]
+WebSocket REJECT /ws/notify/ [127.0.0.1:49880]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:49880]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:55428]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:24072]
+WebSocket REJECT /ws/notify/ [127.0.0.1:24072]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:24072]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:29290]
+WebSocket REJECT /ws/notify/ [127.0.0.1:29290]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:29290]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:50396]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:50396]
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:50424][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.01, 10.108.62.176:50412][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:50412][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.01, 10.108.62.176:50412][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:47383]
+WebSocket REJECT /ws/notify/ [127.0.0.1:47383]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:47383]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:13265]
+WebSocket REJECT /ws/notify/ [127.0.0.1:13265]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:13265]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:49880]
+WebSocket REJECT /ws/notify/ [127.0.0.1:49880]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:49880]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.01, 10.108.62.176:50412][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:50412][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:50412][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:45788]
+WebSocket REJECT /ws/notify/ [127.0.0.1:45788]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:45788]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:27486]
+WebSocket REJECT /ws/notify/ [127.0.0.1:27486]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:27486]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:21404]
+WebSocket REJECT /ws/notify/ [127.0.0.1:21404]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:21404]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:18586]
+WebSocket REJECT /ws/notify/ [127.0.0.1:18586]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:18586]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:14051]
+WebSocket REJECT /ws/notify/ [127.0.0.1:14051]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:14051]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:28144]
+WebSocket REJECT /ws/notify/ [127.0.0.1:28144]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:28144]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:21273]
+WebSocket REJECT /ws/notify/ [127.0.0.1:21273]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:21273]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:16152]
+WebSocket REJECT /ws/notify/ [127.0.0.1:16152]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:16152]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:30528]
+WebSocket REJECT /ws/notify/ [127.0.0.1:30528]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:30528]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:40964]
+WebSocket REJECT /ws/notify/ [127.0.0.1:40964]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:40964]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:36879]
+WebSocket REJECT /ws/notify/ [127.0.0.1:36879]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:36879]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:16321]
+WebSocket REJECT /ws/notify/ [127.0.0.1:16321]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:16321]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:4046]
+WebSocket REJECT /ws/notify/ [127.0.0.1:4046]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:4046]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:17475]
+WebSocket REJECT /ws/notify/ [127.0.0.1:17475]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:17475]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:29301]
+WebSocket REJECT /ws/notify/ [127.0.0.1:29301]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:29301]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:25063]
+WebSocket REJECT /ws/notify/ [127.0.0.1:25063]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:25063]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:21334]
+WebSocket REJECT /ws/notify/ [127.0.0.1:21334]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:21334]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:42945]
+WebSocket REJECT /ws/notify/ [127.0.0.1:42945]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:42945]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:53375]
+WebSocket REJECT /ws/notify/ [127.0.0.1:53375]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:53375]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:62383]
+WebSocket REJECT /ws/notify/ [127.0.0.1:62383]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:62383]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:59083]
+WebSocket REJECT /ws/notify/ [127.0.0.1:59083]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:59083]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:10977]
+WebSocket REJECT /ws/notify/ [127.0.0.1:10977]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:10977]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:7395]
+WebSocket REJECT /ws/notify/ [127.0.0.1:7395]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:7395]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:21707]
+WebSocket REJECT /ws/notify/ [127.0.0.1:21707]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:21707]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:26666]
+WebSocket REJECT /ws/notify/ [127.0.0.1:26666]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:26666]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:33140]
+WebSocket REJECT /ws/notify/ [127.0.0.1:33140]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:33140]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:26523]
+WebSocket REJECT /ws/notify/ [127.0.0.1:26523]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:26523]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:33455]
+WebSocket REJECT /ws/notify/ [127.0.0.1:33455]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:33455]
+Unauthorized: /api/auth/logout/
+[31;1mHTTP POST /api/auth/logout/ 401 [0.01, 127.0.0.1:7410][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.01, 127.0.0.1:19354][0m
+[mHTTP POST /api/auth/logout/ 200 [0.02, 127.0.0.1:55467][0m
+[mHTTP POST /api/auth/login/ 200 [0.19, 127.0.0.1:50813][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:27468]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:27468]
+[mHTTP GET /api/auth/profile/ 200 [0.02, 127.0.0.1:27467][0m
+[mHTTP GET /api/core/users/ 200 [0.01, 127.0.0.1:27469][0m
+[mHTTP GET /api/core/users/ 200 [0.01, 127.0.0.1:41774][0m
+[mHTTP GET /api/core/users/ 200 [0.01, 127.0.0.1:19700][0m
+[mHTTP GET /api/core/users/ 200 [0.01, 127.0.0.1:28008][0m
+[mHTTP GET /api/core/users/ 200 [0.01, 127.0.0.1:31215][0m
+[mHTTP GET /api/core/users/ 200 [0.01, 127.0.0.1:29310][0m
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:50396]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:44402]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:44402]
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.02, 10.108.62.176:44410][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.108.62.176:44414][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:44410][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.01, 10.108.62.176:44410][0m
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:39592]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:39592]
+[mHTTP GET /api/accounts/income/?limit=100 200 [0.01, 10.108.62.176:44410][0m
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:39592]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.01, 10.108.62.176:44410][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:44414][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:44410][0m
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:39602]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:39602]
+[mHTTP GET /api/accounts/income/?limit=100 200 [0.01, 10.108.62.176:44410][0m
+[mHTTP GET /api/hr/members/?limit=100 200 [0.01, 10.108.62.176:44414][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.01, 10.108.62.176:44410][0m
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:39602]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.01, 10.108.62.176:44410][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:44414][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:44410][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.01, 10.108.62.176:44410][0m
+[mHTTP POST /api/hr/members/ 201 [0.02, 10.108.62.176:44410][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:44414][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.108.62.176:44410][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:44410][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.01, 10.108.62.176:44410][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:44410][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:44410][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.01, 10.108.62.176:44410][0m
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:52256]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:52256]
+[mHTTP GET /api/accounts/income/?limit=100 200 [0.01, 10.108.62.176:44410][0m
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:52256]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.01, 10.108.62.176:44410][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:44410][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:44410][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.01, 10.108.62.176:44410][0m
+Internal Server Error: /api/accounts/income/
+Traceback (most recent call last):
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.IntegrityError: UNIQUE constraint failed: accounts_income.receipt_number
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 552, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 552, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 502, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\concurrent\futures\thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "C:\Python314\Lib\concurrent\futures\thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 556, in thread_handler
+    return func(*args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\generics.py", line 246, in post
+    return self.create(request, *args, **kwargs)
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\mixins.py", line 19, in create
+    self.perform_create(serializer)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\accounts_module\views.py", line 220, in perform_create
+    income = serializer.save(created_by=self.request.user)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\serializers.py", line 210, in save
+    self.instance = self.create(validated_data)
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\serializers.py", line 991, in create
+    instance = ModelClass._default_manager.create(**validated_data)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 663, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\accounts_module\models.py", line 166, in save
+    super().save(*args, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\base.py", line 902, in save
+    self.save_base(
+    ~~~~~~~~~~~~~~^
+        using=using,
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        update_fields=update_fields,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\base.py", line 1008, in save_base
+    updated = self._save_table(
+        raw,
+    ...<4 lines>...
+        update_fields,
+    )
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\base.py", line 1169, in _save_table
+    results = self._do_insert(
+        cls._base_manager, using, fields, returning_fields, raw
+    )
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\base.py", line 1210, in _do_insert
+    return manager._insert(
+           ~~~~~~~~~~~~~~~^
+        [self],
+        ^^^^^^^
+    ...<3 lines>...
+        raw=raw,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 1868, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\sql\compiler.py", line 1882, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.IntegrityError: UNIQUE constraint failed: accounts_income.receipt_number
+[35;1mHTTP POST /api/accounts/income/ 500 [0.05, 10.108.62.176:44410][0m
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\accounts_module\models.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:39414]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:39414]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.108.62.176:39420][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:23375]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:23375]
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:39424][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:39420][0m
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:54080]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:54080]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.108.62.176:48940][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:48948][0m
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:54080]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:17607]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:17607]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:48956]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:48956]
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:39152][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.108.62.176:39148][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:39148][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.01, 10.108.62.176:39148][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:39152][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.108.62.176:39148][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:39148][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.01, 10.108.62.176:39148][0m
+[mHTTP POST /api/accounts/income/ 201 [0.02, 10.108.62.176:39148][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:39152][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.108.62.176:39148][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:39148][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.01, 10.108.62.176:39148][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:39148][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:39148][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.01, 10.108.62.176:39148][0m
+Failed to send WhatsApp message to 919400883082: HTTPConnectionPool(host='localhost', port=3001): Max retries exceeded with url: /send-message (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000021006629940>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\sreelakshmi_trust\settings.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:45122]
+WebSocket REJECT /ws/notify/ [10.108.62.176:45122]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:45122]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:2309]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:2309]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:43908]
+WebSocket REJECT /ws/notify/ [10.108.62.176:43908]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:43908]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:43922]
+WebSocket REJECT /ws/notify/ [10.108.62.176:43922]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:43922]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\notify\whatsapp_service.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:43950]
+WebSocket REJECT /ws/notify/ [10.108.62.176:43950]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:43950]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:39486]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:39486]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:34120]
+WebSocket REJECT /ws/notify/ [10.108.62.176:34120]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:34120]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:34136]
+WebSocket REJECT /ws/notify/ [10.108.62.176:34136]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:34136]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:34142]
+WebSocket REJECT /ws/notify/ [10.108.62.176:34142]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:34142]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:38166]
+WebSocket REJECT /ws/notify/ [10.108.62.176:38166]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:38166]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:38176]
+WebSocket REJECT /ws/notify/ [10.108.62.176:38176]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:38176]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:38182]
+WebSocket REJECT /ws/notify/ [10.108.62.176:38182]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:38182]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:38500]
+WebSocket REJECT /ws/notify/ [10.108.62.176:38500]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:38500]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:38512]
+WebSocket REJECT /ws/notify/ [10.108.62.176:38512]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:38512]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:38518]
+WebSocket REJECT /ws/notify/ [10.108.62.176:38518]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:38518]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:35224]
+WebSocket REJECT /ws/notify/ [10.108.62.176:35224]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:35224]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:35226]
+WebSocket REJECT /ws/notify/ [10.108.62.176:35226]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:35226]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:35234]
+WebSocket REJECT /ws/notify/ [10.108.62.176:35234]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:35234]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:35246]
+WebSocket REJECT /ws/notify/ [10.108.62.176:35246]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:35246]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:36390]
+WebSocket REJECT /ws/notify/ [10.108.62.176:36390]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:36390]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:36402]
+WebSocket REJECT /ws/notify/ [10.108.62.176:36402]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:36402]
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:61205]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:61205]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:36408]
+WebSocket REJECT /ws/notify/ [10.108.62.176:36408]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:36408]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:36328]
+WebSocket REJECT /ws/notify/ [10.108.62.176:36328]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:36328]
+Unauthorized: /api/hr/staff-dashboard/
+Unauthorized: /api/core/notifications/unread_count/
+[31;1mHTTP GET /api/hr/staff-dashboard/ 401 [0.01, 10.108.62.176:36340][0m
+[31;1mHTTP GET /api/core/notifications/unread_count/ 401 [0.01, 10.108.62.176:36356][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.01, 10.108.62.176:36340][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.02, 10.108.62.176:36356][0m
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:36362]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:36362]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.108.62.176:36340][0m
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:36362]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:36372]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:36372]
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:36340][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:36340][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.06, 10.108.62.176:36356][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.06, 10.108.62.176:36340][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.01, 10.108.62.176:36340][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:36340][0m
+[mHTTP POST /api/accounts/income/ 201 [0.02, 10.108.62.176:36340][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.02, 10.108.62.176:36356][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.108.62.176:36340][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:36340][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.01, 10.108.62.176:36340][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:36356][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:36340][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.01, 10.108.62.176:36340][0m
+Failed to send WhatsApp message to 919400883082: HTTPConnectionPool(host='localhost', port=3001): Max retries exceeded with url: /send-message (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x000002552D98DFD0>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.01, 10.108.62.176:36340][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:36340][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:36340][0m
+Failed to send WhatsApp message to 919876543210: HTTPConnectionPool(host='localhost', port=3001): Max retries exceeded with url: /send-message (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000028A9D8DC1A0>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))
+WhatsApp message/document dispatched to 919876543210: {'success': False, 'error': 'Gateway is not configured securely.'}
+WhatsApp gateway rejected token — check WHATSAPP_GATEWAY_TOKEN in .env
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\notify\whatsapp_service.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:50981]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:50981]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:56364]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:56364]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.108.62.176:56376][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:56378][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.108.62.176:56376][0m
+[mHTTP POST /api/auth/logout/ 200 [0.02, 127.0.0.1:9439][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:50981]
+[mHTTP POST /api/auth/login/ 200 [0.24, 127.0.0.1:42327][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:52046]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:52046]
+[mHTTP GET /api/auth/profile/ 200 [0.06, 127.0.0.1:36337][0m
+[mHTTP GET /api/accounts/dashboard/ 200 [0.12, 127.0.0.1:23247][0m
+[mHTTP GET /api/accounts/dashboard/ 200 [0.04, 127.0.0.1:24099][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.03, 127.0.0.1:64882][0m
+[mHTTP GET /api/accounts/income/?date=2026-08-29 200 [0.05, 127.0.0.1:64881][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.03, 127.0.0.1:27457][0m
+[mHTTP GET /api/accounts/dashboard/?date=2026-08-29 200 [0.07, 127.0.0.1:64880][0m
+[mHTTP GET /api/accounts/income/?date=2026-08-29 200 [0.02, 127.0.0.1:31192][0m
+[mHTTP GET /api/accounts/dashboard/?date=2026-08-29 200 [0.03, 127.0.0.1:62456][0m
+[mHTTP GET /api/accounts/income/?date=2026-08-29&created_by=b16e45a0-0a48-4996-aea6-d8bdcdcb8dc7 200 [0.02, 127.0.0.1:32232][0m
+WhatsApp gateway rejected token — check WHATSAPP_GATEWAY_TOKEN in .env
+[mHTTP GET /api/accounts/income/?date=2026-08-29&created_by=b16e45a0-0a48-4996-aea6-d8bdcdcb8dc7 200 [0.01, 127.0.0.1:18660][0m
+[mHTTP POST /api/auth/logout/ 200 [0.01, 127.0.0.1:54634][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:52046]
+[mHTTP POST /api/auth/login/ 200 [0.17, 127.0.0.1:44396][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:58141]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:58141]
+[mHTTP GET /api/auth/profile/ 200 [0.02, 127.0.0.1:62519][0m
+[mHTTP GET /api/core/users/ 200 [0.02, 127.0.0.1:62520][0m
+[mHTTP GET /api/core/users/ 200 [0.01, 127.0.0.1:55263][0m
+WhatsApp gateway rejected token — check WHATSAPP_GATEWAY_TOKEN in .env
+WhatsApp gateway rejected token — check WHATSAPP_GATEWAY_TOKEN in .env
+[mHTTP POST /api/auth/logout/ 200 [0.01, 127.0.0.1:14492][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:58141]
+[mHTTP POST /api/auth/login/ 200 [0.18, 127.0.0.1:5314][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:40659]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:40659]
+[mHTTP GET /api/auth/profile/ 200 [0.03, 127.0.0.1:44949][0m
+[mHTTP GET /api/hr/dashboard/ 200 [0.04, 127.0.0.1:44950][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.03, 127.0.0.1:61765][0m
+[mHTTP GET /api/hr/dashboard/ 200 [0.05, 127.0.0.1:40357][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.02, 127.0.0.1:52563][0m
+[mHTTP GET /api/hr/officers/?search= 200 [0.02, 127.0.0.1:26539][0m
+[mHTTP GET /api/hr/officers/?search= 200 [0.03, 127.0.0.1:40667][0m
+[mHTTP POST /api/auth/logout/ 200 [0.02, 127.0.0.1:26696][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:40659]
+[mHTTP POST /api/auth/login/ 200 [0.23, 127.0.0.1:5387][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:54863]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:54863]
+[mHTTP GET /api/auth/profile/ 200 [0.03, 127.0.0.1:42746][0m
+[mHTTP GET /api/accounts/dashboard/ 200 [0.05, 127.0.0.1:42747][0m
+[mHTTP GET /api/accounts/dashboard/ 200 [0.02, 127.0.0.1:42422][0m
+[mHTTP GET /api/cashier/pending/ 200 [0.02, 127.0.0.1:48294][0m
+[mHTTP GET /api/cashier/pending/ 200 [0.02, 127.0.0.1:61018][0m
+[mHTTP GET /api/accounts/total-funds/ 200 [0.02, 127.0.0.1:5606][0m
+[mHTTP GET /api/manager/payouts/?search= 200 [0.02, 127.0.0.1:5605][0m
+[mHTTP GET /api/accounts/total-funds/ 200 [0.02, 127.0.0.1:6739][0m
+[mHTTP GET /api/manager/payouts/?search= 200 [0.02, 127.0.0.1:14326][0m
+[mHTTP GET /api/accounts/money-requests/ 200 [0.02, 127.0.0.1:65308][0m
+[mHTTP GET /api/accounts/money-requests/ 200 [0.01, 127.0.0.1:53367][0m
+[mHTTP GET /api/cashier/cash-closing/ 200 [0.02, 127.0.0.1:6434][0m
+[mHTTP GET /api/cashier/cash-closing/ 200 [0.02, 127.0.0.1:64165][0m
+[mHTTP GET /api/accounts/dashboard/ 200 [0.05, 127.0.0.1:6435][0m
+[mHTTP GET /api/accounts/dashboard/ 200 [0.03, 127.0.0.1:53430][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-08-29 200 [0.01, 127.0.0.1:39516][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-08-29 200 [0.01, 127.0.0.1:54211][0m
+WhatsApp message/document dispatched to 919876543210: {'success': True, 'message': 'Dispatched successfully'}
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:57296]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:57296]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:52820]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:52820]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.108.62.176:52836][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:52842][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:52836][0m
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:52820]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:58464]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:58464]
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:58468][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.108.62.176:58466][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:58466][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.01, 10.108.62.176:58466][0m
+[mHTTP POST /api/accounts/income/ 201 [0.02, 10.108.62.176:58466][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.06, 10.108.62.176:58468][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.06, 10.108.62.176:58466][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:58466][0m
+WhatsApp message/document dispatched to 919400883082: {'success': False, 'error': 'Request failed with status code 404'}
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.03, 10.108.62.176:58466][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:58468][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:58466][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.01, 10.108.62.176:58466][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.01, 10.108.62.176:58466][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:58466][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:58466][0m
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:58464]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:23220]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:23220]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:29456]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:29456]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\hr_module\serializers.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:46213]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:46213]
+[mHTTP POST /api/auth/logout/ 200 [0.03, 127.0.0.1:11563][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:46213]
+[mHTTP POST /api/auth/login/ 200 [0.25, 127.0.0.1:14680][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:17703]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:17703]
+[mHTTP GET /api/auth/profile/ 200 [0.02, 127.0.0.1:17704][0m
+[mHTTP GET /api/hr/dashboard/ 200 [0.05, 127.0.0.1:9010][0m
+[mHTTP GET /api/hr/dashboard/ 200 [0.05, 127.0.0.1:15552][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.04, 127.0.0.1:12490][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.01, 127.0.0.1:40996][0m
+[mHTTP GET /api/hr/executive-members/?search= 200 [0.01, 127.0.0.1:26043][0m
+[mHTTP GET /api/hr/executive-members/?search= 200 [0.01, 127.0.0.1:4738][0m
+[mHTTP GET /api/hr/officers/?search= 200 [0.05, 127.0.0.1:54112][0m
+[mHTTP GET /api/hr/officers/?search= 200 [0.03, 127.0.0.1:17259][0m
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:64313]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:64313]
+WhatsApp message/document dispatched to 919400883082: {'success': True, 'message': 'Dispatched successfully'}
+[mHTTP GET /api/hr/officers/?search= 200 [0.07, 127.0.0.1:26034][0m
+[mHTTP GET /api/hr/officers/?search= 200 [0.03, 127.0.0.1:48284][0m
+[mHTTP GET /api/hr/officers/?search= 200 [0.03, 127.0.0.1:43835][0m
+WhatsApp message/document dispatched to 919400883082: {'success': True, 'message': 'Dispatched successfully'}
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:52732]
+WebSocket REJECT /ws/notify/ [10.108.62.176:52732]
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:52732]
+Unauthorized: /api/hr/staff-dashboard/
+Unauthorized: /api/core/notifications/unread_count/
+[31;1mHTTP GET /api/hr/staff-dashboard/ 401 [0.04, 10.108.62.176:52740][0m
+[31;1mHTTP GET /api/core/notifications/unread_count/ 401 [0.04, 10.108.62.176:52744][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.01, 10.108.62.176:52740][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.01, 10.108.62.176:52744][0m
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:52750]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:52750]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.108.62.176:52740][0m
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:52750]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:52756]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:52756]
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:52740][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.108.62.176:52740][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.01, 10.108.62.176:52744][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.02, 10.108.62.176:52744][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.03, 10.108.62.176:52740][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:52740][0m
+[mHTTP POST /api/accounts/income/ 201 [0.02, 10.108.62.176:52740][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.03, 10.108.62.176:52744][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.03, 10.108.62.176:52740][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:52740][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.108.62.176:52740][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:52744][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:52740][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.01, 10.108.62.176:52740][0m
+WhatsApp message/document dispatched to 919400883082: {'success': True, 'message': 'WhatsApp Image card dispatched successfully'}
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.01, 10.108.62.176:52744][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:52744][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:52744][0m
+WhatsApp message/document dispatched to 919400883082: {'success': True, 'message': 'WhatsApp Image card dispatched successfully'}
+[mHTTP POST /api/hr/members/ 201 [2.14, 10.108.62.176:52740][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.108.62.176:52740][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:52740][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:52740][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.01, 10.108.62.176:52740][0m
+WebSocket DISCONNECT /ws/notify/ [10.108.62.176:52756]
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:60828]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:60828]
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:60844][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.01, 10.108.62.176:60832][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:60844][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.01, 10.108.62.176:60844][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:60832][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:60844][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.01, 10.108.62.176:60844][0m
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\notify\whatsapp_service.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.108.62.176:45962]
+WebSocket CONNECT /ws/notify/ [10.108.62.176:45962]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.108.62.176:45968][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.108.62.176:45984][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:3105]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:3105]
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.108.62.176:45968][0m

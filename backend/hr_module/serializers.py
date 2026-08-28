@@ -36,6 +36,8 @@ class ExecutiveMemberSerializer(serializers.ModelSerializer):
 
 class ExecutiveOfficerSerializer(serializers.ModelSerializer):
     salary_structure = serializers.SerializerMethodField()
+    user_id = serializers.SerializerMethodField()
+    username = serializers.SerializerMethodField()
 
     class Meta:
         model = ExecutiveOfficer
@@ -49,6 +51,18 @@ class ExecutiveOfficerSerializer(serializers.ModelSerializer):
             return SalaryStructureSerializer(salary).data
         except SalaryStructure.DoesNotExist:
             return None
+
+    def get_user_id(self, obj):
+        from django.db.models import Q
+        from core.models import User
+        user = User.objects.filter(Q(email__iexact=obj.email) | Q(full_name__iexact=obj.full_name)).first()
+        return str(user.id) if user else None
+
+    def get_username(self, obj):
+        from django.db.models import Q
+        from core.models import User
+        user = User.objects.filter(Q(email__iexact=obj.email) | Q(full_name__iexact=obj.full_name)).first()
+        return user.username if user else ''
 
 
 class SalaryStructureSerializer(serializers.ModelSerializer):

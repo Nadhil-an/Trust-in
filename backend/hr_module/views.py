@@ -132,6 +132,20 @@ class StaffDashboardView(APIView):
         from manager_module.models import AssessmentRequest
         assessments_today = AssessmentRequest.objects.filter(requested_by=user, created_at__date=today).count()
         
+        # Attendance Percentage Calculation
+        officer = get_officer_for_user(user)
+        attendance_percentage = 0
+        if officer:
+            eff_date = get_attendance_effective_date()
+            month_records = Attendance.objects.filter(
+                employee=officer,
+                date__month=eff_date.month,
+                date__year=eff_date.year
+            )
+            days_elapsed = max(1, eff_date.day)
+            present_days = month_records.filter(status='PRESENT').count()
+            attendance_percentage = min(100, round((present_days / days_elapsed) * 100))
+
         return Response({
             'members': members_today,
             'donations': float(donations_today),
@@ -139,6 +153,7 @@ class StaffDashboardView(APIView):
             'bank_donations': float(donations_bank),
             'membership_amount': float(membership_amount),
             'assessments': assessments_today,
+            'attendancePercentage': attendance_percentage,
         })
 
 # ── Members ───────────────────────────────────────────────────────
