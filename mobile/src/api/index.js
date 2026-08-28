@@ -53,6 +53,7 @@ api.interceptors.response.use((response) => response, async (error) => {
 export const staffApi = {
   todayStats:     () => api.get('/hr/staff-dashboard/'),
   birthdayAlerts: () => api.get('/hr/birthday-alerts/'),
+  leaderboard:    (p) => api.get('/hr/leaderboard/', { params: p }),
 };
 
 // ── Auth  (api/auth/) ────────────────────────────────────────────────────────
@@ -251,6 +252,29 @@ export const attendanceApi = {
   myAttendance: () => api.get('/hr/attendance/my-attendance/'),
   checkIn:      () => api.post('/hr/attendance/my-attendance/', { action: 'check_in' }),
   checkOut:     () => api.post('/hr/attendance/my-attendance/', { action: 'check_out' }),
+};
+
+// ── Events / Newsletters ──────────────────────────────────────────────────────
+export const eventsApi = {
+  list:   (params) => api.get('/core/events/', { params }),
+  get:    (id)     => api.get(`/core/events/${id}/`),
+  create: (data)   => {
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, val]) => {
+      if (key === 'image' && val && val.uri) {
+        formData.append('image', {
+          uri: val.uri,
+          type: val.mimeType || 'image/jpeg',
+          name: val.name || 'event_image.jpg',
+        });
+      } else if (val !== null && val !== undefined) {
+        formData.append(key, String(val));
+      }
+    });
+    return api.post('/core/events/', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
 };
 
 export default api;

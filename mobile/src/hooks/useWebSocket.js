@@ -7,7 +7,12 @@ export const useWebSocket = (path, onMessage) => {
   const wsRef = useRef(null);
   const reconnectRef = useRef(null);
   const hasConnectedOnceRef = useRef(false);
+  const savedOnMessage = useRef(onMessage);
   const { accessToken, isAuthenticated } = useAuthStore();
+
+  useEffect(() => {
+    savedOnMessage.current = onMessage;
+  }, [onMessage]);
 
   const connect = useCallback(() => {
     if (!isAuthenticated || !accessToken) return;
@@ -25,8 +30,8 @@ export const useWebSocket = (path, onMessage) => {
         }
         
         // Trigger a refresh if this is a reconnection, to fetch any missed updates
-        if (hasConnectedOnceRef.current && onMessage) {
-          onMessage({ type: 'DASHBOARD_REFRESH' });
+        if (hasConnectedOnceRef.current && savedOnMessage.current) {
+          savedOnMessage.current({ type: 'DASHBOARD_REFRESH' });
         }
         hasConnectedOnceRef.current = true;
       };
@@ -34,7 +39,9 @@ export const useWebSocket = (path, onMessage) => {
       wsRef.current.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          onMessage && onMessage(data);
+          if (savedOnMessage.current) {
+             savedOnMessage.current(data);
+          }
         } catch (e) {
           console.log('[WS] Parse error:', e);
         }
@@ -54,7 +61,7 @@ export const useWebSocket = (path, onMessage) => {
     } catch (e) {
       console.log('[WS] Failed to connect:', e);
     }
-  }, [path, accessToken, isAuthenticated, onMessage]);
+  }, [path, accessToken, isAuthenticated]);
 
   const send = useCallback((data) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {

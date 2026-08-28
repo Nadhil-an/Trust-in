@@ -1,171 +1,192 @@
-// screens/member/MemberHomeScreen.js
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  RefreshControl, Alert
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  RefreshControl,
+  Image
 } from 'react-native';
-import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors } from '../../constants/Colors';
-import { EventBanner, StatCard, Card, Badge } from '../../components/shared';
-import { membershipApi, assessmentApi, donationApi } from '../../api';
 import { useAuthStore } from '../../store/authStore';
-import Toast from 'react-native-toast-message';
 import SideDrawer from '../../components/SideDrawer';
 
 const MemberHomeScreen = ({ navigation }) => {
-  const { t } = useTranslation();
   const { user } = useAuthStore();
   const insets = useSafeAreaInsets();
-  
   const [refreshing, setRefreshing] = useState(false);
-  const [memberStatus, setMemberStatus] = useState(null);
-  const [myCases, setMyCases] = useState([]);
-  const [donationsTotal, setDonationsTotal] = useState(0);
   const [drawerVisible, setDrawerVisible] = useState(false);
 
-  useEffect(() => { fetchData(); }, []);
-
-  const fetchData = async () => {
-    try {
-      const [mRes, aRes, dRes] = await Promise.all([
-        membershipApi.status(),
-        assessmentApi.list({ limit: 3, source: 'MEMBER' }),
-        donationApi.myTotal()
-      ]);
-      setMemberStatus(mRes.data);
-      setMyCases(aRes.data.results || aRes.data || []);
-      setDonationsTotal(dRes.data.total_amount || 0);
-    } catch (_) {}
+  // Time-based greeting helper
+  const getGreetingData = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return { text: 'Good Morning,', icon: 'sunny-outline' };
+    if (hour < 17) return { text: 'Good Afternoon,', icon: 'partly-sunny-outline' };
+    if (hour < 21) return { text: 'Good Evening,', icon: 'cloudy-night-outline' };
+    return { text: 'Good Night,', icon: 'moon-outline' };
   };
+
+  const greeting = getGreetingData();
+  const memberName = user?.full_name || '';
+  const memberId = user?.username || '';
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await fetchData();
-    setRefreshing(false);
+    setTimeout(() => setRefreshing(false), 800);
   }, []);
-
-  const handlePayMembership = () => {
-    if (memberStatus?.is_paid) {
-      Toast.show({ type: 'info', text1: 'Membership active', text2: 'No dues pending at the moment.' });
-      return;
-    }
-    // Navigate to payment processing screen
-    navigation.navigate('MembershipPayment');
-  };
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      {/* Top Header */}
+      {/* Top Navigation Header */}
       <View style={styles.topBar}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-          <TouchableOpacity style={styles.menuIconContainer} onPress={() => setDrawerVisible(true)}>
-            <Ionicons name="menu" size={26} color={Colors.white} />
-          </TouchableOpacity>
-          <View style={styles.greetRow}>
-            <Text style={styles.greeting}>{t('member.home_title')}</Text>
-            <Text style={styles.userName}>{user?.full_name}</Text>
-            <Text style={styles.memberId}>ID: {user?.username}</Text>
-          </View>
-        </View>
-        <TouchableOpacity style={styles.profileBtn} onPress={() => navigation.navigate('Profile')}>
-          <Ionicons name="person-circle" size={40} color={Colors.white} />
+        <TouchableOpacity style={styles.iconBtn} onPress={() => setDrawerVisible(true)}>
+          <Ionicons name="menu-outline" size={26} color={Colors.textPrimary} />
         </TouchableOpacity>
+
+        <View style={styles.brandTitleContainer}>
+          <Text style={styles.brandTitle}>SREELAKSHMI</Text>
+          <Text style={styles.brandSub}>CHARITABLE TRUST</Text>
+        </View>
+
+        <View style={styles.rightIcons}>
+          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Notifications')}>
+            <Ionicons name="notifications-outline" size={22} color={Colors.textPrimary} />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.avatarBtn} onPress={() => navigation.navigate('Profile')}>
+            <View style={styles.avatarCircle}>
+              <Ionicons name="person" size={18} color="#0284c7" />
+            </View>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#0284c7" />}
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-        <EventBanner />
-
-        {/* Membership Status Card */}
-        <Card style={styles.membershipCard} padding={20}>
-          <View style={styles.cardHeader}>
-            <View>
-              <Text style={styles.cardTitle}>{t('member.membership_card')}</Text>
-              <Text style={styles.cardSub}>{memberStatus?.membership_type || 'General Member'}</Text>
-            </View>
-            <Badge
-              status={memberStatus?.is_paid ? 'PAID' : 'DUE'}
-              label={memberStatus?.is_paid ? t('member.paid') : t('member.due')}
-              size="lg"
-            />
+        {/* Dynamic Greeting Card */}
+        <View style={styles.greetingCard}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.greetingTitle}>{greeting.text}</Text>
+            <Text style={styles.memberName}>{memberName}</Text>
+            <Text style={styles.greetingMessage}>
+              Wishing you a beautiful day filled with kindness & positivity! 💙
+            </Text>
           </View>
-          
-          <View style={styles.divider} />
-          
-          <View style={styles.cardBody}>
-            <View>
-              <Text style={styles.label}>Valid Until</Text>
-              <Text style={styles.value}>{memberStatus?.valid_until || '-'}</Text>
-            </View>
-            <TouchableOpacity
-              style={[styles.payBtn, memberStatus?.is_paid && styles.payBtnDisabled]}
-              onPress={handlePayMembership}
-              disabled={memberStatus?.is_paid}
-            >
-              <Text style={[styles.payBtnText, memberStatus?.is_paid && styles.payBtnTextDisabled]}>
-                {t('member.pay_membership')}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </Card>
-
-        {/* Action Grid */}
-        <View style={styles.actionGrid}>
-          <TouchableOpacity
-            style={styles.actionBtn}
-            onPress={() => navigation.navigate('NewAssessment', { source: 'MEMBER' })}
-          >
-            <View style={[styles.actionIcon, { backgroundColor: Colors.warningLight }]}>
-              <Ionicons name="alert-circle" size={28} color={Colors.warning} />
-            </View>
-            <Text style={styles.actionText}>{t('member.report_problem')}</Text>
-          </TouchableOpacity>
-
-          <View style={styles.statBox}>
-            <Text style={styles.statLabel}>{t('member.my_donations')}</Text>
-            <Text style={styles.statValue}>₹{donationsTotal.toLocaleString()}</Text>
+          <View style={styles.weatherIconCircle}>
+            <Ionicons name={greeting.icon} size={32} color="#0284c7" />
           </View>
         </View>
 
-        {/* Recent Cases */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>{t('member.my_cases')}</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('MyCases')}>
-            <Text style={styles.seeAll}>{t('common.see_all')}</Text>
-          </TouchableOpacity>
-        </View>
-
-        {myCases.length === 0 ? (
-          <Card padding={24} style={styles.emptyCard}>
-            <Ionicons name="document-text-outline" size={40} color={Colors.gray300} />
-            <Text style={styles.emptyText}>{t('member.no_cases')}</Text>
-          </Card>
-        ) : (
-          myCases.map(c => (
-            <TouchableOpacity
-              key={c.id}
-              style={styles.caseCard}
-              onPress={() => navigation.navigate('AssessmentDetail', { id: c.id })}
-            >
-              <View style={styles.caseHeader}>
-                <Text style={styles.caseNum}>{c.case_number}</Text>
-                <Badge status={c.status} size="sm" />
+        {/* Prominent Digital Membership Card */}
+        <TouchableOpacity
+          activeOpacity={0.9}
+          onPress={() => navigation.navigate('MembershipCard')}
+        >
+          <View style={[styles.membershipCard, { backgroundColor: '#0284c7' }]}>
+            <View style={styles.cardHeader}>
+              <View style={styles.logoBadge}>
+                <Ionicons name="flower-outline" size={20} color="#0284c7" />
+                <View>
+                  <Text style={styles.trustLogoTitle}>SREELAKSHMI</Text>
+                  <Text style={styles.trustLogoSub}>CHARITABLE TRUST</Text>
+                </View>
               </View>
-              <Text style={styles.caseTitle}>{c.beneficiary_name}</Text>
-              <Text style={styles.caseCategory} numberOfLines={1}>
-                {c.category.replace('_', ' ').toUpperCase()} • {c.created_at ? new Date(c.created_at).toLocaleDateString() : ''}
-              </Text>
-            </TouchableOpacity>
-          ))
-        )}
 
+              <View style={styles.memberIdContainer}>
+                <Text style={styles.memberIdLabel}>MEMBER ID</Text>
+                <Text style={styles.memberIdValue}>{memberId}</Text>
+              </View>
+            </View>
+
+            <View style={styles.cardCenter}>
+              <Text style={styles.cardTitle}>MEMBERSHIP CARD</Text>
+            </View>
+
+            <View style={styles.cardFooter}>
+              <View>
+                <Text style={styles.footerLabel}>Member Since</Text>
+                <Text style={styles.footerValue}>{user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', {month: 'short', year: 'numeric'}) : 'N/A'}</Text>
+              </View>
+
+              <View style={{ alignItems: 'flex-end' }}>
+                <Text style={styles.footerLabel}>Valid Upto</Text>
+                <Text style={styles.footerValue}>{user?.valid_upto ? new Date(user.valid_upto).toLocaleDateString('en-US', {month: 'short', year: 'numeric'}) : 'N/A'}</Text>
+              </View>
+            </View>
+          </View>
+        </TouchableOpacity>
+
+        {/* Quick-Action Grid (4 equal rounded cards) */}
+        <View style={styles.actionGrid}>
+          {/* 1. My Donation */}
+          <TouchableOpacity
+            style={styles.actionCard}
+            onPress={() => navigation.navigate('DonationHistory')}
+          >
+            <View style={styles.actionIconCircle}>
+              <Ionicons name="heart" size={24} color="#0284c7" />
+            </View>
+            <Text style={styles.actionTitle}>My Donation</Text>
+            <Text style={styles.actionSub}>View your donation history</Text>
+          </TouchableOpacity>
+
+          {/* 2. Report a Problem */}
+          <TouchableOpacity
+            style={styles.actionCard}
+            onPress={() => navigation.navigate('ReportProblem')}
+          >
+            <View style={styles.actionIconCircle}>
+              <Ionicons name="warning" size={24} color="#0284c7" />
+            </View>
+            <Text style={styles.actionTitle}>Report a Problem</Text>
+            <Text style={styles.actionSub}>Help us improve by reporting issues</Text>
+          </TouchableOpacity>
+
+          {/* 3. Events */}
+          <TouchableOpacity
+            style={styles.actionCard}
+            onPress={() => navigation.navigate('Events')}
+          >
+            <View style={styles.actionIconCircle}>
+              <Ionicons name="calendar" size={24} color="#0284c7" />
+            </View>
+            <Text style={styles.actionTitle}>Events</Text>
+            <Text style={styles.actionSub}>View upcoming events & activities</Text>
+          </TouchableOpacity>
+
+          {/* 4. My Profile */}
+          <TouchableOpacity
+            style={styles.actionCard}
+            onPress={() => navigation.navigate('Profile')}
+          >
+            <View style={styles.actionIconCircle}>
+              <Ionicons name="person" size={24} color="#0284c7" />
+            </View>
+            <Text style={styles.actionTitle}>My Profile</Text>
+            <Text style={styles.actionSub}>View and manage your profile</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Upcoming Events Section */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Upcoming Events</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Events')}>
+            <Text style={styles.viewAllText}>View All</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={[styles.eventCard, { justifyContent: 'center', alignItems: 'center', paddingVertical: 24 }]}>
+          <Text style={{ color: Colors.gray500, fontSize: 13 }}>No upcoming events at the moment.</Text>
+        </View>
       </ScrollView>
 
+      {/* Side Drawer Component */}
       <SideDrawer
         visible={drawerVisible}
         onClose={() => setDrawerVisible(false)}
@@ -179,70 +200,156 @@ const MemberHomeScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   topBar: {
-    backgroundColor: Colors.primary,
-    flexDirection: 'row', justifyContent: 'space-between',
-    paddingHorizontal: 20, paddingBottom: 20, paddingTop: 10,
-  },
-  menuIconContainer: { paddingRight: 12, paddingVertical: 2 },
-  greetRow: { flex: 1 },
-  greeting: { fontSize: 13, color: 'rgba(255,255,255,0.8)' },
-  userName: { fontSize: 22, fontWeight: '800', color: Colors.white, marginBottom: 2 },
-  memberId: { fontSize: 12, color: 'rgba(255,255,255,0.9)', fontWeight: '600' },
-  profileBtn: { justifyContent: 'center' },
-  scroll: { padding: 16, gap: 16 },
-  
-  membershipCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     backgroundColor: Colors.white,
-    borderWidth: 1, borderColor: Colors.gray200,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.gray100,
+  },
+  iconBtn: { padding: 4 },
+  brandTitleContainer: { alignItems: 'center' },
+  brandTitle: { fontSize: 13, fontWeight: '900', color: '#0284c7', letterSpacing: 1 },
+  brandSub: { fontSize: 9, fontWeight: '700', color: Colors.gray600, letterSpacing: 0.5 },
+  rightIcons: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  avatarBtn: { padding: 2 },
+  avatarCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#e0f2fe',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#0284c7',
+  },
+
+  scroll: { padding: 16, gap: 16 },
+
+  greetingCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.white,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: Colors.gray100,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  greetingTitle: { fontSize: 13, color: Colors.gray500, fontWeight: '500' },
+  memberName: { fontSize: 20, fontWeight: '800', color: Colors.textPrimary, marginVertical: 2 },
+  greetingMessage: { fontSize: 12, color: Colors.gray600, marginTop: 4, lineHeight: 16 },
+  weatherIconCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#f0f9ff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 10,
+  },
+
+  membershipCard: {
+    borderRadius: 16,
+    padding: 18,
+    minHeight: 180,
+    justifyContent: 'space-between',
+    shadowColor: '#0284c7',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
   },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  cardTitle: { fontSize: 18, fontWeight: '800', color: Colors.textPrimary },
-  cardSub: { fontSize: 13, color: Colors.gray500, marginTop: 2 },
-  divider: { height: 1, backgroundColor: Colors.gray100, marginVertical: 16 },
-  cardBody: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  label: { fontSize: 11, color: Colors.gray400, textTransform: 'uppercase', letterSpacing: 0.5 },
-  value: { fontSize: 15, fontWeight: '700', color: Colors.textPrimary, marginTop: 4 },
-  payBtn: {
-    backgroundColor: Colors.primary,
-    paddingHorizontal: 16, paddingVertical: 10,
-    borderRadius: 8,
+  logoBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.white,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 16,
+    gap: 4,
   },
-  payBtnDisabled: { backgroundColor: Colors.gray200 },
-  payBtnText: { color: Colors.white, fontWeight: '600', fontSize: 13 },
-  payBtnTextDisabled: { color: Colors.gray400 },
+  trustLogoTitle: { fontSize: 7, fontWeight: '900', color: '#0284c7' },
+  trustLogoSub: { fontSize: 5, fontWeight: '700', color: Colors.gray600 },
+  memberIdContainer: { alignItems: 'flex-end' },
+  memberIdLabel: { fontSize: 8, color: 'rgba(255, 255, 255, 0.8)', fontWeight: '700' },
+  memberIdValue: { fontSize: 12, fontWeight: '800', color: Colors.white },
 
-  actionGrid: { flexDirection: 'row', gap: 12 },
-  actionBtn: {
-    flex: 1, backgroundColor: Colors.white, borderRadius: 14,
-    padding: 16, alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2,
-  },
-  actionIcon: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', marginBottom: 10 },
-  actionText: { fontSize: 14, fontWeight: '600', color: Colors.textPrimary, textAlign: 'center' },
-  
-  statBox: {
-    flex: 1, backgroundColor: Colors.successLight, borderRadius: 14,
-    padding: 16, alignItems: 'center', justifyContent: 'center',
-  },
-  statLabel: { fontSize: 13, color: Colors.success, fontWeight: '600', marginBottom: 6 },
-  statValue: { fontSize: 24, fontWeight: '800', color: Colors.success },
+  cardCenter: { alignItems: 'center', marginVertical: 10 },
+  cardTitle: { fontSize: 14, fontWeight: '900', color: Colors.white, letterSpacing: 2 },
 
-  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 },
+  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
+  footerLabel: { fontSize: 9, color: 'rgba(255, 255, 255, 0.75)', textTransform: 'uppercase' },
+  footerValue: { fontSize: 13, fontWeight: '800', color: Colors.white, marginTop: 1 },
+
+  actionGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  actionCard: {
+    width: '48%',
+    backgroundColor: Colors.white,
+    borderRadius: 14,
+    padding: 14,
+    alignItems: 'flex-start',
+    borderWidth: 1,
+    borderColor: Colors.gray100,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  actionIconCircle: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: '#f0f9ff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  actionTitle: { fontSize: 14, fontWeight: '700', color: Colors.textPrimary, marginBottom: 2 },
+  actionSub: { fontSize: 11, color: Colors.gray500, leading: 14 },
+
+  sectionHeader: {
+    flexDirection: 'row',
+    justify: 'space-between',
+    alignItems: 'center',
+    marginTop: 4,
+  },
   sectionTitle: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary },
-  seeAll: { fontSize: 13, color: Colors.primary, fontWeight: '600' },
-  
-  emptyCard: { alignItems: 'center', justifyContent: 'center', padding: 40, borderStyle: 'dashed', borderWidth: 1, borderColor: Colors.gray300 },
-  emptyText: { color: Colors.gray500, marginTop: 12, fontSize: 14 },
+  viewAllText: { fontSize: 13, fontWeight: '700', color: '#0284c7' },
 
-  caseCard: {
-    backgroundColor: Colors.white, borderRadius: 12, padding: 16,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 3, elevation: 1,
-    borderLeftWidth: 3, borderLeftColor: Colors.warning,
+  eventCard: {
+    flexDirection: 'row',
+    backgroundColor: Colors.white,
+    borderRadius: 14,
+    padding: 12,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: Colors.gray100,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 3,
+    elevation: 1,
   },
-  caseHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  caseNum: { fontSize: 12, fontWeight: '700', color: Colors.gray500 },
-  caseTitle: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary, marginBottom: 4 },
-  caseCategory: { fontSize: 12, color: Colors.gray500 },
+  eventThumb: { width: 90, height: 80, borderRadius: 10 },
+  eventInfo: { flex: 1, justifyContent: 'center' },
+  eventCardTitle: { fontSize: 14, fontWeight: '700', color: Colors.textPrimary, marginBottom: 2 },
+  eventCardDesc: { fontSize: 11, color: Colors.gray500, marginBottom: 8 },
+  eventMetaRow: { flexDirection: 'row', gap: 10, alignItems: 'center' },
+  eventMetaItem: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  eventMetaText: { fontSize: 10, color: Colors.gray500, fontWeight: '500' },
 });
 
 export default MemberHomeScreen;

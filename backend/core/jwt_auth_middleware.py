@@ -14,13 +14,8 @@ from core.models import User
 @database_sync_to_async
 def get_user(token_key):
     try:
-        UntypedToken(token_key)
-        from rest_framework_simplejwt.backends import TokenBackend
-        from django.conf import settings
-        data = TokenBackend(
-            algorithm=settings.SIMPLE_JWT['ALGORITHM']
-        ).decode(token_key, verify=True)
-        return User.objects.get(id=data['user_id'])
+        validated_token = UntypedToken(token_key)
+        return User.objects.get(id=validated_token['user_id'])
     except Exception as e:
         print(f"WebSocket Auth Error: {e}")
         return AnonymousUser()

@@ -117,8 +117,16 @@ class StaffDashboardView(APIView):
         
         # Donations collected today by this user
         from accounts_module.models import Income
-        from django.db.models import Sum
-        donations_today = Income.objects.filter(created_by=user, date=today).aggregate(t=Sum('amount'))['t'] or 0
+        from django.db.models import Sum, Q
+        
+        incomes_today = Income.objects.filter(created_by=user, date=today)
+        donations_today = incomes_today.aggregate(t=Sum('amount'))['t'] or 0
+        donations_cash = incomes_today.filter(Q(payment_method__iexact='CASH') | Q(account_type='CASH')).aggregate(t=Sum('amount'))['t'] or 0
+        donations_bank = float(donations_today) - float(donations_cash)
+        
+        # Membership amount collected today
+        from hr_module.models import MembershipReceipt
+        membership_amount = MembershipReceipt.objects.filter(member__created_by=user, generated_at__date=today).aggregate(t=Sum('amount'))['t'] or 0
         
         # Assessments submitted today by this user
         from manager_module.models import AssessmentRequest
@@ -127,6 +135,9 @@ class StaffDashboardView(APIView):
         return Response({
             'members': members_today,
             'donations': float(donations_today),
+            'cash_donations': float(donations_cash),
+            'bank_donations': float(donations_bank),
+            'membership_amount': float(membership_amount),
             'assessments': assessments_today,
         })
 
@@ -162,6 +173,21 @@ class MemberListCreateView(generics.ListCreateAPIView):
                 receipt = MembershipReceipt.objects.create(
                     member=member,
                     amount=getattr(member, 'monthly_fee', 100.00) or 100.00
+                )
+
+                # Create matching Income record to track Cash/Bank properly
+                from accounts_module.models import Income
+                payment_mode = self.request.data.get('payment_mode', 'CASH')
+                transaction_id = self.request.data.get('transaction_id', '')
+                Income.objects.create(
+                    donor_name=member.full_name,
+                    donor_phone=member.phone,
+                    source='MEMBERSHIP',
+                    amount=receipt.amount,
+                    payment_method=payment_mode,
+                    reference_number=transaction_id,
+                    account_type='BANK' if payment_mode in ['UPI', 'NEFT', 'RTGS', 'IMPS'] else 'CASH',
+                    created_by=self.request.user
                 )
 
                 # 2. Generate A4 PDF Document
@@ -1057,4 +1083,61 @@ class BirthdayAlertView(APIView):
             'today_date': today.strftime('%d %B %Y'),
             'tomorrow_date': tomorrow.strftime('%d %B %Y'),
         })
+
+
+# ── Leaderboard ──────────────────────────────────────────────────
+
+class StaffLeaderboardView(APIView):
+    permission_classes = [IsAnyStaff]
+
+    def get(self, request, *args, **kwargs):
+        from accounts_module.models import Income
+        from django.db.models import Sum
+        from core.models import User, Role
+        from datetime import datetime
+        
+        date_str = request.query_params.get('date')
+        if date_str:
+            try:
+                target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            except ValueError:
+                target_date = timezone.now().date()
+        else:
+            target_date = timezone.now().date()
+        
+        # Get list of names for staff who are PRESENT on target_date (ignoring case)
+        present_staff_names = Attendance.objects.filter(
+            date=target_date, status='PRESENT'
+        ).values_list('employee__full_name', flat=True)
+        
+        present_users = User.objects.filter(role=Role.STAFF)
+        
+        results = []
+        for user in present_users:
+            is_present = any(user.full_name.lower() == name.lower() for name in present_staff_names)
+            if not is_present:
+                continue
+                
+            total_collection = Income.objects.filter(
+                date=target_date, created_by=user
+            ).aggregate(t=Sum('amount'))['t'] or 0
+            
+            results.append({
+                'staff_id': str(user.id),
+                'name': user.full_name,
+                'photo_url': request.build_absolute_uri(user.photo.url) if user.photo else None,
+                'amount': float(total_collection)
+            })
+            
+        results.sort(key=lambda x: x['amount'], reverse=True)
+        
+        # Add rank
+        for idx, item in enumerate(results):
+            item['rank'] = idx + 1
+            
+        limit = request.query_params.get('limit')
+        if limit and limit.isdigit():
+            results = results[:int(limit)]
+            
+        return Response(results)
 

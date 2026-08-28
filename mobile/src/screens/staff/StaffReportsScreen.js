@@ -184,8 +184,8 @@ export default function StaffReportsScreen({ navigation, route }) {
 
         {item.file ? (
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
-            <Ionicons name="document-attach" size={16} color={Colors.primary} />
-            <Text style={{ marginLeft: 6, fontSize: 12, color: Colors.primary }}>Attachment Included</Text>
+            <Ionicons name="document-attach" size={16} color={'#1A74EE'} />
+            <Text style={{ marginLeft: 6, fontSize: 12, color: '#1A74EE' }}>Attachment Included</Text>
           </View>
         ) : null}
 
@@ -221,7 +221,7 @@ export default function StaffReportsScreen({ navigation, route }) {
       {/* Main Content */}
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={'#1A74EE'} />
         </View>
       ) : (
         <FlatList
@@ -277,7 +277,7 @@ export default function StaffReportsScreen({ navigation, route }) {
 
             <Text style={styles.inputLabel}>Attachment (Optional)</Text>
             <TouchableOpacity style={[styles.uploadBtn, !isEditable && { backgroundColor: '#f1f5f9', borderColor: '#e2e8f0' }]} onPress={isEditable ? handlePickFile : null}>
-              <Ionicons name="cloud-upload-outline" size={20} color={isEditable ? Colors.primary : Colors.gray400} />
+              <Ionicons name="cloud-upload-outline" size={20} color={isEditable ? '#1A74EE' : Colors.gray400} />
               <Text style={[styles.uploadBtnText, !isEditable && { color: Colors.gray400 }]}>
                 {attachment ? attachment.name : 'Upload File or Image'}
               </Text>
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
   },
   headerBar: {
     minHeight: 60,
-    backgroundColor: Colors.primary,
+    backgroundColor: '#1A74EE',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -368,7 +368,7 @@ const styles = StyleSheet.create({
   reportId: {
     fontSize: 13,
     fontWeight: '800',
-    color: Colors.primary,
+    color: '#1A74EE',
   },
   badge: {
     paddingHorizontal: 10,
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 8,
     borderLeftWidth: 3,
-    borderLeftColor: Colors.primary,
+    borderLeftColor: '#1A74EE',
     marginBottom: 10,
   },
   notesHeader: {
@@ -495,11 +495,11 @@ const styles = StyleSheet.create({
   uploadBtnText: {
     fontSize: 14,
     fontWeight: '600',
-    color: Colors.primary,
+    color: '#1A74EE',
     marginLeft: 8,
   },
   submitBtn: {
-    backgroundColor: Colors.primary,
+    backgroundColor: '#1A74EE',
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',

@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   KeyboardAvoidingView, Platform, Alert, Image
-} from 'react-native';
+} from 'react-native'; 
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
@@ -46,7 +47,7 @@ const MembershipPaymentScreen = ({ navigation }) => {
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <Header title={t('member.pay_membership')} showBack />
       
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+      <KeyboardAwareScrollView enableOnAndroid={true} extraScrollHeight={20} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <Card style={styles.amountCard} padding={24}>
           <Text style={styles.amountLabel}>{t('member.monthly_due', 'Monthly Due Amount')}</Text>
           <Text style={styles.amountValue}>₹{amount}</Text>
@@ -96,7 +97,7 @@ const MembershipPaymentScreen = ({ navigation }) => {
           </Card>
         )}
 
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       <View style={styles.footer}>
         <Button

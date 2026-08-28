@@ -2,65 +2,43 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  RefreshControl, Alert, Dimensions, Platform
+  RefreshControl, Image, Dimensions
 } from 'react-native';
-import { useTranslation } from 'react-i18next';
 import { useFocusEffect } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors } from '../../constants/Colors';
 import { staffApi, notifyApi } from '../../api';
 import { useAuthStore } from '../../store/authStore';
 import { useNotificationSocket } from '../../hooks/useWebSocket';
 import Toast from 'react-native-toast-message';
 import BirthdayPopup from '../../components/BirthdayPopup';
 import SideDrawer from '../../components/SideDrawer';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width } = Dimensions.get('window');
 
-
 // ── Components ──────────────────────────────────────────────────────────
 
-const StatCardPremium = ({ title, value, icon, color, bg, onPress }) => (
-  <TouchableOpacity style={[styles.statCard, { borderColor: `${color}20` }]} onPress={onPress} activeOpacity={0.8}>
-    <View style={styles.statCardHeader}>
-      <View style={[styles.statIconWrap, { backgroundColor: bg }]}>
-        <Ionicons name={icon} size={20} color={color} />
-      </View>
-      <Ionicons name="ellipsis-horizontal" size={16} color={Colors.gray400} />
+const StatCard = ({ title, value, icon, onPress }) => (
+  <TouchableOpacity style={styles.statCard} onPress={onPress} activeOpacity={0.8}>
+    <View style={styles.statIconWrap}>
+      <Ionicons name={icon} size={22} color="#1689D8" />
     </View>
-    <View style={styles.statCardBody}>
-      <Text style={[styles.statValue, { color: color }]} numberOfLines={1} adjustsFontSizeToFit>{value}</Text>
-      <Text style={styles.statTitle}>{title}</Text>
-    </View>
-    {/* Decorative Trend Line (SVG mock using border) */}
-    <View style={styles.trendLineContainer}>
-      <View style={[styles.trendLine, { borderColor: `${color}40` }]} />
-    </View>
+    <Text style={styles.statTitle} numberOfLines={2}>{title}</Text>
+    <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>{value}</Text>
   </TouchableOpacity>
 );
 
-const QuickActionPremium = ({ icon, title, subtitle, color, bg, onPress }) => (
-  <TouchableOpacity style={[styles.quickAction, { backgroundColor: bg }]} onPress={onPress} activeOpacity={0.7}>
-    <View style={styles.qaLeft}>
-      <View style={[styles.qaIconWrap, { backgroundColor: color }]}>
-        <Ionicons name={icon} size={22} color={Colors.white} />
-      </View>
-      <View style={styles.qaTextWrap}>
-        <Text style={styles.qaTitle}>{title}</Text>
-        <Text style={styles.qaSubtitle}>{subtitle}</Text>
-      </View>
-    </View>
-    <View style={styles.qaArrow}>
-      <Ionicons name="chevron-forward" size={16} color={Colors.gray400} />
-    </View>
+const QuickActionCard = ({ icon, title, onPress }) => (
+  <TouchableOpacity style={styles.quickAction} onPress={onPress} activeOpacity={0.7}>
+    <Ionicons name={icon} size={28} color="#1689D8" style={{ marginBottom: 10 }} />
+    <Text style={styles.qaTitle} numberOfLines={2}>{title}</Text>
   </TouchableOpacity>
 );
 
 // ── Main Screen ─────────────────────────────────────────────────────────
 
 const StaffHomeScreen = ({ navigation, route }) => {
-  const { t } = useTranslation();
   const { user } = useAuthStore();
   const insets = useSafeAreaInsets();
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -76,9 +54,34 @@ const StaffHomeScreen = ({ navigation, route }) => {
       }
     }, [route?.params?.openDrawer, navigation])
   );
-  const [stats, setStats] = useState({ members: 0, donations: 0, assessments: 0 });
+  
+  const [stats, setStats] = useState({});
+  const [topStaff, setTopStaff] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const sliderRef = React.useRef(null);
+
+  // Auto-slide carousel infinitely to the right
+  useEffect(() => {
+    let currentSlide = 0;
+    const interval = setInterval(() => {
+      currentSlide += 1;
+      
+      if (currentSlide >= 20) {
+        // Reset silently without animation
+        sliderRef.current?.scrollTo({ x: 0, animated: false });
+        currentSlide = 1;
+        // Wait a tiny bit then slide to next
+        setTimeout(() => {
+          sliderRef.current?.scrollTo({ x: currentSlide * (width - 32), animated: true });
+        }, 50);
+      } else {
+        sliderRef.current?.scrollTo({ x: currentSlide * (width - 32), animated: true });
+      }
+    }, 3000); // Slides every 3 seconds
+    return () => clearInterval(interval);
+  }, []);
+
   const [birthdays, setBirthdays] = useState([]);
   const [bdayVisible, setBdayVisible] = useState(false);
 
@@ -105,24 +108,31 @@ const StaffHomeScreen = ({ navigation, route }) => {
     } catch (_) {}
   }, []);
 
-  useEffect(() => { 
-    fetchStats(); 
-    fetchUnreadCount();
-    // Slight delay so app settles before showing popup
-    setTimeout(() => fetchBirthdays(), 1200);
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchStats();
+      fetchUnreadCount();
+      // Only fetch birthdays once or occasionally; it's fine here, or move it out if needed.
+      setTimeout(() => fetchBirthdays(), 1200);
+    }, [fetchBirthdays])
+  );
 
   const fetchUnreadCount = async () => {
     try {
       const res = await notifyApi.unreadCount();
-      setUnreadCount(res.data.count);
+      setUnreadCount(res.data?.count || 0);
     } catch (_) {}
   };
 
   const fetchStats = async () => {
     try {
       const res = await staffApi.todayStats();
-      setStats(res.data);
+      if(res.data) setStats(res.data);
+      
+      try {
+        const lbRes = await staffApi.leaderboard({ limit: 3 });
+        if(lbRes.data) setTopStaff(lbRes.data);
+      } catch (err) {}
     } catch (_) {}
   };
 
@@ -133,148 +143,276 @@ const StaffHomeScreen = ({ navigation, route }) => {
     setRefreshing(false);
   }, []);
 
-  const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-
   return (
     <View style={styles.container}>
+      {/* Sticky Top App Bar */}
+      <View style={[styles.headerRow, { paddingTop: insets.top + 10, paddingHorizontal: 18 }]}>
+        <TouchableOpacity style={styles.menuIconContainer} onPress={() => setDrawerVisible(true)}>
+          <Ionicons name="menu" size={30} color="#1E293B" />
+        </TouchableOpacity>
+        <View style={styles.headerRight}>
+          <TouchableOpacity style={styles.bellContainer} activeOpacity={0.8} onPress={() => navigation.navigate('Notifications')}>
+            <Ionicons name="notifications-outline" size={26} color="#1E293B" />
+            {unreadCount > 0 && <View style={styles.badge} />}
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.avatarWrap} 
+            activeOpacity={0.8} 
+            onPress={() => navigation.navigate('Profile')}
+          >
+            <Ionicons name="person-circle" size={38} color="#94A3B8" />
+          </TouchableOpacity>
+        </View>
+      </View>
+
       <ScrollView
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#1689D8" />}
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        {/* Header Gradient Section */}
-        <View style={[styles.headerGradient, { paddingTop: insets.top + 10 }]}>
-          <View style={styles.headerRow}>
-            <TouchableOpacity style={styles.menuIconContainer} onPress={() => setDrawerVisible(true)}>
-              <Ionicons name="menu" size={26} color={Colors.white} />
-            </TouchableOpacity>
-            <View style={styles.userInfo}>
-              <Text style={styles.greeting}>{t('dashboard.greeting_good_day', 'Good morning, 👋')}</Text>
-              <Text style={styles.userName}>{user?.full_name || user?.username || 'Sample STAFF'}</Text>
-              <Text style={styles.role}>{user?.role || 'STAFF'}</Text>
-            </View>
-            <TouchableOpacity style={styles.bellContainer} activeOpacity={0.8} onPress={() => navigation.navigate('Notifications')}>
-              <Ionicons name="notifications-outline" size={24} color={Colors.gray800} />
-              {unreadCount > 0 && (
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{unreadCount > 99 ? '99+' : unreadCount}</Text>
-                </View>
-              )}
-            </TouchableOpacity>
-          </View>
+
+        {/* Top Carousel */}
+        <View style={{ marginBottom: 16 }}>
+          <ScrollView
+            ref={sliderRef}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            scrollEventThrottle={16}
+          >
+            {Array(15).fill(['greeting', 'collection', 'leaderboard']).flat().map((type, index) => {
+              if (type === 'greeting') {
+                return (
+                  <View key={index} style={{ width: width - 32 }}>
+                    <LinearGradient colors={['#E6F0FE', '#E6F0FE']} style={[styles.greetingCard, { marginBottom: 0 }]}>
+                      <View style={styles.greetingTextWrap}>
+                        <Text style={styles.goodMorning}>Good Morning,</Text>
+                        <Text style={styles.staffMemberText}>{user?.full_name || user?.username || 'Staff Member'}!</Text>
+                        <Text style={styles.greetingSubtitle}>Welcome back! Let's continue{'\n'}making a difference today.</Text>
+                      </View>
+                      <View style={styles.weatherIconWrap}>
+                        <Ionicons name="partly-sunny" size={60} color="#FDB813" style={styles.sunIcon} />
+                        <Ionicons name="cloud" size={40} color="#60A5FA" style={styles.cloudIcon} />
+                      </View>
+                    </LinearGradient>
+                  </View>
+                );
+              } else if (type === 'collection') {
+                return (
+                  <TouchableOpacity 
+                    key={index}
+                    activeOpacity={0.9} 
+                    style={{ width: width - 32 }}
+                    onPress={() => navigation.navigate('StaffDonationsList')}
+                  >
+                    <View style={styles.collectionCard}>
+                      <View style={styles.collHeader}>
+                        <View>
+                          <Text style={styles.collTitle}>Collection Today</Text>
+                          <Text style={styles.collSubtitle}>Track today's total collection</Text>
+                        </View>
+                        <View style={styles.collIconWrap}>
+                          <Ionicons name="wallet-outline" size={24} color="#1689D8" />
+                        </View>
+                      </View>
+
+                      <View style={styles.collTotalBox}>
+                        <View style={styles.collTotalIcon}>
+                          <Ionicons name="bag-handle" size={20} color="#FFF" />
+                          <View style={styles.rupeeCircle}>
+                            <Text style={styles.rupeeText}>₹</Text>
+                          </View>
+                        </View>
+                        <View>
+                          <Text style={styles.collTotalLabel}>Total Collection</Text>
+                          <Text style={styles.collTotalVal}>₹ {(stats.donations || 0).toLocaleString()}</Text>
+                        </View>
+                      </View>
+
+                      <View style={styles.collRow}>
+                        <View style={styles.collThirdBox}>
+                          <View style={[styles.collThirdIcon, { backgroundColor: '#DCFCE7' }]}>
+                            <Ionicons name="cash-outline" size={14} color="#16A34A" />
+                          </View>
+                          <Text style={styles.collThirdLabel}>In Cash</Text>
+                          <Text style={styles.collThirdVal}>₹{(stats.cash_donations || 0).toLocaleString()}</Text>
+                        </View>
+                        
+                        <View style={styles.collThirdBox}>
+                          <View style={[styles.collThirdIcon, { backgroundColor: '#E0F2FE' }]}>
+                            <Ionicons name="card-outline" size={14} color="#0284C7" />
+                          </View>
+                          <Text style={styles.collThirdLabel}>In Bank</Text>
+                          <Text style={styles.collThirdVal}>₹{(stats.bank_donations || 0).toLocaleString()}</Text>
+                        </View>
+
+                        <View style={styles.collThirdBox}>
+                          <View style={[styles.collThirdIcon, { backgroundColor: '#FEF3C7' }]}>
+                            <Ionicons name="people-outline" size={14} color="#D97706" />
+                          </View>
+                          <Text style={styles.collThirdLabel}>Members</Text>
+                          <Text style={styles.collThirdVal}>₹{(stats.membership_amount || 0).toLocaleString()}</Text>
+                        </View>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                );
+              } else {
+                return (
+                  <TouchableOpacity 
+                    key={index}
+                    activeOpacity={0.9} 
+                    style={{ width: width - 32 }}
+                    onPress={() => navigation.navigate('StaffLeaderboard')}
+                  >
+                    <View style={styles.lbCard}>
+                      <View style={styles.lbHeader}>
+                        <Text style={styles.lbTitle}>Today's Collection Leaderboard</Text>
+                        <TouchableOpacity style={styles.lbViewAllWrap} onPress={() => navigation.navigate('StaffLeaderboard')}>
+                          <Text style={styles.lbViewAll}>View All</Text>
+                          <Ionicons name="chevron-forward" size={14} color="#0284C7" />
+                        </TouchableOpacity>
+                      </View>
+                      
+                      {topStaff.length === 0 ? (
+                        <View style={styles.lbEmpty}>
+                          <Ionicons name="trophy-outline" size={28} color="#94A3B8" />
+                          <Text style={styles.lbEmptyText}>No collections recorded today</Text>
+                        </View>
+                      ) : (
+                        <View style={styles.lbContentBox}>
+                          {topStaff.slice(0, 3).map((staff, i) => (
+                            <View key={staff.staff_id || i} style={[styles.lbRowItem, i < Math.min(topStaff.length, 3) - 1 && styles.lbRowBorder]}>
+                              <Text style={styles.lbRank}>{staff.rank}</Text>
+                              {staff.photo_url ? (
+                                <Image source={{ uri: staff.photo_url }} style={styles.lbPhoto} />
+                              ) : (
+                                <View style={styles.lbPhotoPlaceholder}>
+                                  <Ionicons name="person" size={16} color="#64748B" />
+                                </View>
+                              )}
+                              <View style={styles.lbInfo}>
+                                <Text style={styles.lbName} numberOfLines={1}>{staff.name}</Text>
+                                <Text style={styles.lbStaffId}>Staff ID: ST{String(staff.staff_id).substring(0, 3).toUpperCase()}</Text>
+                              </View>
+                              <Text style={styles.lbAmount}>₹ {staff.amount.toLocaleString('en-IN')}</Text>
+                            </View>
+                          ))}
+                        </View>
+                      )}
+
+                      {/* Info Pill at Bottom */}
+                      <View style={styles.lbInfoPill}>
+                        <Ionicons name="information-circle-outline" size={16} color="#0284C7" />
+                        <Text style={styles.lbInfoPillText}>Leaderboard updates at the end of each day</Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                );
+              }
+            })}
+          </ScrollView>
         </View>
 
+        {/* Today's Overview */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Today's Overview</Text>
+        </View>
 
-        {/* Content Body */}
-        <View style={styles.bodyContent}>
-          
-          {/* Today's Overview */}
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>{t('staff.home_title', 'Today’s Overview')}</Text>
-            <View style={styles.dateSelector}>
-              <Ionicons name="calendar-outline" size={14} color={Colors.gray600} />
-              <Text style={styles.dateText}>{today}</Text>
-            </View>
+        <View style={styles.statsRow}>
+          <StatCard
+            title="Members Added"
+            value={(stats.members || 0).toString()}
+            icon="person-add-outline"
+            onPress={() => navigation.navigate('StaffMembersList')}
+          />
+          <StatCard
+            title="Donation Collected"
+            value={`₹ ${(stats.donations || 0).toLocaleString()}`}
+            icon="heart-outline"
+            onPress={() => navigation.navigate('StaffDonationsList')}
+          />
+          <StatCard
+            title="Assessments Submitted"
+            value={(stats.assessments || 0).toString()}
+            icon="document-text-outline"
+            onPress={() => navigation.navigate('StaffAssessmentsList')}
+          />
+          <StatCard
+            title="Attendance Marked"
+            value={`${stats.attendancePercentage || 0}%`}
+            icon="calendar-outline"
+            onPress={() => navigation.navigate('StaffAttendance', { fromDashboard: true })}
+          />
+        </View>
+
+        {/* Quick Actions */}
+        <View style={[styles.sectionHeader, { marginTop: 20 }]}>
+          <Text style={styles.sectionTitle}>Quick Actions</Text>
+        </View>
+
+        <View style={styles.quickGrid}>
+          <QuickActionCard
+            title="Add Members"
+            icon="person-add"
+            onPress={() => navigation.navigate('AddMember')}
+          />
+          <QuickActionCard
+            title="Collection Donation"
+            icon="heart"
+            onPress={() => navigation.navigate('CollectDonation')}
+          />
+          <QuickActionCard
+            title="New Assessment"
+            icon="document-text"
+            onPress={() => navigation.navigate('NewAssessment')}
+          />
+          <QuickActionCard
+            title="Attendance"
+            icon="calendar"
+            onPress={() => navigation.navigate('StaffAttendance', { fromDashboard: true })}
+          />
+          <QuickActionCard
+            title="History"
+            icon="time-outline"
+            onPress={() => navigation.navigate('StaffDonationsList')}
+          />
+          <QuickActionCard
+            title="Leaderboard"
+            icon="trophy-outline"
+            onPress={() => navigation.navigate('StaffLeaderboard')}
+          />
+        </View>
+
+        {/* Together We Can Card */}
+        <LinearGradient colors={['#F0F7FF', '#E1EFFF']} style={styles.togetherCard}>
+          <View style={styles.togetherTextWrap}>
+            <Text style={styles.togetherTitle}>Together We Can</Text>
+            <Text style={styles.togetherSubtitle}>Every small effort counts towards{'\n'}a better tomorrow.</Text>
           </View>
+          <Ionicons name="heart" size={48} color="#93C5FD" style={styles.togetherIcon} />
+        </LinearGradient>
 
-          <View style={styles.statsRow}>
-            <StatCardPremium
-              title={t('staff.members_added', 'Members Added')}
-              value={stats.members}
-              icon="people"
-              color={Colors.primary}
-              bg={Colors.primaryLight}
-              onPress={() => navigation.navigate('StaffMembersList')}
-            />
-            <StatCardPremium
-              title={t('staff.donations_collected', 'Donations Collected')}
-              value={`₹${(stats.donations || 0).toLocaleString()}`}
-              icon="cash"
-              color="#16B978"
-              bg="#ECFDF5"
-              onPress={() => navigation.navigate('StaffDonationsList')}
-            />
-            <StatCardPremium
-              title={t('staff.assessments_submitted', 'Assessments Submitted')}
-              value={stats.assessments}
-              icon="clipboard"
-              color="#F59E0B"
-              bg="#FFFBEB"
-              onPress={() => navigation.navigate('StaffAssessmentsList')}
-            />
-          </View>
-
-          {/* Quick Actions */}
-          <View style={[styles.sectionHeader, { marginTop: 28 }]}>
-            <Text style={styles.sectionTitle}>{t('staff.quick_actions', 'Quick Actions')}</Text>
-          </View>
-
-          <View style={styles.quickGrid}>
-            <QuickActionPremium
-              title={t('staff.add_member', 'Add Member')}
-              subtitle={t('staff.register_new', 'Register a new member')}
-              icon="person-add"
-              color={Colors.primary}
-              bg="#F8FAFC"
-              onPress={() => navigation.navigate('AddMember')}
-            />
-            <QuickActionPremium
-              title={t('staff.collect_donation', 'Collect Donation')}
-              subtitle={t('staff.record_donation', 'Record a new donation')}
-              icon="cash"
-              color="#16B978"
-              bg="#F8FAFC"
-              onPress={() => navigation.navigate('CollectDonation')}
-            />
-            <QuickActionPremium
-              title={t('staff.new_assessment', 'New Assessment')}
-              subtitle={t('staff.create_assessment', 'Create a new assessment')}
-              icon="clipboard"
-              color="#F59E0B"
-              bg="#F8FAFC"
-              onPress={() => navigation.navigate('NewAssessment')}
-            />
-            <QuickActionPremium
-              title={t('staff.attendance', 'Mark Attendance')}
-              subtitle={t('staff.check_in_out', 'Check in / out attendance')}
-              icon="calendar-number"
-              color="#8B5CF6"
-              bg="#F8FAFC"
-              onPress={() => navigation.navigate('StaffAttendance', { fromDashboard: true })}
-            />
-          </View>
-
-          {/* My Assessments Wide Card */}
-          <TouchableOpacity style={styles.wideCard} onPress={() => navigation.navigate('StaffAssessmentsList')} activeOpacity={0.8}>
-            <View style={styles.wideCardContent}>
-              <View style={styles.wideCardIcon}>
-                <Ionicons name="document-text" size={32} color={Colors.primary} />
-                <View style={styles.wideCardCheck}>
-                  <Ionicons name="checkmark" size={12} color={Colors.white} />
-                </View>
-              </View>
-              <View style={styles.wideCardText}>
-                <Text style={styles.wideCardTitle}>{t('staff.my_assessments', 'My Assessments')}</Text>
-                <Text style={styles.wideCardSubtitle}>{t('staff.my_assessments_desc', 'View and manage all your assessments in one place')}</Text>
-              </View>
-              <View style={styles.qaArrow}>
-                <Ionicons name="chevron-forward" size={16} color={Colors.gray400} />
-              </View>
-            </View>
+        <View style={[styles.sectionHeader, { marginTop: 10 }]}>
+          <Text style={styles.sectionTitle}>Upcoming Events</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Events')}>
+            <Text style={styles.viewAllText}>View All</Text>
           </TouchableOpacity>
-
         </View>
-        </ScrollView>
 
-      {/* 🎂 Birthday Popup */}
+        <View style={[styles.eventCard, { justifyContent: 'center', alignItems: 'center', paddingVertical: 24, marginBottom: 20 }]}>
+          <Text style={{ color: '#64748B', fontSize: 13 }}>No upcoming events at the moment.</Text>
+        </View>
+
+      </ScrollView>
+
       <BirthdayPopup
         visible={bdayVisible}
         birthdays={birthdays}
         onClose={() => setBdayVisible(false)}
       />
 
-      {/* Side Navigation Drawer */}
       <SideDrawer
         visible={drawerVisible}
         onClose={() => setDrawerVisible(false)}
@@ -286,154 +424,402 @@ const StaffHomeScreen = ({ navigation, route }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F7F9FC' },
-  scroll: { paddingBottom: 100 }, // space for bottom nav
+  container: { flex: 1, backgroundColor: '#F8FBFF' },
+  scroll: { paddingBottom: 110, paddingHorizontal: 18, paddingTop: 10 },
   
   /* Header */
-  headerGradient: {
-    backgroundColor: Colors.primary,
-    borderBottomLeftRadius: 22,
-    borderBottomRightRadius: 22,
-    paddingHorizontal: 20,
-    paddingBottom: 22,
-    shadowColor: Colors.primary, shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.12, shadowRadius: 12, elevation: 6,
-  },
   headerRow: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    marginBottom: 10,
+    backgroundColor: '#F8FBFF', // Match container background so it doesn't look transparent when scrolled
+    paddingBottom: 10,
+    zIndex: 10,
   },
   menuIconContainer: {
-    paddingRight: 10,
-    paddingVertical: 2,
+    padding: 2,
   },
-  userInfo: { flex: 1 },
-
-  greeting: { fontSize: 12, color: 'rgba(255,255,255,0.9)', marginBottom: 2 },
-  userName: { fontSize: 20, fontWeight: '800', color: Colors.white, marginBottom: 1, letterSpacing: -0.4 },
-  role: { fontSize: 10, color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: 0.8, fontWeight: '600' },
-  
+  headerRight: {
+    flexDirection: 'row', alignItems: 'center',
+  },
   bellContainer: {
-    width: 42, height: 42,
-    backgroundColor: Colors.white,
-    borderRadius: 21,
-    alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08, shadowRadius: 6, elevation: 3,
+    marginRight: 16,
+    position: 'relative',
   },
   badge: {
-    position: 'absolute', top: -2, right: -2,
-    backgroundColor: '#FF3B30',
-    width: 18, height: 18,
-    borderRadius: 9,
-    alignItems: 'center', justifyContent: 'center',
-    borderWidth: 2, borderColor: Colors.white,
+    position: 'absolute', top: 2, right: 3,
+    backgroundColor: '#EF4444',
+    width: 8, height: 8,
+    borderRadius: 4,
   },
-  badgeText: { color: Colors.white, fontSize: 9, fontWeight: '800' },
+  avatarWrap: {
+    width: 36, height: 36,
+    borderRadius: 18,
+    backgroundColor: '#E2E8F0',
+    alignItems: 'center', justifyContent: 'center',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
 
-  /* Body */
-  bodyContent: { paddingHorizontal: 20, marginTop: -15 },
-  
+  /* Greeting Card */
+  greetingCard: {
+    borderRadius: 18,
+    padding: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 0,
+    height: 245,
+  },
+  greetingTextWrap: {
+    flex: 1,
+  },
+  goodMorning: {
+    fontSize: 14,
+    color: '#334155',
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  staffMemberText: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: 6,
+  },
+  greetingSubtitle: {
+    fontSize: 12,
+    color: '#475569',
+    lineHeight: 18,
+  },
+  weatherIconWrap: {
+    position: 'relative',
+    width: 70, height: 70,
+    justifyContent: 'center', alignItems: 'center',
+  },
+  sunIcon: {
+    position: 'absolute', top: -5, right: 10,
+  },
+  cloudIcon: {
+    position: 'absolute', bottom: 5, right: -5,
+  },
+
+  /* Notification Banner */
+  notificationBanner: {
+    backgroundColor: '#1689D8',
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    marginBottom: 24,
+  },
+  bellIconCircle: {
+    marginRight: 12,
+  },
+  notificationBannerText: {
+    flex: 1,
+  },
+  bannerTitle: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  bannerSubtitle: {
+    color: '#E0F2FE',
+    fontSize: 11,
+  },
+
+  /* Section Headers */
   sectionHeader: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    marginBottom: 16, marginTop: 10,
+    marginBottom: 14,
   },
-  sectionTitle: { fontSize: 18, fontWeight: '800', color: '#111827', letterSpacing: -0.3 },
-  dateSelector: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: Colors.white,
-    paddingHorizontal: 12, paddingVertical: 6,
-    borderRadius: 16,
-    borderWidth: 1, borderColor: '#E5E7EB',
-  },
-  dateText: { fontSize: 12, fontWeight: '600', color: Colors.gray600 },
-  viewAllText: { fontSize: 13, fontWeight: '600', color: '#2F80ED' },
+  sectionTitle: { fontSize: 16, fontWeight: '800', color: '#0F172A' },
+  viewAllText: { fontSize: 13, fontWeight: '700', color: '#1689D8' },
 
   /* Stats Cards */
   statsRow: {
-    flexDirection: 'row', justifyContent: 'space-between', gap: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
   },
   statCard: {
-    flex: 1,
-    backgroundColor: Colors.white,
-    borderRadius: 16,
-    padding: 12,
-    borderWidth: 1,
+    width: (width - 36 - 24) / 4, // 4 columns, minus padding and gaps
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 8,
+    alignItems: 'center',
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03, shadowRadius: 8, elevation: 1,
-    overflow: 'hidden',
-  },
-  statCardHeader: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start',
-    marginBottom: 12,
+    shadowOpacity: 0.03, shadowRadius: 6, elevation: 1,
   },
   statIconWrap: {
-    width: 36, height: 36, borderRadius: 18,
-    alignItems: 'center', justifyContent: 'center',
+    marginBottom: 8,
   },
-  statCardBody: { alignItems: 'center', paddingBottom: 10 },
-  statValue: { fontSize: 22, fontWeight: '800', marginBottom: 4, letterSpacing: -0.5 },
-  statTitle: { fontSize: 10, color: '#6B7280', fontWeight: '600', textAlign: 'center', paddingHorizontal: 4 },
-  trendLineContainer: { position: 'absolute', bottom: -5, left: -5, right: -5, height: 20 },
-  trendLine: { borderTopWidth: 1, borderStyle: 'dashed', opacity: 0.5, marginTop: 10 },
+  statTitle: {
+    fontSize: 10,
+    color: '#475569',
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 6,
+    height: 28, // Fix height for 2 lines
+  },
+  statValue: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
 
   /* Quick Actions Grid */
   quickGrid: {
-    flexDirection: 'row', flexWrap: 'wrap', gap: 12,
+    flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between',
+    marginBottom: 10,
   },
   quickAction: {
-    width: (width - 52) / 2, // 2 columns, minus padding/gap
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    borderRadius: 16, padding: 14,
-    borderWidth: 1, borderColor: '#E5E7EB',
+    width: (width - 36 - 24) / 3, // 3 columns
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    paddingVertical: 18,
+    paddingHorizontal: 10,
+    alignItems: 'center',
+    marginBottom: 12,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.02, shadowRadius: 4, elevation: 1,
+    shadowOpacity: 0.03, shadowRadius: 6, elevation: 1,
   },
-  qaLeft: { flex: 1 },
-  qaIconWrap: {
-    width: 36, height: 36, borderRadius: 18,
-    alignItems: 'center', justifyContent: 'center',
+  qaTitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#0F172A',
+    textAlign: 'center',
+    height: 32, // Allow 2 lines
+  },
+
+  /* Together We Can Card */
+  togetherCard: {
+    borderRadius: 12,
+    padding: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  togetherTextWrap: {
+    flex: 1,
+  },
+  togetherTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: 6,
+  },
+  togetherSubtitle: {
+    fontSize: 11,
+    color: '#475569',
+    lineHeight: 16,
+  },
+  togetherIcon: {
+    opacity: 0.8,
+  },
+
+  /* Events Card */
+  eventCard: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    padding: 12,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  eventThumb: { width: 90, height: 80, borderRadius: 10 },
+  eventInfo: { flex: 1, justifyContent: 'center' },
+  eventCardTitle: { fontSize: 14, fontWeight: '700', color: '#0F172A', marginBottom: 2 },
+  eventCardDesc: { fontSize: 11, color: '#64748B', marginBottom: 8 },
+  eventMetaRow: { flexDirection: 'row', gap: 10, alignItems: 'center' },
+  eventMetaItem: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  eventMetaText: { fontSize: 10, color: '#64748B', fontWeight: '500' },
+
+  /* Collection Card UI */
+  collectionCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 2,
+    height: 245,
+    justifyContent: 'space-between',
+  },
+  collHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  collTitle: { fontSize: 17, fontWeight: '800', color: '#0F172A' },
+  collSubtitle: { fontSize: 12, color: '#64748B', marginTop: 2 },
+  collIconWrap: { width: 38, height: 38, borderRadius: 10, backgroundColor: '#F0F9FF', justifyContent: 'center', alignItems: 'center' },
+  
+  collTotalBox: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    padding: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  collTotalIcon: {
+    width: 42, height: 42, borderRadius: 21, backgroundColor: '#E0F2FE',
+    justifyContent: 'center', alignItems: 'center', marginRight: 12, position: 'relative'
+  },
+  rupeeCircle: {
+    position: 'absolute', bottom: 4, right: 4, width: 16, height: 16, borderRadius: 8,
+    backgroundColor: '#3B82F6', justifyContent: 'center', alignItems: 'center',
+  },
+  rupeeText: { color: '#FFF', fontSize: 9, fontWeight: '800' },
+  collTotalLabel: { fontSize: 11, color: '#475569', fontWeight: '600' },
+  collTotalVal: { fontSize: 22, fontWeight: '800', color: '#0F172A', marginTop: 1 },
+
+  collRow: { flexDirection: 'row', gap: 8 },
+  collThirdBox: {
+    flex: 1, backgroundColor: '#FFFFFF', borderRadius: 12, paddingVertical: 10, paddingHorizontal: 4,
+    alignItems: 'center', borderWidth: 1, borderColor: '#F1F5F9',
+  },
+  collThirdIcon: { width: 26, height: 26, borderRadius: 13, justifyContent: 'center', alignItems: 'center', marginBottom: 4 },
+  collThirdLabel: { fontSize: 10, color: '#475569', fontWeight: '600' },
+  collThirdVal: { fontSize: 12, fontWeight: '800', color: '#0F172A', marginTop: 2 },
+
+  /* Leaderboard Card UI */
+  lbCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 3,
+    height: 245,
+    justifyContent: 'space-between',
+  },
+  lbHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 12,
   },
-  qaTextWrap: { paddingRight: 4 },
-  qaTitle: { fontSize: 13, fontWeight: '700', color: '#111827', marginBottom: 2 },
-  qaSubtitle: { fontSize: 10, color: '#6B7280', lineHeight: 14 },
-  qaArrow: {
-    width: 24, height: 24, borderRadius: 12, backgroundColor: Colors.white,
-    alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05, shadowRadius: 2, elevation: 1,
-    alignSelf: 'flex-end',
+  lbTitle: {
+    fontSize: 13.5,
+    fontWeight: '800',
+    color: '#0F172A',
   },
-
-  /* Wide Card */
-  wideCard: {
-    backgroundColor: Colors.white,
-    borderRadius: 20,
-    marginTop: 24,
-    borderWidth: 1, borderColor: '#E5E7EB',
-    shadowColor: Colors.primary, shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.04, shadowRadius: 12, elevation: 2,
-    overflow: 'hidden',
+  lbViewAllWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  wideCardContent: {
-    flexDirection: 'row', alignItems: 'center', padding: 20,
+  lbViewAll: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0284C7',
+    marginRight: 2,
   },
-  wideCardIcon: {
-    width: 48, height: 48,
-    alignItems: 'center', justifyContent: 'center',
-    marginRight: 16,
+  lbContentBox: {
+    backgroundColor: '#F4F8FE',
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 2,
+    borderWidth: 1,
+    borderColor: '#EAF2FE',
+    marginBottom: 10,
   },
-  wideCardCheck: {
-    position: 'absolute', bottom: 0, right: -4,
-    width: 20, height: 20, borderRadius: 10,
-    backgroundColor: '#16B978',
-    alignItems: 'center', justifyContent: 'center',
-    borderWidth: 2, borderColor: Colors.white,
+  lbRowItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
   },
-  wideCardText: { flex: 1 },
-  wideCardTitle: { fontSize: 15, fontWeight: '700', color: '#111827', marginBottom: 4 },
-  wideCardSubtitle: { fontSize: 11, color: '#6B7280', lineHeight: 16 },
-
+  lbRowBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+  },
+  lbRank: {
+    width: 24,
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#0284C7',
+    textAlign: 'center',
+    marginRight: 8,
+  },
+  lbPhoto: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    marginRight: 10,
+  },
+  lbPhotoPlaceholder: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#E2E8F0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  lbInfo: {
+    flex: 1,
+  },
+  lbName: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  lbStaffId: {
+    fontSize: 11,
+    color: '#64748B',
+    marginTop: 1,
+  },
+  lbAmount: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  lbInfoPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#EDF5FF',
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+  },
+  lbInfoPillText: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#0369A1',
+    marginLeft: 6,
+  },
+  lbEmpty: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
+    paddingVertical: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  lbEmptyText: {
+    color: '#64748B',
+    fontSize: 12,
+    marginTop: 4,
+    fontWeight: '500',
+  },
 });
 
 export default StaffHomeScreen;

@@ -57,5 +57,7 @@ urlpatterns = [
     path('performance-points/leaderboard/', views.PerformancePointLeaderboardView.as_view()),
     # Birthday Alerts
     path('birthday-alerts/', views.BirthdayAlertView.as_view()),
+    # Collection Leaderboard
+    path('leaderboard/', views.StaffLeaderboardView.as_view()),
 ]
 

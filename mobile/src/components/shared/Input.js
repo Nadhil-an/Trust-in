@@ -19,6 +19,7 @@ const Input = ({
   inputStyle,
   maxLength,
   onBlur,
+  onFocus,
   autoFocus = false,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -62,7 +63,7 @@ const Input = ({
           maxLength={maxLength}
           autoFocus={autoFocus}
           autoCapitalize={type === 'email' ? 'none' : 'sentences'}
-          onFocus={() => setFocused(true)}
+          onFocus={(e) => { setFocused(true); onFocus && onFocus(e); }}
           onBlur={() => { setFocused(false); onBlur && onBlur(); }}
         />
         {isPassword && (

@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, SectionList, TouchableOpacity,
-  Alert, RefreshControl, TextInput
+  Alert, RefreshControl, TextInput, Modal, ScrollView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
@@ -15,8 +15,9 @@ const StaffAssessmentsListScreen = ({ navigation }) => {
   const [assessments, setAssessments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const user = useAuthStore(state => state.user);
   const [searchQuery, setSearchQuery] = useState('');
+  const [assessmentToView, setAssessmentToView] = useState(null);
+  const user = useAuthStore(state => state.user);
 
   useNotificationSocket((data) => {
     if (data.type === 'DASHBOARD_REFRESH') {
@@ -27,7 +28,6 @@ const StaffAssessmentsListScreen = ({ navigation }) => {
   const fetchAssessments = async (showLoading = true) => {
     if (showLoading) setLoading(true);
     try {
-      // By default the backend will filter to show requests submitted by this user
       const res = await assessmentApi.list({ limit: 100 }); 
       setAssessments(res.data.results || res.data);
     } catch (err) {
@@ -69,7 +69,11 @@ const StaffAssessmentsListScreen = ({ navigation }) => {
   };
 
   const renderItem = ({ item }) => (
-    <View style={styles.card}>
+    <TouchableOpacity 
+      style={styles.card}
+      activeOpacity={0.7}
+      onPress={() => setAssessmentToView(item)}
+    >
       <View style={styles.cardInfo}>
         <View style={[styles.iconWrap, { backgroundColor: '#F3E8FF' }]}>
           <Ionicons name="clipboard" size={20} color="#9333EA" />
@@ -107,7 +111,7 @@ const StaffAssessmentsListScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   const groupDataByDate = (data) => {
@@ -183,6 +187,72 @@ const StaffAssessmentsListScreen = ({ navigation }) => {
           )
         }
       />
+
+      {/* Assessment Details Preview Modal */}
+      <Modal visible={!!assessmentToView} transparent animationType="fade" onRequestClose={() => setAssessmentToView(null)}>
+        <View style={styles.previewOverlay}>
+          <View style={styles.previewCard}>
+            <View style={styles.previewHeaderRow}>
+              <Text style={styles.previewHeaderTitle}>Preview Details</Text>
+              <TouchableOpacity style={styles.previewCloseBtn} onPress={() => setAssessmentToView(null)}>
+                <Ionicons name="close" size={22} color="#64748B" />
+              </TouchableOpacity>
+            </View>
+
+            {assessmentToView && (
+              <ScrollView style={styles.previewScrollContainer} showsVerticalScrollIndicator={false}>
+                {/* Section 1: Request Info */}
+                <View style={styles.previewSectionBox}>
+                  <Text style={styles.previewSectionTitle}>Request Info</Text>
+                  <View style={styles.previewDivider} />
+                  
+                  <View style={styles.previewRow}>
+                    <Text style={styles.previewLabel}>Req No:</Text>
+                    <Text style={styles.previewValue}>{assessmentToView.request_number || 'N/A'}</Text>
+                  </View>
+                  <View style={styles.previewRow}>
+                    <Text style={styles.previewLabel}>Name:</Text>
+                    <Text style={styles.previewValue}>{assessmentToView.beneficiary_name || 'N/A'}</Text>
+                  </View>
+                  <View style={styles.previewRow}>
+                    <Text style={styles.previewLabel}>Category:</Text>
+                    <Text style={styles.previewValue}>{assessmentToView.category || assessmentToView.issue_category || 'N/A'}</Text>
+                  </View>
+                </View>
+
+                {/* Section 2: Assessment Details */}
+                <View style={styles.previewSectionBox}>
+                  <Text style={styles.previewSectionTitle}>Assessment Details</Text>
+                  <View style={styles.previewDivider} />
+                  
+                  <View style={styles.previewRow}>
+                    <Text style={styles.previewLabel}>Priority:</Text>
+                    <Text style={styles.previewValue}>{assessmentToView.priority || assessmentToView.urgency_level || 'N/A'}</Text>
+                  </View>
+                  <View style={styles.previewRow}>
+                    <Text style={styles.previewLabel}>Status:</Text>
+                    <Text style={[styles.previewValue, { color: Colors.primary }]}>{assessmentToView.status || 'N/A'}</Text>
+                  </View>
+                  <View style={styles.previewRow}>
+                    <Text style={styles.previewLabel}>Amount Req:</Text>
+                    <Text style={styles.previewValue}>{assessmentToView.amount_requested ? `₹${assessmentToView.amount_requested}` : 'N/A'}</Text>
+                  </View>
+                  <View style={[styles.previewRow, { flexDirection: 'column', alignItems: 'flex-start' }]}>
+                    <Text style={[styles.previewLabel, { width: '100%', marginBottom: 4 }]}>Description:</Text>
+                    <Text style={[styles.previewValue, { textAlign: 'left', fontWeight: '400', color: Colors.gray700 }]}>
+                      {assessmentToView.description || assessmentToView.problem_description || 'N/A'}
+                    </Text>
+                  </View>
+                </View>
+              </ScrollView>
+            )}
+
+            <TouchableOpacity style={styles.previewSubmitBtn} onPress={() => setAssessmentToView(null)}>
+              <Text style={styles.previewSubmitBtnText}>Close Preview</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -230,10 +300,106 @@ const styles = StyleSheet.create({
     width: 36, height: 36, borderRadius: 18, backgroundColor: '#E0F2FE',
     alignItems: 'center', justifyContent: 'center',
   },
-  emptyState: { alignItems: 'center', justifyContent: 'center', paddingVertical: 60 },
+  emptyState: { alignItems: 'center', paddingVertical: 60 },
   emptyText: { color: Colors.gray500, marginTop: 12, fontSize: 15 },
   sectionHeader: { backgroundColor: '#F7F9FC', paddingVertical: 8, paddingHorizontal: 4, marginBottom: 8, marginTop: 4 },
   sectionHeaderText: { fontSize: 14, fontWeight: '700', color: Colors.gray600 },
+  overviewHeader: { alignItems: 'center', marginBottom: 20, borderBottomWidth: 1, borderBottomColor: '#E5E7EB', paddingBottom: 16 },
+  overviewDetails: { marginBottom: 24, maxHeight: 400 },
+  overviewRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
+  overviewLabel: { fontSize: 14, color: Colors.gray600, flex: 1 },
+  overviewValue: { fontSize: 14, fontWeight: '600', color: Colors.gray800, flex: 2, textAlign: 'right' },
+  closeBtn: { padding: 14, borderRadius: 12, backgroundColor: Colors.primary, alignItems: 'center' },
+  closeBtnText: { fontSize: 15, fontWeight: '600', color: Colors.white },
+
+  /* Preview Modal Styling */
+  previewOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  previewCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    width: '100%',
+    maxWidth: 380,
+    maxHeight: '85%',
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  previewHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  previewHeaderTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  previewCloseBtn: {
+    padding: 4,
+  },
+  previewScrollContainer: {
+    marginBottom: 16,
+  },
+  previewSectionBox: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginBottom: 12,
+  },
+  previewSectionTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0284C7',
+    marginBottom: 6,
+  },
+  previewDivider: {
+    height: 1,
+    backgroundColor: '#E2E8F0',
+    marginBottom: 10,
+  },
+  previewRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  previewLabel: {
+    fontSize: 13,
+    color: '#64748B',
+    fontWeight: '500',
+    width: '35%',
+  },
+  previewValue: {
+    fontSize: 13,
+    color: '#0F172A',
+    fontWeight: '700',
+    textAlign: 'right',
+    flex: 1,
+  },
+  previewSubmitBtn: {
+    backgroundColor: '#0284C7',
+    paddingVertical: 14,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  previewSubmitBtnText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '700',
+  },
 });
 
 export default StaffAssessmentsListScreen;

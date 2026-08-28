@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   Alert, KeyboardAvoidingView, Platform, Animated, ActivityIndicator,
-} from 'react-native';
+} from 'react-native'; 
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
@@ -318,7 +319,7 @@ const FAOReportScreen = ({ route, navigation }) => {
         </View>
       )}
 
-      <ScrollView
+      <KeyboardAwareScrollView enableOnAndroid={true} extraScrollHeight={20}
         ref={scrollRef}
         contentContainerStyle={styles.scroll}
         keyboardShouldPersistTaps="handled"
@@ -625,7 +626,7 @@ const FAOReportScreen = ({ route, navigation }) => {
               : t('fao_report.submit_note_pending')}
           </Text>
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </KeyboardAvoidingView>
   );
 };

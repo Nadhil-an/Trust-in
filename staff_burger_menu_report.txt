@@ -1,0 +1,23 @@
+--- Staff Member Burger Menu Features ---
+
+Below is the complete list of features accessible from the top-left burger menu (SideDrawer) for a Staff Member:
+
+PRIMARY MENU:
+1. Home
+2. My Donation
+3. Report a Problem
+4. Events
+5. My Profile
+
+STAFF-SPECIFIC FEATURES:
+6. Upload Events (This appears only for Staff and Manager roles)
+
+SECONDARY MENU:
+7. About Us
+8. Contact Us
+9. Settings
+
+ACCOUNT ACTIONS:
+10. Logout
+
+Note: The side drawer also displays the organization branding ("SREELAKSHMI CHARITABLE TRUST") at the top and a footer message ("Together for a Better Tomorrow") at the bottom.

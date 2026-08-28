@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, SectionList, TouchableOpacity,
-  Modal, RefreshControl, TextInput, ActivityIndicator
+  Modal, RefreshControl, TextInput, ActivityIndicator, ScrollView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
@@ -15,16 +15,11 @@ const StaffDonationsListScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState('ALL');
   
   const [donationToDelete, setDonationToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [donationDetails, setDonationDetails] = useState(null);
-
-  useNotificationSocket((data) => {
-    if (data.type === 'DASHBOARD_REFRESH') {
-      fetchDonations(false);
-    }
-  });
 
   const fetchDonations = async (showLoading = true) => {
     if (showLoading) setLoading(true);
@@ -38,6 +33,12 @@ const StaffDonationsListScreen = ({ navigation }) => {
       setRefreshing(false);
     }
   };
+
+  useNotificationSocket((data) => {
+    if (data.type === 'DASHBOARD_REFRESH') {
+      fetchDonations(false);
+    }
+  });
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
@@ -72,13 +73,22 @@ const StaffDonationsListScreen = ({ navigation }) => {
       activeOpacity={0.8}
     >
       <View style={styles.cardInfo}>
-        <View style={styles.iconWrap}>
-          <Ionicons name="cash" size={20} color={Colors.success} />
+        <View style={[styles.iconWrap, { backgroundColor: item.source === 'MEMBERSHIP' ? '#E0F2FE' : '#ECFDF5' }]}>
+          <Ionicons name={item.source === 'MEMBERSHIP' ? 'people' : 'cash'} size={20} color={item.source === 'MEMBERSHIP' ? '#0284C7' : Colors.success} />
         </View>
         <View style={styles.textWrap}>
           <Text style={styles.name}>{item.donor_name}</Text>
           <Text style={styles.details}>₹{item.amount} • {item.payment_method}</Text>
-          <Text style={styles.date}>{item.receipt_number} • {new Date(item.date || item.created_at).toLocaleDateString()}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+            <View style={[styles.badge, { backgroundColor: item.source === 'MEMBERSHIP' ? '#E0F2FE' : '#ECFDF5' }]}>
+              <Text style={[styles.badgeText, { color: item.source === 'MEMBERSHIP' ? '#0284C7' : Colors.success }]}>
+                {item.source === 'MEMBERSHIP' ? 'Membership' : 'Donation'}
+              </Text>
+            </View>
+            <Text style={[styles.date, { marginLeft: 6 }]}>
+              {new Date(item.date || item.created_at).toLocaleDateString()}
+            </Text>
+          </View>
         </View>
       </View>
       <View style={styles.actions}>
@@ -134,7 +144,7 @@ const StaffDonationsListScreen = ({ navigation }) => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color={Colors.gray800} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Donations Collected</Text>
+        <Text style={styles.headerTitle}>Transactions History</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -142,17 +152,77 @@ const StaffDonationsListScreen = ({ navigation }) => {
         <Ionicons name="search" size={20} color={Colors.gray400} style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
-          placeholder="Search donations..."
+          placeholder="Search transactions..."
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
       </View>
 
+      {/* Filter Pills */}
+      <View>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterScroll}>
+          {['ALL', 'DONATIONS', 'MEMBERSHIPS', 'CASH', 'GPAY/BANK'].map(f => (
+            <TouchableOpacity 
+              key={f} 
+              style={[styles.filterPill, activeFilter === f && styles.filterPillActive]}
+              onPress={() => setActiveFilter(f)}
+            >
+              <Text style={[styles.filterText, activeFilter === f && styles.filterTextActive]}>
+                {f === 'ALL' ? 'All' : f === 'DONATIONS' ? 'Donations' : f === 'MEMBERSHIPS' ? 'Memberships' : f === 'CASH' ? 'Cash' : 'GPay/Bank'}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
+      {/* Today's Summary Section */}
+      <View style={styles.summaryContainer}>
+        <Text style={styles.summaryTitle}>Today's Collection Summary</Text>
+        <View style={styles.summaryCards}>
+          <View style={[styles.summaryCard, { backgroundColor: '#EFF6FF' }]}>
+            <Text style={styles.summaryLabel}>Total Today</Text>
+            <Text style={[styles.summaryValue, { color: Colors.primary }]}>₹{(() => {
+              const todayObj = new Date();
+              const todayIso = `${todayObj.getFullYear()}-${String(todayObj.getMonth() + 1).padStart(2, '0')}-${String(todayObj.getDate()).padStart(2, '0')}`;
+              const todayDonations = donations.filter(d => d.date === todayIso || d.created_at?.startsWith(todayIso));
+              return todayDonations.reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
+            })()}</Text>
+          </View>
+          <View style={[styles.summaryCard, { backgroundColor: '#ECFDF5' }]}>
+            <Text style={styles.summaryLabel}>Cash</Text>
+            <Text style={[styles.summaryValue, { color: Colors.success }]}>₹{(() => {
+              const todayObj = new Date();
+              const todayIso = `${todayObj.getFullYear()}-${String(todayObj.getMonth() + 1).padStart(2, '0')}-${String(todayObj.getDate()).padStart(2, '0')}`;
+              return donations.filter(d => (d.date === todayIso || d.created_at?.startsWith(todayIso)) && d.payment_method?.toUpperCase() === 'CASH')
+                              .reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
+            })()}</Text>
+          </View>
+          <View style={[styles.summaryCard, { backgroundColor: '#FEF2F2' }]}>
+            <Text style={styles.summaryLabel}>Bank/UPI</Text>
+            <Text style={[styles.summaryValue, { color: Colors.error }]}>₹{(() => {
+              const todayObj = new Date();
+              const todayIso = `${todayObj.getFullYear()}-${String(todayObj.getMonth() + 1).padStart(2, '0')}-${String(todayObj.getDate()).padStart(2, '0')}`;
+              return donations.filter(d => (d.date === todayIso || d.created_at?.startsWith(todayIso)) && d.payment_method?.toUpperCase() !== 'CASH')
+                              .reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
+            })()}</Text>
+          </View>
+        </View>
+      </View>
+
       <SectionList
-        sections={groupDataByDate(donations.filter(d => 
-          d.donor_name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-          d.receipt_number?.toLowerCase().includes(searchQuery.toLowerCase())
-        ))}
+        sections={groupDataByDate(donations.filter(d => {
+          // search filter
+          if (searchQuery && !d.donor_name?.toLowerCase().includes(searchQuery.toLowerCase()) && !d.receipt_number?.toLowerCase().includes(searchQuery.toLowerCase())) {
+            return false;
+          }
+          // pill filter
+          if (activeFilter === 'DONATIONS' && d.source !== 'DONATION') return false;
+          if (activeFilter === 'MEMBERSHIPS' && d.source !== 'MEMBERSHIP') return false;
+          if (activeFilter === 'CASH' && d.payment_method?.toUpperCase() !== 'CASH') return false;
+          if (activeFilter === 'GPAY/BANK' && d.payment_method?.toUpperCase() === 'CASH') return false;
+          
+          return true;
+        }))}
         keyExtractor={item => item.id.toString()}
         renderItem={renderItem}
         renderSectionHeader={({ section: { title } }) => (
@@ -166,54 +236,73 @@ const StaffDonationsListScreen = ({ navigation }) => {
           !loading && (
             <View style={styles.emptyState}>
               <Ionicons name="cash-outline" size={48} color={Colors.gray400} />
-              <Text style={styles.emptyText}>No donations found.</Text>
+              <Text style={styles.emptyText}>No transactions found.</Text>
             </View>
           )
         }
       />
 
-      {/* Donation Details Modal */}
-      <Modal visible={!!donationDetails} transparent animationType="fade">
-        <View style={styles.centeredOverlay}>
-          <View style={styles.alertCard}>
-            <View style={styles.alertHeader}>
-              <View style={[styles.iconCircle, { backgroundColor: '#ECFDF5' }]}>
-                <Ionicons name="document-text" size={28} color={Colors.success} />
-              </View>
-              <Text style={styles.alertTitle}>Donation Details</Text>
+      {/* Transaction Details Preview Modal */}
+      <Modal visible={!!donationDetails} transparent animationType="fade" onRequestClose={() => setDonationDetails(null)}>
+        <View style={styles.previewOverlay}>
+          <View style={styles.previewCard}>
+            <View style={styles.previewHeaderRow}>
+              <Text style={styles.previewHeaderTitle}>Preview Details</Text>
+              <TouchableOpacity style={styles.previewCloseBtn} onPress={() => setDonationDetails(null)}>
+                <Ionicons name="close" size={22} color="#64748B" />
+              </TouchableOpacity>
             </View>
 
             {donationDetails && (
-              <View style={styles.detailsContainer}>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Donor Name</Text>
-                  <Text style={styles.detailValue}>{donationDetails.donor_name}</Text>
+              <ScrollView style={styles.previewScrollContainer} showsVerticalScrollIndicator={false}>
+                {/* Section 1: Donor Info */}
+                <View style={styles.previewSectionBox}>
+                  <Text style={styles.previewSectionTitle}>Donor Info</Text>
+                  <View style={styles.previewDivider} />
+                  
+                  <View style={styles.previewRow}>
+                    <Text style={styles.previewLabel}>Name:</Text>
+                    <Text style={styles.previewValue}>{donationDetails.donor_name}</Text>
+                  </View>
+                  <View style={styles.previewRow}>
+                    <Text style={styles.previewLabel}>Phone:</Text>
+                    <Text style={styles.previewValue}>{donationDetails.donor_phone || '-'}</Text>
+                  </View>
+                  <View style={styles.previewRow}>
+                    <Text style={styles.previewLabel}>Category:</Text>
+                    <Text style={styles.previewValue}>{donationDetails.source === 'MEMBERSHIP' ? 'Membership' : 'Donation'}</Text>
+                  </View>
                 </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Amount</Text>
-                  <Text style={[styles.detailValue, { color: Colors.success, fontWeight: '700' }]}>
-                    ₹{donationDetails.amount}
-                  </Text>
+
+                {/* Section 2: Payment Details */}
+                <View style={styles.previewSectionBox}>
+                  <Text style={styles.previewSectionTitle}>Payment Details</Text>
+                  <View style={styles.previewDivider} />
+                  
+                  <View style={styles.previewRow}>
+                    <Text style={styles.previewLabel}>Amount:</Text>
+                    <Text style={[styles.previewValue, { color: Colors.primary, fontSize: 15 }]}>₹{donationDetails.amount}</Text>
+                  </View>
+                  <View style={styles.previewRow}>
+                    <Text style={styles.previewLabel}>Method:</Text>
+                    <Text style={styles.previewValue}>{donationDetails.payment_method}</Text>
+                  </View>
+                  <View style={styles.previewRow}>
+                    <Text style={styles.previewLabel}>Receipt No:</Text>
+                    <Text style={styles.previewValue}>{donationDetails.receipt_number || 'N/A'}</Text>
+                  </View>
+                  <View style={styles.previewRow}>
+                    <Text style={styles.previewLabel}>Date:</Text>
+                    <Text style={styles.previewValue}>
+                      {new Date(donationDetails.date || donationDetails.created_at).toLocaleDateString()}
+                    </Text>
+                  </View>
                 </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Payment Method</Text>
-                  <Text style={styles.detailValue}>{donationDetails.payment_method}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Receipt Number</Text>
-                  <Text style={styles.detailValue}>{donationDetails.receipt_number || 'N/A'}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Date</Text>
-                  <Text style={styles.detailValue}>
-                    {new Date(donationDetails.date || donationDetails.created_at).toLocaleDateString()}
-                  </Text>
-                </View>
-              </View>
+              </ScrollView>
             )}
 
-            <TouchableOpacity style={styles.okBtn} onPress={() => setDonationDetails(null)}>
-              <Text style={styles.okBtnText}>Close</Text>
+            <TouchableOpacity style={styles.previewSubmitBtn} onPress={() => setDonationDetails(null)}>
+              <Text style={styles.previewSubmitBtnText}>Close Preview</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -266,6 +355,20 @@ const styles = StyleSheet.create({
   },
   searchIcon: { marginRight: 8 },
   searchInput: { flex: 1, height: 44, fontSize: 15, color: Colors.textPrimary },
+  
+  filterScroll: { paddingHorizontal: 16, paddingVertical: 12, gap: 8 },
+  filterPill: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: '#F3F4F6', borderWidth: 1, borderColor: '#E5E7EB' },
+  filterPillActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
+  filterText: { fontSize: 13, fontWeight: '600', color: '#4B5563' },
+  filterTextActive: { color: Colors.white },
+  
+  summaryContainer: { marginHorizontal: 16, marginTop: 16, marginBottom: 4 },
+  summaryTitle: { fontSize: 15, fontWeight: '700', color: Colors.gray800, marginBottom: 10 },
+  summaryCards: { flexDirection: 'row', gap: 10, justifyContent: 'space-between' },
+  summaryCard: { flex: 1, padding: 12, borderRadius: 12, alignItems: 'center' },
+  summaryLabel: { fontSize: 11, fontWeight: '600', color: Colors.gray600, marginBottom: 4 },
+  summaryValue: { fontSize: 16, fontWeight: '800' },
+  
   listContainer: { padding: 16, paddingBottom: 40 },
   card: {
     backgroundColor: Colors.white, borderRadius: 16, padding: 16, marginBottom: 12,
@@ -281,15 +384,17 @@ const styles = StyleSheet.create({
   },
   textWrap: { flex: 1, paddingRight: 8 },
   name: { fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 2 },
-  details: { fontSize: 13, color: '#059669', fontWeight: '600', marginBottom: 2 },
+  details: { fontSize: 13, color: '#4B5563', marginBottom: 2 },
   date: { fontSize: 11, color: '#9CA3AF' },
+  badge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8 },
+  badgeText: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase' },
   actions: { flexDirection: 'row', gap: 8 },
   actionBtn: {
     width: 36, height: 36, borderRadius: 18, backgroundColor: '#E0F2FE',
     alignItems: 'center', justifyContent: 'center',
   },
-  emptyState: { alignItems: 'center', justifyContent: 'center', paddingVertical: 60 },
-  emptyText: { color: Colors.gray500, marginTop: 12, fontSize: 15 },
+  emptyState: { alignItems: 'center', paddingVertical: 60 },
+  emptyText: { color: Colors.gray400, marginTop: 12, fontSize: 15 },
   sectionHeader: { backgroundColor: '#F7F9FC', paddingVertical: 8, paddingHorizontal: 4, marginBottom: 8, marginTop: 4 },
   sectionHeaderText: { fontSize: 14, fontWeight: '700', color: Colors.gray600 },
   
@@ -313,6 +418,95 @@ const styles = StyleSheet.create({
   detailValue: { fontSize: 14, fontWeight: '600', color: Colors.textPrimary },
   okBtn: { backgroundColor: Colors.primary, padding: 14, borderRadius: 12, alignItems: 'center' },
   okBtnText: { fontSize: 15, fontWeight: '600', color: Colors.white },
+
+  /* Preview Modal Styling */
+  previewOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  previewCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    width: '100%',
+    maxWidth: 380,
+    maxHeight: '85%',
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  previewHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  previewHeaderTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  previewCloseBtn: {
+    padding: 4,
+  },
+  previewScrollContainer: {
+    marginBottom: 16,
+  },
+  previewSectionBox: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginBottom: 12,
+  },
+  previewSectionTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0284C7',
+    marginBottom: 6,
+  },
+  previewDivider: {
+    height: 1,
+    backgroundColor: '#E2E8F0',
+    marginBottom: 10,
+  },
+  previewRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  previewLabel: {
+    fontSize: 13,
+    color: '#64748B',
+    fontWeight: '500',
+    width: '35%',
+  },
+  previewValue: {
+    fontSize: 13,
+    color: '#0F172A',
+    fontWeight: '700',
+    textAlign: 'right',
+    flex: 1,
+  },
+  previewSubmitBtn: {
+    backgroundColor: '#0284C7',
+    paddingVertical: 14,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  previewSubmitBtnText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '700',
+  },
 });
 
 export default StaffDonationsListScreen;

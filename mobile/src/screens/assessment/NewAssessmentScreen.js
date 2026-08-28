@@ -1,9 +1,10 @@
-// screens/assessment/NewAssessmentScreen.js — 6-step wizard with voice, location & custom categories
+// screens/assessment/NewAssessmentScreen.js — Condensed 3-step wizard
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Alert, KeyboardAvoidingView, Platform, TextInput, Modal, Animated,
-} from 'react-native';
+  Alert, KeyboardAvoidingView, Platform, TextInput, Modal,
+} from 'react-native'; 
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useTranslation } from 'react-i18next';
 import { isValidPhone, isPositiveNumber } from '../../utils/validators';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,9 +16,12 @@ import { assessmentApi, membersApi } from '../../api';
 import { useOfflineStore } from '../../store/offlineStore';
 import Toast from 'react-native-toast-message';
 
+const FORM_BLUE = '#1A74EE';
+const FORM_BLUE_LIGHT = '#E8F1FD';
+
 // ── Urgency options ────────────────────────────────────────────────────────
 const URGENCY_OPTIONS = [
-  { key: 'NORMAL',   labelKey: 'common.normal',   descKey: 'assessment.urgency_normal',        icon: 'time',    color: Colors.info },
+  { key: 'NORMAL',   labelKey: 'common.normal',   descKey: 'assessment.urgency_normal',        icon: 'time',    color: FORM_BLUE },
   { key: 'URGENT',   labelKey: 'common.urgent',   descKey: 'assessment.urgency_urgent',   icon: 'alert',   color: Colors.warning },
   { key: 'CRITICAL', labelKey: 'common.critical', descKey: 'assessment.urgency_critical',     icon: 'warning', color: Colors.error },
 ];
@@ -59,8 +63,6 @@ const useVoiceRecorder = () => {
     try {
       await recordingRef.current?.stopAndUnloadAsync();
       setIsRecording(false);
-      // In a production app you'd send the audio to a speech-to-text API.
-      // For now we append a note so the officer knows there's an audio attachment.
       setTranscript('[🎤 Voice note recorded — attach transcription here]');
     } catch (e) {
       setIsRecording(false);
@@ -84,8 +86,8 @@ const NewAssessmentScreen = ({ navigation, route }) => {
   const [memberSearch, setMemberSearch]       = useState('');
   const [foundMember, setFoundMember]         = useState(null);
   const [locationLoading, setLocationLoading] = useState(false);
-  const [customCategories, setCustomCategories] = useState([]);       // user-added
-  const [addCatModal, setAddCatModal]         = useState(false);       // modal flag
+  const [customCategories, setCustomCategories] = useState([]);       
+  const [addCatModal, setAddCatModal]         = useState(false);       
   const [newCatName, setNewCatName]           = useState('');
   const [submitStatus, setSubmitStatus]       = useState(null);
 
@@ -97,7 +99,7 @@ const NewAssessmentScreen = ({ navigation, route }) => {
     source: editItem?.source || route?.params?.source || 'STAFF',
   });
   const [errors, setErrors] = useState({});
-  const TOTAL_STEPS = 6;
+  const TOTAL_STEPS = 3; // 0: Info, 1: Details, 2: Review
 
   // Append voice transcript to description when it arrives
   useEffect(() => {
@@ -164,9 +166,12 @@ const NewAssessmentScreen = ({ navigation, route }) => {
       if (!form.beneficiary_address.trim()) errs.beneficiary_address = t('common.required');
       if (form.beneficiary_age && !isPositiveNumber(form.beneficiary_age)) errs.beneficiary_age = t('errors.invalid_age', 'Enter a valid age');
     }
-    if (step === 1 && !form.category) errs.category = t('assessment.select_category', 'Please select a category');
-    if (step === 2 && (!form.description.trim() || form.description.length < 20))
-      errs.description = t('assessment.description_min', 'Please provide more details (at least 20 characters)');
+    if (step === 1) {
+      if (!form.category) errs.category = t('assessment.select_category', 'Please select a category');
+      if (!form.description.trim() || form.description.length < 20)
+        errs.description = t('assessment.description_min', 'Please provide more details (at least 20 characters)');
+    }
+    
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -175,24 +180,6 @@ const NewAssessmentScreen = ({ navigation, route }) => {
     if (!validateStep()) return;
     if (step < TOTAL_STEPS - 1) setStep(s => s + 1);
     else handleSubmit();
-  };
-
-  const searchMember = async () => {
-    if (!memberSearch.trim()) return;
-    try {
-      const res = await membersApi.search(memberSearch);
-      const members = res.data.results || res.data;
-      if (members.length > 0) {
-        const m = members[0];
-        setFoundMember(m);
-        setF('member', m.id);
-        setF('beneficiary_name', m.full_name);
-        setF('beneficiary_phone', m.phone || '');
-        setF('beneficiary_address', m.address || '');
-      } else {
-        Alert.alert('Not found', 'No member found. Please enter details manually below.');
-      }
-    } catch (_) {}
   };
 
   const handleSubmit = async () => {
@@ -253,170 +240,170 @@ const NewAssessmentScreen = ({ navigation, route }) => {
       case 0:
         return (
           <>
-            <Text style={styles.stepTitle}>{isEdit ? t('assessment.edit_beneficiary', 'Edit Beneficiary') : t('assessment.beneficiary_info')}</Text>
+            <View style={styles.card}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>1. Personal Information</Text>
+                <View style={styles.sectionIconBg}>
+                  <Ionicons name="person-outline" size={16} color={FORM_BLUE} />
+                </View>
+              </View>
 
-            <Input label={t('assessment.beneficiary_name')} value={form.beneficiary_name}
-              onChangeText={v => setF('beneficiary_name', v)} placeholder={t('assessment.beneficiary_name')}
-              required error={errors.beneficiary_name} />
-            <View style={styles.row2}>
-              <View style={styles.half}>
-                <Input label={t('assessment.beneficiary_age')} value={form.beneficiary_age}
-                  onChangeText={v => setF('beneficiary_age', v)} type="number" placeholder={t('common.age')} />
+              <Input label="Name" value={form.beneficiary_name}
+                onChangeText={v => setF('beneficiary_name', v)} placeholder="Enter full name"
+                required error={errors.beneficiary_name} icon="person-outline" />
+                
+              <Input label="Age" value={form.beneficiary_age}
+                  onChangeText={v => setF('beneficiary_age', v)} type="number" placeholder="Enter age" icon="calendar-outline" />
+
+              <Input label="Phone Number" value={form.beneficiary_phone}
+                  onChangeText={v => setF('beneficiary_phone', v)} type="phone" placeholder="Enter phone number"
+                  required error={errors.beneficiary_phone} maxLength={10} keyboardType="numeric" icon="call-outline" />
+
+              <Text style={styles.fieldLabel}>Address <Text style={{ color: Colors.error }}>*</Text></Text>
+              <View style={styles.addressRow}>
+                <View style={{ flex: 1 }}>
+                  <Input value={form.beneficiary_address}
+                    onChangeText={v => setF('beneficiary_address', v)} type="multiline"
+                    placeholder="Enter full address" error={errors.beneficiary_address} icon="home-outline" />
+                </View>
+                <TouchableOpacity style={styles.gpsBtn} onPress={fetchLocation} disabled={locationLoading}>
+                  <Ionicons name={locationLoading ? 'hourglass' : 'locate'} size={24} color={Colors.white} />
+                </TouchableOpacity>
               </View>
-              <View style={styles.half}>
-                <Input label={t('assessment.beneficiary_phone')} value={form.beneficiary_phone}
-                  onChangeText={v => setF('beneficiary_phone', v)} type="phone" placeholder={t('common.phone')}
-                  required error={errors.beneficiary_phone} maxLength={10} keyboardType="numeric" />
-              </View>
+
+              {form.location_text ? (
+                <View style={styles.locationBadge}>
+                  <Ionicons name="location" size={16} color={FORM_BLUE} />
+                  <Text style={styles.locationText} numberOfLines={2}>{form.location_text}</Text>
+                </View>
+              ) : null}
             </View>
-
-            {/* Address with GPS button */}
-            <View style={styles.addressRow}>
-              <View style={{ flex: 1 }}>
-                <Input label={t('assessment.beneficiary_address')} value={form.beneficiary_address}
-                  onChangeText={v => setF('beneficiary_address', v)} type="multiline"
-                  placeholder={t('common.address')} required error={errors.beneficiary_address} />
-              </View>
-              <TouchableOpacity style={styles.gpsBtn} onPress={fetchLocation} disabled={locationLoading}>
-                <Ionicons name={locationLoading ? 'hourglass' : 'locate'} size={18} color={Colors.white} />
-              </TouchableOpacity>
-            </View>
-
-            {/* Readable location text (from GPS) */}
-            {form.location_text ? (
-              <View style={styles.locationBadge}>
-                <Ionicons name="location" size={14} color={Colors.primary} />
-                <Text style={styles.locationText} numberOfLines={2}>{form.location_text}</Text>
-              </View>
-            ) : null}
           </>
         );
 
-      // ── Step 1: Category ─────────────────────────────────────────────────
+      // ── Step 1: Assessment Details ───────────────────────────────────────
       case 1:
         return (
           <>
-            <Text style={styles.stepTitle}>📂 {t('assessment.step2')}</Text>
-            {errors.category && <Text style={styles.errorText}>{errors.category}</Text>}
-            <View style={styles.categoryGrid}>
-              {allCategories.map(cat => (
-                <TouchableOpacity
-                  key={cat.key}
-                  style={[styles.categoryBtn, form.category === cat.key && styles.categoryActive,
-                    cat.custom && styles.categoryCustom]}
-                  onPress={() => setF('category', cat.key)}
-                >
-                  <Text style={[styles.categoryLabel, form.category === cat.key && styles.categoryLabelActive]}>
-                    {cat.custom ? cat.label : `${cat.icon} ${t(cat.labelKey)}`}
+            <View style={styles.card}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>2. Issue Details</Text>
+                <View style={styles.sectionIconBg}>
+                  <Ionicons name="document-text-outline" size={16} color={FORM_BLUE} />
+                </View>
+              </View>
+
+              <Text style={styles.fieldLabel}>Issue Category <Text style={{ color: Colors.error }}>*</Text></Text>
+              {errors.category && <Text style={styles.errorText}>{errors.category}</Text>}
+              <View style={styles.categoryGrid}>
+                {allCategories.map(cat => (
+                  <TouchableOpacity
+                    key={cat.key}
+                    style={[styles.categoryBtn, form.category === cat.key && styles.categoryActive,
+                      cat.custom && styles.categoryCustom]}
+                    onPress={() => setF('category', cat.key)}
+                  >
+                    <Text style={[styles.categoryLabel, form.category === cat.key && styles.categoryLabelActive]}>
+                      {cat.custom ? cat.label : `${cat.icon} ${t(cat.labelKey)}`}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+
+                <TouchableOpacity style={styles.addCategoryBtn} onPress={() => setAddCatModal(true)}>
+                  <Ionicons name="add-circle" size={16} color={FORM_BLUE} />
+                  <Text style={styles.addCategoryLabel}>Add New</Text>
+                </TouchableOpacity>
+              </View>
+
+              {form.category === 'OTHER' && (
+                <Input label="Specify Category" value={form.custom_category}
+                  onChangeText={v => setF('custom_category', v)} placeholder="Enter category name" />
+              )}
+
+              <Text style={[styles.fieldLabel, { marginTop: 12 }]}>Problem Description <Text style={{ color: Colors.error }}>*</Text></Text>
+              
+              {/* Voice recording button */}
+              <TouchableOpacity
+                style={[styles.voiceBtn, isRecording && styles.voiceBtnActive]}
+                onPress={isRecording ? stopRecording : startRecording}
+                activeOpacity={0.8}
+              >
+                <View style={[styles.voiceIconWrap, isRecording && styles.voiceIconActive]}>
+                  <Ionicons name={isRecording ? 'stop-circle' : 'mic'} size={24}
+                    color={isRecording ? Colors.error : FORM_BLUE} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.voiceBtnTitle, isRecording && { color: Colors.error }]}>
+                    {isRecording ? '🔴 Recording… Tap to stop' : '🎤 Describe problem by voice'}
                   </Text>
+                  <Text style={styles.voiceBtnSub}>
+                    {isRecording ? 'Speak clearly into the mic' : 'Your voice note will be added to the description'}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+
+              <Input
+                value={form.description}
+                onChangeText={v => setF('description', v)}
+                type="multiline"
+                placeholder="Type detailed description here..."
+                error={errors.description}
+              />
+              <Text style={styles.charCount}>{form.description.length} {t('fao_report.characters')}</Text>
+
+              <Text style={[styles.fieldLabel, { marginTop: 8 }]}>Upload Photos</Text>
+              <View style={styles.idUploadBox}>
+                <PhotoPicker photos={photos} onPhotosChange={setPhotos} maxPhotos={5} customIcon="cloud-upload-outline" customLabel="Upload Photos" />
+              </View>
+
+              <Text style={[styles.fieldLabel, { marginTop: 16 }]}>Urgency Level</Text>
+              {URGENCY_OPTIONS.map(opt => (
+                <TouchableOpacity
+                  key={opt.key}
+                  style={[styles.urgencyBtn, form.priority === opt.key && { borderColor: opt.color, backgroundColor: opt.color + '15' }]}
+                  onPress={() => setF('priority', opt.key)}
+                >
+                  <View style={[styles.urgencyIcon, { backgroundColor: opt.color + '20' }]}>
+                    <Ionicons name={opt.icon} size={22} color={opt.color} />
+                  </View>
+                  <View style={styles.urgencyText}>
+                    <Text style={[styles.urgencyLabel, { color: opt.color }]}>{t(opt.labelKey)}</Text>
+                    <Text style={styles.urgencyDesc}>{t(opt.descKey).split(' — ')[1] || t(opt.descKey)}</Text>
+                  </View>
+                  {form.priority === opt.key && <Ionicons name="checkmark-circle" size={22} color={opt.color} />}
                 </TouchableOpacity>
               ))}
-
-              {/* Add New Category button */}
-              <TouchableOpacity style={styles.addCategoryBtn} onPress={() => setAddCatModal(true)}>
-                <Ionicons name="add-circle" size={16} color={Colors.primary} />
-                <Text style={styles.addCategoryLabel}>{t('common.add_new', 'Add New')}</Text>
-              </TouchableOpacity>
             </View>
-
-            {form.category === 'OTHER' && (
-              <Input label={t('assessment.specify_category', 'Specify Category')} value={form.custom_category}
-                onChangeText={v => setF('custom_category', v)} placeholder={t('assessment.enter_category_name', 'Enter category name')} />
-            )}
           </>
         );
 
-      // ── Step 2: Description + Voice ─────────────────────────────────────
+      // ── Step 2: Review & Submit ───────────────────────────────────────────
       case 2:
         return (
           <>
-            <Text style={styles.stepTitle}>📝 {t('assessment.step3')}</Text>
-
-            {/* Voice recording button */}
-            <TouchableOpacity
-              style={[styles.voiceBtn, isRecording && styles.voiceBtnActive]}
-              onPress={isRecording ? stopRecording : startRecording}
-              activeOpacity={0.8}
-            >
-              <View style={[styles.voiceIconWrap, isRecording && styles.voiceIconActive]}>
-                <Ionicons name={isRecording ? 'stop-circle' : 'mic'} size={24}
-                  color={isRecording ? Colors.error : Colors.primary} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.voiceBtnTitle, isRecording && { color: Colors.error }]}>
-                  {isRecording ? t('assessment.recording_stop', '🔴 Recording… Tap to stop') : t('assessment.describe_voice', '🎤 Describe problem by voice')}
-                </Text>
-                <Text style={styles.voiceBtnSub}>
-                  {isRecording ? t('assessment.speak_clearly', 'Speak clearly into the mic') : t('assessment.voice_note_added', 'Your voice note will be added to the description')}
-                </Text>
-              </View>
-            </TouchableOpacity>
-
-            <Input
-              label={t('assessment.problem_desc')}
-              value={form.description}
-              onChangeText={v => setF('description', v)}
-              type="multiline"
-              placeholder={t('assessment.problem_placeholder')}
-              required
-              error={errors.description}
-            />
-            <Text style={styles.charCount}>{form.description.length} {t('fao_report.characters')}</Text>
-          </>
-        );
-
-      // ── Step 3: Photos ────────────────────────────────────────────────────
-      case 3:
-        return (
-          <>
-            <Text style={styles.stepTitle}>📷 {t('assessment.step4')}</Text>
-            <Text style={styles.hint}>{t('assessment.photos_hint')}</Text>
-            <PhotoPicker photos={photos} onPhotosChange={setPhotos} maxPhotos={5} />
-          </>
-        );
-
-      // ── Step 4: Urgency ───────────────────────────────────────────────────
-      case 4:
-        return (
-          <>
-            <Text style={styles.stepTitle}>⚠️ {t('assessment.step5')}</Text>
-            {URGENCY_OPTIONS.map(opt => (
-              <TouchableOpacity
-                key={opt.key}
-                style={[styles.urgencyBtn, form.priority === opt.key && { borderColor: opt.color, backgroundColor: opt.color + '15' }]}
-                onPress={() => setF('priority', opt.key)}
-              >
-                <View style={[styles.urgencyIcon, { backgroundColor: opt.color + '20' }]}>
-                  <Ionicons name={opt.icon} size={22} color={opt.color} />
+            <View style={styles.card}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>3. Review & Submit</Text>
+                <View style={styles.sectionIconBg}>
+                  <Ionicons name="checkmark-outline" size={16} color={FORM_BLUE} />
                 </View>
-                <View style={styles.urgencyText}>
-                  <Text style={[styles.urgencyLabel, { color: opt.color }]}>{t(opt.labelKey)}</Text>
-                  <Text style={styles.urgencyDesc}>{t(opt.descKey).split(' — ')[1] || t(opt.descKey)}</Text>
-                </View>
-                {form.priority === opt.key && <Ionicons name="checkmark-circle" size={22} color={opt.color} />}
-              </TouchableOpacity>
-            ))}
-          </>
-        );
-
-      // ── Step 5: Review & Submit ───────────────────────────────────────────
-      case 5:
-        return (
-          <>
-            <Text style={styles.stepTitle}>✅ {t('assessment.step6')}</Text>
-            <Card padding={16}>
-              <InfoRow label={t('assessment.beneficiary_name').split("'")[0]} value={form.beneficiary_name || foundMember?.full_name} />
-              <InfoRow label={t('common.phone')}       value={form.beneficiary_phone} />
-              <InfoRow label={t('common.address')}     value={form.beneficiary_address} />
-              {form.location_text ? (
-                <InfoRow label={t('fao_report.visit_location', 'Location')} value={form.location_text} />
-              ) : null}
-              <InfoRow label={t('common.category')}    value={allCategories.find(c => c.key === form.category)?.label || form.category} />
-              <InfoRow label={t('common.urgency')}     value={form.priority} />
-              <InfoRow label={t('common.photos')}      value={`${photos.length} uploaded`} />
-              <InfoRow label={t('assessment.problem_desc')} value={form.description.slice(0, 80) + (form.description.length > 80 ? '...' : '')} />
-            </Card>
-            <Text style={styles.submitNote}>{t('assessment.submitted_to_fao')}</Text>
+              </View>
+              
+              <View style={styles.previewBox}>
+                <Text style={styles.previewSectionTitle}>Personal Info</Text>
+                <View style={styles.previewLine}><Text style={styles.previewKey}>Name:</Text><Text style={styles.previewVal}>{form.beneficiary_name}</Text></View>
+                <View style={styles.previewLine}><Text style={styles.previewKey}>Age:</Text><Text style={styles.previewVal}>{form.beneficiary_age || '-'}</Text></View>
+                <View style={styles.previewLine}><Text style={styles.previewKey}>Phone:</Text><Text style={styles.previewVal}>{form.beneficiary_phone}</Text></View>
+                <View style={styles.previewLine}><Text style={styles.previewKey}>Address:</Text><Text style={styles.previewVal}>{form.beneficiary_address}</Text></View>
+                
+                <Text style={styles.previewSectionTitle}>Assessment Details</Text>
+                <View style={styles.previewLine}><Text style={styles.previewKey}>Category:</Text><Text style={styles.previewVal}>{allCategories.find(c => c.key === form.category)?.label || form.category}</Text></View>
+                <View style={styles.previewLine}><Text style={styles.previewKey}>Urgency:</Text><Text style={styles.previewVal}>{form.priority}</Text></View>
+                <View style={styles.previewLine}><Text style={styles.previewKey}>Photos:</Text><Text style={styles.previewVal}>{photos.length} uploaded</Text></View>
+                <View style={styles.previewLine}><Text style={styles.previewKey}>Description:</Text><Text style={styles.previewVal}>{form.description.slice(0, 50)}{form.description.length > 50 ? '...' : ''}</Text></View>
+              </View>
+              <Text style={styles.submitNote}>By submitting, this request will be forwarded to Field Assessment Officers for review.</Text>
+            </View>
           </>
         );
 
@@ -426,15 +413,15 @@ const NewAssessmentScreen = ({ navigation, route }) => {
 
   return (
     <>
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <View style={styles.flex}>
         {/* Header with progress bar */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => step > 0 ? setStep(s => s - 1) : navigation.goBack()}>
-            <Ionicons name="arrow-back" size={22} color={Colors.white} />
+          <TouchableOpacity onPress={() => step > 0 ? setStep(s => s - 1) : navigation.goBack()} style={{ padding: 4, marginRight: 8 }}>
+            <Ionicons name="arrow-back" size={24} color={Colors.white} />
           </TouchableOpacity>
           <View style={styles.headerInfo}>
-            <Text style={styles.headerTitle}>{t('assessment.new_title')}</Text>
-            <Text style={styles.headerSub}>{t('staff.step')} {step + 1} {t('staff.of')} {TOTAL_STEPS}</Text>
+            <Text style={styles.headerTitle}>{isEdit ? 'Edit Assessment' : 'New Assessment'}</Text>
+            <Text style={styles.headerSub}>Step {step + 1} of {TOTAL_STEPS}</Text>
           </View>
           <View style={[styles.progressFill, { width: `${((step + 1) / TOTAL_STEPS) * 100}%` }]} />
         </View>
@@ -446,21 +433,28 @@ const NewAssessmentScreen = ({ navigation, route }) => {
           ))}
         </View>
 
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <KeyboardAwareScrollView enableOnAndroid={true} extraScrollHeight={20} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           {renderStep()}
-        </ScrollView>
+        </KeyboardAwareScrollView>
 
-        <View style={styles.footer}>
-          {step > 0 && <Button title={t('common.back')} onPress={() => setStep(s => s - 1)} variant="outline" style={styles.footerBtn} />}
+        <View style={styles.footerRow}>
+          {step > 0 && (
+            <Button 
+              title="Back" 
+              onPress={() => setStep(s => s - 1)} 
+              variant="outline" 
+              style={{ flex: 1, marginRight: 12, borderColor: FORM_BLUE }} 
+              textStyle={{ color: FORM_BLUE }}
+            />
+          )}
           <Button
-            title={step === TOTAL_STEPS - 1 ? t('assessment.submit_assessment') : t('common.next')}
+            title={step === TOTAL_STEPS - 1 ? 'Submit Assessment' : 'Next'}
             onPress={nextStep}
             loading={loading}
-            style={styles.footerBtn}
-            variant={step === TOTAL_STEPS - 1 ? 'success' : 'primary'}
+            style={{ flex: 2, backgroundColor: FORM_BLUE }}
           />
         </View>
-      </KeyboardAvoidingView>
+      </View>
 
       {/* Add New Category Modal */}
       <Modal visible={addCatModal} transparent animationType="slide" onRequestClose={() => setAddCatModal(false)}>
@@ -515,7 +509,7 @@ const NewAssessmentScreen = ({ navigation, route }) => {
             <View style={{ width: '100%', marginTop: 24 }}>
               <Button 
                 title="OK" 
-                variant={submitStatus?.type === 'success' ? 'success' : 'primary'}
+                style={{ backgroundColor: FORM_BLUE }}
                 onPress={() => {
                   const wasSuccess = submitStatus?.type === 'success';
                   setSubmitStatus(null);
@@ -532,84 +526,88 @@ const NewAssessmentScreen = ({ navigation, route }) => {
   );
 };
 
-// ── Info row helper ────────────────────────────────────────────────────────
-const InfoRow = ({ label, value }) => (
-  <View style={styles.infoRow}>
-    <Text style={styles.infoKey}>{label}</Text>
-    <Text style={styles.infoValue}>{value || '-'}</Text>
-  </View>
-);
-
 // ── Styles ─────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: Colors.background },
+  flex: { flex: 1, backgroundColor: Colors.gray100 },
   header: {
-    backgroundColor: Colors.warning, paddingTop: 50, paddingBottom: 14,
-    paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 12, overflow: 'hidden',
+    backgroundColor: FORM_BLUE, paddingTop: 50, paddingBottom: 14,
+    paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', overflow: 'hidden',
   },
   headerInfo: { flex: 1 },
-  headerTitle: { color: Colors.white, fontSize: 16, fontWeight: '700' },
-  headerSub: { color: 'rgba(255,255,255,0.8)', fontSize: 12 },
+  headerTitle: { color: Colors.white, fontSize: 18, fontWeight: '700' },
+  headerSub: { color: 'rgba(255,255,255,0.8)', fontSize: 12, marginTop: 2 },
   progressFill: { position: 'absolute', bottom: 0, left: 0, height: 4, backgroundColor: 'rgba(255,255,255,0.5)' },
-  stepDots: { flexDirection: 'row', justifyContent: 'center', gap: 8, paddingVertical: 12, backgroundColor: Colors.white },
+  stepDots: { flexDirection: 'row', justifyContent: 'center', gap: 8, paddingVertical: 16, backgroundColor: Colors.gray100 },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.gray300 },
-  dotActive: { backgroundColor: Colors.warning, width: 20 },
+  dotActive: { backgroundColor: FORM_BLUE, width: 20 },
   dotDone: { backgroundColor: Colors.success },
-  scroll: { padding: 20 },
-  stepTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary, marginBottom: 20 },
-  searchCard: { marginBottom: 16 },
-  searchRow: { flexDirection: 'row', gap: 10, alignItems: 'flex-end' },
-  searchInput: { flex: 1, marginBottom: 0 },
-  searchBtn: { width: 46, height: 50, borderRadius: 12, backgroundColor: Colors.primary, alignItems: 'center', justifyContent: 'center' },
-  memberChip: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: Colors.successLight, borderRadius: 8, padding: 8, marginTop: 8 },
-  memberChipText: { flex: 1, fontSize: 13, color: Colors.success, fontWeight: '600' },
-  orText: { textAlign: 'center', color: Colors.gray400, fontSize: 13, marginBottom: 16, marginTop: 4 },
-  row2: { flexDirection: 'row', gap: 12 },
-  half: { flex: 1 },
-  fieldLabel: { fontSize: 14, fontWeight: '500', color: Colors.gray700, marginBottom: 8 },
-  // Location
-  addressRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
-  gpsBtn: { width: 46, height: 50, borderRadius: 12, backgroundColor: Colors.primary, alignItems: 'center', justifyContent: 'center', marginTop: 22 },
-  locationBadge: { backgroundColor: Colors.primaryLight || '#E8F4FD', borderRadius: 10, padding: 10, marginBottom: 12, gap: 4 },
-  locationText: { fontSize: 13, color: Colors.primary, fontWeight: '500', flex: 1 },
-  locationCoords: { fontSize: 11, color: Colors.gray500, fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace' },
-  // Categories
+  scroll: { padding: 16, paddingBottom: 40 },
+  
+  card: {
+    backgroundColor: Colors.white, borderRadius: 12, padding: 16,
+    marginBottom: 24, borderWidth: 1, borderColor: Colors.gray200,
+  },
+  sectionHeader: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    marginBottom: 16, marginTop: 4
+  },
+  sectionTitle: { fontSize: 16, fontWeight: '700', color: FORM_BLUE },
+  sectionIconBg: {
+    width: 32, height: 32, borderRadius: 16, backgroundColor: FORM_BLUE_LIGHT,
+    justifyContent: 'center', alignItems: 'center'
+  },
+  fieldLabel: { fontSize: 13, fontWeight: '600', color: Colors.gray700, marginBottom: 6 },
+  
+  addressRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  gpsBtn: { width: 52, height: 52, borderRadius: 12, backgroundColor: FORM_BLUE, alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
+  locationBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: FORM_BLUE_LIGHT, borderRadius: 10, padding: 12, marginBottom: 8, gap: 8 },
+  locationText: { fontSize: 13, color: FORM_BLUE, fontWeight: '500', flex: 1 },
+  
   categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 16 },
   categoryBtn: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 10, borderWidth: 1.5, borderColor: Colors.gray200, backgroundColor: Colors.white },
-  categoryActive: { borderColor: Colors.warning, backgroundColor: Colors.warningLight },
-  categoryCustom: { borderColor: Colors.primary, borderStyle: 'dashed' },
+  categoryActive: { borderColor: FORM_BLUE, backgroundColor: FORM_BLUE_LIGHT },
+  categoryCustom: { borderColor: FORM_BLUE, borderStyle: 'dashed' },
   categoryLabel: { fontSize: 13, fontWeight: '500', color: Colors.textPrimary },
-  categoryLabelActive: { color: Colors.warning, fontWeight: '700' },
-  addCategoryBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 10, borderWidth: 1.5, borderColor: Colors.primary, borderStyle: 'dashed', backgroundColor: '#F0F8FF' },
-  addCategoryLabel: { fontSize: 13, fontWeight: '600', color: Colors.primary },
-  // Voice
+  categoryLabelActive: { color: FORM_BLUE, fontWeight: '700' },
+  addCategoryBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 10, borderWidth: 1.5, borderColor: FORM_BLUE, borderStyle: 'dashed', backgroundColor: FORM_BLUE_LIGHT },
+  addCategoryLabel: { fontSize: 13, fontWeight: '600', color: FORM_BLUE },
+  
   voiceBtn: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 14, borderRadius: 14, borderWidth: 1.5, borderColor: Colors.gray200, backgroundColor: Colors.white, marginBottom: 16 },
   voiceBtnActive: { borderColor: Colors.error, backgroundColor: '#FFF5F5' },
-  voiceIconWrap: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#EEF6FF', alignItems: 'center', justifyContent: 'center' },
+  voiceIconWrap: { width: 48, height: 48, borderRadius: 24, backgroundColor: FORM_BLUE_LIGHT, alignItems: 'center', justifyContent: 'center' },
   voiceIconActive: { backgroundColor: '#FFE8E8' },
   voiceBtnTitle: { fontSize: 14, fontWeight: '700', color: Colors.textPrimary },
   voiceBtnSub: { fontSize: 12, color: Colors.gray500, marginTop: 2 },
   charCount: { fontSize: 12, color: Colors.gray400, textAlign: 'right', marginTop: -8, marginBottom: 8 },
-  hint: { fontSize: 13, color: Colors.gray500, marginBottom: 12 },
+  
+  idUploadBox: {
+    width: '100%', height: 120, borderRadius: 12, borderWidth: 1, borderColor: FORM_BLUE_LIGHT,
+    borderStyle: 'dashed', backgroundColor: Colors.gray50, justifyContent: 'center', alignItems: 'center',
+    marginBottom: 8,
+  },
+  
   urgencyBtn: { flexDirection: 'row', alignItems: 'center', gap: 14, borderWidth: 1.5, borderColor: Colors.gray200, borderRadius: 14, padding: 14, marginBottom: 12, backgroundColor: Colors.white },
   urgencyIcon: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   urgencyText: { flex: 1 },
   urgencyLabel: { fontSize: 15, fontWeight: '700' },
   urgencyDesc: { fontSize: 12, color: Colors.gray500, marginTop: 2 },
-  infoRow: { flexDirection: 'row', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: Colors.gray100 },
-  infoKey: { width: 100, fontSize: 13, color: Colors.gray500, fontWeight: '600' },
-  infoValue: { flex: 1, fontSize: 13, color: Colors.textPrimary },
+  
+  previewBox: { width: '100%', backgroundColor: Colors.gray50, borderRadius: 12, padding: 16 },
+  previewSectionTitle: { fontSize: 14, fontWeight: '700', color: FORM_BLUE, marginTop: 12, marginBottom: 12, borderBottomWidth: 1, borderBottomColor: Colors.gray200, paddingBottom: 6 },
+  previewLine: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
+  previewKey: { fontSize: 13, color: Colors.gray600, fontWeight: '500' },
+  previewVal: { fontSize: 13, color: Colors.textPrimary, fontWeight: '600', flex: 1, textAlign: 'right', marginLeft: 16 },
   submitNote: { fontSize: 13, color: Colors.gray500, textAlign: 'center', marginTop: 16, lineHeight: 20 },
+  
   errorText: { color: Colors.error, fontSize: 12, marginBottom: 8 },
-  footer: { flexDirection: 'row', gap: 12, padding: 16, backgroundColor: Colors.white, borderTopWidth: 1, borderTopColor: Colors.gray200 },
-  footerBtn: { flex: 1 },
-  // Modal
+  footerRow: { flexDirection: 'row', padding: 16, backgroundColor: Colors.white, borderTopWidth: 1, borderTopColor: Colors.gray200 },
+  
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   modalCard: { backgroundColor: Colors.white, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40 },
   modalTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary, marginBottom: 16 },
   modalInput: { borderWidth: 1.5, borderColor: Colors.gray200, borderRadius: 12, padding: 14, fontSize: 15, color: Colors.textPrimary, marginBottom: 20 },
   modalButtons: { flexDirection: 'row', gap: 12 },
-  modalBtn: { flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: Colors.primary, alignItems: 'center' },
+  modalBtn: { flex: 1, paddingVertical: 14, borderRadius: 12, backgroundColor: FORM_BLUE, alignItems: 'center' },
   modalBtnOutline: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: Colors.gray300 },
   modalBtnText: { fontSize: 15, fontWeight: '700', color: Colors.white },
   modalBtnOutlineText: { fontSize: 15, fontWeight: '700', color: Colors.gray600 },

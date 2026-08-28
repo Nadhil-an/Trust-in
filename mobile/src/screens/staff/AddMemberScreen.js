@@ -1,40 +1,49 @@
-// screens/staff/AddMemberScreen.js — Step-by-step wizard
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Alert, KeyboardAvoidingView, Platform, Image, Linking, Modal
-} from 'react-native';
+  Alert, KeyboardAvoidingView, Platform, Modal
+} from 'react-native'; 
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import * as Clipboard from 'expo-clipboard';
 import { useTranslation } from 'react-i18next';
 import { isValidPhone, isValidEmail } from '../../utils/validators';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
-import { Button, Input, PhotoPicker } from '../../components/shared';
+import { Button, Input, PhotoPicker, ActionSheet } from '../../components/shared';
 import { membersApi } from '../../api';
 import Toast from 'react-native-toast-message';
 
-const MEMBER_TYPES = [
-  { key: 'General', labelKey: 'staff.member_types.general' },
-  { key: 'Donor', labelKey: 'staff.member_types.donor' },
-  { key: 'Volunteer', labelKey: 'staff.member_types.volunteer' },
-  { key: 'Beneficiary', labelKey: 'staff.member_types.beneficiary' },
-  { key: 'Life Member', labelKey: 'staff.member_types.life' },
-  { key: 'Honorary', labelKey: 'staff.member_types.honorary' }
-];
-const GENDER_OPTIONS = [
-  { key: 'Male', labelKey: 'common.male' },
-  { key: 'Female', labelKey: 'common.female' },
-  { key: 'Other', labelKey: 'common.other' }
-];
+const MEMBER_TYPES = ['General', 'Donor', 'Volunteer', 'Beneficiary', 'Life Member', 'Honorary'];
+const GENDER_OPTIONS = ['Male', 'Female', 'Other'];
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
-const ID_TYPES = [
-  { key: 'Aadhaar Card', labelKey: 'staff.id_types.aadhaar' },
-  { key: 'Voter ID', labelKey: 'staff.id_types.voter' },
-  { key: 'Passport', labelKey: 'staff.id_types.passport' },
-  { key: 'Driving Licence', labelKey: 'staff.id_types.driving' },
-  { key: 'PAN Card', labelKey: 'staff.id_types.pan' },
-  { key: 'Ration Card', labelKey: 'staff.id_types.ration' }
-];
+const ID_TYPES = ['Aadhaar Card', 'Voter ID', 'Passport', 'Driving Licence', 'PAN Card', 'Ration Card'];
+const PAYMENT_METHODS = ['Cash', 'GPay'];
+
+const FORM_BLUE = '#1A74EE';
+const FORM_BLUE_LIGHT = '#E8F1FD';
+
+// Custom Select Field Component matching the new design
+const SelectField = ({ label, icon, value, placeholder, onPress, required, error }) => (
+  <View style={styles.inputWrapper}>
+    <Text style={styles.inputLabel}>
+      {label} {required && <Text style={{ color: Colors.error }}>*</Text>}
+    </Text>
+    <TouchableOpacity
+      style={[styles.selectBox, error && styles.inputError]}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
+      <View style={styles.selectContent}>
+        {icon && <Ionicons name={icon} size={20} color={Colors.gray500} style={styles.selectIcon} />}
+        <Text style={[styles.selectText, !value && { color: Colors.gray400 }]}>
+          {value || placeholder}
+        </Text>
+      </View>
+      <Ionicons name="chevron-down" size={20} color={Colors.gray500} />
+    </TouchableOpacity>
+    {error ? <Text style={styles.errorText}>{error}</Text> : null}
+  </View>
+);
 
 const StepDots = ({ total, current }) => (
   <View style={styles.dots}>
@@ -48,41 +57,71 @@ const AddMemberScreen = ({ navigation, route }) => {
   const editItem = route?.params?.editItem;
   const isEdit = !!editItem;
   const { t } = useTranslation();
+
   const [step, setStep] = useState(0);
+  const TOTAL_STEPS = 3;
+
   const [loading, setLoading] = useState(false);
   const [photos, setPhotos] = useState([]);
   const [idPhotos, setIdPhotos] = useState([]);
+
+  // ActionSheet states
+  const [sheet, setSheet] = useState({ visible: false, title: '', options: [] });
+
   const [form, setForm] = useState({
-    full_name: editItem?.full_name || '', phone: editItem?.phone || '', email: editItem?.email || '',
-    age: editItem?.age?.toString() || '', gender: editItem?.gender || 'Male',
-    address: editItem?.address || '', district: editItem?.district || '', state: editItem?.state || 'Kerala', pincode: editItem?.pincode || '',
-    membership_type: editItem?.membership_type || 'General', blood_group: editItem?.blood_group || '',
-    id_type: editItem?.id_type || 'Aadhaar Card', id_number: editItem?.id_number || '',
-    payment_mode: editItem?.payment_mode || 'Cash', transaction_id: editItem?.transaction_id || '',
+    full_name: editItem?.full_name || '',
+    phone: editItem?.phone || '',
+    email: editItem?.email || '',
+    age: editItem?.age?.toString() || '',
+    gender: editItem?.gender || '',
+    address: editItem?.address || '',
+    district: editItem?.district || 'Kozhikode',
+    state: editItem?.state || 'Kerala',
+    pincode: editItem?.pincode || '',
+    membership_type: editItem?.membership_type || '',
+    blood_group: editItem?.blood_group || '',
+    id_type: editItem?.id_type || '',
+    id_number: editItem?.id_number || '',
+    payment_mode: editItem?.payment_mode || '',
+    amount: '100', // Fixed at 100
+    payment_date: new Date().toISOString().split('T')[0],
+    transaction_id: editItem?.transaction_id || '',
+    notes: '',
     temp_password: '',
   });
+
   const [errors, setErrors] = useState({});
   const [successData, setSuccessData] = useState(null);
+  const [showPreview, setShowPreview] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (editItem) {
       setForm({
         full_name: editItem.full_name || '', phone: editItem.phone || '', email: editItem.email || '',
-        age: editItem.age?.toString() || '', gender: editItem.gender || 'Male',
-        address: editItem.address || '', district: editItem.district || '', state: editItem.state || 'Kerala', pincode: editItem.pincode || '',
-        membership_type: editItem.membership_type || 'General', blood_group: editItem.blood_group || '',
-        id_type: editItem.id_type || 'Aadhaar Card', id_number: editItem.id_number || '',
-        payment_mode: editItem.payment_mode || 'Cash', transaction_id: editItem.transaction_id || '',
-        temp_password: '',
+        age: editItem.age?.toString() || '', gender: editItem.gender || '',
+        address: editItem.address || '', district: editItem.district || 'Kozhikode', state: editItem.state || 'Kerala', pincode: editItem.pincode || '',
+        membership_type: editItem.membership_type || '', blood_group: editItem.blood_group || '',
+        id_type: editItem.id_type || '', id_number: editItem.id_number || '',
+        payment_mode: editItem.payment_mode || '', amount: '100', payment_date: new Date().toISOString().split('T')[0],
+        transaction_id: editItem.transaction_id || '', notes: '', temp_password: '',
       });
     }
   }, [editItem]);
 
-  const TOTAL_STEPS = 6;
-
   const set = (key, val) => {
     setForm(f => ({ ...f, [key]: val }));
     setErrors(e => ({ ...e, [key]: '' }));
+  };
+
+  const openSheet = (title, items, key) => {
+    setSheet({
+      visible: true,
+      title,
+      options: items.map(item => ({
+        label: item,
+        onPress: () => set(key, item)
+      }))
+    });
   };
 
   const validateStep = () => {
@@ -90,29 +129,43 @@ const AddMemberScreen = ({ navigation, route }) => {
     if (step === 0) {
       if (!form.full_name.trim()) errs.full_name = t('common.required');
       if (!form.phone.trim()) errs.phone = t('common.required');
-      else if (!isValidPhone(form.phone)) errs.phone = t('errors.invalid_phone_msg', 'Enter a valid 10-digit phone number');
-      if (form.email && !isValidEmail(form.email)) errs.email = t('errors.invalid_email', 'Enter a valid email address');
-    }
-    if (step === 1) {
+      else if (!isValidPhone(form.phone)) errs.phone = 'Invalid 10-digit phone number';
+      if (form.email && !isValidEmail(form.email)) errs.email = 'Invalid email address';
       if (!form.age) errs.age = t('common.required');
-    }
-    if (step === 2) {
+      if (!form.gender) errs.gender = t('common.required');
       if (!form.address.trim()) errs.address = t('common.required');
+      if (!form.district.trim()) errs.district = t('common.required');
+      if (!form.state.trim()) errs.state = t('common.required');
+      if (!form.pincode.trim()) errs.pincode = t('common.required');
     }
-    if (step === 4) {
-      if (form.payment_mode === 'UPI' && !form.transaction_id.trim()) errs.transaction_id = t('errors.req_txn_id', 'Please enter transaction ID');
+    
+    if (step === 1) {
+      if (!form.membership_type) errs.membership_type = t('common.required');
+      if (!form.id_type) errs.id_type = t('common.required');
     }
-    if (step === 5 && !isEdit) {
-      if (!form.temp_password || form.temp_password.length < 6) errs.temp_password = t('errors.pass_min_6', 'Password must be at least 6 characters');
+
+    if (step === 2) {
+      if (!form.payment_mode) errs.payment_mode = t('common.required');
+      if (form.payment_mode === 'GPay' && !form.transaction_id.trim()) {
+        errs.transaction_id = 'Transaction ID is required for GPay';
+      }
     }
+
     setErrors(errs);
-    return Object.keys(errs).length === 0;
+    if (Object.keys(errs).length > 0) {
+      Toast.show({ type: 'error', text1: 'Please fix the highlighted errors' });
+      return false;
+    }
+    return true;
   };
 
   const nextStep = () => {
     if (!validateStep()) return;
-    if (step < TOTAL_STEPS - 1) setStep(s => s + 1);
-    else handleSubmit();
+    if (step < TOTAL_STEPS - 1) {
+      setStep(s => s + 1);
+    } else {
+      setShowPreview(true);
+    }
   };
 
   const handleSubmit = async () => {
@@ -132,8 +185,8 @@ const AddMemberScreen = ({ navigation, route }) => {
       };
 
       Object.keys(form).forEach(key => {
-        // Exclude fields that are empty or not in the model
-        if (form[key] !== '' && form[key] !== null && key !== 'id_type' && key !== 'id_number' && key !== 'temp_password' && key !== 'age' && key !== 'payment_mode' && key !== 'transaction_id') {
+        if (form[key] !== '' && form[key] !== null && 
+            !['id_type', 'id_number', 'temp_password', 'age', 'payment_mode', 'transaction_id', 'amount', 'payment_date', 'notes'].includes(key)) {
           let value = form[key];
           if (key === 'gender') value = genderMap[value] || value;
           if (key === 'membership_type') value = membershipMap[value] || 'GENERAL';
@@ -142,10 +195,10 @@ const AddMemberScreen = ({ navigation, route }) => {
       });
 
       // Append payment details to formData if collected
-      if (form.payment_mode) formData.append('payment_mode', form.payment_mode);
-      if (form.payment_mode === 'UPI' && form.transaction_id) formData.append('transaction_id', form.transaction_id);
+      const mappedPaymentMode = form.payment_mode === 'GPay' ? 'UPI' : 'CASH';
+      if (form.payment_mode) formData.append('payment_mode', mappedPaymentMode);
+      if (form.payment_mode === 'GPay' && form.transaction_id) formData.append('transaction_id', form.transaction_id);
 
-      // Calculate approximate date of birth from age if provided
       if (form.age) {
         const currentYear = new Date().getFullYear();
         const dobYear = currentYear - parseInt(form.age, 10);
@@ -158,13 +211,14 @@ const AddMemberScreen = ({ navigation, route }) => {
 
       if (isEdit) {
         await membersApi.update(editItem.id, formData);
-        Toast.show({ type: 'success', text1: t('staff.update_member', 'Member Updated!') });
+        Toast.show({ type: 'success', text1: 'Member Updated!' });
+        setShowPreview(false);
         navigation.goBack();
       } else {
         const res = await membersApi.create(formData);
+        setShowPreview(false);
         setSuccessData({
           member_id: res.data.member_id,
-          password: form.temp_password,
           name: form.full_name,
           phone: form.phone
         });
@@ -180,157 +234,68 @@ const AddMemberScreen = ({ navigation, route }) => {
     } finally { setLoading(false); }
   };
 
-  const SelectChip = ({ options, selected, onSelect, isObject }) => (
-    <View style={styles.chipRow}>
-      {options.map(opt => {
-        const key = isObject ? opt.key : opt;
-        const label = isObject ? t(opt.labelKey) : opt;
-        return (
-          <TouchableOpacity
-            key={key}
-            style={[styles.chip, selected === key && styles.chipActive]}
-            onPress={() => onSelect(key)}
-          >
-            <Text style={[styles.chipText, selected === key && styles.chipTextActive]}>{label}</Text>
-          </TouchableOpacity>
-        );
-      })}
+  const SectionHeader = ({ title, icon }) => (
+    <View style={styles.sectionHeader}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      <View style={styles.sectionIconBg}>
+        <Ionicons name={icon} size={16} color={FORM_BLUE} />
+      </View>
     </View>
   );
 
   const renderStep = () => {
-    switch (step) {
+    switch(step) {
       case 0:
         return (
           <>
-            <Text style={styles.stepTitle}>👤 {t('staff.personal_info')}</Text>
-            <PhotoPicker photos={photos} onPhotosChange={setPhotos} maxPhotos={1} />
-            <Input label={t('common.name')} value={form.full_name} onChangeText={v => set('full_name', v)} placeholder={t('staff.full_name_placeholder', 'Full name')} required error={errors.full_name} />
-            <Input label={t('common.phone')} value={form.phone} onChangeText={v => set('phone', v)} type="phone" placeholder={t('staff.mobile_placeholder', '10-digit mobile number')} required error={errors.phone} maxLength={10} keyboardType="numeric" />
-            <Input label={t('common.email')} value={form.email} onChangeText={v => set('email', v)} type="email" placeholder={t('staff.email_placeholder', 'Email address (optional)')} />
+            <SectionHeader title="1. Personal Information" icon="person-outline" />
+            <View style={styles.card}>
+              <Text style={styles.inputLabel}>Add Photo</Text>
+              <View style={{ alignItems: 'center', marginBottom: 16 }}>
+                <View style={styles.photoUploadBox}>
+                  <PhotoPicker photos={photos} onPhotosChange={setPhotos} maxPhotos={1} customIcon="camera" customLabel="Add Photo" />
+                </View>
+                <Text style={styles.photoHint}>Upload a clear member photo</Text>
+              </View>
+
+              <Input label="Full Name" value={form.full_name} onChangeText={v => set('full_name', v)} placeholder="Enter full name" required error={errors.full_name} icon="person-outline" />
+              <Input label="Phone Number" value={form.phone} onChangeText={v => set('phone', v)} type="phone" placeholder="Enter phone number" required error={errors.phone} maxLength={10} keyboardType="numeric" icon="call-outline" />
+              <Input label="Email Address" value={form.email} onChangeText={v => set('email', v)} type="email" placeholder="Enter email address" error={errors.email} icon="mail-outline" />
+              <Input label="Age" value={form.age} onChangeText={v => set('age', v)} type="number" placeholder="Enter age" required error={errors.age} icon="calendar-outline" />
+              <SelectField label="Gender" icon="male-female-outline" value={form.gender} placeholder="Select gender" onPress={() => openSheet('Select Gender', GENDER_OPTIONS, 'gender')} required error={errors.gender} />
+              <Input label="Address" value={form.address} onChangeText={v => set('address', v)} placeholder="Enter full address" required error={errors.address} icon="home-outline" />
+              <Input label="District" value={form.district} onChangeText={v => set('district', v)} placeholder="Select district" required error={errors.district} icon="location-outline" />
+              <Input label="State" value={form.state} onChangeText={v => set('state', v)} placeholder="Select state" required error={errors.state} icon="map-outline" />
+              <Input label="Pincode" value={form.pincode} onChangeText={v => set('pincode', v)} type="number" placeholder="Enter pincode" required error={errors.pincode} maxLength={6} icon="mail-unread-outline" />
+            </View>
           </>
         );
       case 1:
         return (
           <>
-            <Text style={styles.stepTitle}>🪪 {t('staff.contact_info')}</Text>
-            <Input label={t('common.age')} value={form.age} onChangeText={v => set('age', v)} type="number" placeholder={t('common.age')} required error={errors.age} />
-            <Text style={styles.fieldLabel}>{t('common.gender')}</Text>
-            <SelectChip options={GENDER_OPTIONS} selected={form.gender} onSelect={v => set('gender', v)} isObject={true} />
-            <Text style={styles.fieldLabel}>{t('staff.blood_group', 'Blood Group')}</Text>
-            <SelectChip options={BLOOD_GROUPS} selected={form.blood_group} onSelect={v => set('blood_group', v)} />
-            <Text style={styles.fieldLabel}>{t('staff.member_type')}</Text>
-            <SelectChip options={MEMBER_TYPES} selected={form.membership_type} onSelect={v => set('membership_type', v)} isObject={true} />
+            <SectionHeader title="2. Membership Details" icon="id-card-outline" />
+            <View style={styles.card}>
+              <SelectField label="Blood Group" icon="water-outline" value={form.blood_group} placeholder="Select blood group" onPress={() => openSheet('Select Blood Group', BLOOD_GROUPS, 'blood_group')} />
+              <SelectField label="Membership Type" icon="star-outline" value={form.membership_type} placeholder="Select membership type" onPress={() => openSheet('Select Membership Type', MEMBER_TYPES, 'membership_type')} required error={errors.membership_type} />
+              <SelectField label="ID Proof Type" icon="card-outline" value={form.id_type} placeholder="Select ID proof type" onPress={() => openSheet('Select ID Proof Type', ID_TYPES, 'id_type')} required error={errors.id_type} />
+              <Text style={styles.inputLabel}>Upload ID Proof <Text style={{ color: Colors.error }}>*</Text></Text>
+              <View style={styles.idUploadBox}>
+                <PhotoPicker photos={idPhotos} onPhotosChange={setIdPhotos} maxPhotos={1} customIcon="cloud-upload-outline" customLabel="Upload Document" />
+                <Text style={styles.photoHint}>JPG, PNG, PDF (Max 5MB)</Text>
+              </View>
+            </View>
           </>
         );
       case 2:
         return (
           <>
-            <Text style={styles.stepTitle}>🏠 {t('staff.address_info')}</Text>
-            <Input label={t('common.address')} value={form.address} onChangeText={v => set('address', v)} type="multiline" placeholder={t('staff.house_no', 'House no., street, area')} required error={errors.address} />
-            <Input label={t('staff.district', 'District')} value={form.district} onChangeText={v => set('district', v)} placeholder={t('staff.district', 'District')} />
-            <Input label={t('staff.state', 'State')} value={form.state} onChangeText={v => set('state', v)} placeholder={t('staff.state', 'State')} />
-            <Input label={t('staff.pincode', 'Pincode')} value={form.pincode} onChangeText={v => set('pincode', v)} type="number" placeholder={t('staff.pincode_placeholder', '6-digit pincode')} maxLength={6} />
-          </>
-        );
-      case 3:
-        return (
-          <>
-            <Text style={styles.stepTitle}>📋 {t('staff.id_proof')}</Text>
-            <Text style={styles.fieldLabel}>{t('staff.id_type', 'ID Type')}</Text>
-            <SelectChip options={ID_TYPES} selected={form.id_type} onSelect={v => set('id_type', v)} isObject={true} />
-            <Input label={t('staff.id_type', 'ID Type')} value={form.id_number} onChangeText={v => set('id_number', v)} placeholder={t('staff.enter_id', 'Enter ID number')} />
-            <Text style={styles.fieldLabel}>{t('staff.upload_id_photo', 'Upload ID Photo (optional)')}</Text>
-            <PhotoPicker photos={idPhotos} onPhotosChange={setIdPhotos} maxPhotos={1} />
-          </>
-        );
-      case 4:
-        return (
-          <>
-            <Text style={styles.stepTitle}>💳 {t('staff.payment_collection', 'Payment Collection')}</Text>
-            <View style={{ backgroundColor: Colors.primaryLight, padding: 16, borderRadius: 12, marginBottom: 20 }}>
-              <Text style={{ fontSize: 14, fontWeight: '600', color: Colors.primary, marginBottom: 4 }}>{t('staff.registration_fee', 'Registration Fee')}</Text>
-              <Text style={{ fontSize: 28, fontWeight: '700', color: Colors.textPrimary }}>₹100</Text>
-            </View>
-            <Text style={styles.fieldLabel}>{t('staff.payment_method')}</Text>
-            <View style={styles.paymentCardRow}>
-              <TouchableOpacity
-                style={[styles.paymentCard, form.payment_mode === 'Cash' && styles.paymentCardActive]}
-                onPress={() => set('payment_mode', 'Cash')}
-              >
-                <Ionicons name="cash-outline" size={40} color={form.payment_mode === 'Cash' ? Colors.primary : Colors.gray500} />
-                <Text style={[styles.paymentCardText, form.payment_mode === 'Cash' && styles.paymentCardTextActive]}>{t('staff.cash')}</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.paymentCard, form.payment_mode === 'UPI' && styles.paymentCardActive]}
-                onPress={() => set('payment_mode', 'UPI')}
-              >
-                <Ionicons name="qr-code-outline" size={40} color={form.payment_mode === 'UPI' ? Colors.primary : Colors.gray500} />
-                <Text style={[styles.paymentCardText, form.payment_mode === 'UPI' && styles.paymentCardTextActive]}>{t('staff.upi')}</Text>
-              </TouchableOpacity>
-            </View>
-
-            {form.payment_mode === 'UPI' && (
-              <View style={{ alignItems: 'center', marginTop: 10 }}>
-                <View style={{ width: 200, height: 200, backgroundColor: Colors.white, borderWidth: 1, borderColor: Colors.gray200, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginBottom: 16 }}>
-                  <Ionicons name="qr-code-outline" size={120} color={Colors.gray800} />
-                  <Text style={{ color: Colors.gray600, marginTop: 4, fontWeight: '600' }}>{t('staff.scan_pay', 'Scan to Pay')}</Text>
-                </View>
-                <View style={{ width: '100%' }}>
-                  <Input label={t('staff.txn_id', 'Transaction ID')} value={form.transaction_id} onChangeText={v => set('transaction_id', v)} placeholder={t('staff.enter_upi_txn', 'Enter UPI Transaction ID')} required error={errors.transaction_id} />
-                </View>
-              </View>
-            )}
-          </>
-        );
-      case 5:
-        return (
-          <>
-            <Text style={styles.stepTitle}>🔐 {t('staff.temp_password')} & {t('staff.summary', 'Summary')}</Text>
-            {isEdit ? (
-              <Text style={styles.info}>{t('staff.leave_blank_pass', 'Leave blank to keep the current password.')}</Text>
-            ) : (
-              <Text style={styles.info}>{t('staff.set_temp_pass', 'Set or generate a temporary password. The member will use this to log in.')}</Text>
-            )}
-
-            {!isEdit && (
-              <Button
-                title={t('staff.generate_pass', 'Generate Random Password')}
-                variant="outline"
-                style={{ marginBottom: 16 }}
-                onPress={() => {
-                  const randomPass = Math.random().toString(36).slice(-6).toUpperCase();
-                  set('temp_password', randomPass);
-                }}
-              />
-            )}
-            <Input label={t('staff.temp_password')} value={form.temp_password} onChangeText={v => set('temp_password', v)} type="password" placeholder={t('staff.min_6_chars', 'Min. 6 characters')} required={!isEdit} error={errors.temp_password} />
-
-            {/* Review summary */}
-            <View style={styles.summaryCard}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                <Text style={styles.summaryTitle}>{t('staff.review_summary', 'Review Summary')}</Text>
-                <TouchableOpacity onPress={() => setStep(0)}>
-                  <Text style={{ color: Colors.primary, fontWeight: '600', fontSize: 14 }}>{t('staff.edit_details', 'Edit Details')}</Text>
-                </TouchableOpacity>
-              </View>
-              <View style={{ gap: 8 }}>
-                <View style={styles.summaryLine}><Text style={styles.summaryKey}>{t('common.name')}:</Text><Text style={styles.summaryVal}>{form.full_name || '-'}</Text></View>
-                <View style={styles.summaryLine}><Text style={styles.summaryKey}>{t('common.phone')}:</Text><Text style={styles.summaryVal}>{form.phone || '-'}</Text></View>
-                <View style={styles.summaryLine}><Text style={styles.summaryKey}>{t('common.email')}:</Text><Text style={styles.summaryVal}>{form.email || '-'}</Text></View>
-                <View style={styles.summaryLine}><Text style={styles.summaryKey}>{t('common.age')}/{t('common.gender')}:</Text><Text style={styles.summaryVal}>{form.age || '-'} / {t(`common.${form.gender.toLowerCase()}`, form.gender)}</Text></View>
-                <View style={styles.summaryLine}><Text style={styles.summaryKey}>{t('staff.blood_group', 'Blood Group')}:</Text><Text style={styles.summaryVal}>{form.blood_group || '-'}</Text></View>
-                <View style={styles.summaryLine}><Text style={styles.summaryKey}>{t('staff.member_type')}:</Text><Text style={styles.summaryVal}>{form.membership_type}</Text></View>
-                <View style={styles.summaryLine}><Text style={styles.summaryKey}>{t('common.address')}:</Text><Text style={styles.summaryVal}>{form.address || '-'}, {form.district}, {form.state} {form.pincode}</Text></View>
-                <View style={styles.summaryLine}><Text style={styles.summaryKey}>{t('staff.id_type', 'ID Type')}:</Text><Text style={styles.summaryVal}>{form.id_type || '-'}</Text></View>
-                <View style={styles.summaryLine}><Text style={styles.summaryKey}>{t('staff.id_type', 'ID Number')}:</Text><Text style={styles.summaryVal}>{form.id_number || '-'}</Text></View>
-              </View>
-              <View style={{ marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: Colors.gray300 }}>
-                <Text style={{ fontSize: 15, fontWeight: '700', color: Colors.textPrimary }}>
-                  {t('staff.payment_method')}: <Text style={{ color: Colors.success }}>₹100 ({t(`staff.${form.payment_mode.toLowerCase()}`, form.payment_mode)})</Text>
-                </Text>
-              </View>
+            <SectionHeader title="3. Payment Collection" icon="wallet-outline" />
+            <View style={styles.card}>
+              <SelectField label="Payment Method" icon="card-outline" value={form.payment_mode} placeholder="Select payment method" onPress={() => openSheet('Select Payment Method', PAYMENT_METHODS, 'payment_mode')} required error={errors.payment_mode} />
+              <Input label="Amount (₹)" value={form.amount} editable={false} placeholder="Enter amount" required icon="cash-outline" />
+              <Input label="Payment Date" value={form.payment_date} editable={false} placeholder="Select date" required icon="calendar-outline" />
+              <Input label="Transaction ID / Reference (Optional)" value={form.transaction_id} onChangeText={v => set('transaction_id', v)} placeholder="Enter transaction ID" error={errors.transaction_id} icon="receipt-outline" />
+              <Input label="Notes (Optional)" value={form.notes} onChangeText={v => set('notes', v)} placeholder="Add any notes here..." type="multiline" icon="document-text-outline" />
             </View>
           </>
         );
@@ -338,73 +303,122 @@ const AddMemberScreen = ({ navigation, route }) => {
   };
 
   return (
-    <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <View style={styles.flex}>
+      
       {/* Progress header */}
       <View style={styles.progressBar}>
-        <TouchableOpacity onPress={() => step > 0 ? setStep(s => s - 1) : navigation.goBack()} style={styles.backBtn}>
+        <TouchableOpacity onPress={() => step > 0 ? setStep(s => s - 1) : navigation.goBack()} style={styles.headerBackBtn}>
           <Ionicons name="arrow-back" size={22} color={Colors.white} />
         </TouchableOpacity>
         <View style={styles.progressInfo}>
-          <Text style={styles.progressTitle}>{isEdit ? t('staff.edit_member', 'Edit Member') : t('staff.member_registration')}</Text>
-          <Text style={styles.progressStep}>{t('staff.step')} {step + 1} {t('staff.of')} {TOTAL_STEPS}</Text>
+          <Text style={styles.progressTitle}>{isEdit ? 'Edit Member' : 'Add Member'}</Text>
+          <Text style={styles.progressStep}>Step {step + 1} of {TOTAL_STEPS}</Text>
         </View>
         <View style={[styles.progressFill, { width: `${((step + 1) / TOTAL_STEPS) * 100}%` }]} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+      <KeyboardAwareScrollView enableOnAndroid={true} extraScrollHeight={20} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <StepDots total={TOTAL_STEPS} current={step} />
-        <View style={styles.content}>{renderStep()}</View>
-      </ScrollView>
+        
+        {renderStep()}
 
-      <View style={styles.footer}>
-        {step > 0 && (
-          <Button title={t('common.back')} onPress={() => setStep(s => s - 1)} variant="outline" style={styles.footerBtn} />
-        )}
-        <Button
-          title={step === TOTAL_STEPS - 1 ? (isEdit ? t('staff.update_member', 'Update Member') : t('staff.register_member', 'Register Member')) : t('common.next')}
-          onPress={nextStep}
-          loading={loading}
-          style={styles.footerBtn}
-          variant={step === TOTAL_STEPS - 1 ? 'success' : 'primary'}
-        />
-      </View>
+        {/* Footer Buttons */}
+        <View style={styles.footerRow}>
+          {step > 0 && (
+            <Button 
+              title="Back" 
+              onPress={() => setStep(s => s - 1)} 
+              variant="outline" 
+              style={{ flex: 1, marginRight: 12, borderColor: FORM_BLUE }} 
+              textStyle={{ color: FORM_BLUE }}
+            />
+          )}
+          <Button 
+            title={step === TOTAL_STEPS - 1 ? "Preview & Save" : "Next"} 
+            onPress={nextStep} 
+            style={{ flex: 2, backgroundColor: FORM_BLUE }} 
+          />
+        </View>
+
+      </KeyboardAwareScrollView>
+
+      {/* Action Sheet for SelectFields */}
+      <ActionSheet 
+        visible={sheet.visible} 
+        onClose={() => setSheet(s => ({ ...s, visible: false }))} 
+        title={sheet.title} 
+        options={sheet.options} 
+      />
+
+      {/* Preview Modal */}
+      <Modal visible={showPreview} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { height: '85%' }]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Preview Details</Text>
+              <TouchableOpacity onPress={() => setShowPreview(false)}>
+                <Ionicons name="close" size={24} color={Colors.gray600} />
+              </TouchableOpacity>
+            </View>
+            <KeyboardAwareScrollView enableOnAndroid={true} extraScrollHeight={20} style={{ width: '100%' }} showsVerticalScrollIndicator={false}>
+              <View style={styles.previewBox}>
+                <Text style={styles.previewSectionTitle}>Personal Info</Text>
+                <View style={styles.previewLine}><Text style={styles.previewKey}>Name:</Text><Text style={styles.previewVal}>{form.full_name}</Text></View>
+                <View style={styles.previewLine}><Text style={styles.previewKey}>Phone:</Text><Text style={styles.previewVal}>{form.phone}</Text></View>
+                <View style={styles.previewLine}><Text style={styles.previewKey}>Email:</Text><Text style={styles.previewVal}>{form.email || '-'}</Text></View>
+                <View style={styles.previewLine}><Text style={styles.previewKey}>Age/Gender:</Text><Text style={styles.previewVal}>{form.age} / {form.gender}</Text></View>
+                <View style={styles.previewLine}><Text style={styles.previewKey}>Address:</Text><Text style={styles.previewVal}>{form.address}, {form.district}, {form.state} - {form.pincode}</Text></View>
+                
+                <Text style={styles.previewSectionTitle}>Membership</Text>
+                <View style={styles.previewLine}><Text style={styles.previewKey}>Type:</Text><Text style={styles.previewVal}>{form.membership_type}</Text></View>
+                <View style={styles.previewLine}><Text style={styles.previewKey}>Blood Group:</Text><Text style={styles.previewVal}>{form.blood_group || '-'}</Text></View>
+                <View style={styles.previewLine}><Text style={styles.previewKey}>ID Proof:</Text><Text style={styles.previewVal}>{form.id_type}</Text></View>
+                
+                <Text style={styles.previewSectionTitle}>Payment</Text>
+                <View style={styles.previewLine}><Text style={styles.previewKey}>Method:</Text><Text style={styles.previewVal}>{form.payment_mode}</Text></View>
+                <View style={styles.previewLine}><Text style={styles.previewKey}>Amount:</Text><Text style={styles.previewVal}>₹{form.amount}</Text></View>
+                {form.payment_mode === 'GPay' && <View style={styles.previewLine}><Text style={styles.previewKey}>Txn ID:</Text><Text style={styles.previewVal}>{form.transaction_id || '-'}</Text></View>}
+              </View>
+            </KeyboardAwareScrollView>
+            <View style={{ width: '100%', marginTop: 20 }}>
+              <Button title="Confirm & Save Member" onPress={handleSubmit} loading={loading} style={{ backgroundColor: FORM_BLUE }} />
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* Success Modal */}
       <Modal visible={!!successData} transparent animationType="fade">
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { height: 'auto' }]}>
             <View style={styles.modalIconBg}>
               <Ionicons name="checkmark-circle" size={50} color={Colors.success} />
             </View>
-            <Text style={styles.modalTitle}>{t('staff.member_registered_title', 'Member Registered!')}</Text>
-            <Text style={styles.modalSub}>{t('staff.member_registered_sub', 'Member added! Registration details sent to member via Trust WhatsApp.')}</Text>
+            <Text style={styles.modalTitle}>Member Registered!</Text>
+            <Text style={styles.modalSub}>Member added successfully. Registration details sent to member via Trust WhatsApp.</Text>
 
             <View style={styles.credentialsBox}>
               <View style={styles.credRow}>
-                <Text style={styles.credLabel}>{t('member.member_id', 'Member ID')}</Text>
+                <Text style={styles.credLabel}>Member ID</Text>
                 <Text style={styles.credValue}>{successData?.member_id}</Text>
-              </View>
-              <View style={styles.credDivider} />
-              <View style={styles.credRow}>
-                <Text style={styles.credLabel}>{t('auth.password', 'Password')}</Text>
-                <Text style={styles.credValue}>{successData?.password}</Text>
               </View>
             </View>
 
             <View style={styles.actionButtonsRow}>
               <Button
-                title={t('staff.copy_details', 'Copy Details')}
-                icon={<Ionicons name="copy-outline" size={18} color={Colors.primary} style={{ marginRight: 6 }} />}
-                style={styles.copyBtn}
+                title="Copy Details"
+                icon={<Ionicons name="copy-outline" size={18} color={FORM_BLUE} style={{ marginRight: 6 }} />}
+                style={[styles.copyBtn, { borderColor: FORM_BLUE }]}
+                textStyle={{ color: FORM_BLUE }}
                 variant="outline"
                 onPress={async () => {
-                  const msg = `Member ID: ${successData?.member_id}\nPassword: ${successData?.password}`;
+                  const msg = `Member ID: ${successData?.member_id}\nName: ${successData?.name}`;
                   await Clipboard.setStringAsync(msg);
-                  Toast.show({ type: 'success', text1: t('staff.copied_clipboard', 'Copied to clipboard!') });
+                  Toast.show({ type: 'success', text1: 'Copied to clipboard!' });
                 }}
               />
               <Button
-                title={t('common.done', 'Done')}
+                title="Done"
                 style={styles.shareBtn}
                 onPress={() => {
                   setSuccessData(null);
@@ -415,14 +429,15 @@ const AddMemberScreen = ({ navigation, route }) => {
           </View>
         </View>
       </Modal>
-    </KeyboardAvoidingView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: Colors.background },
+  flex: { flex: 1, backgroundColor: Colors.gray100 }, 
+  
   progressBar: {
-    backgroundColor: Colors.primary, paddingTop: 50,
+    backgroundColor: FORM_BLUE, paddingTop: 50,
     paddingBottom: 14, paddingHorizontal: 16,
     flexDirection: 'row', alignItems: 'center', overflow: 'hidden',
   },
@@ -430,44 +445,72 @@ const styles = StyleSheet.create({
     position: 'absolute', bottom: 0, left: 0,
     height: 4, backgroundColor: 'rgba(255,255,255,0.5)',
   },
-  backBtn: { marginRight: 12 },
+  headerBackBtn: { marginRight: 12 },
   progressInfo: { flex: 1 },
   progressTitle: { color: Colors.white, fontSize: 16, fontWeight: '700' },
   progressStep: { color: 'rgba(255,255,255,0.8)', fontSize: 12 },
-  scroll: { padding: 20 },
+
+  scroll: { padding: 16, paddingBottom: 40 },
+  
   dots: { flexDirection: 'row', justifyContent: 'center', gap: 8, marginBottom: 20 },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: Colors.gray300 },
-  dotActive: { backgroundColor: Colors.primary, width: 20 },
+  dotActive: { backgroundColor: FORM_BLUE, width: 20 },
   dotDone: { backgroundColor: Colors.success },
-  content: {},
-  stepTitle: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary, marginBottom: 20 },
-  fieldLabel: { fontSize: 14, fontWeight: '500', color: Colors.gray700, marginBottom: 8, marginTop: 4 },
-  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
-  chip: {
-    paddingHorizontal: 14, paddingVertical: 8,
-    borderRadius: 20, borderWidth: 1.5, borderColor: Colors.gray300,
-    backgroundColor: Colors.white,
+
+  sectionHeader: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    marginBottom: 12, marginTop: 8
   },
-  chipActive: { borderColor: Colors.primary, backgroundColor: Colors.primaryLight },
-  chipText: { fontSize: 13, color: Colors.gray600, fontWeight: '500' },
-  chipTextActive: { color: Colors.primary, fontWeight: '700' },
-  info: { fontSize: 13, color: Colors.gray500, marginBottom: 16, lineHeight: 20 },
-  summaryCard: {
-    backgroundColor: Colors.primaryLight, borderRadius: 12, padding: 16, marginTop: 12,
+  sectionTitle: { fontSize: 16, fontWeight: '700', color: FORM_BLUE },
+  sectionIconBg: {
+    width: 32, height: 32, borderRadius: 16, backgroundColor: FORM_BLUE_LIGHT,
+    justifyContent: 'center', alignItems: 'center'
   },
-  summaryTitle: { fontSize: 14, fontWeight: '700', color: Colors.primary, marginBottom: 10 },
-  summaryRow: { fontSize: 13, color: Colors.gray700, marginBottom: 4 },
-  summaryKey: { fontWeight: '600', color: Colors.gray800 },
-  footer: {
-    flexDirection: 'row', gap: 12, padding: 16,
-    backgroundColor: Colors.white, borderTopWidth: 1, borderTopColor: Colors.gray200,
+  
+  card: {
+    backgroundColor: Colors.white, borderRadius: 12, padding: 16,
+    marginBottom: 24, borderWidth: 1, borderColor: Colors.gray200,
   },
-  footerBtn: { flex: 1 },
+  
+  inputWrapper: { marginBottom: 16 },
+  inputLabel: { fontSize: 13, fontWeight: '600', color: Colors.gray700, marginBottom: 6 },
+  selectBox: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    borderWidth: 1, borderColor: Colors.gray300, borderRadius: 8,
+    paddingHorizontal: 12, paddingVertical: 12, backgroundColor: Colors.white
+  },
+  selectContent: { flexDirection: 'row', alignItems: 'center', flex: 1 },
+  selectIcon: { marginRight: 8 },
+  selectText: { fontSize: 15, color: Colors.textPrimary, flex: 1 },
+  inputError: { borderColor: Colors.error },
+  errorText: { color: Colors.error, fontSize: 12, marginTop: 4 },
+  
+  photoUploadBox: {
+    width: 140, height: 140, borderRadius: 12, borderWidth: 1, borderColor: FORM_BLUE_LIGHT,
+    borderStyle: 'dashed', backgroundColor: Colors.gray50, justifyContent: 'center', alignItems: 'center',
+  },
+  idUploadBox: {
+    width: '100%', height: 120, borderRadius: 12, borderWidth: 1, borderColor: FORM_BLUE_LIGHT,
+    borderStyle: 'dashed', backgroundColor: Colors.gray50, justifyContent: 'center', alignItems: 'center',
+    marginBottom: 8,
+  },
+  photoHint: { fontSize: 12, color: Colors.gray500, textAlign: 'center' },
+  
+  footerRow: { flexDirection: 'row', marginTop: 10, alignItems: 'center', justifyContent: 'space-between' },
+  
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
-  modalContent: { backgroundColor: Colors.white, borderRadius: 20, padding: 24, width: '100%', alignItems: 'center' },
+  modalContent: { backgroundColor: Colors.white, borderRadius: 20, padding: 20, width: '100%', alignItems: 'center' },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', width: '100%', alignItems: 'center', marginBottom: 16 },
   modalIconBg: { marginBottom: 12 },
   modalTitle: { fontSize: 20, fontWeight: '700', color: Colors.textPrimary, marginBottom: 8 },
   modalSub: { fontSize: 14, color: Colors.gray600, textAlign: 'center', marginBottom: 20 },
+  
+  previewBox: { width: '100%', backgroundColor: Colors.gray50, borderRadius: 12, padding: 16 },
+  previewSectionTitle: { fontSize: 14, fontWeight: '700', color: FORM_BLUE, marginTop: 12, marginBottom: 8, borderBottomWidth: 1, borderBottomColor: Colors.gray200, paddingBottom: 4 },
+  previewLine: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
+  previewKey: { fontSize: 13, color: Colors.gray600, fontWeight: '500' },
+  previewVal: { fontSize: 13, color: Colors.textPrimary, fontWeight: '600', flex: 1, textAlign: 'right', marginLeft: 16 },
+  
   credentialsBox: { backgroundColor: Colors.gray100, width: '100%', borderRadius: 12, padding: 16, marginBottom: 24, borderWidth: 1, borderColor: Colors.gray200 },
   credRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   credDivider: { height: 1, backgroundColor: Colors.gray300, marginVertical: 12 },
@@ -475,17 +518,7 @@ const styles = StyleSheet.create({
   credValue: { fontSize: 15, color: Colors.textPrimary, fontWeight: '700', fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace' },
   actionButtonsRow: { flexDirection: 'row', gap: 10, width: '100%', marginBottom: 12 },
   copyBtn: { flex: 1 },
-  shareBtn: { flex: 1, backgroundColor: '#25D366' }, // WhatsApp green
-  closeBtn: { paddingVertical: 12, width: '100%', alignItems: 'center' },
-  closeBtnText: { color: Colors.gray600, fontSize: 15, fontWeight: '600' },
-  paymentCardRow: { flexDirection: 'row', gap: 12, marginBottom: 20 },
-  paymentCard: { flex: 1, backgroundColor: Colors.white, borderWidth: 2, borderColor: Colors.gray200, borderRadius: 12, padding: 16, alignItems: 'center', justifyContent: 'center' },
-  paymentCardActive: { borderColor: Colors.primary, backgroundColor: Colors.primaryLight },
-  paymentCardText: { marginTop: 8, fontSize: 16, fontWeight: '600', color: Colors.gray600 },
-  paymentCardTextActive: { color: Colors.primary },
-  paymentIcon: { width: 40, height: 40, resizeMode: 'contain' },
-  summaryLine: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: Colors.gray200 },
-  summaryVal: { flex: 1, textAlign: 'right', color: Colors.textPrimary, fontWeight: '500', fontSize: 13 },
+  shareBtn: { flex: 1, backgroundColor: FORM_BLUE },
 });
 
 export default AddMemberScreen;

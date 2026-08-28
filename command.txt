@@ -3,12 +3,18 @@ python manage.py runserver 0.0.0.0:8000
 
 
 
-
 cd frontend
 npm run dev -- --port 5174
 
 
 
 
+== MOBILE SETUP (Run these in ORDER in a new terminal) ==
+
+STEP 1 - Clean Install (run once):
 cd mobile
-set REACT_NATIVE_PACKAGER_HOSTNAME=10.108.62.21 && npm start
+rmdir /s /q node_modules & del /f /q package-lock.json & npm install --legacy-peer-deps
+
+STEP 2 - Start Expo (run every time):
+cd mobile
+set REACT_NATIVE_PACKAGER_HOSTNAME=10.108.62.21 && npx expo start -c

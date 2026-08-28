@@ -1,14 +1,23 @@
-// constants/Config.js
-// Configuration and constants
+import Constants from 'expo-constants';
 
-// ── Production Server ─────────────────────────────────────────────────────────
-// Domain: sreelakshmicharity.org
-// Backend Django/Daphne runs on port 8000
+// ── Server IP & Host Configuration ──────────────────────────────────────────
+const LOCAL_IP = '10.108.62.21';
 const PRODUCTION_HOST = 'sreelakshmicharity.org';
 
+// Automatically detect host IP from Expo bundler, or fallback to LOCAL_IP / PRODUCTION_HOST
+const getHost = () => {
+  if (__DEV__) {
+    const manifestHost = Constants.expoConfig?.hostUri?.split(':')[0];
+    return manifestHost || LOCAL_IP;
+  }
+  return PRODUCTION_HOST;
+};
+
+const HOST = getHost();
+
 export const Config = {
-  API_BASE_URL: `http://${PRODUCTION_HOST}:8000/api`,
-  WS_BASE_URL:  `ws://${PRODUCTION_HOST}:8000/ws`,
+  API_BASE_URL: `http://${HOST}:8000/api`,
+  WS_BASE_URL:  `ws://${HOST}:8000/ws`,
   
   // Storage Keys
   ACCESS_TOKEN_KEY: 'sl_access_token',

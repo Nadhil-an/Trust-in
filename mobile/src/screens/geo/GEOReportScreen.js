@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   Alert, KeyboardAvoidingView, Platform, ActivityIndicator,
-} from 'react-native';
+} from 'react-native'; 
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
@@ -259,7 +260,7 @@ const GEOReportScreen = ({ route, navigation }) => {
         </View>
       </View>
 
-      <ScrollView
+      <KeyboardAwareScrollView enableOnAndroid={true} extraScrollHeight={20}
         contentContainerStyle={styles.scroll}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -404,7 +405,7 @@ const GEOReportScreen = ({ route, navigation }) => {
             </View>
           )}
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </KeyboardAvoidingView>
   );
 };

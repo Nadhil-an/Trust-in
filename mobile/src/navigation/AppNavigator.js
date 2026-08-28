@@ -24,6 +24,7 @@ import StaffReportsScreen from '../screens/staff/StaffReportsScreen';
 import AttendanceScreen from '../screens/staff/AttendanceScreen';
 import PaymentAdvanceScreen from '../screens/staff/PaymentAdvanceScreen';
 import AchievedPointsScreen from '../screens/staff/AchievedPointsScreen';
+import StaffLeaderboardScreen from '../screens/staff/StaffLeaderboardScreen';
 
 // Manager Screens
 import ManagerHomeScreen from '../screens/manager/ManagerHomeScreen';
@@ -31,6 +32,12 @@ import ManagerHomeScreen from '../screens/manager/ManagerHomeScreen';
 // Member Screens
 import MemberHomeScreen from '../screens/member/MemberHomeScreen';
 import MembershipPaymentScreen from '../screens/member/MembershipPaymentScreen';
+import MembershipCardScreen from '../screens/member/MembershipCardScreen';
+import DonationHistoryScreen from '../screens/member/DonationHistoryScreen';
+import ReportProblemScreen from '../screens/member/ReportProblemScreen';
+import EventsScreen from '../screens/member/EventsScreen';
+import EventDetailScreen from '../screens/member/EventDetailScreen';
+import UploadEventScreen from '../screens/staff/UploadEventScreen';
 
 // FAO Screens
 import FAOHomeScreen from '../screens/fao/FAOHomeScreen';
@@ -65,6 +72,9 @@ const sharedTabOptions = ({ route }) => ({
   tabBarIcon: ({ focused, color, size }) => {
     const icons = {
       Home: focused ? 'home' : 'home-outline',
+      Leaderboard: focused ? 'trophy' : 'trophy-outline',
+      Donation: focused ? 'heart' : 'heart-outline',
+      Events: focused ? 'calendar' : 'calendar-outline',
       Members: focused ? 'people' : 'people-outline',
       Assessments: focused ? 'clipboard' : 'clipboard-outline',
       Cases: focused ? 'file-tray-full' : 'file-tray-full-outline',
@@ -73,18 +83,17 @@ const sharedTabOptions = ({ route }) => ({
     };
     return <Ionicons name={icons[route.name]} size={size} color={color} />;
   },
-  tabBarActiveTintColor: Colors.primary,
+  tabBarActiveTintColor: '#0284c7',
   tabBarInactiveTintColor: Colors.gray400,
   tabBarStyle: { paddingBottom: 5, paddingTop: 5, height: 60, elevation: 10 },
-  tabBarLabelStyle: { fontSize: 11, fontWeight: '500', marginBottom: 5 },
+  tabBarLabelStyle: { fontSize: 11, fontWeight: '600', marginBottom: 5 },
 });
-
-const CasesTab = () => <Placeholder name="My Cases Tab" />;
 
 const StaffTabs = () => (
   <Tab.Navigator screenOptions={sharedTabOptions}>
     <Tab.Screen name="Home" component={StaffHomeScreen} />
-    <Tab.Screen name="Members" component={StaffMembersListScreen} />
+    <Tab.Screen name="Leaderboard" component={StaffLeaderboardScreen} />
+    <Tab.Screen name="Events" component={EventsScreen} />
     <Tab.Screen name="Profile" component={ProfileScreen} />
   </Tab.Navigator>
 );
@@ -100,7 +109,8 @@ const ManagerTabs = () => (
 const MemberTabs = () => (
   <Tab.Navigator screenOptions={sharedTabOptions}>
     <Tab.Screen name="Home" component={MemberHomeScreen} />
-    <Tab.Screen name="Cases" component={CasesTab} />
+    <Tab.Screen name="Donation" component={DonationHistoryScreen} />
+    <Tab.Screen name="Events" component={EventsScreen} />
     <Tab.Screen name="Profile" component={ProfileScreen} />
   </Tab.Navigator>
 );
@@ -146,6 +156,7 @@ const MainStack = () => {
       <Stack.Screen name="StaffMembersList" component={StaffMembersListScreen} />
       <Stack.Screen name="StaffDonationsList" component={StaffDonationsListScreen} />
       <Stack.Screen name="StaffAssessmentsList" component={StaffAssessmentsListScreen} />
+      <Stack.Screen name="StaffLeaderboard" component={StaffLeaderboardScreen} />
 
       {/* Staff Drawer Features */}
       <Stack.Screen name="StaffComplaints" component={ComplaintsScreen} />
@@ -157,6 +168,14 @@ const MainStack = () => {
       
       {/* Member Actions */}
       <Stack.Screen name="MembershipPayment" component={MembershipPaymentScreen} />
+      <Stack.Screen name="MembershipCard" component={MembershipCardScreen} />
+      <Stack.Screen name="DonationHistory" component={DonationHistoryScreen} />
+      <Stack.Screen name="ReportProblem" component={ReportProblemScreen} />
+      <Stack.Screen name="Events" component={EventsScreen} />
+      <Stack.Screen name="EventDetail" component={EventDetailScreen} />
+
+      {/* Staff / Data Entry Actions */}
+      <Stack.Screen name="UploadEvent" component={UploadEventScreen} />
       
       {/* Assessments (Staff/Member) */}
       <Stack.Screen name="NewAssessment" component={NewAssessmentScreen} />

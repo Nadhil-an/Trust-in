@@ -3,7 +3,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch,
   Alert, KeyboardAvoidingView, Platform, ActivityIndicator, Modal, FlatList,
-} from 'react-native';
+} from 'react-native'; 
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
@@ -269,7 +270,7 @@ const ACOCalculationScreen = ({ route, navigation }) => {
           </TouchableOpacity>
         </View>
 
-        <ScrollView
+        <KeyboardAwareScrollView enableOnAndroid={true} extraScrollHeight={20}
           contentContainerStyle={styles.scroll}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -434,7 +435,7 @@ const ACOCalculationScreen = ({ route, navigation }) => {
               {mode === 'edit' ? 'Updating will overwrite the previously submitted calculation.' : 'Submitting will forward this assessment with your cost estimate to the Manager for final decision.'}
             </Text>
           </View>
-        </ScrollView>
+        </KeyboardAwareScrollView>
       </KeyboardAvoidingView>
 
       <InventoryModal

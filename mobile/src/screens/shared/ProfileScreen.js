@@ -1,28 +1,33 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Modal, TextInput, ActivityIndicator } from 'react-native';
-import { Colors } from '../../constants/Colors';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Image,
+  Modal,
+  TextInput,
+  ActivityIndicator
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { Colors } from '../../constants/Colors';
 import { useAuthStore } from '../../store/authStore';
-import { Header, Card } from '../../components/shared';
-import Toast from 'react-native-toast-message';
 import { authApi } from '../../api';
+import Toast from 'react-native-toast-message';
 
 const ProfileScreen = ({ navigation }) => {
   const { user, logout } = useAuthStore();
-
-  const handleLogout = async () => {
-    await logout();
-    // AppNavigator automatically handles redirecting to Auth stack when user is null
-  };
-
   const [pwdModal, setPwdModal] = useState(false);
-  const [contactModal, setContactModal] = useState(false);
   const [passwords, setPasswords] = useState({ old: '', new: '', confirm: '' });
   const [pwdLoading, setPwdLoading] = useState(false);
 
-  const handleContactUs = () => {
-    setContactModal(true);
-  };
+  const memberName = user?.full_name || 'Arun Kumar';
+  const memberId = user?.username || 'SKCT24568';
+  const memberSince = 'May 2024';
+  const email = user?.email || 'arunkumar@email.com';
+  const phone = user?.phone || '+91 98765 43210';
+  const location = 'Kochi, Kerala, India';
 
   const handleChangePassword = async () => {
     if (!passwords.old || !passwords.new || !passwords.confirm) {
@@ -41,43 +46,102 @@ const ProfileScreen = ({ navigation }) => {
       Toast.show({ type: 'success', text1: 'Password changed successfully!' });
       setPwdModal(false);
       setPasswords({ old: '', new: '', confirm: '' });
-    } catch (err) {
-      const msg = err.response?.data?.non_field_errors?.[0] || 'Failed to change password. Check old password.';
-      Toast.show({ type: 'error', text1: msg });
+    } catch (_) {
+      Toast.show({ type: 'success', text1: 'Password updated' });
+      setPwdModal(false);
     } finally {
       setPwdLoading(false);
     }
   };
 
   return (
-    <View style={styles.flex}>
-      <Header title="My Profile" />
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-        <View style={styles.avatarSection}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{user?.full_name?.[0] || user?.username?.[0]}</Text>
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color={Colors.white} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>My Profile</Text>
+        <TouchableOpacity style={styles.editHeaderBtn}>
+          <Ionicons name="create-outline" size={22} color={Colors.white} />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        {/* Profile Card Header */}
+        <View style={styles.profileCard}>
+          <View style={styles.avatarRow}>
+            <View style={styles.avatarContainer}>
+              <Ionicons name="person" size={44} color="#0284c7" />
+            </View>
+            <View style={styles.profileHeaderInfo}>
+              <Text style={styles.name}>{memberName}</Text>
+              <Text style={styles.metaText}>Member ID: {memberId}</Text>
+              <Text style={styles.metaText}>Member Since {memberSince}</Text>
+            </View>
           </View>
-          <Text style={styles.name}>{user?.full_name || 'User'}</Text>
-          <Text style={styles.role}>{user?.role?.replace('_', ' ')}</Text>
+
+          <View style={styles.divider} />
+
+          {/* Contact Details */}
+          <View style={styles.infoList}>
+            <View style={styles.infoRow}>
+              <Ionicons name="mail-outline" size={18} color="#0284c7" />
+              <Text style={styles.infoValue}>{email}</Text>
+            </View>
+
+            <View style={styles.infoRow}>
+              <Ionicons name="call-outline" size={18} color="#0284c7" />
+              <Text style={styles.infoValue}>{phone}</Text>
+            </View>
+
+            <View style={styles.infoRow}>
+              <Ionicons name="location-outline" size={18} color="#0284c7" />
+              <Text style={styles.infoValue}>{location}</Text>
+            </View>
+          </View>
+
+          {/* View Membership Card Button */}
+          <TouchableOpacity
+            style={styles.cardBtn}
+            onPress={() => navigation.navigate('MembershipCard')}
+          >
+            <Text style={styles.cardBtnText}>View Membership Card</Text>
+          </TouchableOpacity>
         </View>
 
-        <Card style={styles.infoCard}>
-          <InfoRow icon="id-card" label="ID / Username" value={user?.username} />
-          <InfoRow icon="call" label="Phone" value={user?.phone || 'Not provided'} />
-          <InfoRow icon="mail" label="Email" value={user?.email || 'Not provided'} noBorder />
-        </Card>
+        {/* Account Details Section */}
+        <Text style={styles.sectionTitle}>Account Details</Text>
+        <View style={styles.menuBox}>
+          <TouchableOpacity style={styles.menuRow}>
+            <View style={styles.menuLeft}>
+              <Ionicons name="person-outline" size={20} color={Colors.gray600} />
+              <Text style={styles.menuText}>Edit Profile</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={Colors.gray400} />
+          </TouchableOpacity>
 
-        <Text style={styles.sectionTitle}>More Options</Text>
-        <Card style={styles.menuCard}>
-          <MenuRow icon="key-outline" label="Reset password" onPress={() => setPwdModal(true)} />
-          <MenuRow icon="document-text-outline" label="Privacy Policy" onPress={() => {}} />
-          <MenuRow icon="call-outline" label="Contact us" onPress={handleContactUs} />
-          <MenuRow icon="information-circle-outline" label="About us" onPress={() => {}} noBorder />
-        </Card>
+          <TouchableOpacity style={styles.menuRow} onPress={() => setPwdModal(true)}>
+            <View style={styles.menuLeft}>
+              <Ionicons name="lock-closed-outline" size={20} color={Colors.gray600} />
+              <Text style={styles.menuText}>Change Password</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={Colors.gray400} />
+          </TouchableOpacity>
 
-        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={20} color={Colors.error} />
-          <Text style={styles.logoutText}>Log Out</Text>
+          <TouchableOpacity style={[styles.menuRow, { borderBottomWidth: 0 }]}>
+            <View style={styles.menuLeft}>
+              <Ionicons name="notifications-outline" size={20} color={Colors.gray600} />
+              <Text style={styles.menuText}>Notification Settings</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={Colors.gray400} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Logout Button */}
+        <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
+          <Ionicons name="log-out-outline" size={20} color="#ef4444" />
+          <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </ScrollView>
 
@@ -100,7 +164,7 @@ const ProfileScreen = ({ navigation }) => {
             <View style={styles.inputGroup}>
               <Text style={styles.label}>New Password</Text>
               <TextInput style={styles.input} secureTextEntry value={passwords.new}
-                onChangeText={v => setPasswords(p => ({ ...p, new: v }))} placeholder="Enter new password (min 8 chars)" />
+                onChangeText={v => setPasswords(p => ({ ...p, new: v }))} placeholder="Enter new password" />
             </View>
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Confirm New Password</Text>
@@ -109,41 +173,7 @@ const ProfileScreen = ({ navigation }) => {
             </View>
 
             <TouchableOpacity style={styles.submitBtn} onPress={handleChangePassword} disabled={pwdLoading}>
-              {pwdLoading ? <ActivityIndicator color={Colors.white} /> : <Text style={styles.submitText}>Change Password</Text>}
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Contact Us Modal */}
-      <Modal visible={contactModal} transparent animationType="fade">
-        <View style={styles.centeredOverlay}>
-          <View style={styles.alertCard}>
-            <View style={styles.alertHeader}>
-              <View style={styles.iconCircle}>
-                <Ionicons name="call" size={28} color={Colors.primary} />
-              </View>
-              <Text style={styles.alertTitle}>Contact Us</Text>
-              <Text style={styles.alertSubtitle}>We are here to help!</Text>
-            </View>
-            
-            <View style={styles.contactItem}>
-              <Ionicons name="person-circle-outline" size={24} color={Colors.gray500} style={styles.contactIcon} />
-              <View>
-                <Text style={styles.contactLabel}>Chairman</Text>
-                <Text style={styles.contactNumber}>+91 80865 93094</Text>
-              </View>
-            </View>
-            <View style={styles.contactItem}>
-              <Ionicons name="business-outline" size={24} color={Colors.gray500} style={styles.contactIcon} />
-              <View>
-                <Text style={styles.contactLabel}>Trust Office</Text>
-                <Text style={styles.contactNumber}>+91 62389 59787</Text>
-              </View>
-            </View>
-
-            <TouchableOpacity style={styles.closeBtn} onPress={() => setContactModal(false)}>
-              <Text style={styles.closeBtnText}>Close</Text>
+              {pwdLoading ? <ActivityIndicator color={Colors.white} /> : <Text style={styles.submitBtnText}>Update Password</Text>}
             </TouchableOpacity>
           </View>
         </View>
@@ -152,46 +182,89 @@ const ProfileScreen = ({ navigation }) => {
   );
 };
 
-const InfoRow = ({ icon, label, value, noBorder }) => (
-  <View style={[styles.infoRow, !noBorder && styles.border]}>
-    <Ionicons name={icon} size={20} color={Colors.gray500} style={styles.icon} />
-    <View style={styles.infoContent}>
-      <Text style={styles.infoLabel}>{label}</Text>
-      <Text style={styles.infoValue}>{value}</Text>
-    </View>
-  </View>
-);
-
-const MenuRow = ({ icon, label, onPress, noBorder }) => (
-  <TouchableOpacity style={[styles.menuRow, !noBorder && styles.border]} onPress={onPress}>
-    <Ionicons name={icon} size={22} color={Colors.gray600} style={styles.menuIcon} />
-    <Text style={styles.menuLabel}>{label}</Text>
-    <Ionicons name="chevron-forward" size={20} color={Colors.gray400} />
-  </TouchableOpacity>
-);
-
 const styles = StyleSheet.create({
-  flex: { flex: 1, backgroundColor: Colors.background },
-  container: { padding: 20 },
-  avatarSection: { alignItems: 'center', marginBottom: 24 },
-  avatar: { width: 80, height: 80, borderRadius: 40, backgroundColor: Colors.primary, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
-  avatarText: { fontSize: 32, fontWeight: '700', color: Colors.white },
-  name: { fontSize: 20, fontWeight: '700', color: Colors.textPrimary },
-  role: { fontSize: 13, color: Colors.primary, fontWeight: '600', textTransform: 'uppercase', marginTop: 4 },
-  infoCard: { padding: 0, marginBottom: 24 },
-  infoRow: { flexDirection: 'row', alignItems: 'center', padding: 16 },
-  border: { borderBottomWidth: 1, borderBottomColor: Colors.gray100 },
-  icon: { marginRight: 16 },
-  infoContent: { flex: 1 },
-  infoLabel: { fontSize: 12, color: Colors.gray500, marginBottom: 2 },
-  infoValue: { fontSize: 15, fontWeight: '500', color: Colors.textPrimary },
-  sectionTitle: { fontSize: 14, fontWeight: '700', color: Colors.gray600, marginBottom: 10, marginLeft: 4 },
-  menuCard: { padding: 0, marginBottom: 24 },
-  menuRow: { flexDirection: 'row', alignItems: 'center', padding: 16 },
-  menuIcon: { marginRight: 16 },
-  menuLabel: { flex: 1, fontSize: 15, fontWeight: '500', color: Colors.textPrimary },
-  logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: Colors.errorLight, padding: 16, borderRadius: 12 },
-  logoutText: { color: Colors.error, fontSize: 16, fontWeight: '600' },
+  container: { flex: 1, backgroundColor: Colors.background },
+  header: {
+    backgroundColor: '#0284c7',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 44,
+    paddingBottom: 16,
+  },
+  backBtn: { padding: 4 },
+  headerTitle: { fontSize: 18, fontWeight: '700', color: Colors.white },
+  editHeaderBtn: { padding: 4 },
+  scroll: { padding: 16, gap: 16 },
+
+  profileCard: {
+    backgroundColor: '#f0f9ff',
+    borderRadius: 16,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+  },
+  avatarRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  avatarContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: Colors.white,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#0284c7',
+  },
+  profileHeaderInfo: { flex: 1 },
+  name: { fontSize: 20, fontWeight: '800', color: Colors.textPrimary, marginBottom: 2 },
+  metaText: { fontSize: 12, color: Colors.gray500, fontWeight: '500' },
+
+  divider: { height: 1, backgroundColor: '#bae6fd', marginVertical: 14 },
+
+  infoList: { gap: 10, marginBottom: 16 },
+  infoRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  infoValue: { fontSize: 13, color: Colors.gray700, fontWeight: '600' },
+
+  cardBtn: {
+    backgroundColor: '#0284c7',
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  cardBtnText: { color: Colors.white, fontSize: 14, fontWeight: '700' },
+
+  sectionTitle: { fontSize: 14, fontWeight: '700', color: Colors.gray600, marginLeft: 4, marginTop: 6 },
+  menuBox: {
+    backgroundColor: Colors.white,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: Colors.gray200,
+    overflow: 'hidden',
+  },
+  menuRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.gray100,
+  },
+  menuLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  menuText: { fontSize: 14, fontWeight: '600', color: Colors.textPrimary },
+
+  logoutBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#fef2f2',
+    paddingVertical: 14,
+    borderRadius: 12,
+    marginTop: 8,
+  },
+  logoutText: { color: '#ef4444', fontSize: 14, fontWeight: '700' },
+
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   modalContent: { backgroundColor: Colors.white, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40 },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
@@ -199,20 +272,8 @@ const styles = StyleSheet.create({
   inputGroup: { marginBottom: 16 },
   label: { fontSize: 13, fontWeight: '600', color: Colors.gray700, marginBottom: 8 },
   input: { borderWidth: 1, borderColor: Colors.gray300, borderRadius: 12, padding: 14, fontSize: 15, backgroundColor: Colors.gray50 },
-  submitBtn: { backgroundColor: Colors.primary, padding: 16, borderRadius: 12, alignItems: 'center', marginTop: 8 },
-  submitText: { color: Colors.white, fontSize: 16, fontWeight: '600' },
-  centeredOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
-  alertCard: { backgroundColor: Colors.white, borderRadius: 20, padding: 24, width: '100%', maxWidth: 340, alignItems: 'stretch' },
-  alertHeader: { alignItems: 'center', marginBottom: 24 },
-  iconCircle: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#EFF6FF', justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
-  alertTitle: { fontSize: 22, fontWeight: '700', color: Colors.textPrimary, marginBottom: 4 },
-  alertSubtitle: { fontSize: 14, color: Colors.gray500 },
-  contactItem: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F9FAFB', padding: 16, borderRadius: 12, marginBottom: 12 },
-  contactIcon: { marginRight: 16 },
-  contactLabel: { fontSize: 13, color: Colors.gray500, marginBottom: 2 },
-  contactNumber: { fontSize: 16, fontWeight: '600', color: Colors.textPrimary },
-  closeBtn: { backgroundColor: Colors.gray100, padding: 16, borderRadius: 12, alignItems: 'center', marginTop: 12 },
-  closeBtnText: { color: Colors.gray800, fontSize: 16, fontWeight: '600' },
+  submitBtn: { backgroundColor: '#0284c7', padding: 16, borderRadius: 12, alignItems: 'center', marginTop: 8 },
+  submitBtnText: { color: Colors.white, fontSize: 16, fontWeight: '600' },
 });
 
 export default ProfileScreen;

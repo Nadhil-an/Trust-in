@@ -166,7 +166,7 @@ CORS_ALLOWED_ORIGINS = os.getenv(
     'CORS_ALLOWED_ORIGINS',
     'http://localhost:5173,http://127.0.0.1:5173,http://localhost:8081,http://10.108.62.21:8081,http://10.108.62.21:19000,http://10.108.62.21:19006'
 ).split(',')
-CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_ALL_ORIGINS = DEBUG  # Allow all origins in development mode for mobile LAN access
 CORS_ALLOW_CREDENTIALS = True
 
 # ── Static & Media ────────────────────────────────────────────────

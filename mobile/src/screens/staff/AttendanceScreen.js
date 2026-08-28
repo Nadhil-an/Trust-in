@@ -84,6 +84,20 @@ export default function AttendanceScreen({ navigation, route }) {
     }
   };
 
+  const currentHour = new Date().getHours();
+  const isBefore8AM = currentHour < 8;
+
+  const isCheckedOut = !!(todayAtt && todayAtt.check_out);
+  const isCheckedIn = !!(todayAtt && todayAtt.check_in && !todayAtt.check_out);
+
+  const checkInDisplay = isCheckedOut 
+    ? '00:00' 
+    : (todayAtt && todayAtt.check_in ? todayAtt.check_in.substring(0, 5) : '00:00');
+
+  const checkOutDisplay = isCheckedOut 
+    ? '00:00' 
+    : (todayAtt && todayAtt.check_out ? todayAtt.check_out.substring(0, 5) : '00:00');
+
   const presentCount = records.filter(r => r.status === 'PRESENT').length;
   const absentCount = records.filter(r => r.status === 'ABSENT').length;
   const leaveCount = records.filter(r => r.status === 'LEAVE').length;
@@ -121,7 +135,7 @@ export default function AttendanceScreen({ navigation, route }) {
 
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={'#1A74EE'} />
         </View>
       ) : (
         <FlatList
@@ -137,7 +151,7 @@ export default function AttendanceScreen({ navigation, route }) {
                 <View style={styles.todayHeader}>
                   <View>
                     <Text style={styles.todayTitle}>Today's Attendance</Text>
-                    <Text style={{ fontSize: 10, color: Colors.primary, fontWeight: '700', marginTop: 2 }}>
+                    <Text style={{ fontSize: 10, color: '#1A74EE', fontWeight: '700', marginTop: 2 }}>
                       ⏰ Resets Daily at 8:00 AM
                     </Text>
                   </View>
@@ -147,40 +161,31 @@ export default function AttendanceScreen({ navigation, route }) {
                 <View style={styles.timeRow}>
                   <View style={styles.timeBox}>
                     <Text style={styles.timeLabel}>CHECK IN</Text>
-                    <Text style={styles.timeVal}>
-                      {todayAtt && todayAtt.check_in ? todayAtt.check_in.substring(0, 5) : '--:--'}
-                    </Text>
+                    <Text style={styles.timeVal}>{checkInDisplay}</Text>
                   </View>
 
                   <View style={styles.timeBox}>
                     <Text style={styles.timeLabel}>CHECK OUT</Text>
-                    <Text style={styles.timeVal}>
-                      {todayAtt && todayAtt.check_out ? todayAtt.check_out.substring(0, 5) : '--:--'}
-                    </Text>
+                    <Text style={styles.timeVal}>{checkOutDisplay}</Text>
                   </View>
                 </View>
 
                 {/* Buttons */}
                 <View style={styles.btnRow}>
-                  {(!todayAtt || !todayAtt.check_in) ? (
+                  {isCheckedOut ? (
                     <TouchableOpacity
-                      style={[styles.actionBtn, styles.checkInBtn]}
-                      disabled={submitting}
-                      onPress={() => handleAction('check_in')}
+                      style={[styles.actionBtn, { backgroundColor: '#94a3b8' }]}
+                      disabled={true}
                     >
-                      {submitting ? (
-                        <ActivityIndicator color="#ffffff" />
-                      ) : (
-                        <>
-                          <Ionicons name="log-in-outline" size={20} color="#ffffff" />
-                          <Text style={styles.actionBtnText}>Check In Now</Text>
-                        </>
-                      )}
+                      <Ionicons name="log-out-outline" size={20} color="#ffffff" />
+                      <Text style={styles.actionBtnText}>
+                        {isBefore8AM ? 'Check-In Opens at 8:00 AM' : 'Checked Out'}
+                      </Text>
                     </TouchableOpacity>
-                  ) : (
+                  ) : isCheckedIn ? (
                     <TouchableOpacity
-                      style={[styles.actionBtn, styles.checkOutBtn, todayAtt.check_out && { backgroundColor: '#94a3b8' }]}
-                      disabled={submitting || !!todayAtt.check_out}
+                      style={[styles.actionBtn, styles.checkOutBtn]}
+                      disabled={submitting}
                       onPress={() => handleAction('check_out')}
                     >
                       {submitting ? (
@@ -188,8 +193,23 @@ export default function AttendanceScreen({ navigation, route }) {
                       ) : (
                         <>
                           <Ionicons name="log-out-outline" size={20} color="#ffffff" />
+                          <Text style={styles.actionBtnText}>Check Out Now</Text>
+                        </>
+                      )}
+                    </TouchableOpacity>
+                  ) : (
+                    <TouchableOpacity
+                      style={[styles.actionBtn, isBefore8AM ? { backgroundColor: '#94a3b8' } : styles.checkInBtn]}
+                      disabled={submitting || isBefore8AM}
+                      onPress={() => handleAction('check_in')}
+                    >
+                      {submitting ? (
+                        <ActivityIndicator color="#ffffff" />
+                      ) : (
+                        <>
+                          <Ionicons name={isBefore8AM ? "time-outline" : "log-in-outline"} size={20} color="#ffffff" />
                           <Text style={styles.actionBtnText}>
-                            {todayAtt.check_out ? 'Checked Out' : 'Check Out Now'}
+                            {isBefore8AM ? 'Check-In Opens at 8:00 AM' : 'Check In Now'}
                           </Text>
                         </>
                       )}
@@ -245,7 +265,7 @@ const styles = StyleSheet.create({
   },
   headerBar: {
     minHeight: 60,
-    backgroundColor: Colors.primary,
+    backgroundColor: '#1A74EE',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -291,7 +311,7 @@ const styles = StyleSheet.create({
   todayDate: {
     fontSize: 12,
     fontWeight: '600',
-    color: Colors.primary,
+    color: '#1A74EE',
   },
   timeRow: {
     flexDirection: 'row',
@@ -331,7 +351,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#16a34a',
   },
   checkOutBtn: {
-    backgroundColor: Colors.primary,
+    backgroundColor: '#1A74EE',
   },
   actionBtnText: {
     color: '#ffffff',

@@ -10,23 +10,20 @@ import {
   Modal,
   SafeAreaView,
   ScrollView,
+  Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/Colors';
 import { useAuthStore } from '../store/authStore';
-import { useTranslation } from 'react-i18next';
 import { Roles } from '../constants/Config';
-import { changeLanguage } from '../i18n';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const DRAWER_WIDTH = SCREEN_WIDTH * 0.78;
+const DRAWER_WIDTH = SCREEN_WIDTH * 0.82;
 
 export const SideDrawer = ({ visible, onClose, navigation, currentRoute = 'Home' }) => {
   const slideAnim = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const { user, logout } = useAuthStore();
-  const { t, i18n } = useTranslation();
-  const currentLang = i18n.language || 'en';
 
   useEffect(() => {
     if (visible) {
@@ -72,35 +69,37 @@ export const SideDrawer = ({ visible, onClose, navigation, currentRoute = 'Home'
     await logout();
   };
 
+  // Standard Menu Items (For Members, etc.)
+  const primaryMenu = [
+    { name: 'Home', label: 'Home', icon: 'home', route: 'Root' },
+    { name: 'MyDonation', label: 'My Donation', icon: 'heart', route: 'DonationHistory' },
+    { name: 'ReportProblem', label: 'Report a Problem', icon: 'warning', route: 'ReportProblem' },
+    { name: 'Events', label: 'Events', icon: 'calendar', route: 'Events' },
+    { name: 'MyProfile', label: 'My Profile', icon: 'person', route: 'Profile' },
+  ];
+
+  // Exact Staff Menu Items based on screenshot reference
   const staffMenu = [
-    { name: 'Home', label: 'Home Dashboard', icon: 'home', route: 'Root' },
-    { name: 'Complaints', label: 'Complaint Desk', icon: 'chatbubbles', route: 'StaffComplaints' },
-    { name: 'Reports', label: 'Report Submission', icon: 'document-text', route: 'StaffReports' },
-    { name: 'Attendance', label: 'Daily Attendance', icon: 'calendar-number', route: 'StaffAttendance' },
-    { name: 'Advance', label: 'Payment Advance', icon: 'cash', route: 'StaffPaymentAdvance' },
-    { name: 'Points', label: 'Achieved Points', icon: 'trophy', route: 'StaffAchievedPoints' },
+    { name: 'Home', label: 'Home', icon: 'home', route: 'Root' },
+    { name: 'MyDonation', label: 'My Donation', icon: 'heart', route: 'StaffDonationsList' }, // Using StaffDonations for staff
+    { name: 'ReportProblem', label: 'Report a Problem', icon: 'warning', route: 'StaffComplaints' },
+    { name: 'Events', label: 'Events', icon: 'calendar', route: 'Events' },
+    { name: 'Attendance', label: 'Attendance', icon: 'calendar', route: 'StaffAttendance' },
+    { name: 'SalaryAdvance', label: 'Salary Advance', icon: 'cash', route: 'StaffPaymentAdvance' },
+    { name: 'UploadReport', label: 'Upload Report', icon: 'cloud-upload', route: 'UploadEvent' },
   ];
 
-  const managerMenu = [
-    { name: 'Home', label: 'Home Dashboard', icon: 'home', route: 'Root' },
-    { name: 'Members', label: 'Staff Members', icon: 'people', route: 'StaffMembersList' },
-    { name: 'Attendance', label: 'Staff Attendance', icon: 'calendar-number', route: 'StaffAttendance' },
-    { name: 'Complaints', label: 'Complaints Overview', icon: 'chatbubbles', route: 'StaffComplaints' },
+  // Group 2 Menu Items (Shared)
+  const secondaryMenu = [
+    { name: 'AboutUs', label: 'About Us', icon: 'information-circle-outline', route: 'AboutUs' },
+    { name: 'ContactUs', label: 'Contact Us', icon: 'call-outline', route: 'ContactUs' },
+    { name: 'Settings', label: 'Settings', icon: 'settings-outline', route: 'Profile' },
   ];
 
-  const memberMenu = [
-    { name: 'Home', label: 'Home Dashboard', icon: 'home', route: 'Root' },
-    { name: 'NewAssessment', label: 'New Assessment', icon: 'clipboard', route: 'NewAssessment' },
-    { name: 'Payment', label: 'Membership Payment', icon: 'card', route: 'MembershipPayment' },
-  ];
-
-  const basicMenu = [
-    { name: 'Home', label: 'Home Dashboard', icon: 'home', route: 'Root' },
-  ];
-
-  let menuItems = staffMenu;
-  if (user?.role === Roles.MANAGER) menuItems = managerMenu;
-  else if (user?.role === Roles.MEMBER) menuItems = memberMenu;
+  const isStaffOrManager = user?.role === Roles.STAFF || user?.role === Roles.MANAGER;
+  
+  // Decide which primary menu to use
+  const activePrimaryMenu = isStaffOrManager ? staffMenu : primaryMenu;
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
@@ -113,93 +112,109 @@ export const SideDrawer = ({ visible, onClose, navigation, currentRoute = 'Home'
         {/* Drawer Container */}
         <Animated.View style={[styles.drawer, { transform: [{ translateX: slideAnim }] }]}>
           <SafeAreaView style={styles.safeArea}>
-            {/* Header / Profile Card */}
-            <View style={styles.drawerHeader}>
-              <View style={styles.avatarContainer}>
-                <Text style={styles.avatarText}>
-                  {user?.full_name ? user.full_name.charAt(0).toUpperCase() : 'S'}
-                </Text>
+            
+            {/* Top Bar with X Close Button */}
+            <View style={styles.topCloseRow}>
+              <TouchableOpacity style={styles.closeBtn} onPress={onClose} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                <Ionicons name="close" size={24} color="#17202A" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Organization Branding */}
+            <View style={styles.brandContainer}>
+              <View style={styles.logoRing}>
+                <Image
+                  source={require('../../assets/icon.png')}
+                  style={styles.logoImage}
+                  resizeMode="contain"
+                />
               </View>
-              <View style={styles.userInfo}>
-                <Text style={styles.userName} numberOfLines={1}>
-                  {user?.full_name || 'Staff Member'}
-                </Text>
-                <Text style={styles.userRole}>
-                  {user?.role ? user.role.replace(/_/g, ' ') : 'Sree Lakshmi Staff'}
-                </Text>
+              <View style={styles.brandTextGroup}>
+                <Text style={styles.brandTitle}>SREELAKSHMI</Text>
+                <Text style={styles.brandSubtitle}>CHARITABLE TRUST</Text>
               </View>
             </View>
 
-            {/* Menu List */}
-            <ScrollView style={styles.menuContainer} showsVerticalScrollIndicator={false}>
-              <Text style={styles.sectionHeader}>NAVIGATION MENU</Text>
-              {menuItems.map((item) => {
-                const isActive = currentRoute === item.route || currentRoute === item.name;
+            {/* Navigation List */}
+            <ScrollView style={styles.menuScroll} showsVerticalScrollIndicator={false}>
+              
+              {/* Group 1 */}
+              {activePrimaryMenu.map((item) => {
+                const isActive = currentRoute === item.route || (item.name === 'Home' && currentRoute === 'Home');
                 return (
                   <TouchableOpacity
                     key={item.name}
                     style={[styles.menuItem, isActive && styles.menuItemActive]}
                     onPress={() => navigateTo(item.route)}
                   >
-                    <View style={[styles.iconCircle, isActive && styles.iconCircleActive]}>
-                      <Ionicons
-                        name={item.icon}
-                        size={20}
-                        color={isActive ? Colors.primary : Colors.gray600}
-                      />
-                    </View>
-                    <Text style={[styles.menuText, isActive && styles.menuTextActive]}>
+                    <Ionicons
+                      name={item.icon}
+                      size={20}
+                      color={isActive ? '#1689D8' : '#1689D8'} // Keep icons blue as per screenshot
+                      style={styles.menuIcon}
+                    />
+                    <Text style={[styles.menuLabel, isActive && styles.menuLabelActive]}>
                       {item.label}
                     </Text>
                     <Ionicons
                       name="chevron-forward"
                       size={16}
-                      color={isActive ? Colors.primary : Colors.gray400}
+                      color={isActive ? '#1689D8' : '#A0AEC0'}
+                      style={{ opacity: isActive ? 1 : 0 }} // Only show arrow on active (Home) as per screenshot
                     />
                   </TouchableOpacity>
                 );
               })}
 
+              {/* Staff / Manager Special Upload Action is now integrated in staffMenu, so we remove the extra conditional render */}
+
+              {/* Divider 1 */}
               <View style={styles.divider} />
 
-              {/* Language Switcher */}
-              <View style={styles.langContainer}>
-                <View style={styles.langHeaderRow}>
-                  <Ionicons name="globe-outline" size={18} color={Colors.gray600} style={{ marginRight: 8 }} />
-                  <Text style={styles.langTitle}>{currentLang.startsWith('ml') ? 'ഭാഷ തിരഞ്ഞെടുക്കുക' : 'Language'}</Text>
-                </View>
-                <View style={styles.langToggleBox}>
-                  <TouchableOpacity
-                    style={[styles.langBtn, !currentLang.startsWith('ml') && styles.langBtnActive]}
-                    onPress={() => changeLanguage('en', user?.id)}
-                  >
-                    <Text style={[styles.langBtnText, !currentLang.startsWith('ml') && styles.langBtnTextActive]}>English</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.langBtn, currentLang.startsWith('ml') && styles.langBtnActive]}
-                    onPress={() => changeLanguage('ml', user?.id)}
-                  >
-                    <Text style={[styles.langBtnText, currentLang.startsWith('ml') && styles.langBtnTextActive]}>മലയാളം</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
+              {/* Group 2 */}
+              {secondaryMenu.map((item) => (
+                <TouchableOpacity
+                  key={item.name}
+                  style={styles.menuItem}
+                  onPress={() => navigateTo(item.route)}
+                >
+                  <Ionicons
+                    name={item.icon}
+                    size={20}
+                    color="#17202A"
+                    style={styles.menuIcon}
+                  />
+                  <Text style={styles.menuLabel}>{item.label}</Text>
+                  <Ionicons name="chevron-forward" size={16} color="#A0AEC0" />
+                </TouchableOpacity>
+              ))}
 
-              <TouchableOpacity style={styles.menuItem} onPress={() => navigateTo('Profile')}>
-                <View style={styles.iconCircle}>
-                  <Ionicons name="person-outline" size={20} color={Colors.gray600} />
-                </View>
-                <Text style={styles.menuText}>My Profile</Text>
+              {/* Divider 2 */}
+              <View style={styles.divider} />
+
+              {/* Logout Item */}
+              <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
+                <Ionicons name="log-out-outline" size={20} color="#17202A" style={styles.menuIcon} />
+                <Text style={styles.menuLabel}>Logout</Text>
+                <Ionicons name="chevron-forward" size={16} color="#A0AEC0" />
               </TouchableOpacity>
+
             </ScrollView>
 
-            {/* Logout Footer */}
-            <View style={styles.drawerFooter}>
-              <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-                <Ionicons name="log-out-outline" size={20} color="#ef4444" />
-                <Text style={styles.logoutText}>Logout Account</Text>
-              </TouchableOpacity>
-              <Text style={styles.versionText}>Sree Lakshmi Trust • v1.0.0</Text>
+            {/* Bottom Wave Decoration & Charity Message */}
+            <View style={styles.footerContainer}>
+              {/* Soft Wave Overlays */}
+              <View style={styles.waveLayer1} />
+              <View style={styles.waveLayer2} />
+
+              {/* Center Quote & Heart */}
+              <View style={styles.quoteBox}>
+                <Text style={styles.scriptTextMain}>Together</Text>
+                <Text style={styles.scriptTextSub}>for a Better Tomorrow</Text>
+                <Ionicons name="heart" size={18} color="#1689D8" style={{ marginTop: 6 }} />
+              </View>
             </View>
+
           </SafeAreaView>
         </Animated.View>
       </View>
@@ -214,180 +229,151 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(15, 23, 42, 0.55)',
+    backgroundColor: 'rgba(23, 32, 42, 0.4)',
   },
   drawer: {
     width: DRAWER_WIDTH,
     height: '100%',
-    backgroundColor: '#ffffff',
+    backgroundColor: '#FFFFFF',
     elevation: 20,
     shadowColor: '#000000',
     shadowOffset: { width: 4, height: 0 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.15,
     shadowRadius: 10,
   },
   safeArea: {
     flex: 1,
+    backgroundColor: '#FFFFFF',
   },
-  drawerHeader: {
-    backgroundColor: Colors.navy,
-    padding: 20,
-    paddingTop: 24,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderBottomLeftRadius: 16,
-    borderBottomRightRadius: 16,
-  },
-  avatarContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#ffffff',
-  },
-  avatarText: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#ffffff',
-  },
-  userInfo: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  userName: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-  userRole: {
-    fontSize: 11,
-    color: 'rgba(255, 255, 255, 0.8)',
-    marginTop: 2,
-    fontWeight: '500',
+  topCloseRow: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 8,
   },
   closeBtn: {
-    padding: 6,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 20,
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  menuContainer: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 20,
+  brandContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    gap: 12,
   },
-  sectionHeader: {
+  logoRing: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 2,
+    borderColor: '#1689D8',
+    alignItems: 'center',
+    justify: 'center',
+    overflow: 'hidden',
+    backgroundColor: '#F5FBFF',
+  },
+  logoImage: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+  },
+  brandTextGroup: {
+    justify: 'center',
+  },
+  brandTitle: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#1689D8',
+    letterSpacing: 0.8,
+  },
+  brandSubtitle: {
     fontSize: 11,
     fontWeight: '800',
-    color: Colors.gray400,
-    letterSpacing: 1,
-    marginBottom: 12,
-    paddingLeft: 8,
+    color: '#1689D8',
+    letterSpacing: 0.5,
+  },
+  menuScroll: {
+    flex: 1,
+    paddingHorizontal: 16,
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-    marginBottom: 6,
+    paddingVertical: 13,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    marginBottom: 4,
   },
   menuItemActive: {
-    backgroundColor: 'rgba(27, 47, 107, 0.08)',
+    backgroundColor: '#EAF7FF',
   },
-  iconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: Colors.gray100,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
+  menuIcon: {
+    marginRight: 14,
   },
-  iconCircleActive: {
-    backgroundColor: 'rgba(27, 47, 107, 0.15)',
-  },
-  menuText: {
+  menuLabel: {
     flex: 1,
     fontSize: 14,
     fontWeight: '600',
-    color: Colors.gray700,
+    color: '#17202A',
   },
-  menuTextActive: {
-    color: Colors.primary,
+  menuLabelActive: {
+    color: '#1689D8',
     fontWeight: '700',
   },
   divider: {
     height: 1,
-    backgroundColor: Colors.gray200,
-    marginVertical: 12,
+    backgroundColor: '#EDF2F7',
+    marginVertical: 10,
     marginHorizontal: 8,
   },
-  langContainer: {
-    paddingHorizontal: 8,
-    marginBottom: 12,
-  },
-  langHeaderRow: {
-    flexDirection: 'row',
+  footerContainer: {
+    height: 130,
+    position: 'relative',
+    justify: 'center',
     alignItems: 'center',
-    marginBottom: 8,
+    overflow: 'hidden',
+    backgroundColor: '#FFFFFF',
   },
-  langTitle: {
-    fontSize: 12,
+  waveLayer1: {
+    position: 'absolute',
+    bottom: 0,
+    left: -40,
+    right: -40,
+    height: 100,
+    backgroundColor: '#EAF7FF',
+    borderTopLeftRadius: 180,
+    borderTopRightRadius: 180,
+  },
+  waveLayer2: {
+    position: 'absolute',
+    bottom: -15,
+    left: -20,
+    right: -20,
+    height: 80,
+    backgroundColor: '#BAE6FD',
+    borderTopLeftRadius: 140,
+    borderTopRightRadius: 140,
+    opacity: 0.5,
+  },
+  quoteBox: {
+    alignItems: 'center',
+    zIndex: 2,
+    marginBottom: 10,
+  },
+  scriptTextMain: {
+    fontSize: 17,
     fontWeight: '700',
-    color: Colors.gray700,
+    color: '#1689D8',
+    fontStyle: 'italic',
   },
-  langToggleBox: {
-    flexDirection: 'row',
-    backgroundColor: Colors.gray100,
-    borderRadius: 10,
-    padding: 3,
-  },
-  langBtn: {
-    flex: 1,
-    paddingVertical: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 8,
-  },
-  langBtnActive: {
-    backgroundColor: Colors.navy,
-  },
-  langBtnText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: Colors.gray600,
-  },
-  langBtnTextActive: {
-    color: Colors.white,
-    fontWeight: '700',
-  },
-  drawerFooter: {
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: Colors.gray200,
-  },
-  logoutBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    backgroundColor: '#fef2f2',
-    borderRadius: 12,
-    gap: 8,
-  },
-  logoutText: {
-    color: '#ef4444',
+  scriptTextSub: {
     fontSize: 14,
-    fontWeight: '700',
-  },
-  versionText: {
-    fontSize: 10,
-    color: Colors.gray400,
-    textAlign: 'center',
-    marginTop: 10,
+    fontWeight: '600',
+    color: '#1689D8',
+    fontStyle: 'italic',
+    marginTop: -2,
   },
 });
 
