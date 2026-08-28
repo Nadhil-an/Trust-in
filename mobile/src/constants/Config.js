@@ -3,7 +3,7 @@ import Constants from 'expo-constants';
 // ── Server IP & Host Configuration ──────────────────────────────────────────
 const LOCAL_IP = '10.108.62.21';
 // ⬇️  UPDATE THIS to your EC2 domain or IP when deploying
-const PRODUCTION_HOST = 'sreelakshmicharity.org';
+const PRODUCTION_HOST = 'internalapi.sreelakshmicharity.org';
 
 // Automatically detect host IP from Expo bundler, or fallback to LOCAL_IP / PRODUCTION_HOST
 const getHost = () => {
