@@ -138,6 +138,7 @@ const AddMemberScreen = ({ navigation, route }) => {
         id_type: editItem.id_type || '', id_number: editItem.id_number || '',
         payment_mode: editItem.payment_mode || 'Cash', amount: '100', payment_date: new Date().toISOString().split('T')[0],
         transaction_id: editItem.transaction_id || '', notes: '', temp_password: '',
+        voucher_id: editItem.reference_number || editItem.receipt_number || '',
       });
     }
   }, [editItem]);
@@ -150,7 +151,9 @@ const AddMemberScreen = ({ navigation, route }) => {
       staffApi.vouchers.get(user.id)
         .then(res => {
           setVoucher(res.data);
-          set('voucher_id', String(res.data.current_voucher));
+          if (!isEdit) {
+            set('voucher_id', String(res.data.current_voucher));
+          }
         })
         .catch(err => console.log('No voucher assigned or offline', err));
     }
@@ -344,9 +347,9 @@ const AddMemberScreen = ({ navigation, route }) => {
       case 0:
         return (
           <>
-            <SectionHeader title="1. Personal Information" icon="person-outline" />
+            <SectionHeader title={t('staff.personal_info')} icon="person-outline" />
             <View style={styles.card}>
-              <Text style={styles.inputLabel}>Add Photo</Text>
+              <Text style={styles.inputLabel}>{t('staff.add_photo', 'Add Photo')}</Text>
               <View style={{ alignItems: 'center', marginBottom: 16 }}>
                 <View style={styles.photoUploadBox}>
                   <PhotoPicker photos={photos} onPhotosChange={setPhotos} maxPhotos={1} customIcon="camera" customLabel="Add Photo" />
@@ -354,16 +357,16 @@ const AddMemberScreen = ({ navigation, route }) => {
                 <Text style={styles.photoHint}>Upload a clear member photo</Text>
               </View>
 
-              <Input label="Full Name" value={form.full_name} onChangeText={v => set('full_name', v)} placeholder="Enter full name" required error={errors.full_name} icon="person-outline" />
+              <Input label={t('staff.full_name')} value={form.full_name} onChangeText={v => set('full_name', v)} placeholder={t('staff.full_name_placeholder')} required error={errors.full_name} icon="person-outline" />
               
-              <Text style={styles.inputLabel}>Phone (for WhatsApp receipt) <Text style={{ color: Colors.error }}>*</Text></Text>
+              <Text style={styles.inputLabel}>{t('staff.phone_whatsapp')} <Text style={{ color: Colors.error }}>*</Text></Text>
               <View style={[styles.phoneInputWrapper, errors.phone && styles.inputError]}>
                 <Ionicons name="call-outline" size={20} color="#64748B" style={styles.phoneInputIcon} />
                 <TextInput
                   style={styles.phoneInput}
                   value={form.phone}
                   onChangeText={v => set('phone', v)}
-                  placeholder="10-digit number"
+                  placeholder={t('staff.phone_placeholder')}
                   placeholderTextColor="#94A3B8"
                   keyboardType="numeric"
                   maxLength={10}
@@ -426,27 +429,27 @@ const AddMemberScreen = ({ navigation, route }) => {
                 </View>
               )}
 
-              <Input label="Email Address" value={form.email} onChangeText={v => set('email', v)} type="email" placeholder="Enter email address" error={errors.email} icon="mail-outline" />
-              <Input label="Age" value={form.age} onChangeText={v => set('age', v)} type="number" placeholder="Enter age" required error={errors.age} icon="calendar-outline" />
-              <SelectField label="Gender" icon="male-female-outline" value={form.gender} placeholder="Select gender" onPress={() => openSheet('Select Gender', GENDER_OPTIONS, 'gender')} required error={errors.gender} />
-              <Input label="Address" value={form.address} onChangeText={v => set('address', v)} placeholder="Enter full address" required error={errors.address} icon="home-outline" />
-              <Input label="District" value={form.district} onChangeText={v => set('district', v)} placeholder="Select district" required error={errors.district} icon="location-outline" />
-              <Input label="State" value={form.state} onChangeText={v => set('state', v)} placeholder="Select state" required error={errors.state} icon="map-outline" />
-              <Input label="Pincode" value={form.pincode} onChangeText={v => set('pincode', v)} type="number" placeholder="Enter pincode" required error={errors.pincode} maxLength={6} icon="mail-unread-outline" />
+              <Input label={t('staff.email')} value={form.email} onChangeText={v => set('email', v)} type="email" placeholder={t('staff.email')} error={errors.email} icon="mail-outline" />
+              <Input label={t('staff.age')} value={form.age} onChangeText={v => set('age', v)} type="number" placeholder={t('staff.age')} required error={errors.age} icon="calendar-outline" />
+              <SelectField label={t('staff.gender')} icon="male-female-outline" value={form.gender} placeholder={t('staff.gender')} onPress={() => openSheet(t('staff.gender'), GENDER_OPTIONS, 'gender')} required error={errors.gender} />
+              <Input label={t('staff.address')} value={form.address} onChangeText={v => set('address', v)} placeholder={t('staff.address')} required error={errors.address} icon="home-outline" />
+              <Input label={t('staff.district')} value={form.district} onChangeText={v => set('district', v)} placeholder={t('staff.district')} required error={errors.district} icon="location-outline" />
+              <Input label={t('staff.state')} value={form.state} onChangeText={v => set('state', v)} placeholder={t('staff.state')} required error={errors.state} icon="map-outline" />
+              <Input label={t('staff.pincode')} value={form.pincode} onChangeText={v => set('pincode', v)} type="number" placeholder={t('staff.pincode')} required error={errors.pincode} maxLength={6} icon="mail-unread-outline" />
             </View>
           </>
         );
       case 1:
         return (
           <>
-            <SectionHeader title="2. Membership Details" icon="id-card-outline" />
+            <SectionHeader title={t('staff.membership_details', '2. Membership Details')} icon="id-card-outline" />
             <View style={styles.card}>
-              <SelectField label="Blood Group" icon="water-outline" value={form.blood_group} placeholder="Select blood group" onPress={() => openSheet('Select Blood Group', BLOOD_GROUPS, 'blood_group')} />
-              <SelectField label="Membership Type" icon="star-outline" value={form.membership_type} placeholder="Select membership type" onPress={() => openSheet('Select Membership Type', MEMBER_TYPES, 'membership_type')} required error={errors.membership_type} />
-              <SelectField label="ID Proof Type (Optional)" icon="card-outline" value={form.id_type} placeholder="Select ID proof type" onPress={() => openSheet('Select ID Proof Type', ID_TYPES, 'id_type')} />
-              <Text style={styles.inputLabel}>Upload ID Proof (Optional)</Text>
+              <SelectField label={t('staff.blood_group', 'Blood Group')} icon="water-outline" value={form.blood_group} placeholder={t('staff.blood_group', 'Select blood group')} onPress={() => openSheet(t('staff.blood_group', 'Select Blood Group'), BLOOD_GROUPS, 'blood_group')} />
+              <SelectField label={t('staff.membership_type', 'Membership Type')} icon="star-outline" value={form.membership_type} placeholder={t('staff.membership_type', 'Select membership type')} onPress={() => openSheet(t('staff.membership_type', 'Select Membership Type'), MEMBER_TYPES, 'membership_type')} required error={errors.membership_type} />
+              <SelectField label={t('staff.id_proof_type', 'ID Proof Type')} icon="card-outline" value={form.id_type} placeholder={t('staff.id_proof_type', 'Select ID proof type')} onPress={() => openSheet(t('staff.id_proof_type', 'Select ID Proof Type'), ID_TYPES, 'id_type')} />
+              <Text style={styles.inputLabel}>{t('staff.upload_id', 'Upload ID Proof')}</Text>
               <View style={styles.idUploadBox}>
-                <PhotoPicker photos={idPhotos} onPhotosChange={setIdPhotos} maxPhotos={1} customIcon="cloud-upload-outline" customLabel="Upload Document" />
+                <PhotoPicker photos={idPhotos} onPhotosChange={setIdPhotos} maxPhotos={1} customIcon="cloud-upload-outline" customLabel={t('staff.upload_id', 'Upload Document')} />
                 <Text style={styles.photoHint}>JPG, PNG, PDF (Max 5MB)</Text>
               </View>
             </View>
@@ -455,37 +458,35 @@ const AddMemberScreen = ({ navigation, route }) => {
       case 2:
         return (
           <>
-            <SectionHeader title="3. Payment Collection" icon="wallet-outline" />
+            <SectionHeader title={t('staff.payment_collection', '3. Payment Collection')} icon="wallet-outline" />
             <View style={styles.card}>
-              <Text style={styles.inputLabel}>Payment Method <Text style={{ color: Colors.error }}>*</Text></Text>
+              <Text style={styles.inputLabel}>{t('staff.payment_method')} <Text style={{ color: Colors.error }}>*</Text></Text>
               <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
                 <TouchableOpacity 
                   style={[styles.paymentBtn, form.payment_mode === 'Cash' && styles.paymentBtnActive]}
                   onPress={() => { set('payment_mode', 'Cash'); setErrors(e => ({ ...e, payment_mode: '' })); }}
                   activeOpacity={0.8}
                 >
-                  <Ionicons name="cash-outline" size={24} color={form.payment_mode === 'Cash' ? '#FFFFFF' : FORM_BLUE} />
-                  <Text style={[styles.paymentBtnText, form.payment_mode === 'Cash' && styles.paymentBtnTextActive]}>Cash</Text>
+                  <Image source={require('../../../assets/cash.png')} style={{ width: 44, height: 44 }} resizeMode="contain" />
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={[styles.paymentBtn, form.payment_mode === 'GPay' && styles.paymentBtnActive]}
                   onPress={() => { set('payment_mode', 'GPay'); setErrors(e => ({ ...e, payment_mode: '' })); }}
                   activeOpacity={0.8}
                 >
-                  <Ionicons name="phone-portrait-outline" size={24} color={form.payment_mode === 'GPay' ? '#FFFFFF' : FORM_BLUE} />
-                  <Text style={[styles.paymentBtnText, form.payment_mode === 'GPay' && styles.paymentBtnTextActive]}>GPay / UPI</Text>
+                  <Image source={require('../../../assets/gpay.png')} style={{ width: 54, height: 32 }} resizeMode="contain" />
                 </TouchableOpacity>
               </View>
               {errors.payment_mode ? <Text style={styles.errorText}>{errors.payment_mode}</Text> : null}
 
-              <Input label="Amount (₹)" value={form.amount} editable={false} placeholder="Enter amount" required icon="cash-outline" />
-              <Input label="Payment Date" value={form.payment_date} editable={false} placeholder="Select date" required icon="calendar-outline" />
+              <Input label={t('staff.amount')} value={form.amount} editable={false} placeholder={t('staff.amount')} required icon="cash-outline" />
+              <Input label={t('staff.payment_date', 'Payment Date')} value={form.payment_date} editable={false} placeholder={t('staff.payment_date', 'Payment Date')} required icon="calendar-outline" />
               
               {form.payment_mode !== 'Cash' && (
-                <Input label="Transaction ID / Reference (Optional)" value={form.transaction_id} onChangeText={v => set('transaction_id', v)} placeholder="Enter transaction ID" error={errors.transaction_id} icon="receipt-outline" />
+                <Input label={t('staff.transaction_id', 'Transaction ID / Reference')} value={form.transaction_id} onChangeText={v => set('transaction_id', v)} placeholder={t('staff.transaction_id', 'Transaction ID')} error={errors.transaction_id} icon="receipt-outline" />
               )}
               
-              <Input label="Notes (Optional)" value={form.notes} onChangeText={v => set('notes', v)} placeholder="Add any notes here..." type="multiline" icon="document-text-outline" />
+              <Input label={t('staff.notes', 'Notes')} value={form.notes} onChangeText={v => set('notes', v)} placeholder={t('staff.notes', 'Notes')} type="multiline" icon="document-text-outline" />
             </View>
           </>
         );

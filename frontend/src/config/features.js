@@ -17,6 +17,7 @@ export const MASTER_NAV_CONFIG = [
   // ── FINANCE & DONATIONS
   { key: 'donation_entry', label: 'Donation Entry', icon: '💝', path: '/slt/entry/donation', category: 'FINANCE & DONATIONS' },
   { key: 'purchase_entry', label: 'Purchase Entry', icon: '🛒', path: '/slt/entry/purchase', category: 'FINANCE & DONATIONS' },
+  { key: 'promoters_verification', label: 'Verification Dashboard', icon: '✅', path: '/slt/entry/verification', category: 'FINANCE & DONATIONS' },
   { key: 'promoters_registry', label: 'Promoters Registry', icon: '🧾', path: '/slt/entry/promoters-registry', category: 'FINANCE & DONATIONS' },
 
   // ── PEOPLE & RELATIONS

@@ -132,7 +132,7 @@ const StaffAssessmentsListScreen = ({ navigation }) => {
 
     const sections = Object.keys(grouped).map(date => ({
       title: date,
-      data: grouped[date]
+      data: grouped[date].reverse()
     }));
 
     sections.sort((a, b) => {

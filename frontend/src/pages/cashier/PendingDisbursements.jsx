@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react"
 import { cashierApi, managerApi } from "../../api"
 import { StatusBadge, AmountDisplay, LoadingState, EmptyState, PageHeader, Modal, formatINR } from "../../components/shared"
+import PaymentMethodSelector from "../../components/PaymentMethodSelector"
 import { format } from "date-fns"
 import toast from "react-hot-toast"
 
@@ -162,8 +163,11 @@ export default function PendingDisbursements() {
               <div className="form-group"><label className="form-label required">Amount to Pay (₹)</label>
                 <input className="form-control" type="number" required value={form.amount_disbursed} onChange={e=>setForm(f=>({...f,amount_disbursed:e.target.value}))} /></div>
               <div className="form-group"><label className="form-label">Payment Method</label>
-                <select className="form-control" value={form.payment_method} onChange={e=>setForm(f=>({...f,payment_method:e.target.value}))}>
-                  {["CASH","CHEQUE","NEFT","UPI"].map(m=><option key={m}>{m}</option>)}</select></div>
+                <PaymentMethodSelector 
+                  value={form.payment_method} 
+                  onChange={v=>setForm(f=>({...f,payment_method:v}))} 
+                  options={["CASH","CHEQUE","NEFT","UPI"]} 
+                /></div>
               <div className="form-group"><label className="form-label required">Receiver Name</label>
                 <input className="form-control" required value={form.receiver_name} onChange={e=>setForm(f=>({...f,receiver_name:e.target.value}))} /></div>
               <div className="form-group"><label className="form-label">Voucher Number</label>

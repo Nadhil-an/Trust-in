@@ -50,6 +50,7 @@ import ProfilePage from './pages/Profile'
 import NotFoundPage from './pages/NotFound'
 import DataEntryDashboard from './pages/data-entry/Dashboard'
 import InwardEntry from './pages/data-entry/InwardEntry'
+import VerificationDashboard from './pages/data-entry/VerificationDashboard'
 import PromotorRegistry from './pages/data-entry/PromotorRegistry'
 import OutwardEntry from './pages/data-entry/OutwardEntry'
 import PurchaseEntry from './pages/data-entry/PurchaseEntry'
@@ -201,6 +202,7 @@ export default function App() {
           <Route path="slt/entry/inward"             element={<ProtectedRoute featureKey="inward_entry"><InwardEntry /></ProtectedRoute>} />
           <Route path="slt/entry/outward"            element={<ProtectedRoute featureKey="outward_entry"><OutwardEntry /></ProtectedRoute>} />
           <Route path="slt/entry/purchase"           element={<ProtectedRoute featureKey="purchase_entry"><PurchaseEntry /></ProtectedRoute>} />
+          <Route path="slt/entry/verification" element={<ProtectedRoute featureKey="promoters_verification"><VerificationDashboard /></ProtectedRoute>} />
           <Route path="slt/entry/promoters-registry" element={<ProtectedRoute featureKey="promoters_registry"><PromotorRegistry /></ProtectedRoute>} />
           <Route path="slt/entry/donation"           element={<ProtectedRoute featureKey="donation_entry"><DonationEntry /></ProtectedRoute>} />
           <Route path="slt/entry/membership"         element={<ProtectedRoute featureKey="membership_entry"><MembershipEntry /></ProtectedRoute>} />

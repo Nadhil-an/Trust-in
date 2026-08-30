@@ -2,23 +2,23 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, SectionList, TouchableOpacity,
-  Modal, RefreshControl, TextInput, ActivityIndicator, ScrollView
+  Modal, RefreshControl, TextInput, ActivityIndicator, ScrollView, Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
 import { donationApi } from '../../api';
 import Toast from 'react-native-toast-message';
 import { useNotificationSocket } from '../../hooks/useWebSocket';
+import { useTranslation } from 'react-i18next';
 
 const StaffDonationsListScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const [donations, setDonations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('ALL');
   
-  const [donationToDelete, setDonationToDelete] = useState(null);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [donationDetails, setDonationDetails] = useState(null);
 
   const fetchDonations = async (showLoading = true) => {
@@ -47,25 +47,6 @@ const StaffDonationsListScreen = ({ navigation }) => {
     return unsubscribe;
   }, [navigation]);
 
-  const handleDelete = (donation) => {
-    setDonationToDelete(donation);
-  };
-
-  const confirmDelete = async () => {
-    if (!donationToDelete) return;
-    setIsDeleting(true);
-    try {
-      await donationApi.delete(donationToDelete.id);
-      Toast.show({ type: 'success', text1: 'Donation deleted' });
-      fetchDonations(false);
-      setDonationToDelete(null);
-    } catch (err) {
-      Toast.show({ type: 'error', text1: 'Failed to delete donation' });
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
   const renderItem = ({ item }) => (
     <TouchableOpacity 
       style={styles.card}
@@ -86,7 +67,16 @@ const StaffDonationsListScreen = ({ navigation }) => {
               </View>
             ) : null}
           </View>
-          <Text style={styles.details}>₹{item.amount} • {item.payment_method}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+            <Text style={[styles.details, { marginBottom: 0 }]}>₹{item.amount} • </Text>
+            {item.payment_method === 'UPI' || item.payment_method === 'GPay' ? (
+              <Image source={require('../../../assets/gpay.png')} style={{ width: 44, height: 20, marginLeft: 2 }} resizeMode="contain" />
+            ) : item.payment_method === 'CASH' || item.payment_method === 'Cash' ? (
+              <Image source={require('../../../assets/cash.png')} style={{ width: 36, height: 20, marginLeft: 2 }} resizeMode="contain" />
+            ) : (
+              <Text style={[styles.details, { marginBottom: 0 }]}>{item.payment_method}</Text>
+            )}
+          </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
             <View style={[styles.badge, { backgroundColor: item.source === 'MEMBERSHIP' ? '#E0F2FE' : '#ECFDF5' }]}>
               <Text style={[styles.badgeText, { color: item.source === 'MEMBERSHIP' ? '#0284C7' : Colors.success }]}>
@@ -94,7 +84,7 @@ const StaffDonationsListScreen = ({ navigation }) => {
               </Text>
             </View>
             <Text style={[styles.date, { marginLeft: 6 }]}>
-              {new Date(item.date || item.created_at).toLocaleDateString()}
+              {new Date(item.created_at || item.date).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}
             </Text>
           </View>
         </View>
@@ -105,12 +95,6 @@ const StaffDonationsListScreen = ({ navigation }) => {
           onPress={() => navigation.navigate('CollectDonation', { editItem: item })}
         >
           <Ionicons name="pencil" size={18} color={Colors.info} />
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={[styles.actionBtn, { backgroundColor: Colors.errorLight }]}
-          onPress={() => handleDelete(item)}
-        >
-          <Ionicons name="trash" size={18} color={Colors.error} />
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
@@ -134,7 +118,7 @@ const StaffDonationsListScreen = ({ navigation }) => {
 
     const sections = Object.keys(grouped).map(date => ({
       title: date,
-      data: grouped[date]
+      data: grouped[date].reverse()
     }));
 
     sections.sort((a, b) => {
@@ -152,7 +136,7 @@ const StaffDonationsListScreen = ({ navigation }) => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color={Colors.gray800} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Transactions History</Text>
+        <Text style={styles.headerTitle}>{t('common.history') || 'Transactions History'}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -160,7 +144,7 @@ const StaffDonationsListScreen = ({ navigation }) => {
         <Ionicons name="search" size={20} color={Colors.gray400} style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
-          placeholder="Search transactions..."
+          placeholder={t('common.search') ? `${t('common.search')}...` : 'Search transactions...'}
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
@@ -176,7 +160,7 @@ const StaffDonationsListScreen = ({ navigation }) => {
               onPress={() => setActiveFilter(f)}
             >
               <Text style={[styles.filterText, activeFilter === f && styles.filterTextActive]}>
-                {f === 'ALL' ? 'All' : f === 'DONATIONS' ? 'Donations' : f === 'MEMBERSHIPS' ? 'Memberships' : f === 'CASH' ? 'Cash' : 'GPay/Bank'}
+                {f === 'ALL' ? t('common.all') : f === 'DONATIONS' ? (t('nav.donations') || 'Donations') : f === 'MEMBERSHIPS' ? (t('nav.members') || 'Memberships') : f === 'CASH' ? t('staff.cash') : 'GPay/Bank'}
               </Text>
             </TouchableOpacity>
           ))}
@@ -185,10 +169,10 @@ const StaffDonationsListScreen = ({ navigation }) => {
 
       {/* Today's Summary Section */}
       <View style={styles.summaryContainer}>
-        <Text style={styles.summaryTitle}>Today's Collection Summary</Text>
+        <Text style={styles.summaryTitle}>{t('staff.today_total') || "Today's Collection Summary"}</Text>
         <View style={styles.summaryCards}>
           <View style={[styles.summaryCard, { backgroundColor: '#EFF6FF' }]}>
-            <Text style={styles.summaryLabel}>Total Today</Text>
+            <Text style={styles.summaryLabel}>{t('common.total')}</Text>
             <Text style={[styles.summaryValue, { color: Colors.primary }]}>₹{(() => {
               const todayObj = new Date();
               const todayIso = `${todayObj.getFullYear()}-${String(todayObj.getMonth() + 1).padStart(2, '0')}-${String(todayObj.getDate()).padStart(2, '0')}`;
@@ -197,7 +181,7 @@ const StaffDonationsListScreen = ({ navigation }) => {
             })()}</Text>
           </View>
           <View style={[styles.summaryCard, { backgroundColor: '#ECFDF5' }]}>
-            <Text style={styles.summaryLabel}>Cash</Text>
+            <Text style={styles.summaryLabel}>{t('staff.cash')}</Text>
             <Text style={[styles.summaryValue, { color: Colors.success }]}>₹{(() => {
               const todayObj = new Date();
               const todayIso = `${todayObj.getFullYear()}-${String(todayObj.getMonth() + 1).padStart(2, '0')}-${String(todayObj.getDate()).padStart(2, '0')}`;
@@ -206,7 +190,7 @@ const StaffDonationsListScreen = ({ navigation }) => {
             })()}</Text>
           </View>
           <View style={[styles.summaryCard, { backgroundColor: '#FEF2F2' }]}>
-            <Text style={styles.summaryLabel}>Bank/UPI</Text>
+            <Text style={styles.summaryLabel}>Bank/GPay</Text>
             <Text style={[styles.summaryValue, { color: Colors.error }]}>₹{(() => {
               const todayObj = new Date();
               const todayIso = `${todayObj.getFullYear()}-${String(todayObj.getMonth() + 1).padStart(2, '0')}-${String(todayObj.getDate()).padStart(2, '0')}`;
@@ -315,32 +299,6 @@ const StaffDonationsListScreen = ({ navigation }) => {
           </View>
         </View>
       </Modal>
-
-      {/* Delete Confirmation Modal */}
-      <Modal visible={!!donationToDelete} transparent animationType="fade">
-        <View style={styles.centeredOverlay}>
-          <View style={styles.alertCard}>
-            <View style={styles.alertHeader}>
-              <View style={[styles.iconCircle, { backgroundColor: Colors.errorLight }]}>
-                <Ionicons name="trash" size={28} color={Colors.error} />
-              </View>
-              <Text style={styles.alertTitle}>Delete Donation</Text>
-              <Text style={styles.alertSubtitle}>
-                Are you sure you want to delete this ₹{donationToDelete?.amount} donation from {donationToDelete?.donor_name}?
-              </Text>
-            </View>
-
-            <View style={styles.modalActions}>
-              <TouchableOpacity style={styles.cancelBtn} onPress={() => setDonationToDelete(null)} disabled={isDeleting}>
-                <Text style={styles.cancelBtnText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.confirmBtn} onPress={confirmDelete} disabled={isDeleting}>
-                {isDeleting ? <ActivityIndicator color={Colors.white} /> : <Text style={styles.confirmBtnText}>Delete</Text>}
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 };
@@ -411,19 +369,6 @@ const styles = StyleSheet.create({
   emptyText: { color: Colors.gray400, marginTop: 12, fontSize: 15 },
   sectionHeader: { backgroundColor: '#F7F9FC', paddingVertical: 8, paddingHorizontal: 4, marginBottom: 8, marginTop: 4 },
   sectionHeaderText: { fontSize: 14, fontWeight: '700', color: Colors.gray600 },
-  
-  // Custom Modal Styles
-  centeredOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
-  alertCard: { backgroundColor: Colors.white, borderRadius: 20, padding: 24, width: '100%', maxWidth: 340, alignItems: 'stretch' },
-  alertHeader: { alignItems: 'center', marginBottom: 20 },
-  iconCircle: { width: 56, height: 56, borderRadius: 28, justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
-  alertTitle: { fontSize: 20, fontWeight: '700', color: Colors.textPrimary, marginBottom: 8 },
-  alertSubtitle: { fontSize: 15, color: Colors.gray600, textAlign: 'center', lineHeight: 22 },
-  modalActions: { flexDirection: 'row', gap: 12 },
-  cancelBtn: { flex: 1, padding: 14, borderRadius: 12, backgroundColor: Colors.gray100, alignItems: 'center' },
-  cancelBtnText: { fontSize: 15, fontWeight: '600', color: Colors.gray800 },
-  confirmBtn: { flex: 1, padding: 14, borderRadius: 12, backgroundColor: Colors.error, alignItems: 'center' },
-  confirmBtnText: { fontSize: 15, fontWeight: '600', color: Colors.white },
   
   // Details Modal Specific
   detailsContainer: { backgroundColor: '#F9FAFB', borderRadius: 12, padding: 16, marginBottom: 20 },

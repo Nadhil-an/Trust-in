@@ -43,11 +43,14 @@ const BUILT_IN_CATEGORIES = [
 // ── Voice recording helper ─────────────────────────────────────────────────
 const useVoiceRecorder = () => {
   const recordingRef = useRef(null);
+  const soundRef = useRef(null);
   const [isRecording, setIsRecording] = useState(false);
-  const [transcript, setTranscript] = useState('');
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [voiceUri, setVoiceUri] = useState(null);
 
   const startRecording = async () => {
     try {
+      if (voiceUri) { setVoiceUri(null); }
       const { status } = await Audio.requestPermissionsAsync();
       if (status !== 'granted') { Alert.alert('Permission denied', 'Microphone access is required.'); return; }
       await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
@@ -62,14 +65,37 @@ const useVoiceRecorder = () => {
   const stopRecording = async () => {
     try {
       await recordingRef.current?.stopAndUnloadAsync();
+      const uri = recordingRef.current?.getURI();
+      setVoiceUri(uri);
       setIsRecording(false);
-      setTranscript('[🎤 Voice note recorded — attach transcription here]');
     } catch (e) {
       setIsRecording(false);
     }
   };
 
-  return { isRecording, transcript, startRecording, stopRecording };
+  const playVoice = async () => {
+    if (!voiceUri) return;
+    try {
+      const { sound } = await Audio.Sound.createAsync({ uri: voiceUri });
+      soundRef.current = sound;
+      setIsPlaying(true);
+      sound.setOnPlaybackStatusUpdate((status) => {
+        if (status.didJustFinish) setIsPlaying(false);
+      });
+      await sound.playAsync();
+    } catch (e) {
+      setIsPlaying(false);
+    }
+  };
+
+  const stopPlaying = async () => {
+    if (soundRef.current) {
+      await soundRef.current.stopAsync();
+      setIsPlaying(false);
+    }
+  };
+
+  return { isRecording, isPlaying, voiceUri, startRecording, stopRecording, playVoice, stopPlaying, setVoiceUri };
 };
 
 // ── Main component ─────────────────────────────────────────────────────────
@@ -78,7 +104,7 @@ const NewAssessmentScreen = ({ navigation, route }) => {
   const isEdit = !!editItem;
   const { t } = useTranslation();
   const { isOnline, addToQueue } = useOfflineStore();
-  const { isRecording, transcript, startRecording, stopRecording } = useVoiceRecorder();
+  const { isRecording, isPlaying, voiceUri, startRecording, stopRecording, playVoice, stopPlaying, setVoiceUri } = useVoiceRecorder();
 
   const [step, setStep]                       = useState(0);
   const [loading, setLoading]                 = useState(false);
@@ -101,12 +127,7 @@ const NewAssessmentScreen = ({ navigation, route }) => {
   const [errors, setErrors] = useState({});
   const TOTAL_STEPS = 3; // 0: Info, 1: Details, 2: Review
 
-  // Append voice transcript to description when it arrives
-  useEffect(() => {
-    if (transcript) {
-      setForm(f => ({ ...f, description: f.description ? f.description + '\n\n' + transcript : transcript }));
-    }
-  }, [transcript]);
+
 
   const allCategories = [...BUILT_IN_CATEGORIES, ...customCategories];
 
@@ -168,8 +189,8 @@ const NewAssessmentScreen = ({ navigation, route }) => {
     }
     if (step === 1) {
       if (!form.category) errs.category = t('assessment.select_category', 'Please select a category');
-      if (!form.description.trim() || form.description.length < 20)
-        errs.description = t('assessment.description_min', 'Please provide more details (at least 20 characters)');
+      if (!form.description.trim() && !voiceUri)
+        errs.description = t('common.required');
     }
     
     setErrors(errs);
@@ -204,6 +225,9 @@ const NewAssessmentScreen = ({ navigation, route }) => {
     });
     if (photos.length > 0) {
       formData.append('document', { uri: photos[0].uri, type: 'image/jpeg', name: `document_${Date.now()}.jpg` });
+    }
+    if (voiceUri) {
+      formData.append('voice_note', { uri: voiceUri, type: 'audio/m4a', name: `voice_${Date.now()}.m4a` });
     }
     
     try {
@@ -320,27 +344,49 @@ const NewAssessmentScreen = ({ navigation, route }) => {
                   onChangeText={v => setF('custom_category', v)} placeholder="Enter category name" />
               )}
 
-              <Text style={[styles.fieldLabel, { marginTop: 12 }]}>Problem Description <Text style={{ color: Colors.error }}>*</Text></Text>
+              <Text style={[styles.fieldLabel, { marginTop: 12 }]}>Problem Description {!voiceUri && <Text style={{ color: Colors.error }}>*</Text>}</Text>
               
               {/* Voice recording button */}
-              <TouchableOpacity
-                style={[styles.voiceBtn, isRecording && styles.voiceBtnActive]}
-                onPress={isRecording ? stopRecording : startRecording}
-                activeOpacity={0.8}
-              >
-                <View style={[styles.voiceIconWrap, isRecording && styles.voiceIconActive]}>
-                  <Ionicons name={isRecording ? 'stop-circle' : 'mic'} size={24}
-                    color={isRecording ? Colors.error : FORM_BLUE} />
+              {voiceUri ? (
+                <View style={[styles.voiceBtn, { borderColor: Colors.success, backgroundColor: '#F0FFF4' }]}>
+                  <TouchableOpacity
+                    style={[styles.voiceIconWrap, { backgroundColor: '#C6F6D5' }]}
+                    onPress={isPlaying ? stopPlaying : playVoice}
+                  >
+                    <Ionicons name={isPlaying ? 'stop' : 'play'} size={24} color={Colors.success} />
+                  </TouchableOpacity>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.voiceBtnTitle, { color: Colors.success }]}>
+                      {isPlaying ? 'Playing Voice Note...' : 'Voice Note Recorded'}
+                    </Text>
+                    <Text style={styles.voiceBtnSub}>
+                      Tap play to listen.
+                    </Text>
+                  </View>
+                  <TouchableOpacity onPress={() => setVoiceUri(null)} style={{ padding: 8 }}>
+                    <Ionicons name="trash-outline" size={20} color={Colors.error} />
+                  </TouchableOpacity>
                 </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.voiceBtnTitle, isRecording && { color: Colors.error }]}>
-                    {isRecording ? '🔴 Recording… Tap to stop' : '🎤 Describe problem by voice'}
-                  </Text>
-                  <Text style={styles.voiceBtnSub}>
-                    {isRecording ? 'Speak clearly into the mic' : 'Your voice note will be added to the description'}
-                  </Text>
-                </View>
-              </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  style={[styles.voiceBtn, isRecording && styles.voiceBtnActive]}
+                  onPress={isRecording ? stopRecording : startRecording}
+                  activeOpacity={0.8}
+                >
+                  <View style={[styles.voiceIconWrap, isRecording && styles.voiceIconActive]}>
+                    <Ionicons name={isRecording ? 'stop-circle' : 'mic'} size={24}
+                      color={isRecording ? Colors.error : FORM_BLUE} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.voiceBtnTitle, isRecording && { color: Colors.error }]}>
+                      {isRecording ? '🔴 Recording… Tap to stop' : '🎤 Describe problem by voice'}
+                    </Text>
+                    <Text style={styles.voiceBtnSub}>
+                      {isRecording ? 'Speak clearly into the mic' : 'Your voice note will be added to the description'}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              )}
 
               <Input
                 value={form.description}

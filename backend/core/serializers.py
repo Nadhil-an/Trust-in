@@ -4,10 +4,28 @@ from core.models import User, AuditLog, SystemNotification, Event
 
 
 class UserSerializer(serializers.ModelSerializer):
+    photo = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'full_name', 'role', 'phone', 'photo', 'is_active', 'date_joined']
         read_only_fields = ['id', 'date_joined']
+
+    def get_photo(self, obj):
+        request = self.context.get('request')
+        if obj.photo:
+            if request:
+                return request.build_absolute_uri(obj.photo.url)
+            return obj.photo.url
+        
+        if obj.role != 'MEMBER':
+            from hr_module.models import ExecutiveOfficer
+            officer = ExecutiveOfficer.objects.filter(full_name__iexact=obj.full_name).first()
+            if officer and officer.photo:
+                if request:
+                    return request.build_absolute_uri(officer.photo.url)
+                return officer.photo.url
+        return None
 
 
 class UserCreateSerializer(serializers.ModelSerializer):

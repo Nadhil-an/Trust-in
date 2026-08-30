@@ -265,7 +265,7 @@ class MemberListCreateView(generics.ListCreateAPIView):
                             f"Thank you for becoming a member of *Sree Lakshmi Charitable Trust*.\n\n"
                             f"Your membership payment of \u20b9{r.amount:,.2f} has been successfully received.\n\n"
                             f"\U0001faaa Membership ID: *{formatted_mem_id}*\n"
-                            f"\U0001f4c4 Receipt No.: *{r.receipt_number}*\n\n"
+                            f"\U0001f4c4 Voucher ID: *{voucher_id or r.receipt_number}*\n\n"
                             f"Please find your official membership receipt attached.\n\n"
                             f"Thank you for supporting our mission.\n"
                             f"*Sree Lakshmi Charitable Trust*\n\n"
@@ -412,7 +412,7 @@ class RetryWhatsAppView(APIView):
             f"Thank you for becoming a member of Sree Lakshmi Charitable Trust.\n\n"
             f"Your membership payment of ₹{receipt.amount:,.2f} has been successfully received.\n\n"
             f"🪪 Membership ID: {formatted_mem_id}\n"
-            f"📄 Receipt No.: {receipt.receipt_number}\n\n"
+            f"📄 Voucher ID: {receipt.receipt_number}\n\n"
             f"Please find your official membership receipt attached.\n\n"
             f"Thank you for supporting our mission.\n"
             f"Sree Lakshmi Charitable Trust\n\n"
@@ -489,13 +489,17 @@ class ExecutiveMemberDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 # ── Executive Officers ────────────────────────────────────────────
 class ExecutiveOfficerListCreateView(generics.ListCreateAPIView):
-    permission_classes = [IsHR]
     serializer_class = ExecutiveOfficerSerializer
     queryset = ExecutiveOfficer.objects.all()
     filterset_fields = ['status', 'employment_type', 'department']
     search_fields = ['employee_id', 'full_name', 'phone', 'designation']
     ordering_fields = ['full_name', 'joining_date']
     parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [IsAnyStaff()]
+        return [IsHR()]
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -1030,6 +1034,7 @@ def get_attendance_effective_date():
 # ── Staff Attendance View ──────────────────────────────────────────
 class StaffAttendanceView(APIView):
     permission_classes = [IsAnyStaff]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get(self, request):
         officer = get_officer_for_user(request.user)
@@ -1072,6 +1077,10 @@ class StaffAttendanceView(APIView):
             if not att.check_in:
                 att.check_in = now_time
                 att.status = 'PRESENT'
+                if 'photo' in request.FILES:
+                    att.check_in_photo = request.FILES['photo']
+                if 'location' in request.data:
+                    att.check_in_location = request.data['location']
                 att.save()
         elif action == 'check_out':
             att.check_out = now_time
@@ -1079,6 +1088,10 @@ class StaffAttendanceView(APIView):
                 # calculate working hours simple estimate
                 h = (now_time.hour - att.check_in.hour) + (now_time.minute - att.check_in.minute)/60.0
                 att.working_hours = round(max(0, h), 2)
+            if 'photo' in request.FILES:
+                att.check_out_photo = request.FILES['photo']
+            if 'location' in request.data:
+                att.check_out_location = request.data['location']
             att.save()
 
         return Response(AttendanceSerializer(att).data)
@@ -1173,11 +1186,16 @@ class StaffLeaderboardView(APIView):
                 date=target_date, created_by=user
             ).aggregate(t=Sum('amount'))['t'] or 0
             
+            from core.serializers import UserSerializer as UserProfileSerializer
+            user_data = UserProfileSerializer(user, context={'request': request}).data
+            photo_url = user_data.get('photo')
+
+
             results.append({
                 'staff_id': str(user.id),
                 'staff_uid': user.staff_uid,
                 'name': user.full_name,
-                'photo_url': request.build_absolute_uri(user.photo.url) if user.photo else None,
+                'photo_url': photo_url,
                 'amount': float(total_collection)
             })
             
@@ -1448,6 +1466,7 @@ class PromoterRegistryDailySummaryView(APIView):
 
     def get(self, request):
         date_str = request.query_params.get('date', str(_tz.localdate()))
+        verification_status = request.query_params.get('verification_status')
         try:
             from datetime import date as _date
             target_date = _date.fromisoformat(date_str)
@@ -1521,6 +1540,15 @@ class PromoterRegistryDailySummaryView(APIView):
         summary = []
         for sid in all_ids:
             entry = entries.get(sid)
+            
+            # If a specific verification_status is requested, filter the staff
+            if verification_status == 'VERIFIED':
+                if not entry or entry.verification_status != 'VERIFIED':
+                    continue
+            elif verification_status == 'UNVERIFIED':
+                if entry and entry.verification_status != 'UNVERIFIED':
+                    continue
+
             income_data = totals.get(sid, {'cash': 0, 'online': 0, 'staff_name': ''})
             # Prefer name from attendance > income > entry
             name = (
@@ -1547,6 +1575,7 @@ class PromoterRegistryDailySummaryView(APIView):
                 'book_number': str(vb_info['book_number']) if vb_info else '',
                 'voucher_book': vb_info,
                 'registry_entry': PromoterRegistrySerializer(entry, context={'request': request}).data if entry else None,
+                'verification_status': entry.verification_status if entry else 'UNVERIFIED',
                 'is_closed': entry.is_closed if entry else False,
             })
 
@@ -1572,3 +1601,53 @@ class PromoterRegistryCheckClosedView(APIView):
             promoter_id=staff_id, date=date_str, is_closed=True
         ).exists()
         return Response({'is_closed': is_closed})
+
+class DailyTransactionHistoryView(APIView):
+    """
+    GET /hr/promoter-registry/transactions/?staff_id=<uuid>&date=YYYY-MM-DD
+    Returns detailed transaction history for a specific staff member on a specific date.
+    """
+    permission_classes = [IsAnyStaff]
+
+    def get(self, request):
+        staff_id = request.query_params.get('staff_id')
+        date_str = request.query_params.get('date', str(_tz.localdate()))
+        
+        if not staff_id:
+            return Response({'error': 'staff_id required'}, status=400)
+            
+        try:
+            from datetime import date as _date
+            target_date = _date.fromisoformat(date_str)
+        except ValueError:
+            return Response({'error': 'Invalid date format. Use YYYY-MM-DD.'}, status=400)
+
+        from accounts_module.models import Income
+        
+        incomes = Income.objects.filter(created_by_id=staff_id, date=target_date).order_by('created_at')
+        
+        cash_transactions = []
+        online_transactions = []
+        
+        for inc in incomes:
+            data = {
+                'id': str(inc.id),
+                'receipt_number': inc.reference_number or inc.receipt_number,
+                'amount': float(inc.amount),
+                'time': inc.created_at.strftime('%I:%M %p'),
+                'donor_name': inc.donor_name,
+                'phone': inc.donor_phone,
+                'remarks': inc.purpose,
+                'payment_method': inc.payment_method
+            }
+            if inc.payment_method == 'CASH':
+                cash_transactions.append(data)
+            else:
+                online_transactions.append(data)
+                
+        return Response({
+            'cash': cash_transactions,
+            'online': online_transactions,
+            'cash_total': sum(t['amount'] for t in cash_transactions),
+            'online_total': sum(t['amount'] for t in online_transactions),
+        })

@@ -236,6 +236,7 @@ class PromoterRegistrySerializer(serializers.ModelSerializer):
             'cash_collected', 'online_collected', 'cash_submitted',
             'total_collected', 'has_discrepancy',
             'is_closed', 'closed_at',
+            'verification_status',
             'created_at', 'created_by',
         ]
         read_only_fields = ['id', 'created_by', 'created_at', 'closed_at']

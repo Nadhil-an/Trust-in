@@ -299,7 +299,7 @@ class IncomeListCreateView(generics.ListCreateAPIView):
                     res = send_whatsapp_receipt(
                         to_phone=income.donor_phone,
                         donor_name=income.donor_name,
-                        receipt_number=income.receipt_number,
+                        receipt_number=income.reference_number or income.receipt_number,
                         amount=float(income.amount),
                         source=income.source,
                         date_str=income.date.strftime('%d %b %Y'),
@@ -390,7 +390,7 @@ class RetryWhatsAppDonationView(APIView):
         res = send_whatsapp_receipt(
             to_phone=income.donor_phone,
             donor_name=income.donor_name,
-            receipt_number=income.receipt_number,
+            receipt_number=income.reference_number or income.receipt_number,
             amount=float(income.amount),
             source=income.source,
             date_str=income.date.strftime('%d %b %Y'),

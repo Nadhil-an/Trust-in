@@ -2,6 +2,7 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { accountsApi, coreApi, hrApi } from '../../api'
 import { PageHeader, FilterBar, LoadingState, EmptyState, Modal, formatINR } from '../../components/shared'
+import PaymentMethodSelector from '../../components/PaymentMethodSelector'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 
@@ -292,9 +293,11 @@ export default function DonationEntry() {
             </div>
             <div className="form-group">
               <label className="form-label">Payment Method</label>
-              <select className="form-control" value={form.payment_method} onChange={e => setF('payment_method', e.target.value)}>
-                {['CASH','CHEQUE','BANK_TRANSFER','ONLINE','UPI'].map(m => <option key={m}>{m}</option>)}
-              </select>
+              <PaymentMethodSelector 
+                value={form.payment_method} 
+                onChange={v => setF('payment_method', v)} 
+                options={['CASH','CHEQUE','BANK_TRANSFER','ONLINE','UPI']}
+              />
             </div>
           </div>
           <div className="modal-footer" style={{ padding: 0, marginTop: 12, justifyContent: 'flex-end', gap: '12px' }}>

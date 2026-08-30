@@ -122,7 +122,7 @@ def send_whatsapp_receipt(to_phone: str, donor_name: str, receipt_number: str,
     text = (
         f"Dear *{donor_display}*,\n\n"
         f"Thank you for your generous contribution!\n\n"
-        f"📄 *Receipt No:* `{receipt_number}`\n"
+        f"📄 *Voucher ID:* `{receipt_number}`\n"
         f"📅 *Date:* {date_str}\n"
         f"🏷️ *Category:* {source.title()}\n"
         f"💰 *Amount Received:* *₹{amount:,.2f}*\n"

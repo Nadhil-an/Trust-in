@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from "react"
 import { accountsApi } from "../../api"
 import { AmountDisplay, LoadingState, EmptyState, PageHeader, FilterBar, Modal, formatINR } from "../../components/shared"
+import PaymentMethodSelector from "../../components/PaymentMethodSelector"
 import { format } from "date-fns"
 import toast from "react-hot-toast"
 import { isPositiveNumber } from "../../utils/validators"
@@ -105,8 +106,7 @@ export default function ExpenseList() {
                 <select className="form-control" value={form.category} onChange={e=>setForm(f=>({...f,category:e.target.value}))}>
                   {["SALARY","MAINTENANCE","UTILITIES","TRANSPORT","OFFICE","CHARITY","EDUCATION","MEDICAL","PURCHASE","OTHER"].map(c=><option key={c}>{c}</option>)}</select></div>
               <div className="form-group"><label className="form-label">Payment Method</label>
-                <select className="form-control" value={form.payment_method} onChange={e=>setForm(f=>({...f,payment_method:e.target.value}))}>
-                  {["CASH","CHEQUE","NEFT","UPI","OTHER"].map(m=><option key={m}>{m}</option>)}</select></div>
+                <PaymentMethodSelector value={form.payment_method} onChange={v=>setForm(f=>({...f,payment_method:v}))} options={["CASH","CHEQUE","NEFT","UPI","OTHER"]} /></div>
             </div>
             <div className="form-group"><label className="form-label">Purpose</label>
               <textarea className="form-control" rows={2} value={form.purpose} onChange={e=>setForm(f=>({...f,purpose:e.target.value}))} /></div>

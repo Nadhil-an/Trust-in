@@ -9,10 +9,14 @@ import {
   SafeAreaView,
   RefreshControl,
   BackHandler,
+  Image,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import * as Location from 'expo-location';
 import { Colors } from '../../constants/Colors';
+import { Config } from '../../constants/Config';
 import { attendanceApi } from '../../api';
 import Toast from 'react-native-toast-message';
 import SideDrawer from '../../components/SideDrawer';
@@ -26,7 +30,18 @@ export default function AttendanceScreen({ navigation, route }) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [pendingPhoto, setPendingPhoto] = useState(null);
+  const [pendingLocation, setPendingLocation] = useState(null);
+  const [isCheckInExpanded, setIsCheckInExpanded] = useState(false);
+  const [isCheckOutExpanded, setIsCheckOutExpanded] = useState(false);
   const insets = useSafeAreaInsets();
+
+  const getImageUrl = (url) => {
+    if (!url) return null;
+    if (url.startsWith('http')) return url;
+    const baseUrl = Config.API_BASE_URL.replace('/api', '');
+    return `${baseUrl}${url.startsWith('/') ? '' : '/'}${url}`;
+  };
 
   const handleGoBack = () => {
     if (navigation.canGoBack()) {
@@ -66,16 +81,74 @@ export default function AttendanceScreen({ navigation, route }) {
     loadAttendance();
   }, [loadAttendance]);
 
-  const handleAction = async (action) => {
+  const handleTakePhoto = async () => {
+    const cameraPerm = await ImagePicker.requestCameraPermissionsAsync();
+    if (cameraPerm.status !== 'granted') {
+      Toast.show({ type: 'error', text1: 'Permission Denied', text2: 'Camera permission is required' });
+      return;
+    }
+    const photo = await ImagePicker.launchCameraAsync({
+      cameraType: ImagePicker.CameraType.front,
+      quality: 0.5,
+    });
+    if (!photo.canceled) {
+      setPendingPhoto(photo.assets[0]);
+    }
+  };
+
+  const handleGetLocation = async () => {
+    const locPerm = await Location.requestForegroundPermissionsAsync();
+    if (locPerm.status !== 'granted') {
+      Toast.show({ type: 'error', text1: 'Permission Denied', text2: 'Location permission is required' });
+      return;
+    }
     setSubmitting(true);
     try {
+      const location = await Location.getCurrentPositionAsync({});
+      const geocode = await Location.reverseGeocodeAsync({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      });
+      let locationString = '';
+      if (geocode && geocode.length > 0) {
+        const place = geocode[0];
+        locationString = [place.name, place.street, place.district, place.city, place.region].filter(Boolean).join(', ');
+      } else {
+        locationString = `Lat: ${location.coords.latitude}, Lng: ${location.coords.longitude}`;
+      }
+      setPendingLocation(locationString);
+    } catch (err) {
+      Toast.show({ type: 'error', text1: 'Location Error', text2: 'Failed to get current location' });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleSubmitAction = async (action) => {
+    if (!pendingPhoto || !pendingLocation) {
+      Toast.show({ type: 'error', text1: 'Missing Details', text2: 'Please take a photo and share location first.' });
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append('action', action);
+      formData.append('location', pendingLocation);
+      formData.append('photo', {
+        uri: pendingPhoto.uri,
+        type: pendingPhoto.mimeType || 'image/jpeg',
+        name: `attendance_${action}_selfie.jpg`,
+      });
+
       if (action === 'check_in') {
-        await attendanceApi.checkIn();
+        await attendanceApi.checkIn(formData);
         Toast.show({ type: 'success', text1: 'Checked In', text2: 'Checked in successfully for today!' });
       } else {
-        await attendanceApi.checkOut();
+        await attendanceApi.checkOut(formData);
         Toast.show({ type: 'success', text1: 'Checked Out', text2: 'Checked out successfully!' });
       }
+      setPendingPhoto(null);
+      setPendingLocation(null);
       loadAttendance();
     } catch (error) {
       Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to record attendance' });
@@ -90,13 +163,8 @@ export default function AttendanceScreen({ navigation, route }) {
   const isCheckedOut = !!(todayAtt && todayAtt.check_out);
   const isCheckedIn = !!(todayAtt && todayAtt.check_in && !todayAtt.check_out);
 
-  const checkInDisplay = isCheckedOut 
-    ? '00:00' 
-    : (todayAtt && todayAtt.check_in ? todayAtt.check_in.substring(0, 5) : '00:00');
-
-  const checkOutDisplay = isCheckedOut 
-    ? '00:00' 
-    : (todayAtt && todayAtt.check_out ? todayAtt.check_out.substring(0, 5) : '00:00');
+  const checkInDisplay = (todayAtt && todayAtt.check_in) ? todayAtt.check_in.substring(0, 5) : '--:--';
+  const checkOutDisplay = (todayAtt && todayAtt.check_out) ? todayAtt.check_out.substring(0, 5) : '--:--';
 
   const presentCount = records.filter(r => r.status === 'PRESENT').length;
   const absentCount = records.filter(r => r.status === 'ABSENT').length;
@@ -173,47 +241,157 @@ export default function AttendanceScreen({ navigation, route }) {
                 {/* Buttons */}
                 <View style={styles.btnRow}>
                   {isCheckedOut ? (
+                    <View style={styles.captureSection}>
+                      <TouchableOpacity 
+                        style={styles.serverInfoBox} 
+                        onPress={() => setIsCheckInExpanded(!isCheckInExpanded)}
+                      >
+                        <View style={styles.serverInfoHeader}>
+                          <Text style={styles.serverInfoLabel}>Check In Info</Text>
+                          <Ionicons name={isCheckInExpanded ? "chevron-up" : "chevron-down"} size={20} color="#64748b" />
+                        </View>
+                        {isCheckInExpanded && (
+                          <View style={styles.serverInfoContent}>
+                            {todayAtt?.check_in_photo && (
+                              <Image source={{ uri: getImageUrl(todayAtt.check_in_photo) }} style={styles.serverImage} />
+                            )}
+                            {todayAtt?.check_in_location && (
+                              <Text style={styles.serverLocation}>{todayAtt.check_in_location}</Text>
+                            )}
+                          </View>
+                        )}
+                      </TouchableOpacity>
+
+                      <TouchableOpacity 
+                        style={[styles.serverInfoBox, { marginTop: 12 }]} 
+                        onPress={() => setIsCheckOutExpanded(!isCheckOutExpanded)}
+                      >
+                        <View style={styles.serverInfoHeader}>
+                          <Text style={styles.serverInfoLabel}>Check Out Info</Text>
+                          <Ionicons name={isCheckOutExpanded ? "chevron-up" : "chevron-down"} size={20} color="#64748b" />
+                        </View>
+                        {isCheckOutExpanded && (
+                          <View style={styles.serverInfoContent}>
+                            {todayAtt?.check_out_photo && (
+                              <Image source={{ uri: getImageUrl(todayAtt.check_out_photo) }} style={styles.serverImage} />
+                            )}
+                            {todayAtt?.check_out_location && (
+                              <Text style={styles.serverLocation}>{todayAtt.check_out_location}</Text>
+                            )}
+                          </View>
+                        )}
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={[styles.actionBtn, { backgroundColor: '#94a3b8', marginTop: 16 }]}
+                        disabled={true}
+                      >
+                        <Ionicons name="log-out-outline" size={20} color="#ffffff" />
+                        <Text style={styles.actionBtnText}>Checked Out</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : isCheckedIn ? (
+                    <View style={styles.captureSection}>
+                      <TouchableOpacity 
+                        style={styles.serverInfoBox} 
+                        onPress={() => setIsCheckInExpanded(!isCheckInExpanded)}
+                      >
+                        <View style={styles.serverInfoHeader}>
+                          <Text style={styles.serverInfoLabel}>Check In Info</Text>
+                          <Ionicons name={isCheckInExpanded ? "chevron-up" : "chevron-down"} size={20} color="#64748b" />
+                        </View>
+                        {isCheckInExpanded && (
+                          <View style={styles.serverInfoContent}>
+                            {todayAtt?.check_in_photo && (
+                              <Image source={{ uri: getImageUrl(todayAtt.check_in_photo) }} style={styles.serverImage} />
+                            )}
+                            {todayAtt?.check_in_location && (
+                              <Text style={styles.serverLocation}>{todayAtt.check_in_location}</Text>
+                            )}
+                          </View>
+                        )}
+                      </TouchableOpacity>
+
+                      <Text style={[styles.sectionLabel, { marginTop: 16 }]}>Complete Check Out</Text>
+                      
+                      <TouchableOpacity style={styles.captureBtn} onPress={handleTakePhoto}>
+                        <Ionicons name="camera" size={20} color="#1A74EE" />
+                        <Text style={styles.captureBtnText}>{pendingPhoto ? 'Retake Photo' : 'Take Photo'}</Text>
+                      </TouchableOpacity>
+                      
+                      {pendingPhoto && (
+                        <Image source={{ uri: pendingPhoto.uri }} style={styles.previewImage} />
+                      )}
+
+                      <TouchableOpacity style={styles.captureBtn} onPress={handleGetLocation}>
+                        <Ionicons name="location" size={20} color="#1A74EE" />
+                        <Text style={styles.captureBtnText}>{pendingLocation ? 'Update Location' : 'Share Location'}</Text>
+                      </TouchableOpacity>
+
+                      {pendingLocation && (
+                        <Text style={styles.previewLocation}>{pendingLocation}</Text>
+                      )}
+
+                      <TouchableOpacity
+                        style={[styles.actionBtn, styles.checkOutBtn, (!pendingPhoto || !pendingLocation) && { opacity: 0.5 }]}
+                        disabled={submitting || !pendingPhoto || !pendingLocation}
+                        onPress={() => handleSubmitAction('check_out')}
+                      >
+                        {submitting ? (
+                          <ActivityIndicator color="#ffffff" />
+                        ) : (
+                          <>
+                            <Ionicons name="log-out-outline" size={20} color="#ffffff" />
+                            <Text style={styles.actionBtnText}>Check Out Now</Text>
+                          </>
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                  ) : isBefore8AM ? (
                     <TouchableOpacity
                       style={[styles.actionBtn, { backgroundColor: '#94a3b8' }]}
                       disabled={true}
                     >
-                      <Ionicons name="log-out-outline" size={20} color="#ffffff" />
-                      <Text style={styles.actionBtnText}>
-                        {isBefore8AM ? 'Check-In Opens at 8:00 AM' : 'Checked Out'}
-                      </Text>
-                    </TouchableOpacity>
-                  ) : isCheckedIn ? (
-                    <TouchableOpacity
-                      style={[styles.actionBtn, styles.checkOutBtn]}
-                      disabled={submitting}
-                      onPress={() => handleAction('check_out')}
-                    >
-                      {submitting ? (
-                        <ActivityIndicator color="#ffffff" />
-                      ) : (
-                        <>
-                          <Ionicons name="log-out-outline" size={20} color="#ffffff" />
-                          <Text style={styles.actionBtnText}>Check Out Now</Text>
-                        </>
-                      )}
+                      <Ionicons name="time-outline" size={20} color="#ffffff" />
+                      <Text style={styles.actionBtnText}>Check-In Opens at 8:00 AM</Text>
                     </TouchableOpacity>
                   ) : (
-                    <TouchableOpacity
-                      style={[styles.actionBtn, isBefore8AM ? { backgroundColor: '#94a3b8' } : styles.checkInBtn]}
-                      disabled={submitting || isBefore8AM}
-                      onPress={() => handleAction('check_in')}
-                    >
-                      {submitting ? (
-                        <ActivityIndicator color="#ffffff" />
-                      ) : (
-                        <>
-                          <Ionicons name={isBefore8AM ? "time-outline" : "log-in-outline"} size={20} color="#ffffff" />
-                          <Text style={styles.actionBtnText}>
-                            {isBefore8AM ? 'Check-In Opens at 8:00 AM' : 'Check In Now'}
-                          </Text>
-                        </>
+                    <View style={styles.captureSection}>
+                      <Text style={styles.sectionLabel}>Complete Check In</Text>
+                      
+                      <TouchableOpacity style={styles.captureBtn} onPress={handleTakePhoto}>
+                        <Ionicons name="camera" size={20} color="#1A74EE" />
+                        <Text style={styles.captureBtnText}>{pendingPhoto ? 'Retake Photo' : 'Take Photo'}</Text>
+                      </TouchableOpacity>
+                      
+                      {pendingPhoto && (
+                        <Image source={{ uri: pendingPhoto.uri }} style={styles.previewImage} />
                       )}
-                    </TouchableOpacity>
+
+                      <TouchableOpacity style={styles.captureBtn} onPress={handleGetLocation}>
+                        <Ionicons name="location" size={20} color="#1A74EE" />
+                        <Text style={styles.captureBtnText}>{pendingLocation ? 'Update Location' : 'Share Location'}</Text>
+                      </TouchableOpacity>
+
+                      {pendingLocation && (
+                        <Text style={styles.previewLocation}>{pendingLocation}</Text>
+                      )}
+
+                      <TouchableOpacity
+                        style={[styles.actionBtn, styles.checkInBtn, (!pendingPhoto || !pendingLocation) && { opacity: 0.5 }]}
+                        disabled={submitting || !pendingPhoto || !pendingLocation}
+                        onPress={() => handleSubmitAction('check_in')}
+                      >
+                        {submitting ? (
+                          <ActivityIndicator color="#ffffff" />
+                        ) : (
+                          <>
+                            <Ionicons name="log-in-outline" size={20} color="#ffffff" />
+                            <Text style={styles.actionBtnText}>Check In Now</Text>
+                          </>
+                        )}
+                      </TouchableOpacity>
+                    </View>
                   )}
                 </View>
               </View>
@@ -437,5 +615,79 @@ const styles = StyleSheet.create({
   emptyText: {
     color: '#94a3b8',
     fontSize: 13,
+  },
+  captureSection: {
+    marginTop: 10,
+  },
+  sectionLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#475569',
+    marginBottom: 10,
+  },
+  captureBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#1A74EE',
+    backgroundColor: '#eff6ff',
+    gap: 8,
+    marginBottom: 12,
+  },
+  captureBtnText: {
+    color: '#1A74EE',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  previewImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 12,
+    marginBottom: 12,
+    resizeMode: 'cover',
+  },
+  previewLocation: {
+    fontSize: 13,
+    color: '#334155',
+    backgroundColor: '#f1f5f9',
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  serverInfoBox: {
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 12,
+    padding: 12,
+  },
+  serverInfoHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  serverInfoLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#64748b',
+  },
+  serverInfoContent: {
+    marginTop: 12,
+  },
+  serverImage: {
+    width: '100%',
+    height: 150,
+    borderRadius: 8,
+    marginBottom: 8,
+    resizeMode: 'cover',
+  },
+  serverLocation: {
+    fontSize: 12,
+    color: '#334155',
+    textAlign: 'center',
   },
 });

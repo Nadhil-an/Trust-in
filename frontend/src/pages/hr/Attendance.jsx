@@ -11,6 +11,7 @@ export default function AttendancePage() {
   const [showModal, setShowModal] = useState(false)
   const [saving, setSaving] = useState(false)
   const [bulkData, setBulkData] = useState([])
+  const [previewImage, setPreviewImage] = useState(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -23,7 +24,7 @@ export default function AttendancePage() {
         return { employee:o.id, name:o.full_name, status:existing?.status||"PRESENT", remarks:existing?.remarks||"" }
       })
       setBulkData(bd)
-    } catch (_) { toast.error("Load failed") } finally { setLoading(false) }
+    } catch (_) { console.error(_); toast.error("Load failed: " + (_.message || "Unknown error")) } finally { setLoading(false) }
   }, [date])
   useEffect(() => { load() }, [load])
 
@@ -59,10 +60,39 @@ export default function AttendancePage() {
         {loading ? <LoadingState /> : (
           <div className="table-wrap">
             <table>
-              <thead><tr><th>Employee</th><th>Date</th><th>Status</th><th>Check In</th><th>Check Out</th><th>Remarks</th></tr></thead>
+              <thead><tr><th>Employee</th><th>Date</th><th>Status</th><th>Check In</th><th>Check Out</th><th>Remarks</th><th>Check In Proof</th><th>Check Out Proof</th></tr></thead>
               <tbody>
-                {records.length===0 ? <tr><td colSpan={6}><EmptyState icon="✅" title="No attendance marked for this date" /></td></tr>
-                  : records.map(r=>(<tr key={r.id}><td>{r.employee_name}</td><td>{r.date}</td><td><span className={`badge ${r.status==="PRESENT"?"badge-green":r.status==="ABSENT"?"badge-red":"badge-yellow"}`}>{r.status}</span></td><td>{formatTime(r.check_in)}</td><td>{formatTime(r.check_out)}</td><td>{r.remarks||"-"}</td></tr>))}
+                {records.length===0 ? <tr><td colSpan={8}><EmptyState icon="✅" title="No attendance marked for this date" /></td></tr>
+                  : records.map(r=>(
+                    <tr key={r.id}>
+                      <td>{r.employee_name}</td>
+                      <td>{r.date}</td>
+                      <td><span className={`badge ${r.status==="PRESENT"?"badge-green":r.status==="ABSENT"?"badge-red":"badge-yellow"}`}>{r.status}</span></td>
+                      <td>
+                        <div style={{fontWeight:500}}>{formatTime(r.check_in)}</div>
+                      </td>
+                      <td>
+                        <div style={{fontWeight:500}}>{formatTime(r.check_out)}</div>
+                      </td>
+                      <td>{r.remarks||"-"}</td>
+                      <td>
+                        {r.check_in_photo && (
+                          <div style={{display:'flex', alignItems:'center', gap: 6}}>
+                            <img src={r.check_in_photo} alt="in" onClick={() => setPreviewImage(r.check_in_photo)} style={{width:28, height:28, borderRadius:4, objectFit:'cover', border:'1px solid #e5e7eb', cursor: 'zoom-in'}} />
+                            {r.check_in_location && <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.check_in_location)}`} target="_blank" rel="noreferrer" style={{fontSize:10, color:'#3b82f6', maxWidth:120, lineHeight:'1.2', textDecoration: 'underline'}} title="View on Google Maps">📍 {r.check_in_location}</a>}
+                          </div>
+                        )}
+                      </td>
+                      <td>
+                        {r.check_out_photo && (
+                          <div style={{display:'flex', alignItems:'center', gap: 6}}>
+                            <img src={r.check_out_photo} alt="out" onClick={() => setPreviewImage(r.check_out_photo)} style={{width:28, height:28, borderRadius:4, objectFit:'cover', border:'1px solid #e5e7eb', cursor: 'zoom-in'}} />
+                            {r.check_out_location && <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.check_out_location)}`} target="_blank" rel="noreferrer" style={{fontSize:10, color:'#3b82f6', maxWidth:120, lineHeight:'1.2', textDecoration: 'underline'}} title="View on Google Maps">📍 {r.check_out_location}</a>}
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
@@ -92,6 +122,13 @@ export default function AttendancePage() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </Modal>
+      )}
+      {previewImage && (
+        <Modal isOpen={true} onClose={()=>setPreviewImage(null)} title="Photo Proof" size="modal-md">
+          <div style={{textAlign: 'center', padding: '10px 0'}}>
+            <img src={previewImage} alt="Preview" style={{maxWidth: '100%', maxHeight: '70vh', borderRadius: 8}} />
           </div>
         </Modal>
       )}

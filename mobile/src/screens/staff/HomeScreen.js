@@ -15,6 +15,7 @@ import BirthdayPopup from '../../components/BirthdayPopup';
 import SideDrawer from '../../components/SideDrawer';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTranslation } from 'react-i18next';
 
 const { width } = Dimensions.get('window');
 
@@ -42,6 +43,14 @@ const QuickActionCard = ({ icon, title, onPress }) => (
 const StaffHomeScreen = ({ navigation, route }) => {
   const { user } = useAuthStore();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
+  
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning,';
+    if (hour < 17) return 'Good Afternoon,';
+    return 'Good Evening,';
+  };
   const [drawerVisible, setDrawerVisible] = useState(false);
 
   useFocusEffect(
@@ -69,18 +78,18 @@ const StaffHomeScreen = ({ navigation, route }) => {
     const interval = setInterval(() => {
       currentSlide += 1;
       
-      if (currentSlide >= 20) {
-        // Reset silently without animation
+      // When we reach slide 15 (which is the start of the 6th set, meaning it's the 'greeting' card),
+      // we silently reset to 0 (the first 'greeting' card) and animate to 1 immediately.
+      if (currentSlide >= 15) {
         sliderRef.current?.scrollTo({ x: 0, animated: false });
         currentSlide = 1;
-        // Wait a tiny bit then slide to next
         setTimeout(() => {
-          sliderRef.current?.scrollTo({ x: currentSlide * (width - 32), animated: true });
+          sliderRef.current?.scrollTo({ x: currentSlide * (width - 36), animated: true });
         }, 50);
       } else {
-        sliderRef.current?.scrollTo({ x: currentSlide * (width - 32), animated: true });
+        sliderRef.current?.scrollTo({ x: currentSlide * (width - 36), animated: true });
       }
-    }, 3000); // Slides every 3 seconds
+    }, 4000); // Slides every 4 seconds
     return () => clearInterval(interval);
   }, []);
 
@@ -289,15 +298,15 @@ const StaffHomeScreen = ({ navigation, route }) => {
             showsHorizontalScrollIndicator={false}
             scrollEventThrottle={16}
           >
-            {Array(15).fill(['greeting', 'collection', 'leaderboard']).flat().map((type, index) => {
+            {Array(10).fill(['greeting', 'collection', 'leaderboard']).flat().map((type, index) => {
               if (type === 'greeting') {
                 return (
-                  <View key={index} style={{ width: width - 32 }}>
+                  <View key={index} style={{ width: width - 36 }}>
                     <LinearGradient colors={['#E6F0FE', '#E6F0FE']} style={[styles.greetingCard, { marginBottom: 0 }]}>
                       <View style={styles.greetingTextWrap}>
-                        <Text style={styles.goodMorning}>Good Morning,</Text>
+                        <Text style={styles.goodMorning}>{t(`staff.${new Date().getHours() < 12 ? 'good_morning' : new Date().getHours() < 17 ? 'good_afternoon' : 'good_evening'}`, getGreeting())}</Text>
                         <Text style={styles.staffMemberText}>{user?.full_name || user?.username || 'Staff Member'}!</Text>
-                        <Text style={styles.greetingSubtitle}>Welcome back! Let's continue{'\n'}making a difference today.</Text>
+                        <Text style={styles.greetingSubtitle}>{t('staff.welcome_back', "Welcome back! Let's continue\nmaking a difference today.")}</Text>
                       </View>
                       <View style={styles.weatherIconWrap}>
                         <Ionicons name="partly-sunny" size={60} color="#FDB813" style={styles.sunIcon} />
@@ -311,14 +320,14 @@ const StaffHomeScreen = ({ navigation, route }) => {
                   <TouchableOpacity 
                     key={index}
                     activeOpacity={0.9} 
-                    style={{ width: width - 32 }}
+                    style={{ width: width - 36 }}
                     onPress={() => navigation.navigate('StaffDonationsList')}
                   >
                     <View style={styles.collectionCard}>
                       <View style={styles.collHeader}>
                         <View>
-                          <Text style={styles.collTitle}>Collection Today</Text>
-                          <Text style={styles.collSubtitle}>Track today's total collection</Text>
+                          <Text style={styles.collTitle}>{t('staff.collection_today', 'Collection Today')}</Text>
+                          <Text style={styles.collSubtitle}>{t('staff.track_today_collection', "Track today's total collection")}</Text>
                         </View>
                         <View style={styles.collIconWrap}>
                           <Ionicons name="wallet-outline" size={24} color="#1689D8" />
@@ -333,7 +342,7 @@ const StaffHomeScreen = ({ navigation, route }) => {
                           </View>
                         </View>
                         <View>
-                          <Text style={styles.collTotalLabel}>Total Collection</Text>
+                          <Text style={styles.collTotalLabel}>{t('staff.total_collection', 'Total Collection')}</Text>
                           <Text style={styles.collTotalVal}>₹ {(stats.donations || 0).toLocaleString()}</Text>
                         </View>
                       </View>
@@ -343,7 +352,7 @@ const StaffHomeScreen = ({ navigation, route }) => {
                           <View style={[styles.collThirdIcon, { backgroundColor: '#DCFCE7' }]}>
                             <Ionicons name="cash-outline" size={14} color="#16A34A" />
                           </View>
-                          <Text style={styles.collThirdLabel}>In Cash</Text>
+                          <Text style={styles.collThirdLabel}>{t('staff.in_cash', 'In Cash')}</Text>
                           <Text style={styles.collThirdVal}>₹{(stats.cash_donations || 0).toLocaleString()}</Text>
                         </View>
                         
@@ -351,7 +360,7 @@ const StaffHomeScreen = ({ navigation, route }) => {
                           <View style={[styles.collThirdIcon, { backgroundColor: '#E0F2FE' }]}>
                             <Ionicons name="card-outline" size={14} color="#0284C7" />
                           </View>
-                          <Text style={styles.collThirdLabel}>In Bank</Text>
+                          <Text style={styles.collThirdLabel}>{t('staff.in_bank', 'In Bank')}</Text>
                           <Text style={styles.collThirdVal}>₹{(stats.bank_donations || 0).toLocaleString()}</Text>
                         </View>
 
@@ -359,7 +368,7 @@ const StaffHomeScreen = ({ navigation, route }) => {
                           <View style={[styles.collThirdIcon, { backgroundColor: '#FEF3C7' }]}>
                             <Ionicons name="people-outline" size={14} color="#D97706" />
                           </View>
-                          <Text style={styles.collThirdLabel}>Members</Text>
+                          <Text style={styles.collThirdLabel}>{t('staff.members', 'Members')}</Text>
                           <Text style={styles.collThirdVal}>₹{(stats.membership_amount || 0).toLocaleString()}</Text>
                         </View>
                       </View>
@@ -371,14 +380,14 @@ const StaffHomeScreen = ({ navigation, route }) => {
                   <TouchableOpacity 
                     key={index}
                     activeOpacity={0.9} 
-                    style={{ width: width - 32 }}
+                    style={{ width: width - 36 }}
                     onPress={() => navigation.navigate('StaffLeaderboard')}
                   >
                     <View style={styles.lbCard}>
                       <View style={styles.lbHeader}>
-                        <Text style={styles.lbTitle}>Today's Collection Leaderboard</Text>
+                        <Text style={styles.lbTitle}>{t('staff.todays_leaderboard', "Today's Collection Leaderboard")}</Text>
                         <TouchableOpacity style={styles.lbViewAllWrap} onPress={() => navigation.navigate('StaffLeaderboard')}>
-                          <Text style={styles.lbViewAll}>View All</Text>
+                          <Text style={styles.lbViewAll}>{t('common.view_all', 'View All')}</Text>
                           <Ionicons name="chevron-forward" size={14} color="#0284C7" />
                         </TouchableOpacity>
                       </View>
@@ -425,30 +434,30 @@ const StaffHomeScreen = ({ navigation, route }) => {
 
         {/* Today's Overview */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Today's Overview</Text>
+          <Text style={styles.sectionTitle}>{t('staff.todays_overview', "Today's Overview")}</Text>
         </View>
 
         <View style={styles.statsRow}>
           <StatCard
-            title="Members Added"
+            title={t('staff.members_added')}
             value={(stats.members || 0).toString()}
             icon="person-add-outline"
             onPress={() => navigation.navigate('StaffMembersList')}
           />
           <StatCard
-            title="Donation Collected"
+            title={t('staff.donation_collected')}
             value={`₹ ${(stats.donations || 0).toLocaleString()}`}
             icon="heart-outline"
             onPress={() => navigation.navigate('StaffDonationsList')}
           />
           <StatCard
-            title="Assessments Submitted"
+            title={t('staff.assessments_submitted', 'Assessments Submitted')}
             value={(stats.assessments || 0).toString()}
             icon="document-text-outline"
             onPress={() => navigation.navigate('StaffAssessmentsList')}
           />
           <StatCard
-            title="Attendance Marked"
+            title={t('staff.attendance_marked', 'Attendance Marked')}
             value={`${stats.attendancePercentage || 0}%`}
             icon="calendar-outline"
             onPress={() => navigation.navigate('StaffAttendance', { fromDashboard: true })}
@@ -457,37 +466,37 @@ const StaffHomeScreen = ({ navigation, route }) => {
 
         {/* Quick Actions */}
         <View style={[styles.sectionHeader, { marginTop: 20 }]}>
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          <Text style={styles.sectionTitle}>{t('staff.quick_actions', 'Quick Actions')}</Text>
         </View>
 
         <View style={styles.quickGrid}>
           <QuickActionCard
-            title="Add Members"
+            title={t('staff.add_members', 'Add Members')}
             icon="person-add"
             onPress={() => navigation.navigate('AddMember')}
           />
           <QuickActionCard
-            title="Collection Donation"
+            title={t('staff.collection_donation', 'Collection Donation')}
             icon="heart"
             onPress={() => navigation.navigate('CollectDonation')}
           />
           <QuickActionCard
-            title="New Assessment"
+            title={t('staff.new_assessment', 'New Assessment')}
             icon="document-text"
             onPress={() => navigation.navigate('NewAssessment')}
           />
           <QuickActionCard
-            title="Attendance"
+            title={t('nav.attendance', 'Attendance')}
             icon="calendar"
             onPress={() => navigation.navigate('StaffAttendance', { fromDashboard: true })}
           />
           <QuickActionCard
-            title="History"
+            title={t('common.history', 'History')}
             icon="time-outline"
             onPress={() => navigation.navigate('StaffDonationsList')}
           />
           <QuickActionCard
-            title="Leaderboard"
+            title={t('staff.leaderboard', 'Leaderboard')}
             icon="trophy-outline"
             onPress={() => navigation.navigate('StaffLeaderboard')}
           />
@@ -496,8 +505,8 @@ const StaffHomeScreen = ({ navigation, route }) => {
         {/* Together We Can Card */}
         <LinearGradient colors={['#F0F7FF', '#E1EFFF']} style={styles.togetherCard}>
           <View style={styles.togetherTextWrap}>
-            <Text style={styles.togetherTitle}>Together We Can</Text>
-            <Text style={styles.togetherSubtitle}>Every small effort counts towards{'\n'}a better tomorrow.</Text>
+            <Text style={styles.togetherTitle}>{t('staff.together_we_can', 'Together We Can')}</Text>
+            <Text style={styles.togetherSubtitle}>{t('staff.together_subtitle', "Every small effort counts towards\na better tomorrow.")}</Text>
           </View>
           <Ionicons name="heart" size={48} color="#93C5FD" style={styles.togetherIcon} />
         </LinearGradient>

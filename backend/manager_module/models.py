@@ -137,6 +137,7 @@ class AssessmentRequest(models.Model):
 
     # Supporting document
     document = models.FileField(upload_to=request_doc_path, null=True, blank=True, validators=[validate_document_file])
+    voice_note = models.FileField(upload_to=request_doc_path, null=True, blank=True)
 
     class Meta:
         db_table = 'manager_requests'

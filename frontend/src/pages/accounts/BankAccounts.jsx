@@ -1,6 +1,7 @@
-﻿import React, { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import { accountsApi } from "../../api"
 import { AmountDisplay, LoadingState, EmptyState, PageHeader, FilterBar, Modal, formatINR } from "../../components/shared"
+import PaymentMethodSelector from "../../components/PaymentMethodSelector"
 import { format } from "date-fns"
 import toast from "react-hot-toast"
 
@@ -106,8 +107,7 @@ export default function BankAccounts() {
               <div className="form-group"><label className="form-label required">Amount (₹)</label>
                 <input className="form-control" type="number" required min="0.01" step="0.01" value={form.amount} onChange={e=>setForm(f=>({...f,amount:e.target.value}))} /></div>
               <div className="form-group"><label className="form-label">Payment Method</label>
-                <select className="form-control" value={form.payment_method} onChange={e=>setForm(f=>({...f,payment_method:e.target.value}))}>
-                  {["NEFT","RTGS","IMPS","UPI","CHEQUE","CASH","DD"].map(m=><option key={m}>{m}</option>)}</select></div>
+                <PaymentMethodSelector value={form.payment_method} onChange={v=>setForm(f=>({...f,payment_method:v}))} options={["NEFT","RTGS","IMPS","UPI","CHEQUE","CASH","DD"]} /></div>
               <div className="form-group"><label className="form-label">Reference/UTR</label>
                 <input className="form-control" value={form.reference_id} onChange={e=>setForm(f=>({...f,reference_id:e.target.value}))} /></div>
             </div>

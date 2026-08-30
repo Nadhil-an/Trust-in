@@ -2,15 +2,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, SectionList, TouchableOpacity,
-  Modal, RefreshControl, TextInput, ActivityIndicator, ScrollView
+  Modal, RefreshControl, TextInput, ActivityIndicator, ScrollView, Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
 import { membersApi, donationApi } from '../../api';
 import Toast from 'react-native-toast-message';
 import { useNotificationSocket } from '../../hooks/useWebSocket';
+import { useTranslation } from 'react-i18next';
 
 const StaffMembersListScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -108,7 +110,16 @@ const StaffMembersListScreen = ({ navigation }) => {
         </View>
         <View style={styles.textWrap}>
           <Text style={styles.name}>{item.full_name}</Text>
-          <Text style={styles.details}>{item.phone} • {item.membership_type}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+            <Text style={[styles.details, { marginBottom: 0 }]}>{item.phone} • {item.membership_type} • </Text>
+            {item.payment_mode === 'UPI' || item.payment_method === 'UPI' || item.payment_mode === 'GPay' ? (
+              <Image source={require('../../../assets/gpay.png')} style={{ width: 44, height: 20, marginLeft: 2 }} resizeMode="contain" />
+            ) : item.payment_mode === 'Cash' || item.payment_mode === 'CASH' || item.payment_method === 'CASH' ? (
+              <Image source={require('../../../assets/cash.png')} style={{ width: 36, height: 20, marginLeft: 2 }} resizeMode="contain" />
+            ) : (
+              <Text style={[styles.details, { marginBottom: 0 }]}>{item.payment_mode || item.payment_method || 'Cash'}</Text>
+            )}
+          </View>
           <Text style={styles.date}>Added on {new Date(item.created_at || item.joining_date).toLocaleDateString()}</Text>
         </View>
       </View>
@@ -147,7 +158,7 @@ const StaffMembersListScreen = ({ navigation }) => {
 
     const sections = Object.keys(grouped).map(date => ({
       title: date,
-      data: grouped[date]
+      data: grouped[date].reverse()
     }));
 
     sections.sort((a, b) => {
@@ -165,7 +176,7 @@ const StaffMembersListScreen = ({ navigation }) => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={24} color={Colors.gray800} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Members Added</Text>
+        <Text style={styles.headerTitle}>{t('staff.members_added') || 'Members Added'}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -173,7 +184,7 @@ const StaffMembersListScreen = ({ navigation }) => {
         <Ionicons name="search" size={20} color={Colors.gray400} style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
-          placeholder="Search members..."
+          placeholder={t('staff.search_member') ? `${t('staff.search_member')}...` : 'Search members...'}
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
@@ -181,18 +192,18 @@ const StaffMembersListScreen = ({ navigation }) => {
 
       {/* Today's Membership Collection Summary */}
       <View style={styles.summaryContainer}>
-        <Text style={styles.summaryTitle}>Today's Membership Collections</Text>
+        <Text style={styles.summaryTitle}>{t('staff.today_total') || "Today's Membership Collections"}</Text>
         <View style={styles.summaryCards}>
           <View style={[styles.summaryCard, { backgroundColor: '#EFF6FF' }]}>
-            <Text style={styles.summaryLabel}>Total Today</Text>
+            <Text style={styles.summaryLabel}>{t('common.total')}</Text>
             <Text style={[styles.summaryValue, { color: Colors.primary }]}>₹{membershipsTotal}</Text>
           </View>
           <View style={[styles.summaryCard, { backgroundColor: '#ECFDF5' }]}>
-            <Text style={styles.summaryLabel}>Cash</Text>
+            <Text style={styles.summaryLabel}>{t('staff.cash')}</Text>
             <Text style={[styles.summaryValue, { color: Colors.success }]}>₹{membershipsCash}</Text>
           </View>
           <View style={[styles.summaryCard, { backgroundColor: '#FEF2F2' }]}>
-            <Text style={styles.summaryLabel}>Bank/UPI</Text>
+            <Text style={styles.summaryLabel}>Bank/GPay</Text>
             <Text style={[styles.summaryValue, { color: Colors.error }]}>₹{membershipsBank}</Text>
           </View>
         </View>
@@ -216,7 +227,7 @@ const StaffMembersListScreen = ({ navigation }) => {
           !loading && (
             <View style={styles.emptyState}>
               <Ionicons name="people-outline" size={48} color={Colors.gray400} />
-              <Text style={styles.emptyText}>No members found.</Text>
+              <Text style={styles.emptyText}>{t('common.none') || 'No members found.'}</Text>
             </View>
           )
         }
@@ -230,16 +241,16 @@ const StaffMembersListScreen = ({ navigation }) => {
               <View style={[styles.iconCircle, { backgroundColor: Colors.errorLight }]}>
                 <Ionicons name="trash" size={28} color={Colors.error} />
               </View>
-              <Text style={styles.alertTitle}>Delete Member</Text>
+              <Text style={styles.alertTitle}>{t('common.delete')} Member</Text>
               <Text style={styles.alertSubtitle}>Are you sure you want to delete {memberToDelete?.full_name}?</Text>
             </View>
 
             <View style={styles.modalActions}>
               <TouchableOpacity style={styles.cancelBtn} onPress={() => setMemberToDelete(null)} disabled={isDeleting}>
-                <Text style={styles.cancelBtnText}>Cancel</Text>
+                <Text style={styles.cancelBtnText}>{t('common.cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.confirmBtn} onPress={confirmDelete} disabled={isDeleting}>
-                {isDeleting ? <ActivityIndicator color={Colors.white} /> : <Text style={styles.confirmBtnText}>Delete</Text>}
+                {isDeleting ? <ActivityIndicator color={Colors.white} /> : <Text style={styles.confirmBtnText}>{t('common.delete')}</Text>}
               </TouchableOpacity>
             </View>
           </View>

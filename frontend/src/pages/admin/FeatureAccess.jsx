@@ -9,6 +9,7 @@ const ROLES = ['MANAGER', 'ACCOUNTANT', 'HR', 'DATA_ENTRY']
 export default function FeatureAccess() {
   const [mappings, setMappings] = useState({})
   const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
 
   const fetchAssignments = async () => {
     try {
@@ -53,6 +54,14 @@ export default function FeatureAccess() {
     // Skip items that are strictly role-bound dashboards
     if (item.roles) return
 
+    // Search filter
+    const matchesSearch = !searchQuery || 
+      item.label.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      (item.category && item.category.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (item.path && item.path.toLowerCase().includes(searchQuery.toLowerCase()));
+      
+    if (!matchesSearch) return;
+
     const cat = item.category || 'OTHER'
     if (!groupedFeatures[cat]) groupedFeatures[cat] = []
     groupedFeatures[cat].push(item)
@@ -62,9 +71,28 @@ export default function FeatureAccess() {
 
   return (
     <div style={{ maxWidth: 1000, margin: '0 auto' }}>
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 700, color: '#111827', margin: 0 }}>Feature Access Control</h1>
-        <p style={{ color: '#6B7280', marginTop: 4 }}>Configure which features are available to each role. Changes take effect on the user's next navigation.</p>
+      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+        <div>
+          <h1 style={{ fontSize: 24, fontWeight: 700, color: '#111827', margin: 0 }}>Feature Access Control</h1>
+          <p style={{ color: '#6B7280', marginTop: 4 }}>Configure which features are available to each role. Changes take effect on the user's next navigation.</p>
+        </div>
+        <div>
+          <input 
+            type="text" 
+            placeholder="Search features..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              padding: '10px 16px',
+              borderRadius: '8px',
+              border: '1px solid #D1D5DB',
+              width: '280px',
+              fontSize: '14px',
+              outline: 'none',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+            }}
+          />
+        </div>
       </div>
 
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>

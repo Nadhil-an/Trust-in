@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   Alert, KeyboardAvoidingView, Platform, Linking, Modal, TextInput, Image
-} from 'react-native'; 
+} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useTranslation } from 'react-i18next';
@@ -16,8 +16,8 @@ import Toast from 'react-native-toast-message';
 import { isValidPhone, isPositiveNumber } from '../../utils/validators';
 
 const PAYMENT_METHODS = [
-  { key: 'CASH', label: 'Cash', icon: 'cash-outline' },
-  { key: 'UPI', label: 'UPI', icon: 'phone-portrait-outline' },
+  { key: 'CASH', label: 'Cash', icon: 'cash-outline', isImage: true },
+  { key: 'UPI', label: 'Online', icon: 'phone-portrait-outline', isImage: true },
   { key: 'CHEQUE', label: 'Cheque', icon: 'document-text-outline' },
 ];
 
@@ -29,9 +29,9 @@ const CollectDonationScreen = ({ navigation, route }) => {
   const insets = useSafeAreaInsets();
   
   const [form, setForm] = useState({
-    donor_name: editItem?.donor_name || '', phone: editItem?.phone || '', amount: editItem?.amount?.toString() || '',
+    donor_name: editItem?.donor_name || '', phone: editItem?.donor_phone || editItem?.phone || '', amount: editItem?.amount?.toString() || '',
     payment_method: editItem?.payment_method || 'CASH', notes: editItem?.notes || '', member_id: editItem?.member || '',
-    voucher_id: '',
+    voucher_id: editItem?.reference_number || editItem?.receipt_number || '',
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -51,7 +51,9 @@ const CollectDonationScreen = ({ navigation, route }) => {
       staffApi.vouchers.get(user.id)
         .then(res => {
           setVoucher(res.data);
-          set('voucher_id', String(res.data.current_voucher));
+          if (!isEdit) {
+            set('voucher_id', String(res.data.current_voucher));
+          }
         })
         .catch(err => console.log('No voucher assigned or offline', err));
     }
@@ -180,7 +182,7 @@ const CollectDonationScreen = ({ navigation, route }) => {
           await staffApi.vouchers.increment(user.id).catch(() => {});
         }
         setSuccessData({
-          receipt_number: res.data.receipt_number,
+          receipt_number: res.data.reference_number || res.data.receipt_number,
           donor_name: data.donor_name,
           amount: data.amount,
           phone: form.phone,
@@ -199,7 +201,7 @@ const CollectDonationScreen = ({ navigation, route }) => {
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{isEdit ? 'Edit Donation' : 'Donation Collection'}</Text>
+        <Text style={styles.headerTitle}>{isEdit ? t('staff.edit_donation') : t('staff.donation_collection')}</Text>
       </View>
 
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -218,7 +220,7 @@ const CollectDonationScreen = ({ navigation, route }) => {
                     value={form.voucher_id}
                     onChangeText={v => set('voucher_id', v)}
                     keyboardType="numeric"
-                    placeholder="Enter ID"
+                    placeholder={t('staff.amount_placeholder')}
                     placeholderTextColor="#94A3B8"
                   />
                 </View>
@@ -232,36 +234,37 @@ const CollectDonationScreen = ({ navigation, route }) => {
               <View style={styles.iconCircle}>
                 <Ionicons name="cash-outline" size={16} color="#0B57D0" />
               </View>
-              <Text style={styles.cardTitle}>Donor Details</Text>
+              <Text style={styles.cardTitle}>{t('staff.donor_details')}</Text>
             </View>
 
             {/* Donor's Name */}
-            <Text style={styles.inputLabel}>Donor's Name <Text style={styles.asterisk}>*</Text></Text>
+            <Text style={styles.inputLabel}>{t('staff.donor_name')} <Text style={styles.asterisk}>*</Text></Text>
             <View style={[styles.inputWrapper, errors.donor_name && styles.inputError]}>
               <Ionicons name="person-outline" size={20} color="#64748B" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 value={noName ? 'Anonymous' : form.donor_name}
                 onChangeText={v => set('donor_name', v)}
-                placeholder="Full name of donor"
+                placeholder={t('staff.full_name_placeholder')}
                 placeholderTextColor="#94A3B8"
                 editable={!noName}
               />
             </View>
-            <TouchableOpacity onPress={() => setNoName(!noName)} style={styles.checkboxRow} activeOpacity={0.7}>
-              <Ionicons name={noName ? "checkbox" : "square-outline"} size={22} color={noName ? "#0B57D0" : "#64748B"} />
-              <Text style={styles.checkboxLabel}>Donator is not interested in sharing name</Text>
+            {errors.donor_name ? <Text style={styles.errorText}>{errors.donor_name}</Text> : null}
+            <TouchableOpacity style={styles.checkboxRow} onPress={() => { setNoName(!noName); if (!noName) set('donor_name', ''); }}>
+              <Ionicons name={noName ? "checkbox" : "square-outline"} size={20} color={noName ? "#0B57D0" : "#94A3B8"} />
+              <Text style={styles.checkboxLabel}>{t('staff.no_name_interest')}</Text>
             </TouchableOpacity>
 
             {/* Phone Number */}
-            <Text style={styles.inputLabel}>Phone (for WhatsApp receipt)</Text>
+            <Text style={styles.inputLabel}>{t('staff.phone_whatsapp')}</Text>
             <View style={[styles.inputWrapper, errors.phone && styles.inputError]}>
               <Ionicons name="call-outline" size={20} color="#64748B" style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 value={noPhone ? '' : form.phone}
                 onChangeText={v => set('phone', v)}
-                placeholder="10-digit number"
+                placeholder={t('staff.phone_placeholder')}
                 placeholderTextColor="#94A3B8"
                 keyboardType="numeric"
                 maxLength={10}
@@ -300,9 +303,9 @@ const CollectDonationScreen = ({ navigation, route }) => {
                 ⚠️ WhatsApp status could not be verified. Please capture a receipt photo as proof.
               </Text>
             )}
-            <TouchableOpacity onPress={() => setNoPhone(!noPhone)} style={styles.checkboxRow} activeOpacity={0.7}>
+            <TouchableOpacity onPress={() => { setNoPhone(!noPhone); if (!noPhone) set('phone', ''); setWhatsappStatus(null); }} style={styles.checkboxRow} activeOpacity={0.7}>
               <Ionicons name={noPhone ? "checkbox" : "square-outline"} size={22} color={noPhone ? "#0B57D0" : "#64748B"} />
-              <Text style={styles.checkboxLabel}>Donator is not interested in sharing phone number</Text>
+              <Text style={styles.checkboxLabel}>{t('staff.no_phone_interest')}</Text>
             </TouchableOpacity>
 
             {/* Receipt photo panel — shown when no phone OR no WhatsApp OR unverified */}
@@ -332,17 +335,29 @@ const CollectDonationScreen = ({ navigation, route }) => {
             )}
 
             {/* Donation Amount */}
-            <Text style={styles.inputLabel}>Donation Amount (₹) <Text style={styles.asterisk}>*</Text></Text>
+            <Text style={styles.inputLabel}>{t('staff.donation_amount')} <Text style={styles.asterisk}>*</Text></Text>
             <View style={[styles.inputWrapper, errors.amount && styles.inputError]}>
               <Text style={styles.rupeeIcon}>₹</Text>
               <TextInput
                 style={styles.input}
                 value={form.amount}
                 onChangeText={v => set('amount', v)}
-                placeholder="Amount in ₹"
+                placeholder={t('staff.amount_placeholder')}
                 placeholderTextColor="#94A3B8"
                 keyboardType="numeric"
               />
+            </View>
+            {errors.amount ? <Text style={styles.errorText}>{errors.amount}</Text> : null}
+            <View style={styles.quickAmounts}>
+              {[50, 100, 500, 1000].map(amt => (
+                <TouchableOpacity 
+                  key={amt} 
+                  style={styles.quickAmountBtn}
+                  onPress={() => { set('amount', amt.toString()); setErrors(e => ({...e, amount: ''})); }}
+                >
+                  <Text style={styles.quickAmountText}>₹{amt}</Text>
+                </TouchableOpacity>
+              ))}
             </View>
           </View>
 
@@ -352,7 +367,7 @@ const CollectDonationScreen = ({ navigation, route }) => {
               <View style={styles.iconCircle}>
                 <Ionicons name="card-outline" size={16} color="#0B57D0" />
               </View>
-              <Text style={styles.cardTitle}>Payment Method</Text>
+              <Text style={styles.cardTitle}>{t('staff.payment_method')}</Text>
             </View>
 
             <View style={styles.methodRow}>
@@ -370,14 +385,27 @@ const CollectDonationScreen = ({ navigation, route }) => {
                         <Ionicons name="checkmark" size={12} color="#0B57D0" />
                       </View>
                     )}
-                    <Ionicons 
-                      name={m.icon} 
-                      size={28} 
-                      color={isActive ? "#FFFFFF" : "#0B57D0"} 
-                      style={{ marginBottom: 8 }} 
-                    />
+                    {m.isImage ? (
+                      <Image 
+                        source={m.key === 'CASH' ? require('../../../assets/cash.png') : require('../../../assets/gpay.png')} 
+                        style={{ 
+                          width: m.key === 'CASH' ? 60 : 54, 
+                          height: m.key === 'CASH' ? 60 : 32, 
+                          marginBottom: 4, 
+                          borderRadius: m.key === 'CASH' ? 12 : 0 
+                        }} 
+                        resizeMode="contain" 
+                      />
+                    ) : (
+                      <Ionicons 
+                        name={m.icon} 
+                        size={28} 
+                        color={isActive ? "#FFFFFF" : "#0B57D0"} 
+                        style={{ marginBottom: 8 }} 
+                      />
+                    )}
                     <Text style={[styles.methodLabel, isActive && styles.methodLabelActive]}>
-                      {m.label}
+                      {t(`staff.${m.key.toLowerCase()}`, m.label)}
                     </Text>
                   </TouchableOpacity>
                 );
@@ -387,14 +415,14 @@ const CollectDonationScreen = ({ navigation, route }) => {
             {form.payment_method === 'CHEQUE' && (
               <View style={[styles.inputWrapper, { marginTop: 16 }]}>
                 <Ionicons name="document-text-outline" size={20} color="#64748B" style={styles.inputIcon} />
-                <TextInput style={styles.input} value={form.notes} onChangeText={v => set('notes', v)} placeholder="Enter cheque number" placeholderTextColor="#94A3B8" />
+                <TextInput style={styles.input} value={form.notes} onChangeText={v => set('notes', v)} placeholder={t('staff.enter_cheque')} placeholderTextColor="#94A3B8" />
               </View>
             )}
             
             {form.payment_method === 'UPI' && (
               <View style={[styles.inputWrapper, { marginTop: 16 }]}>
                 <Ionicons name="scan-outline" size={20} color="#64748B" style={styles.inputIcon} />
-                <TextInput style={styles.input} value={form.notes} onChangeText={v => set('notes', v)} placeholder="Enter UPI ref number" placeholderTextColor="#94A3B8" />
+                <TextInput style={styles.input} value={form.notes} onChangeText={v => set('notes', v)} placeholder={t('staff.enter_upi')} placeholderTextColor="#94A3B8" />
               </View>
             )}
           </View>
@@ -407,12 +435,12 @@ const CollectDonationScreen = ({ navigation, route }) => {
             activeOpacity={0.8}
           >
             <Text style={styles.submitButtonText}>
-              {loading ? (isEdit ? 'Updating...' : 'Recording...') : (isEdit ? 'Update Donation' : 'Record Donation')}
+              {loading ? (isEdit ? t('staff.updating') : t('staff.recording')) : (isEdit ? t('staff.update_donation') : t('staff.record_donation'))}
             </Text>
           </TouchableOpacity>
           
           {!isOnline && (
-            <Text style={styles.offlineNote}>You're offline. Donation will be saved and synced automatically.</Text>
+            <Text style={styles.offlineNote}>{t('staff.offline_note')}</Text>
           )}
 
         </KeyboardAwareScrollView>
@@ -423,12 +451,12 @@ const CollectDonationScreen = ({ navigation, route }) => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Ionicons name="checkmark-circle" size={60} color="#16B978" style={{ marginBottom: 16 }} />
-            <Text style={styles.modalTitle}>Donation Collected!</Text>
+            <Text style={styles.modalTitle}>{t('staff.donation_collected', 'Donation Collected!')}</Text>
             <Text style={styles.modalText}>
-              Successfully recorded ₹{successData?.amount} from {successData?.donor_name}.
+              {t('staff.success_recorded_amount', 'Successfully recorded ₹{{amount}} from {{donor_name}}.', { amount: successData?.amount, donor_name: successData?.donor_name })}
             </Text>
             {successData?.receipt_number && (
-              <Text style={styles.modalText}>Receipt No: {successData?.receipt_number}</Text>
+              <Text style={styles.modalText}>{t('staff.voucher_id', 'Voucher ID')}: {successData?.receipt_number}</Text>
             )}
             
             <View style={{ width: '100%', marginTop: 24, gap: 10 }}>
@@ -439,7 +467,7 @@ const CollectDonationScreen = ({ navigation, route }) => {
                   navigation.goBack();
                 }}
               >
-                <Text style={styles.submitButtonText}>Done</Text>
+                <Text style={styles.submitButtonText}>{t('common.done')}</Text>
               </TouchableOpacity>
             </View>
           </View>

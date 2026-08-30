@@ -257,8 +257,12 @@ export const performancePointsApi = {
 // ── Attendance ───────────────────────────────────────────────────────────────
 export const attendanceApi = {
   myAttendance: () => api.get('/hr/attendance/my-attendance/'),
-  checkIn:      () => api.post('/hr/attendance/my-attendance/', { action: 'check_in' }),
-  checkOut:     () => api.post('/hr/attendance/my-attendance/', { action: 'check_out' }),
+  checkIn:      (formData) => api.post('/hr/attendance/my-attendance/', formData || { action: 'check_in' }, {
+    headers: formData ? { 'Content-Type': 'multipart/form-data' } : {},
+  }),
+  checkOut:     (formData) => api.post('/hr/attendance/my-attendance/', formData || { action: 'check_out' }, {
+    headers: formData ? { 'Content-Type': 'multipart/form-data' } : {},
+  }),
 };
 
 // ── Events / Newsletters ──────────────────────────────────────────────────────

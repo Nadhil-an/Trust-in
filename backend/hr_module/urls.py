@@ -68,6 +68,7 @@ urlpatterns = [
     path('promoter-registry/', views.PromoterRegistryListCreateView.as_view()),
     path('promoter-registry/daily-summary/', views.PromoterRegistryDailySummaryView.as_view()),
     path('promoter-registry/is-closed/', views.PromoterRegistryCheckClosedView.as_view()),
+    path('promoter-registry/transactions/', views.DailyTransactionHistoryView.as_view()),
     path('promoter-registry/<uuid:pk>/', views.PromoterRegistryDetailView.as_view()),
 ]
 

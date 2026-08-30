@@ -14,7 +14,7 @@ export default function PromotorRegistry() {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await hrApi.promoterRegistry.dailySummary(dateFilter)
+      const res = await hrApi.promoterRegistry.dailySummary(dateFilter, { verification_status: 'VERIFIED' })
       const summaryList = res.data || []
 
       // Map into editable row objects
@@ -89,6 +89,7 @@ export default function PromotorRegistry() {
         online_collected: parseFloat(row.online_collected) || 0,
         cash_submitted: parseFloat(row.cash_submitted) || 0,
         ...(action === 'close' ? { is_closed: true } : action === 'reopen' ? { is_closed: false } : {}),
+        ...(action === 'unverify' ? { verification_status: 'UNVERIFIED' } : {})
       }
 
       // Discrepancy warning before closing
@@ -363,21 +364,21 @@ export default function PromotorRegistry() {
                               <span style={{ color: '#16A34A', fontWeight: 700, fontSize: 13 }}>🔒 Done</span>
                               <button className="btn btn-sm"
                                 style={{ background: '#EAB308', color: 'white', border: 'none', padding: '3px 8px', borderRadius: 4, cursor: 'pointer', fontSize: 11 }}
-                                disabled={isSaving}
+                                disabled={savingId === row.staff_id}
                                 onClick={() => handleSave(row, 'reopen')}
                                 title="Reopen for editing"
                               >
-                                {isSaving ? '...' : 'Edit'}
+                                {savingId === row.staff_id ? '...' : 'Edit'}
                               </button>
                             </div>
                           ) : (
                             <div style={{ display: 'flex', gap: 6 }}>
                               <button className="btn btn-sm"
                                 style={{ background: '#4F46E5', color: 'white', border: 'none', padding: '5px 12px', borderRadius: 6, cursor: 'pointer', fontSize: 12 }}
-                                disabled={!row.hasChanges || isSaving}
+                                disabled={!row.hasChanges || savingId === row.staff_id}
                                 onClick={() => handleSave(row, 'save')}
                               >
-                                {isSaving ? '...' : 'Save'}
+                                {savingId === row.staff_id ? '...' : 'Save'}
                               </button>
                               <button className="btn btn-sm"
                                 style={{
@@ -385,11 +386,23 @@ export default function PromotorRegistry() {
                                   padding: '5px 12px', borderRadius: 6, cursor: 'pointer', fontSize: 12,
                                   opacity: row.cash_submitted === '' ? 0.5 : 1
                                 }}
-                                disabled={isSaving || row.cash_submitted === ''}
+                                disabled={savingId === row.staff_id || row.cash_submitted === ''}
                                 onClick={() => handleSave(row, 'close')}
                                 title="Close the day for this staff member"
                               >
-                                {isSaving ? '...' : '🔒 Close'}
+                                {savingId === row.staff_id ? '...' : '🔒 Close'}
+                              </button>
+                              
+                              <button 
+                                className="btn btn-sm" 
+                                style={{ background: '#FEE2E2', color: '#EF4444', border: 'none', padding: '5px 12px', borderRadius: 6, cursor: 'pointer', fontSize: 12 }} 
+                                onClick={() => {
+                                  if(window.confirm('Are you sure you want to unverify this? It will be moved back to the Verification Dashboard.')) {
+                                    handleSave(row, 'unverify')
+                                  }
+                                }}
+                              >
+                                Unverify
                               </button>
                             </div>
                           )}

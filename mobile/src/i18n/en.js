@@ -157,7 +157,7 @@ export default {
     offline_note: '📴 You\'re offline. Action will be saved and synced automatically.',
     donation_collected: 'Donation Collected!',
     recorded_success: 'Successfully recorded ₹{{amount}} from {{name}}.',
-    receipt_no: 'Receipt No: {{receipt}}',
+    receipt_no: 'Voucher ID: {{receipt}}',
     send_whatsapp: 'Send WhatsApp Receipt',
     member_types: {
       general: 'General',
@@ -390,7 +390,7 @@ export default {
     submit_section: 'Submit Section',
     required: 'Required',
     loading_assessment: 'Loading Assessment...',
-    characters: 'characters (min. 20)',
+    characters: 'characters',
     invalid_phone: 'Invalid Phone',
     invalid_phone_msg: 'Please enter a valid 10-digit phone number.',
     required_alert: 'Required',

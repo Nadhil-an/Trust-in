@@ -302,7 +302,13 @@ class Attendance(models.Model):
     employee = models.ForeignKey(ExecutiveOfficer, on_delete=models.CASCADE, related_name='attendance_records')
     date = models.DateField(db_index=True)
     check_in = models.TimeField(null=True, blank=True)
+    check_in_photo = models.ImageField(upload_to='attendance/photos/', null=True, blank=True)
+    check_in_location = models.CharField(max_length=500, null=True, blank=True)
+    
     check_out = models.TimeField(null=True, blank=True)
+    check_out_photo = models.ImageField(upload_to='attendance/photos/', null=True, blank=True)
+    check_out_location = models.CharField(max_length=500, null=True, blank=True)
+    
     working_hours = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
     status = models.CharField(max_length=20, choices=AttendanceStatus.choices)
     remarks = models.CharField(max_length=255, blank=True)
@@ -604,6 +610,9 @@ class StaffVoucherBook(models.Model):
             'book_number', 'voucher_start', 'voucher_end', 'current_voucher',
             'next_book_number', 'next_voucher_start', 'next_voucher_end', 'updated_at'
         ])
+class VerificationStatus(models.TextChoices):
+    UNVERIFIED = 'UNVERIFIED', 'Unverified'
+    VERIFIED = 'VERIFIED', 'Verified'
 
 
 class PromoterRegistryEntry(models.Model):
@@ -636,6 +645,13 @@ class PromoterRegistryEntry(models.Model):
     closed_at = models.DateTimeField(null=True, blank=True)
     closed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
         related_name='promoter_closings')
+
+    verification_status = models.CharField(
+        max_length=20, 
+        choices=VerificationStatus.choices, 
+        default=VerificationStatus.UNVERIFIED,
+        help_text='Indicates if the entry has been verified in the Verification Dashboard.'
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,

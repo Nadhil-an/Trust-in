@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from "react"
 import { accountsApi } from "../../api"
 import { AmountDisplay, LoadingState, EmptyState, PageHeader, FilterBar, Modal, formatINR } from "../../components/shared"
+import PaymentMethodSelector from "../../components/PaymentMethodSelector"
 import { format } from "date-fns"
 import toast from "react-hot-toast"
 import { isValidPhone, isPositiveNumber } from "../../utils/validators"
@@ -112,9 +113,19 @@ export default function IncomeList() {
                 ["account_type","Account Type","select",["CASH","BANK"]],["reference_number","Reference Number","text",null]].map(([k,l,t,opts])=>(
                 <div className="form-group" key={k}>
                   <label className={`form-label ${["date","amount","phone"].includes(k)?"required":""}`}>{l}</label>
-                  {t==="select" ? <select className="form-control" name={k} value={form[k]} onChange={e=>setForm(f=>({...f,[k]:e.target.value}))}>
-                    {opts.map(o=><option key={o}>{o}</option>)}</select>
-                  : <input className="form-control" type={t} name={k} value={form[k]} onChange={e=>setForm(f=>({...f,[k]: k === 'phone' ? e.target.value.replace(/\D/g, '').slice(0, 10) : e.target.value}))} required={["date","amount","phone"].includes(k)} />}
+                  {k === "payment_method" ? (
+                    <PaymentMethodSelector 
+                      value={form[k]} 
+                      onChange={v=>setForm(f=>({...f,[k]:v}))} 
+                      options={opts} 
+                    />
+                  ) : t==="select" ? (
+                    <select className="form-control" name={k} value={form[k]} onChange={e=>setForm(f=>({...f,[k]:e.target.value}))}>
+                      {opts.map(o=><option key={o}>{o}</option>)}
+                    </select>
+                  ) : (
+                    <input className="form-control" type={t} name={k} value={form[k]} onChange={e=>setForm(f=>({...f,[k]: k === 'phone' ? e.target.value.replace(/\D/g, '').slice(0, 10) : e.target.value}))} required={["date","amount","phone"].includes(k)} />
+                  )}
                 </div>
               ))}
               <div className="form-group"><label className="form-label">Address</label>

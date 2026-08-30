@@ -8,7 +8,8 @@ import {
   Image,
   Modal,
   TextInput,
-  ActivityIndicator
+  ActivityIndicator,
+  Switch
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,9 +17,19 @@ import { Colors } from '../../constants/Colors';
 import { useAuthStore } from '../../store/authStore';
 import { authApi } from '../../api';
 import Toast from 'react-native-toast-message';
+import { useTranslation } from 'react-i18next';
+import { changeLanguage } from '../../i18n';
 
 const ProfileScreen = ({ navigation }) => {
   const { user, updateUser, logout } = useAuthStore();
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language;
+  
+  const toggleLanguage = async () => {
+    const newLang = currentLang === 'en' ? 'ml' : 'en';
+    await changeLanguage(newLang, user?.id);
+    Toast.show({ type: 'success', text1: newLang === 'ml' ? 'ഭാഷ മാറ്റി' : 'Language changed' });
+  };
   
   // Change Password Modal state
   const [pwdModal, setPwdModal] = useState(false);
@@ -174,7 +185,7 @@ const ProfileScreen = ({ navigation }) => {
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={Colors.white} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Profile</Text>
+        <Text style={styles.headerTitle}>{t('member.my_profile')}</Text>
         <TouchableOpacity style={styles.editHeaderBtn} onPress={openEditModal}>
           <Ionicons name="create-outline" size={22} color={Colors.white} />
         </TouchableOpacity>
@@ -193,8 +204,8 @@ const ProfileScreen = ({ navigation }) => {
             </TouchableOpacity>
             <View style={styles.profileHeaderInfo}>
               <Text style={styles.name}>{memberName}</Text>
-              <Text style={styles.metaText}>Member ID: {memberId}</Text>
-              <Text style={styles.metaText}>Member Since {memberSince}</Text>
+              <Text style={styles.metaText}>{t('member.member_id')}: {memberId}</Text>
+              <Text style={styles.metaText}>{t('member.member_since')} {memberSince}</Text>
             </View>
           </View>
 
@@ -225,12 +236,12 @@ const ProfileScreen = ({ navigation }) => {
         </View>
 
         {/* Account Details Section */}
-        <Text style={styles.sectionTitle}>Account Details</Text>
+        <Text style={styles.sectionTitle}>{t('staff.personal_info')}</Text>
         <View style={styles.menuBox}>
           <TouchableOpacity style={styles.menuRow} onPress={openEditModal}>
             <View style={styles.menuLeft}>
               <Ionicons name="person-outline" size={20} color={Colors.gray600} />
-              <Text style={styles.menuText}>Edit Profile</Text>
+              <Text style={styles.menuText}>{t('common.edit')}</Text>
             </View>
             <Ionicons name="chevron-forward" size={18} color={Colors.gray400} />
           </TouchableOpacity>
@@ -238,15 +249,29 @@ const ProfileScreen = ({ navigation }) => {
           <TouchableOpacity style={styles.menuRow} onPress={() => setPwdModal(true)}>
             <View style={styles.menuLeft}>
               <Ionicons name="lock-closed-outline" size={20} color={Colors.gray600} />
-              <Text style={styles.menuText}>Change Password</Text>
+              <Text style={styles.menuText}>{t('auth.change_password')}</Text>
             </View>
             <Ionicons name="chevron-forward" size={18} color={Colors.gray400} />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.menuRow} onPress={toggleLanguage}>
+            <View style={styles.menuLeft}>
+              <Ionicons name="language-outline" size={20} color={Colors.gray600} />
+              <Text style={styles.menuText}>{t('settings.language')} ( {currentLang === 'en' ? 'English' : 'മലയാളം'} )</Text>
+            </View>
+            <View pointerEvents="none">
+              <Switch 
+                value={currentLang === 'ml'} 
+                trackColor={{ false: '#d1d5db', true: '#0ea5e9' }}
+                thumbColor="#fff"
+              />
+            </View>
           </TouchableOpacity>
 
           <TouchableOpacity style={[styles.menuRow, { borderBottomWidth: 0 }]}>
             <View style={styles.menuLeft}>
               <Ionicons name="notifications-outline" size={20} color={Colors.gray600} />
-              <Text style={styles.menuText}>Notification Settings</Text>
+              <Text style={styles.menuText}>{t('settings.notifications')}</Text>
             </View>
             <Ionicons name="chevron-forward" size={18} color={Colors.gray400} />
           </TouchableOpacity>
@@ -255,7 +280,7 @@ const ProfileScreen = ({ navigation }) => {
         {/* Logout Button */}
         <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
           <Ionicons name="log-out-outline" size={20} color="#ef4444" />
-          <Text style={styles.logoutText}>Logout</Text>
+          <Text style={styles.logoutText}>{t('auth.logout')}</Text>
         </TouchableOpacity>
       </ScrollView>
 

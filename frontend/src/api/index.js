@@ -47,9 +47,13 @@ api.interceptors.response.use(
         return api(originalRequest)
       } catch (refreshError) {
         processQueue(refreshError, null)
-        // Clear Zustand auth state so it doesn't infinite loop
-        localStorage.removeItem('slt-auth')
-        window.location.href = '/slt/portal/auth'
+        if (typeof window !== 'undefined') {
+          const state = window.localStorage.getItem('slt-auth')
+          if (state) {
+            window.localStorage.removeItem('slt-auth')
+            window.location.href = '/slt/portal/auth'
+          }
+        }
         return Promise.reject(refreshError)
       } finally {
         isRefreshing = false
@@ -148,6 +152,7 @@ export const accountsApi = {
     list: (params) => api.get('/accounts/income/', { params }),
     create: (data) => api.post('/accounts/income/', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
     get: (id) => api.get(`/accounts/income/${id}/`),
+    delete: (id) => api.delete(`/accounts/income/${id}/`),
   },
   expenses: {
     list: (params) => api.get('/accounts/expenses/', { params }),
@@ -280,9 +285,10 @@ export const hrApi = {
     update: (id, data) => api.patch(`/hr/promoter-registry/${id}/`, data),
     get: (id) => api.get(`/hr/promoter-registry/${id}/`),
     delete: (id) => api.delete(`/hr/promoter-registry/${id}/`),
-    dailySummary: (date) => api.get('/hr/promoter-registry/daily-summary/', { params: { date } }),
+    dailySummary: (date, extraParams = {}) => api.get('/hr/promoter-registry/daily-summary/', { params: { date, ...extraParams } }),
     checkClosed: (staffId, date) => api.get('/hr/promoter-registry/is-closed/', { params: { staff_id: staffId, date } }),
     closeDay: (id, cashSubmitted) => api.patch(`/hr/promoter-registry/${id}/`, { is_closed: true, cash_submitted: cashSubmitted }),
+    transactions: (staffId, date) => api.get('/hr/promoter-registry/transactions/', { params: { staff_id: staffId, date } }),
   },
 }
 
