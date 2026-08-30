@@ -153,6 +153,13 @@ export default function Requests() {
 
   useEffect(() => { load() }, [load])
 
+  // Real-time synchronization
+  useEffect(() => {
+    const handleRefresh = () => load()
+    window.addEventListener('dashboard-refresh', handleRefresh)
+    return () => window.removeEventListener('dashboard-refresh', handleRefresh)
+  }, [load])
+
   useEffect(() => {
     const handler = () => load()
     window.addEventListener('request-update', handler)

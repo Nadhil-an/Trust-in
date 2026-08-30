@@ -29,6 +29,13 @@ export default function MobileAccess() {
   
   useEffect(() => { load() }, [load])
 
+  // Real-time synchronization
+  useEffect(() => {
+    const handleRefresh = () => load()
+    window.addEventListener('dashboard-refresh', handleRefresh)
+    return () => window.removeEventListener('dashboard-refresh', handleRefresh)
+  }, [load])
+
   const handleSave = async (e) => {
     e.preventDefault(); setSaving(true)
     try {

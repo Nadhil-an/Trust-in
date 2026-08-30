@@ -12,10 +12,10 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 import re
 
-from core.models import User, AuditLog, SystemNotification, Role
+from core.models import User, AuditLog, SystemNotification, Role, RoleFeaturePermission
 from core.serializers import (UserSerializer, UserCreateSerializer,
                                 UserUpdateSerializer, ChangePasswordSerializer,
-                                AuditLogSerializer, NotificationSerializer)
+                                AuditLogSerializer, NotificationSerializer, EventSerializer)
 from core.permissions import IsAdmin, IsHR, IsAnyStaff
 
 
@@ -252,10 +252,15 @@ class ProfileView(APIView):
         return Response(UserSerializer(request.user).data)
 
     def patch(self, request):
+        print("INCOMING PATCH to ProfileView")
+        print("FILES:", request.FILES)
+        print("DATA:", request.data)
         serializer = UserUpdateSerializer(request.user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
+            print("SAVE SUCCESS!")
             return Response(serializer.data)
+        print("SERIALIZER ERRORS:", serializer.errors)
         return Response(serializer.errors, status=400)
 
 
@@ -439,3 +444,48 @@ class GlobalSearchView(APIView):
                             'status': t.status, 'url': f'/slt/finance/transactions/{t.id}'})
 
         return Response({'results': results, 'query': q})
+
+from rest_framework.viewsets import ModelViewSet
+from core.models import Event
+from rest_framework.parsers import MultiPartParser, FormParser
+
+class EventViewSet(ModelViewSet):
+    queryset = Event.objects.all()
+    serializer_class = EventSerializer
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+    filterset_fields = ['category']
+
+class RoleFeaturePermissionView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """Get enabled features for the current user's role (or all if admin requested all)."""
+        if request.query_params.get('all') == 'true' and request.user.role == Role.ADMIN:
+            # Return mapping { "feature_key": ["ROLE1", "ROLE2"] }
+            mappings = {}
+            for perm in RoleFeaturePermission.objects.all():
+                if perm.feature_key not in mappings:
+                    mappings[perm.feature_key] = []
+                mappings[perm.feature_key].append(perm.role)
+            return Response(mappings)
+            
+        perms = RoleFeaturePermission.objects.filter(role=request.user.role).values_list('feature_key', flat=True)
+        return Response(list(perms))
+
+    def post(self, request):
+        """Update feature permissions (Admin only)"""
+        if request.user.role != Role.ADMIN:
+            return Response({'error': 'Unauthorized'}, status=403)
+            
+        feature_key = request.data.get('feature_key')
+        roles = request.data.get('roles', [])
+        
+        if not feature_key:
+            return Response({'error': 'feature_key required'}, status=400)
+            
+        RoleFeaturePermission.objects.filter(feature_key=feature_key).delete()
+        new_perms = [RoleFeaturePermission(role=r, feature_key=feature_key) for r in roles if r in dict(Role.choices)]
+        RoleFeaturePermission.objects.bulk_create(new_perms)
+        
+        return Response({'message': 'Updated successfully'})

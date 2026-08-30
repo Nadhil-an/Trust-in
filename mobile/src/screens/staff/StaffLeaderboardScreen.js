@@ -85,7 +85,7 @@ const StaffLeaderboardScreen = ({ navigation }) => {
         </View>
         <View style={styles.infoContainer}>
           <Text style={styles.nameText}>{item.name}</Text>
-          <Text style={styles.idText}>Staff ID: ST{String(item.staff_id).substring(0, 3).toUpperCase()}</Text>
+          <Text style={styles.idText}>Staff ID: {item.staff_uid || 'N/A'}</Text>
         </View>
         <View style={styles.amountContainer}>
           <Text style={styles.amountText}>₹ {item.amount.toLocaleString('en-IN')}</Text>

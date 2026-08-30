@@ -1,6 +1,6 @@
 """Core module serializers — User and AuditLog"""
 from rest_framework import serializers
-from core.models import User, AuditLog, SystemNotification
+from core.models import User, AuditLog, SystemNotification, Event
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -58,3 +58,9 @@ class NotificationSerializer(serializers.ModelSerializer):
         model = SystemNotification
         fields = '__all__'
         read_only_fields = ['id', 'created_at']
+
+class EventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Event
+        fields = '__all__'
+        read_only_fields = ['id', 'created_at', 'updated_at']

@@ -175,10 +175,20 @@ export default function Donations() {
                         }
                       };
 
+                      const formatTime = (isoString) => {
+                        try {
+                          if (!isoString) return '';
+                          return format(new Date(isoString), 'hh:mm a');
+                        } catch (e) {
+                          return '';
+                        }
+                      };
+
                       return (
                         <tr key={item.id}>
-                          <td style={{ fontSize: 13, color: '#6b7280' }}>
-                            {formatDate(item.date, item.created_at)}
+                          <td style={{ color: '#6b7280' }}>
+                            <div style={{ fontSize: 13, fontWeight: 500, color: '#374151' }}>{formatDate(item.date, item.created_at)}</div>
+                            <div style={{ fontSize: 12, marginTop: 2, color: '#6B7280', fontWeight: 500 }}>{formatTime(item.created_at)}</div>
                           </td>
                           <td style={{ fontWeight: 600, color: '#111827' }}>{item.created_by_name || '—'}</td>
                           <td>{item.donor_name || 'Anonymous'}</td>

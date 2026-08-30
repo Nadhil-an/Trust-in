@@ -99,10 +99,7 @@ export default function PaymentAdvanceScreen({ navigation, route }) {
     }
     const formattedDate = `${match[3]}-${match[2]}-${match[1]}`; // YYYY-MM-DD
 
-    if (!reason.trim()) {
-      Toast.show({ type: 'error', text1: 'Reason Required', text2: 'Please state your reason for advance' });
-      return;
-    }
+    // Reason is now optional
 
     setSubmitting(true);
     try {

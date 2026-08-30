@@ -6,40 +6,46 @@ import { format } from 'date-fns'
 
 const ENTRIES = [
   {
-    icon: '📥', label: 'Inward Entry',
-    desc: 'Record incoming goods, materials & receipts',
-    path: '/data-entry/inward',
-    color: '#1E4DB7', bg: '#EFF6FF', border: '#BFDBFE',
-  },
-  {
-    icon: '📤', label: 'Outward Entry',
-    desc: 'Record outgoing goods & disbursements',
-    path: '/data-entry/outward',
-    color: '#8B5CF6', bg: '#F5F3FF', border: '#DDD6FE',
-  },
-  {
-    icon: '🛒', label: 'Purchase Entry',
-    desc: 'Record purchases & procurement',
-    path: '/data-entry/purchase',
-    color: '#F59E0B', bg: '#FFFBEB', border: '#FDE68A',
-  },
-  {
     icon: '💝', label: 'Donation Entry',
     desc: 'Record donations from donors',
-    path: '/data-entry/donation',
+    path: '/slt/entry/donation',
     color: '#EC4899', bg: '#FDF2F8', border: '#FBCFE8',
   },
   {
     icon: '🪪', label: 'Membership Entry',
     desc: 'Record membership fee payments',
-    path: '/data-entry/membership',
+    path: '/slt/entry/membership',
     color: '#10B981', bg: '#ECFDF5', border: '#A7F3D0',
   },
   {
     icon: '🤝', label: 'Partners Entry',
     desc: 'Register new partners & organisations',
-    path: '/data-entry/partners',
+    path: '/slt/entry/partners',
     color: '#6366F1', bg: '#EEF2FF', border: '#C7D2FE',
+  },
+  {
+    icon: '📥', label: 'Inward Entry',
+    desc: 'Record incoming goods, materials & receipts',
+    path: '/slt/entry/inward',
+    color: '#1E4DB7', bg: '#EFF6FF', border: '#BFDBFE',
+  },
+  {
+    icon: '📤', label: 'Outward Entry',
+    desc: 'Record outgoing goods & disbursements',
+    path: '/slt/entry/outward',
+    color: '#8B5CF6', bg: '#F5F3FF', border: '#DDD6FE',
+  },
+  {
+    icon: '🛒', label: 'Purchase / Orders Entry',
+    desc: 'Record purchases, procurement or orders',
+    path: '/slt/entry/purchase',
+    color: '#F59E0B', bg: '#FFFBEB', border: '#FDE68A',
+  },
+  {
+    icon: '📅', label: 'Event Entry',
+    desc: 'Record event details and participants',
+    path: '/slt/entry/events',
+    color: '#06B6D4', bg: '#ECFEFF', border: '#A5F3FC',
   },
 ]
 

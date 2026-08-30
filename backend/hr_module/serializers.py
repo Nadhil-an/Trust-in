@@ -3,10 +3,13 @@ from rest_framework import serializers
 from hr_module.models import (Member, MemberDocument, Volunteer, ExecutiveMember,
                                ExecutiveOfficer, SalaryStructure, Attendance,
                                LeaveRequest, MonthlyPayroll, EmployeeDocument,
-                               Complaint, StaffReport, PaymentAdvanceRequest, PerformancePoint)
+                               Complaint, StaffReport, PaymentAdvanceRequest, PerformancePoint,
+                               PromoterRegistryEntry)
 
 
 class MemberSerializer(serializers.ModelSerializer):
+    document = serializers.FileField(required=False, write_only=True)
+
     class Meta:
         model = Member
         fields = '__all__'
@@ -55,13 +58,36 @@ class ExecutiveOfficerSerializer(serializers.ModelSerializer):
     def get_user_id(self, obj):
         from django.db.models import Q
         from core.models import User
-        user = User.objects.filter(Q(email__iexact=obj.email) | Q(full_name__iexact=obj.full_name)).first()
+        
+        # Build query avoiding empty email strings matching incorrectly
+        q = Q(full_name__iexact=obj.full_name)
+        if obj.email:
+            q |= Q(email__iexact=obj.email)
+            
+        users = User.objects.filter(q)
+        
+        if obj.designation:
+            user = users.filter(role__iexact=obj.designation).first()
+            if user: return str(user.id)
+            
+        user = users.first()
         return str(user.id) if user else None
 
     def get_username(self, obj):
         from django.db.models import Q
         from core.models import User
-        user = User.objects.filter(Q(email__iexact=obj.email) | Q(full_name__iexact=obj.full_name)).first()
+        
+        q = Q(full_name__iexact=obj.full_name)
+        if obj.email:
+            q |= Q(email__iexact=obj.email)
+            
+        users = User.objects.filter(q)
+        
+        if obj.designation:
+            user = users.filter(role__iexact=obj.designation).first()
+            if user: return user.username
+            
+        user = users.first()
         return user.username if user else ''
 
 
@@ -196,3 +222,36 @@ class PerformancePointSerializer(serializers.ModelSerializer):
     def get_awarded_by_name(self, obj):
         return obj.awarded_by.full_name if obj.awarded_by else ''
 
+
+class PromoterRegistrySerializer(serializers.ModelSerializer):
+    promoter_name = serializers.SerializerMethodField()
+    total_collected = serializers.SerializerMethodField()
+    has_discrepancy = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PromoterRegistryEntry
+        fields = [
+            'id', 'date', 'promoter', 'promoter_name',
+            'entry_code', 'starting_reading', 'ending_reading',
+            'cash_collected', 'online_collected', 'cash_submitted',
+            'total_collected', 'has_discrepancy',
+            'is_closed', 'closed_at',
+            'created_at', 'created_by',
+        ]
+        read_only_fields = ['id', 'created_by', 'created_at', 'closed_at']
+
+    def get_promoter_name(self, obj):
+        return obj.promoter.full_name if obj.promoter else ''
+
+    def get_total_collected(self, obj):
+        return float(obj.cash_collected) + float(obj.online_collected)
+
+    def get_has_discrepancy(self, obj):
+        return obj.has_discrepancy
+
+    def validate(self, data):
+        start = data.get('starting_reading')
+        end = data.get('ending_reading')
+        if start is not None and end is not None and end > 0 and end < start:
+            raise serializers.ValidationError("Ending reading must be >= starting reading.")
+        return data

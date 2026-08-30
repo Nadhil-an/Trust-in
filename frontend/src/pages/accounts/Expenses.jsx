@@ -31,6 +31,13 @@ export default function ExpenseList() {
 
   useEffect(() => { load() }, [load])
 
+  // Real-time synchronization
+  useEffect(() => {
+    const handleRefresh = () => load()
+    window.addEventListener('dashboard-refresh', handleRefresh)
+    return () => window.removeEventListener('dashboard-refresh', handleRefresh)
+  }, [load])
+
   const handleSave = async (e) => {
     e.preventDefault();
     if (!isPositiveNumber(form.amount)) return toast.error("Amount must be a positive number");

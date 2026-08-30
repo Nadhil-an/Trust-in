@@ -25,8 +25,8 @@ def generate_member_receipt_image_bytes(member: Member, receipt_number: str = No
 
     # Try loading truetype font, fallback to default font
     try:
-        font_bold = ImageFont.truetype("arialbd.ttf", 16)
-        font_regular = ImageFont.truetype("arial.ttf", 15)
+        font_bold = ImageFont.truetype("arialbd.ttf", 20)
+        font_regular = ImageFont.truetype("arialbd.ttf", 20)
         font_small_bold = ImageFont.truetype("arialbd.ttf", 14)
         font_large_amount = ImageFont.truetype("arialbd.ttf", 36)
     except Exception:
@@ -109,7 +109,7 @@ def generate_member_receipt_image_bytes(member: Member, receipt_number: str = No
 
     # 8. Clear & Overwrite Amount Box — Y: 652-692
     draw.rectangle([248, 652, 438, 692], fill=WHITE_BG)
-    amount_str = f"₹{fee_amount:,.2f}"
+    amount_str = f"Rs. {fee_amount:,.2f}"
     draw.text((258, 652), amount_str, font=font_large_amount, fill=TEXT_BLUE)
 
     import io

@@ -510,7 +510,7 @@ class PaymentAdvanceRequest(models.Model):
     employee = models.ForeignKey(ExecutiveOfficer, on_delete=models.SET_NULL, null=True, blank=True, related_name='advance_requests')
     requested_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='payment_advances')
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    reason = models.TextField()
+    reason = models.TextField(blank=True, null=True)
     needed_by_date = models.DateField()  # Date staff requests to receive the payment
     payout_date = models.DateField(null=True, blank=True)  # Date HR agrees/schedules to disburse it
     status = models.CharField(max_length=20, choices=PaymentAdvanceStatus.choices, default=PaymentAdvanceStatus.PENDING)
@@ -551,4 +551,110 @@ class PerformancePoint(models.Model):
     class Meta:
         db_table = 'hr_performance_points'
         ordering = ['-year', '-month', '-created_at']
+
+
+class StaffVoucherBook(models.Model):
+    """
+    Tracks the voucher book assigned to each STAFF user.
+    HR assigns the book; the current_voucher auto-increments after
+    every Add Member or Donation Collection receipt.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    staff = models.OneToOneField(
+        User, on_delete=models.CASCADE,
+        related_name='voucher_book',
+        limit_choices_to={'role': 'STAFF'},
+    )
+    book_number = models.PositiveIntegerField(default=1, help_text="Voucher book number (e.g. 1, 2, 3)")
+    voucher_start = models.PositiveIntegerField(default=1, help_text="First voucher number in the book")
+    voucher_end = models.PositiveIntegerField(default=100, help_text="Last voucher number in the book")
+    current_voucher = models.PositiveIntegerField(default=1, help_text="Next voucher to be issued")
+
+    # Queued Next Book Fields
+    next_book_number = models.PositiveIntegerField(null=True, blank=True, help_text="Queued next book number")
+    next_voucher_start = models.PositiveIntegerField(null=True, blank=True, help_text="First voucher number of next book")
+    next_voucher_end = models.PositiveIntegerField(null=True, blank=True, help_text="Last voucher number of next book")
+
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='voucher_updates')
+
+    class Meta:
+        db_table = 'hr_staff_voucher_books'
+
+    def __str__(self):
+        return f"Book {self.book_number} — {self.staff.full_name} (Current: {self.current_voucher})"
+
+    def increment(self):
+        """Advance the current voucher by 1. Rolls over to queued book if available. Raises Exception if exhausted."""
+        if self.current_voucher >= self.voucher_end:
+            if self.next_book_number is not None:
+                self.book_number = self.next_book_number
+                self.voucher_start = self.next_voucher_start
+                self.voucher_end = self.next_voucher_end
+                self.current_voucher = self.next_voucher_start
+                self.next_book_number = None
+                self.next_voucher_start = None
+                self.next_voucher_end = None
+            else:
+                raise ValueError("Voucher book exhausted. Please contact HR to assign a new voucher book.")
+        else:
+            self.current_voucher += 1
+        
+        self.save(update_fields=[
+            'book_number', 'voucher_start', 'voucher_end', 'current_voucher',
+            'next_book_number', 'next_voucher_start', 'next_voucher_end', 'updated_at'
+        ])
+
+
+class PromoterRegistryEntry(models.Model):
+    """
+    Daily end-of-day reconciliation record for each promoter/staff member.
+    - cash_collected / online_collected: auto-computed from Income records (mobile collections)
+    - cash_submitted: physical cash the staff member hands over at office in the evening
+    - is_closed: when True, the staff member cannot make new collections for that date
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    date = models.DateField(default=timezone.now)
+    promoter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='promoter_registry_entries')
+    entry_code = models.CharField(max_length=50, blank=True, default='', help_text="e.g. VR250528001")
+    starting_reading = models.PositiveIntegerField(default=0)
+    ending_reading = models.PositiveIntegerField(default=0)
+
+    # Auto-populated from Income records (mobile app collections) — HR can override
+    cash_collected = models.DecimalField(max_digits=12, decimal_places=2, default=0.00,
+        help_text='Auto-sum from CASH transactions via mobile. HR can override.')
+    online_collected = models.DecimalField(max_digits=12, decimal_places=2, default=0.00,
+        help_text='Auto-sum from UPI/online transactions via mobile. HR can override.')
+
+    # Physical cash the staff member submits at the office in the evening
+    cash_submitted = models.DecimalField(max_digits=12, decimal_places=2, default=0.00,
+        help_text='Physical cash submitted by the promoter at the office.')
+
+    # Day closing
+    is_closed = models.BooleanField(default=False,
+        help_text='When True, the promoter cannot make new collections for this date.')
+    closed_at = models.DateTimeField(null=True, blank=True)
+    closed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='promoter_closings')
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='promoter_registry_creations')
+
+    class Meta:
+        db_table = 'hr_promoter_registry'
+        ordering = ['-date', '-created_at']
+        unique_together = [('promoter', 'date')]  # One entry per staff per day
+
+    def __str__(self):
+        return f"{self.promoter.full_name} ({self.date}) - {'CLOSED' if self.is_closed else 'OPEN'}"
+
+    @property
+    def total_collected(self):
+        return self.cash_collected + self.online_collected
+
+    @property
+    def has_discrepancy(self):
+        """True if cash submitted doesn't match cash collected from mobile."""
+        return abs(self.cash_submitted - self.cash_collected) > 0.01
 

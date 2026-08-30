@@ -1,15 +1,13 @@
 // pages/data-entry/DonationEntry.jsx
 import React, { useState, useCallback, useEffect } from 'react'
-import { accountsApi, coreApi } from '../../api'
+import { accountsApi, coreApi, hrApi } from '../../api'
 import { PageHeader, FilterBar, LoadingState, EmptyState, Modal, formatINR } from '../../components/shared'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 
 const EMPTY_FORM = {
   staff_id: '',
-  bill_book_no: '',
-  bill_book_start: '',
-  bill_book_end: '',
+  voucher_id: '',
   source: 'DONATION',
   date: format(new Date(), 'yyyy-MM-dd'),
   amount: '',
@@ -32,6 +30,7 @@ export default function DonationEntry() {
   const [showModal, setShowModal] = useState(false)
   const [form, setForm]       = useState(EMPTY_FORM)
   const [saving, setSaving]   = useState(false)
+  const [voucherLoading, setVoucherLoading] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -46,6 +45,13 @@ export default function DonationEntry() {
 
   useEffect(() => { load() }, [load])
 
+  // Real-time synchronization
+  useEffect(() => {
+    const handleRefresh = () => load()
+    window.addEventListener('dashboard-refresh', handleRefresh)
+    return () => window.removeEventListener('dashboard-refresh', handleRefresh)
+  }, [load])
+
   useEffect(() => {
     coreApi.users.list({ role: 'STAFF' }).then(res => {
       setUsers(res.data.results || res.data || [])
@@ -53,6 +59,19 @@ export default function DonationEntry() {
   }, [])
 
   const setF = (k, v) => setForm(f => ({ ...f, [k]: v }))
+
+  // When staff is selected, fetch their current voucher number
+  const handleStaffChange = async (staffId) => {
+    setF('staff_id', staffId)
+    setF('voucher_id', '')
+    if (!staffId) return
+    setVoucherLoading(true)
+    try {
+      const res = await hrApi.vouchers.get(staffId)
+      setF('voucher_id', String(res.data.current_voucher))
+    } catch { /* silently ignore */ }
+    finally { setVoucherLoading(false) }
+  }
 
   const handleSave = async (e) => {
     e.preventDefault()
@@ -63,30 +82,48 @@ export default function DonationEntry() {
     setSaving(true)
     try {
       const fd = new FormData()
-      Object.entries(form).forEach(([k, v]) => fd.append(k, v))
+      // Map voucher_id → reference_number
+      const payload = { ...form, reference_number: form.voucher_id || form.reference_number }
+      Object.entries(payload).forEach(([k, v]) => fd.append(k, v))
       if (form.phone) fd.append('donor_phone', form.phone)
       await accountsApi.income.create(fd)
       toast.success(form.phone ? 'Donation recorded & WhatsApp e-receipt sent!' : 'Donation recorded!')
-      
-      // Auto-filter table to show this staff member's entries
-      if (form.staff_id) {
-        setFilterStaff(form.staff_id)
-      }
 
-      if (addNext) {
-        setForm(f => ({ 
-          ...EMPTY_FORM, 
-          staff_id: f.staff_id, 
-          date: f.date, 
-          bill_book_no: f.bill_book_no, 
-          bill_book_start: f.bill_book_start, 
-          bill_book_end: f.bill_book_end 
-        }))
-        // Focus the first empty field, normally Donor Name
-        document.getElementById('donor_name_input')?.focus()
+      // Increment voucher for this staff member
+      if (form.staff_id) {
+        try {
+          const res = await hrApi.vouchers.increment(form.staff_id)
+          const nextVoucher = String(res.data.current_voucher)
+          // Auto-filter table to show this staff member's entries
+          setFilterStaff(form.staff_id)
+          if (addNext) {
+            setForm(f => ({
+              ...EMPTY_FORM,
+              staff_id: f.staff_id,
+              date: f.date,
+              voucher_id: nextVoucher,
+            }))
+            document.getElementById('donor_name_input')?.focus()
+          } else {
+            setShowModal(false)
+            setForm(EMPTY_FORM)
+          }
+        } catch {
+          if (addNext) {
+            setForm(f => ({ ...EMPTY_FORM, staff_id: f.staff_id, date: f.date }))
+          } else {
+            setShowModal(false)
+            setForm(EMPTY_FORM)
+          }
+        }
       } else {
-        setShowModal(false)
-        setForm(EMPTY_FORM)
+        if (addNext) {
+          setForm(f => ({ ...EMPTY_FORM, date: f.date }))
+          document.getElementById('donor_name_input')?.focus()
+        } else {
+          setShowModal(false)
+          setForm(EMPTY_FORM)
+        }
       }
       load()
     } catch (err) {
@@ -117,11 +154,10 @@ export default function DonationEntry() {
       <div className="data-card">
         <FilterBar search={search} onSearch={setSearch}>
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 16 }}>
-            
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontSize: 13, color: 'var(--gray-500)', fontWeight: 600 }}>Staff:</span>
-              <select 
-                className="form-control" 
+              <select
+                className="form-control"
                 style={{ width: 'auto', padding: '6px 12px', fontSize: 13 }}
                 value={filterStaff}
                 onChange={e => setFilterStaff(e.target.value)}
@@ -130,19 +166,18 @@ export default function DonationEntry() {
                 {users.map(u => <option key={u.id} value={u.id}>{u.full_name}</option>)}
               </select>
             </div>
-
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontSize: 13, color: 'var(--gray-500)', fontWeight: 600 }}>Date:</span>
-              <input 
-                type="date" 
-                className="form-control" 
+              <input
+                type="date"
+                className="form-control"
                 style={{ width: 'auto', padding: '6px 12px', fontSize: 13 }}
-                value={filterDate} 
-                onChange={e => setFilterDate(e.target.value)} 
+                value={filterDate}
+                onChange={e => setFilterDate(e.target.value)}
               />
               {filterDate && (
-                <button 
-                  className="btn btn-secondary btn-sm" 
+                <button
+                  className="btn btn-secondary btn-sm"
                   onClick={() => setFilterDate('')}
                   title="Clear date filter"
                 >✕</button>
@@ -155,11 +190,11 @@ export default function DonationEntry() {
             <table>
               <thead><tr>
                 <th>Date</th><th>Staff Member</th><th>Donor</th><th>Phone</th><th>Place</th>
-                <th>Payment</th><th>Receipt No.</th><th>Amount</th>
+                <th>Payment</th><th>Voucher No.</th><th>Amount</th>
               </tr></thead>
               <tbody>
                 {items.length === 0
-                  ? <tr><td colSpan={7}><EmptyState icon="💝" title="No donations recorded" /></td></tr>
+                  ? <tr><td colSpan={8}><EmptyState icon="💝" title="No donations recorded" /></td></tr>
                   : items.map(i => (
                     <tr key={i.id}>
                       <td style={{ fontSize: 12 }}>{format(new Date(i.date), 'dd MMM yyyy')}</td>
@@ -180,14 +215,52 @@ export default function DonationEntry() {
 
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Record Donation" size="modal-lg">
         <form onSubmit={handleSave} onKeyDown={handleKeyDown}>
-          
+
+          {/* Voucher ID Banner */}
+          <div style={{
+            background: 'linear-gradient(90deg, #4F46E5, #7C3AED)',
+            borderRadius: 12, padding: '12px 20px',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            marginBottom: 20,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span style={{ fontSize: 22 }}>🎫</span>
+              <div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>Voucher ID</div>
+                {voucherLoading ? (
+                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)' }}>Loading...</div>
+                ) : (
+                  <input
+                    type="number"
+                    min="1"
+                    value={form.voucher_id}
+                    onChange={e => setF('voucher_id', e.target.value)}
+                    style={{
+                      fontSize: 26, fontWeight: 900, color: 'white', background: 'transparent',
+                      border: 'none', outline: 'none', width: 120, padding: 0,
+                    }}
+                    placeholder="—"
+                  />
+                )}
+              </div>
+            </div>
+            {form.staff_id && (
+              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', textAlign: 'right' }}>
+                <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>Staff Member</div>
+                <div style={{ fontWeight: 700, color: 'white' }}>
+                  {users.find(u => u.id === form.staff_id)?.full_name || '—'}
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Top Context Section */}
           <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '24px' }}>
             <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', color: '#475569' }}>Batch Context (Optional)</h4>
-            <div className="form-grid-3">
+            <div className="form-grid-2">
               <div className="form-group">
                 <label className="form-label">Staff Member</label>
-                <select className="form-control" value={form.staff_id} onChange={e => setF('staff_id', e.target.value)}>
+                <select className="form-control" value={form.staff_id} onChange={e => handleStaffChange(e.target.value)}>
                   <option value="">Select Staff...</option>
                   {users.map(u => <option key={u.id} value={u.id}>{u.full_name}</option>)}
                 </select>
@@ -195,18 +268,6 @@ export default function DonationEntry() {
               <div className="form-group">
                 <label className="form-label required">Date</label>
                 <input className="form-control" type="date" required value={form.date} onChange={e => setF('date', e.target.value)} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Bill Book No.</label>
-                <input className="form-control" value={form.bill_book_no} onChange={e => setF('bill_book_no', e.target.value)} placeholder="e.g. BB-12" />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Starting Receipt No.</label>
-                <input className="form-control" value={form.bill_book_start} onChange={e => setF('bill_book_start', e.target.value)} placeholder="e.g. 56" />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Ending Receipt No.</label>
-                <input className="form-control" value={form.bill_book_end} onChange={e => setF('bill_book_end', e.target.value)} placeholder="e.g. 67" />
               </div>
             </div>
           </div>
@@ -234,10 +295,6 @@ export default function DonationEntry() {
               <select className="form-control" value={form.payment_method} onChange={e => setF('payment_method', e.target.value)}>
                 {['CASH','CHEQUE','BANK_TRANSFER','ONLINE','UPI'].map(m => <option key={m}>{m}</option>)}
               </select>
-            </div>
-            <div className="form-group">
-              <label className="form-label">Receipt No.</label>
-              <input className="form-control" value={form.reference_number} onChange={e => setF('reference_number', e.target.value)} placeholder="RCP-0001" />
             </div>
           </div>
           <div className="modal-footer" style={{ padding: 0, marginTop: 12, justifyContent: 'flex-end', gap: '12px' }}>

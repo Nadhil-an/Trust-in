@@ -22,6 +22,13 @@ export default function ExecMembers() {
     catch (_) {} finally { setLoading(false) }
   }, [search])
   useEffect(() => { load() }, [load])
+
+  // Real-time synchronization
+  useEffect(() => {
+    const handleRefresh = () => load()
+    window.addEventListener('dashboard-refresh', handleRefresh)
+    return () => window.removeEventListener('dashboard-refresh', handleRefresh)
+  }, [load])
   const handleSave = async (e) => {
     e.preventDefault();
     if (form.phone && !isValidPhone(form.phone)) return toast.error("Enter a valid 10-digit phone number");

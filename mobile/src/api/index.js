@@ -54,6 +54,11 @@ export const staffApi = {
   todayStats:     () => api.get('/hr/staff-dashboard/'),
   birthdayAlerts: () => api.get('/hr/birthday-alerts/'),
   leaderboard:    (p) => api.get('/hr/leaderboard/', { params: p }),
+  vouchers: {
+    get: (staffId) => api.get(`/hr/staff-vouchers/${staffId}/`),
+    increment: (staffId) => api.post(`/hr/staff-vouchers/${staffId}/increment/`),
+  },
+  checkDayClosed: (staffId, date) => api.get('/hr/promoter-registry/is-closed/', { params: { staff_id: staffId, date } }),
 };
 
 // ── Auth  (api/auth/) ────────────────────────────────────────────────────────
@@ -61,6 +66,7 @@ export const authApi = {
   login:          (credentials) => api.post('/auth/login/', credentials),
   logout:         ()            => api.post('/auth/logout/'),
   getProfile:     ()            => api.get('/auth/profile/'),
+  updateProfile:  (data)        => api.patch('/auth/profile/', data),
   changePassword: (data)        => api.post('/auth/change-password/', data),
   signup:         (data)        => api.post('/auth/signup/', data),
 };
@@ -174,10 +180,11 @@ export const donationApi = {
 
 // ── Notifications ─────────────────────────────────────────────────────────────
 export const notifyApi = {
-  list:        (params) => api.get('/core/notifications/', { params }),
-  markRead:    (id)     => api.post(`/core/notifications/${id}/read/`),
-  markAllRead: ()       => api.delete(`/core/notifications/0/read/`),
-  unreadCount: ()       => api.get('/core/notifications/unread_count/'),
+  list:           (params) => api.get('/core/notifications/', { params }),
+  markRead:       (id)     => api.post(`/core/notifications/${id}/read/`),
+  markAllRead:    ()       => api.delete(`/core/notifications/0/read/`),
+  unreadCount:    ()       => api.get('/core/notifications/unread_count/'),
+  checkWhatsapp:  (phone)  => api.get('/notify/check-whatsapp/', { params: { phone } }),
 };
 
 // ── Cashier  (api/cashier/) ──────────────────────────────────────────────────

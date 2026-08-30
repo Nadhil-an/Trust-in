@@ -27,6 +27,13 @@ export default function AttendancePage() {
   }, [date])
   useEffect(() => { load() }, [load])
 
+  // Real-time synchronization
+  useEffect(() => {
+    const handleRefresh = () => load()
+    window.addEventListener('dashboard-refresh', handleRefresh)
+    return () => window.removeEventListener('dashboard-refresh', handleRefresh)
+  }, [load])
+
   const handleBulkSave = async () => {
     setSaving(true)
     try { await hrApi.attendance.bulk({records: bulkData.map(b=>({...b, date}))}); toast.success("Attendance saved."); setShowModal(false); load() }

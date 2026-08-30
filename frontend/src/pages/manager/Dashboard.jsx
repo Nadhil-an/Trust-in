@@ -9,6 +9,7 @@ import {
   PieChart, Pie, Cell, Legend, LineChart, Line
 } from 'recharts'
 import BirthdayBanner from '../../components/BirthdayBanner'
+import StaffPerformanceReport from '../../components/reports/StaffPerformanceReport'
 
 // ── colour tokens ────────────────────────────────────────────────
 const CLR = {
@@ -152,6 +153,7 @@ export default function ManagerDashboard() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [active, setActive] = useState(null) // 'requests' | 'finance' | 'attendance' | 'donations'
+  const [showReport, setShowReport] = useState(false)
   const navigate = useNavigate()
 
   const load = async () => {
@@ -202,13 +204,21 @@ export default function ManagerDashboard() {
 
   return (
     <div>
+      {/* Printable Staff Performance Report Modal */}
+      {showReport && <StaffPerformanceReport initialPeriod="weekly" onClose={() => setShowReport(false)} />}
+
       <PageHeader
         title="Manager Dashboard"
         subtitle={`Good ${new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 17 ? 'Afternoon' : 'Evening'} — ${format(new Date(), 'EEEE, dd MMMM yyyy')}`}
       >
-        <button className="btn btn-primary" onClick={() => navigate('/manager/requests')}>
-          + New Request
-        </button>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button className="btn btn-secondary" onClick={() => setShowReport(true)} style={{ background: '#EEF2FF', color: '#4F46E5', fontWeight: 700, border: '1px solid #C7D2FE' }}>
+            📊 Performance Report
+          </button>
+          <button className="btn btn-primary" onClick={() => navigate('/manager/requests')}>
+            + New Request
+          </button>
+        </div>
       </PageHeader>
 
       {/* Birthday Banner */}

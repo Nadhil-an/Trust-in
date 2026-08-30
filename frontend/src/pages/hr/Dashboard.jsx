@@ -9,6 +9,7 @@ import {
   ResponsiveContainer, PieChart, Pie, Cell, Legend,
 } from 'recharts'
 import BirthdayBanner from '../../components/BirthdayBanner'
+import StaffPerformanceReport from '../../components/reports/StaffPerformanceReport'
 
 // ── colour tokens ────────────────────────────────────────────────
 const C = {
@@ -105,6 +106,7 @@ export default function HRDashboard() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [active, setActive] = useState(null)
+  const [showReport, setShowReport] = useState(false)
   const navigate = useNavigate()
 
   const load = async () => {
@@ -141,6 +143,9 @@ export default function HRDashboard() {
 
   return (
     <div>
+      {/* Printable Staff Performance Report Modal */}
+      {showReport && <StaffPerformanceReport initialPeriod="weekly" onClose={() => setShowReport(false)} />}
+
       {/* ── HEADER ───────────────────────────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24 }}>
         <div>
@@ -148,6 +153,9 @@ export default function HRDashboard() {
           <p style={{ fontSize: 13, color: '#9ca3af', margin: '3px 0 0' }}>Good {greeting} — {format(new Date(), 'EEEE, dd MMMM yyyy')}</p>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
+          <button className="btn btn-secondary" onClick={() => setShowReport(true)} style={{ background: '#EEF2FF', color: '#4F46E5', fontWeight: 700, border: '1px solid #C7D2FE' }}>
+            📊 Performance Report
+          </button>
           {(d.alerts?.expiring_documents || 0) > 0 && (
             <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 10, padding: '8px 14px', fontSize: 12, color: '#DC2626', fontWeight: 600 }}>
               ⚠️ {d.alerts.expiring_documents} docs expiring soon

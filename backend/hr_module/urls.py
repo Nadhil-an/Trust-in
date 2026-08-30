@@ -59,5 +59,15 @@ urlpatterns = [
     path('birthday-alerts/', views.BirthdayAlertView.as_view()),
     # Collection Leaderboard
     path('leaderboard/', views.StaffLeaderboardView.as_view()),
+    # Voucher Books (role=STAFF only)
+    path('staff-vouchers/', views.StaffVoucherView.as_view()),
+    path('staff-vouchers/<str:staff_id>/', views.StaffVoucherView.as_view()),
+    path('staff-vouchers/<str:staff_id>/increment/', views.StaffVoucherIncrementView.as_view()),
+    path('staff-vouchers/<str:staff_id>/activate-next/', views.StaffVoucherBookActivateNextView.as_view()),
+    # Promoter Registry
+    path('promoter-registry/', views.PromoterRegistryListCreateView.as_view()),
+    path('promoter-registry/daily-summary/', views.PromoterRegistryDailySummaryView.as_view()),
+    path('promoter-registry/is-closed/', views.PromoterRegistryCheckClosedView.as_view()),
+    path('promoter-registry/<uuid:pk>/', views.PromoterRegistryDetailView.as_view()),
 ]
 

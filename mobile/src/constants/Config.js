@@ -1,7 +1,7 @@
 import Constants from 'expo-constants';
 
 // ── Server IP & Host Configuration ──────────────────────────────────────────
-const LOCAL_IP = '10.108.62.21';
+const LOCAL_IP = '10.15.73.21';
 // ⬇️  UPDATE THIS to your EC2 domain or IP when deploying
 const PRODUCTION_HOST = 'internalapi.sreelakshmicharity.org';
 

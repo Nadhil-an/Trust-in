@@ -67,7 +67,7 @@ const ProfileScreen = ({ navigation }) => {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
@@ -102,17 +102,39 @@ const ProfileScreen = ({ navigation }) => {
       await updateUser(updatedUser);
 
       try {
-        await authApi.updateProfile({
-          full_name: editForm.full_name,
-          phone: editForm.phone,
-          email: editForm.email,
-          address: editForm.address,
-          date_of_birth: editForm.date_of_birth,
-        });
-      } catch (_) {}
-
-      Toast.show({ type: 'success', text1: 'Profile Updated', text2: 'Changes saved across all dashboards!' });
-      setEditModal(false);
+        const formData = new FormData();
+        formData.append('full_name', editForm.full_name);
+        if (editForm.phone) formData.append('phone', editForm.phone);
+        if (editForm.email) formData.append('email', editForm.email);
+        if (editForm.address) formData.append('address', editForm.address);
+        if (editForm.date_of_birth) formData.append('date_of_birth', editForm.date_of_birth);
+        
+        // Ensure photo is sent as a file
+        if (editForm.avatar && !editForm.avatar.startsWith('http')) {
+          formData.append('photo', {
+            uri: editForm.avatar,
+            name: 'avatar.jpg',
+            type: 'image/jpeg',
+          });
+        }
+        
+        const res = await authApi.updateProfile(formData);
+        
+        // Update user with the server response (which includes the real photo URL)
+        if (res.data) {
+          const finalUser = {
+            ...updatedUser,
+            avatar: res.data.photo || updatedUser.avatar,
+            photo: res.data.photo || updatedUser.photo
+          };
+          await updateUser(finalUser);
+        }
+        Toast.show({ type: 'success', text1: 'Profile Updated', text2: 'Changes saved across all dashboards!' });
+        setEditModal(false);
+      } catch (err) {
+        console.log('Update profile error:', err.response?.data || err.message);
+        Toast.show({ type: 'error', text1: 'Failed to update profile', text2: err.response?.data?.photo?.[0] || err.message });
+      }
     } catch (e) {
       Toast.show({ type: 'error', text1: 'Failed to update profile' });
     } finally {

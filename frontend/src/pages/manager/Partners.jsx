@@ -18,6 +18,13 @@ export default function Partners() {
 
   useEffect(() => { load() }, [load])
 
+  // Real-time synchronization
+  useEffect(() => {
+    const handleRefresh = () => load()
+    window.addEventListener('dashboard-refresh', handleRefresh)
+    return () => window.removeEventListener('dashboard-refresh', handleRefresh)
+  }, [load])
+
   const handleSave = async (form) => {
     try {
       if (selected) await managerApi.partners.update(selected.id, form)

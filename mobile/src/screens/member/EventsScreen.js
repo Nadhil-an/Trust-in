@@ -168,7 +168,8 @@ const styles = StyleSheet.create({
   },
   eventImage: {
     width: '100%',
-    height: 150,
+    aspectRatio: 3/2,
+    backgroundColor: '#f1f5f9',
   },
   eventContent: { padding: 14 },
   eventTitle: { fontSize: 16, fontWeight: '800', color: Colors.textPrimary, marginBottom: 4 },

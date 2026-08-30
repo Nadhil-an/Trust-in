@@ -29,6 +29,13 @@ export default function Complaints() {
 
   useEffect(() => { load() }, [load])
 
+  // Real-time synchronization
+  useEffect(() => {
+    const handleRefresh = () => load()
+    window.addEventListener('dashboard-refresh', handleRefresh)
+    return () => window.removeEventListener('dashboard-refresh', handleRefresh)
+  }, [load])
+
   const handleStatusChange = async (id, newStatus) => {
     try {
       await hrApi.complaints.update(id, { status: newStatus })

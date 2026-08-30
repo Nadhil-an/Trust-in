@@ -267,6 +267,23 @@ export const hrApi = {
     create: (data) => api.post('/hr/performance-points/', data),
     leaderboard: (params) => api.get('/hr/performance-points/leaderboard/', { params }),
   },
+  vouchers: {
+    list: () => api.get('/hr/staff-vouchers/'),
+    get: (staffId) => api.get(`/hr/staff-vouchers/${staffId}/`),
+    update: (staffId, data) => api.patch(`/hr/staff-vouchers/${staffId}/`, data),
+    increment: (staffId) => api.post(`/hr/staff-vouchers/${staffId}/increment/`),
+    activateNext: (staffId) => api.post(`/hr/staff-vouchers/${staffId}/activate-next/`),
+  },
+  promoterRegistry: {
+    list: (params) => api.get('/hr/promoter-registry/', { params }),
+    create: (data) => api.post('/hr/promoter-registry/', data),
+    update: (id, data) => api.patch(`/hr/promoter-registry/${id}/`, data),
+    get: (id) => api.get(`/hr/promoter-registry/${id}/`),
+    delete: (id) => api.delete(`/hr/promoter-registry/${id}/`),
+    dailySummary: (date) => api.get('/hr/promoter-registry/daily-summary/', { params: { date } }),
+    checkClosed: (staffId, date) => api.get('/hr/promoter-registry/is-closed/', { params: { staff_id: staffId, date } }),
+    closeDay: (id, cashSubmitted) => api.patch(`/hr/promoter-registry/${id}/`, { is_closed: true, cash_submitted: cashSubmitted }),
+  },
 }
 
 
@@ -279,6 +296,7 @@ export const reportsApi = {
   members: (params) => api.get('/reports/members/', { params, responseType: params.format === 'json' ? 'json' : 'blob' }),
   payroll: (params) => api.get('/reports/payroll/', { params, responseType: params.format === 'json' ? 'json' : 'blob' }),
   transactions: (params) => api.get('/reports/transactions/', { params, responseType: params.format === 'json' ? 'json' : 'blob' }),
+  staffPerformance: (params) => api.get('/reports/staff-performance/', { params }),
 }
 
 // ── Core ───────────────────────────────────────────────────
@@ -294,4 +312,40 @@ export const coreApi = {
   markRead: (id) => api.post(`/core/notifications/${id}/read/`),
   markAllRead: (id) => api.delete(`/core/notifications/${id}/read/`),
   search: (q) => api.get('/core/search/', { params: { q } }),
+  events: {
+    list: (params) => api.get('/core/events/', { params }),
+    get: (id) => api.get(`/core/events/${id}/`),
+    create: (data) => {
+      const formData = new FormData();
+      Object.entries(data).forEach(([key, val]) => {
+        if (key === 'image' && val instanceof File) {
+          formData.append('image', val);
+        } else if (val !== null && val !== undefined) {
+          formData.append(key, String(val));
+        }
+      });
+      return api.post('/core/events/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+    },
+    update: (id, data) => {
+      const formData = new FormData();
+      Object.entries(data).forEach(([key, val]) => {
+        if (key === 'image' && val instanceof File) {
+          formData.append('image', val);
+        } else if (val !== null && val !== undefined) {
+          formData.append(key, String(val));
+        }
+      });
+      return api.patch(`/core/events/${id}/`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+    },
+    delete: (id) => api.delete(`/core/events/${id}/`),
+  },
+  features: {
+    listMyFeatures: () => api.get('/core/features/'),
+    listAllFeatures: () => api.get('/core/features/?all=true'),
+    updateFeatureRoles: (data) => api.post('/core/features/', data),
+  }
 }

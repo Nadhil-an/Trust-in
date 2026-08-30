@@ -22,9 +22,9 @@ def generate_donation_receipt_image_bytes(income) -> bytes:
     draw = ImageDraw.Draw(img)
 
     try:
-        font_bold = ImageFont.truetype("arialbd.ttf", 16)
-        font_regular = ImageFont.truetype("arial.ttf", 15)
-        font_amount_bold = ImageFont.truetype("arialbd.ttf", 18)
+        font_bold = ImageFont.truetype("arialbd.ttf", 20)
+        font_regular = ImageFont.truetype("arialbd.ttf", 20)
+        font_amount_bold = ImageFont.truetype("arialbd.ttf", 20)
         font_small_bold = ImageFont.truetype("arialbd.ttf", 14)
     except Exception:
         font_bold = ImageFont.load_default()
@@ -37,7 +37,7 @@ def generate_donation_receipt_image_bytes(income) -> bytes:
     phone = getattr(income, 'donor_phone', None)
     phone_str = f"+91 {phone}" if phone else 'N/A'
     amt = getattr(income, 'amount', 1000.00) or 1000.00
-    amount_str = f"₹ {amt:,.2f}"
+    amount_str = f"Rs. {amt:,.2f}"
     
     date_val = income.date.strftime('%d %b %Y') if hasattr(income, 'date') and income.date else datetime.now().strftime('%d %b %Y')
     

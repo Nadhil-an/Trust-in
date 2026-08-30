@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,7 +6,9 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
-  Dimensions
+  Dimensions,
+  Modal,
+  SafeAreaView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
@@ -15,6 +17,7 @@ const { width } = Dimensions.get('window');
 const PHOTO_SIZE = (width - 48) / 3;
 
 const EventDetailScreen = ({ route, navigation }) => {
+  const [isViewerVisible, setIsViewerVisible] = useState(false);
   const event = route.params?.event || {};
 
   const galleryPhotos = event.photos || [];
@@ -32,7 +35,23 @@ const EventDetailScreen = ({ route, navigation }) => {
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {/* Hero Image */}
-        <Image source={{ uri: event.image }} style={styles.heroImage} resizeMode="cover" />
+        <TouchableOpacity activeOpacity={0.9} onPress={() => setIsViewerVisible(true)}>
+          <View style={styles.imageContainer}>
+            <Image source={{ uri: event.image }} style={styles.heroImage} resizeMode="cover" />
+          </View>
+        </TouchableOpacity>
+
+        {/* Full Screen Image Viewer Modal */}
+        <Modal visible={isViewerVisible} transparent={true} animationType="fade">
+          <View style={styles.viewerContainer}>
+            <SafeAreaView style={{ flex: 1 }}>
+              <TouchableOpacity style={styles.closeBtn} onPress={() => setIsViewerVisible(false)}>
+                <Ionicons name="close" size={32} color="#fff" />
+              </TouchableOpacity>
+              <Image source={{ uri: event.image }} style={styles.fullScreenImage} resizeMode="contain" />
+            </SafeAreaView>
+          </View>
+        </Modal>
 
         <View style={styles.card}>
           <Text style={styles.title}>{event.title}</Text>
@@ -92,12 +111,27 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 18, fontWeight: '700', color: Colors.white },
 
   scroll: { paddingBottom: 24 },
-  heroImage: { width: '100%', height: 220 },
+  imageContainer: { width: '100%', aspectRatio: 3/2, backgroundColor: '#f1f5f9' },
+  heroImage: { width: '100%', height: '100%' },
+  viewerContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.9)',
+    justifyContent: 'center',
+  },
+  closeBtn: {
+    alignSelf: 'flex-end',
+    padding: 16,
+    zIndex: 10,
+  },
+  fullScreenImage: {
+    width: '100%',
+    height: '80%',
+  },
   card: {
     backgroundColor: Colors.white,
-    marginTop: -16,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
+    marginTop: -20,
     padding: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -2 },

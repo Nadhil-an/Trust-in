@@ -32,6 +32,13 @@ export default function PaymentAdvances() {
 
   useEffect(() => { load() }, [load])
 
+  // Real-time synchronization
+  useEffect(() => {
+    const handleRefresh = () => load()
+    window.addEventListener('dashboard-refresh', handleRefresh)
+    return () => window.removeEventListener('dashboard-refresh', handleRefresh)
+  }, [load])
+
   const handleAction = async (action) => {
     if (action === 'approve' && !payoutDate) {
       toast.error("Please enter the scheduled disbursement date for this staff member")

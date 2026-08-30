@@ -26,6 +26,13 @@ export default function BankAccounts() {
 
   useEffect(() => { load() }, [load])
 
+  // Real-time synchronization
+  useEffect(() => {
+    const handleRefresh = () => load()
+    window.addEventListener('dashboard-refresh', handleRefresh)
+    return () => window.removeEventListener('dashboard-refresh', handleRefresh)
+  }, [load])
+
   const handleAddTxn = async (e) => {
     e.preventDefault(); setSaving(true)
     try { await accountsApi.bank.addTransaction({...form, bank_account:selectedBank||form.bank_account}); toast.success("Transaction added."); setShowTxnModal(false); load() }

@@ -174,55 +174,64 @@ class MemberListCreateView(generics.ListCreateAPIView):
         return qs
 
     def perform_create(self, serializer):
+        import logging
+        logger = logging.getLogger(__name__)
+
         member = serializer.save(created_by=self.request.user)
         push_dashboard_refresh(['HR', 'MANAGER', 'ADMIN', 'STAFF'])
 
         # Automated Membership Payment & Receipt Workflow
-        if member.phone:
+        try:
+            from hr_module.models import MembershipReceipt
+            from django.core.files.base import ContentFile
+            from notify.whatsapp_service import send_whatsapp_message
+            from accounts_module.models import Income
+
+            # 1. Create Receipt Record & Unique Receipt Number
+            receipt = MembershipReceipt.objects.create(
+                member=member,
+                amount=getattr(member, 'monthly_fee', 100.00) or 100.00
+            )
+
+            # Create matching Income record to track Cash/Bank properly
+            payment_mode = self.request.data.get('payment_mode', 'CASH')
+            transaction_id = self.request.data.get('transaction_id', '')
+            voucher_id = self.request.data.get('voucher_id', '')
+            
+            # Extract document if uploaded (e.g. receipt photo for missing phone numbers)
+            document = self.request.FILES.get('document')
+
+            Income.objects.create(
+                donor_name=member.full_name,
+                donor_phone=member.phone,
+                source='MEMBERSHIP',
+                amount=receipt.amount,
+                payment_method=payment_mode,
+                reference_number=voucher_id or transaction_id,
+                account_type='BANK' if payment_mode in ['UPI', 'NEFT', 'RTGS', 'IMPS'] else 'CASH',
+                document=document,
+                created_by=self.request.user
+            )
+
+            # 2. Generate A4 PDF Document
             try:
-                from hr_module.models import MembershipReceipt
-                from django.core.files.base import ContentFile
-                from notify.whatsapp_service import send_whatsapp_message
+                num_val = int(str(member.member_id).replace('MEM-', ''))
+                formatted_mem_id = f"{num_val:04d}"
+            except Exception:
+                formatted_mem_id = f"{member.member_id}"
 
-                # 1. Create Receipt Record & Unique Receipt Number
-                receipt = MembershipReceipt.objects.create(
-                    member=member,
-                    amount=getattr(member, 'monthly_fee', 100.00) or 100.00
-                )
+            pdf_bytes = generate_member_receipt_pdf_bytes(
+                member,
+                receipt_number=receipt.receipt_number,
+                membership_id=formatted_mem_id,
+                amount=float(receipt.amount)
+            )
 
-                # Create matching Income record to track Cash/Bank properly
-                from accounts_module.models import Income
-                payment_mode = self.request.data.get('payment_mode', 'CASH')
-                transaction_id = self.request.data.get('transaction_id', '')
-                Income.objects.create(
-                    donor_name=member.full_name,
-                    donor_phone=member.phone,
-                    source='MEMBERSHIP',
-                    amount=receipt.amount,
-                    payment_method=payment_mode,
-                    reference_number=transaction_id,
-                    account_type='BANK' if payment_mode in ['UPI', 'NEFT', 'RTGS', 'IMPS'] else 'CASH',
-                    created_by=self.request.user
-                )
+            # 3. Save PDF File & Dynamic Image Card File securely
+            file_name = f"SLCT_Membership_Receipt_{member.member_id}_{member.joining_date}.pdf"
+            receipt.pdf_file.save(file_name, ContentFile(pdf_bytes), save=True)
 
-                # 2. Generate A4 PDF Document
-                try:
-                    num_val = int(str(member.member_id).replace('MEM-', ''))
-                    formatted_mem_id = f"{num_val:04d}"
-                except Exception:
-                    formatted_mem_id = f"{member.member_id}"
-
-                pdf_bytes = generate_member_receipt_pdf_bytes(
-                    member,
-                    receipt_number=receipt.receipt_number,
-                    membership_id=formatted_mem_id,
-                    amount=float(receipt.amount)
-                )
-
-                # 3. Save PDF File & Dynamic Image Card File securely
-                file_name = f"SLCT_Membership_Receipt_{member.member_id}_{member.joining_date}.pdf"
-                receipt.pdf_file.save(file_name, ContentFile(pdf_bytes), save=True)
-
+            if member.phone:
                 # Save dynamic PNG Receipt Image Card using default_storage
                 from django.core.files.storage import default_storage
                 img_bytes = generate_member_receipt_image_bytes(
@@ -236,41 +245,57 @@ class MemberListCreateView(generics.ListCreateAPIView):
                     default_storage.delete(img_file_path)
                 saved_path = default_storage.save(img_file_path, ContentFile(img_bytes))
 
-                # 4. Build absolute URIs for WhatsApp delivery
-                pdf_url = self.request.build_absolute_uri(receipt.pdf_file.url)
+                # 4. Build final image URL — R2 URLs are already absolute
                 img_url = default_storage.url(saved_path)
                 if img_url.startswith('/'):
-                    img_url = self.request.build_absolute_uri(img_url)
+                    scheme = self.request.scheme
+                    host = self.request.get_host()
+                    img_url = f"{scheme}://{host}{img_url}"
 
-                # 5. Formatted WhatsApp Message with Rich Image Card & Social Links
-                msg = (
-                    f"Dear {member.full_name},\n\n"
-                    f"Thank you for becoming a member of Sree Lakshmi Charitable Trust.\n\n"
-                    f"Your membership payment of ₹{receipt.amount:,.2f} has been successfully received.\n\n"
-                    f"🪪 Membership ID: {formatted_mem_id}\n"
-                    f"📄 Receipt No.: {receipt.receipt_number}\n\n"
-                    f"Please find your official membership receipt attached.\n\n"
-                    f"Thank you for supporting our mission.\n"
-                    f"Sree Lakshmi Charitable Trust\n\n"
-                    f"📱 Instagram: https://www.instagram.com/sreelakshmicharity?igsh=MWFna2dnYnFsdDRmbQ==\n"
-                    f"📘 Facebook: https://www.facebook.com/share/1BZ1MR7HzA/?mibextid=wwXIfr\n"
-                    f"🌐 Website: https://sreelakshmicharity.org"
-                )
+                receipt_id = receipt.id
 
-                res = send_whatsapp_message(
-                    to_phone=member.phone,
-                    message_body=msg,
-                    image_url=img_url
-                )
+                # 5. Dispatch WhatsApp in background thread so it doesn't block the API response
+                import threading
+                def dispatch_whatsapp():
+                    try:
+                        from hr_module.models import MembershipReceipt as MR
+                        r = MR.objects.get(id=receipt_id)
+                        msg = (
+                            f"Dear {member.full_name},\n\n"
+                            f"Thank you for becoming a member of *Sree Lakshmi Charitable Trust*.\n\n"
+                            f"Your membership payment of \u20b9{r.amount:,.2f} has been successfully received.\n\n"
+                            f"\U0001faaa Membership ID: *{formatted_mem_id}*\n"
+                            f"\U0001f4c4 Receipt No.: *{r.receipt_number}*\n\n"
+                            f"Please find your official membership receipt attached.\n\n"
+                            f"Thank you for supporting our mission.\n"
+                            f"*Sree Lakshmi Charitable Trust*\n\n"
+                            f"\U0001f4f1 Instagram: https://www.instagram.com/sreelakshmicharity?igsh=MWFna2dnYnFsdDRmbQ==\n"
+                            f"\U0001f4d8 Facebook: https://www.facebook.com/share/1BZ1MR7HzA/?mibextid=wwXIfr\n"
+                            f"\U0001f310 Website: https://sreelakshmicharity.org"
+                        )
+                        res = send_whatsapp_message(
+                            to_phone=member.phone,
+                            message_body=msg,
+                            image_url=img_url
+                        )
+                        if res.get('success'):
+                            r.whatsapp_status = 'SENT'
+                            logger.info(f"[Membership WhatsApp] Sent to {member.phone} for member {member.member_id}")
+                        else:
+                            r.whatsapp_status = 'FAILED'
+                            logger.warning(f"[Membership WhatsApp] Failed for {member.phone}: {res}")
+                        r.save(update_fields=['whatsapp_status'])
+                    except Exception as e:
+                        import traceback
+                        logger.error(f"[Membership WhatsApp] Exception for member {member.member_id}: {e}\n{traceback.format_exc()}")
 
-                if res.get('success'):
-                    receipt.whatsapp_status = 'SENT'
-                else:
-                    receipt.whatsapp_status = 'FAILED'
-                receipt.save()
+                t = threading.Thread(target=dispatch_whatsapp, daemon=True)
+                t.start()
 
-            except Exception:
-                pass
+        except Exception as e:
+            import traceback
+            logger.error(f"[Membership Receipt] Error during receipt/WhatsApp workflow for {member.member_id}: {e}\n{traceback.format_exc()}")
+
 
 class MemberDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAnyStaff, IsOwnerOrManagerOrHR]
@@ -472,6 +497,13 @@ class ExecutiveOfficerListCreateView(generics.ListCreateAPIView):
     ordering_fields = ['full_name', 'joining_date']
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        designation = self.request.query_params.get('designation')
+        if designation:
+            qs = qs.filter(designation__iexact=designation)
+        return qs
+
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
 
@@ -549,12 +581,16 @@ class SalaryStructureDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 # ── Attendance ────────────────────────────────────────────────────
 class AttendanceListCreateView(generics.ListCreateAPIView):
-    permission_classes = [IsHR]
     serializer_class = AttendanceSerializer
     queryset = Attendance.objects.select_related('employee', 'marked_by').all()
     filterset_fields = ['employee', 'date', 'status']
     search_fields = ['employee__full_name', 'employee__employee_id']
     ordering_fields = ['date']
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [IsAnyStaff()]
+        return [IsHR()]
 
     def perform_create(self, serializer):
         serializer.save(marked_by=self.request.user)
@@ -1139,6 +1175,7 @@ class StaffLeaderboardView(APIView):
             
             results.append({
                 'staff_id': str(user.id),
+                'staff_uid': user.staff_uid,
                 'name': user.full_name,
                 'photo_url': request.build_absolute_uri(user.photo.url) if user.photo else None,
                 'amount': float(total_collection)
@@ -1156,3 +1193,382 @@ class StaffLeaderboardView(APIView):
             
         return Response(results)
 
+
+# ── Staff Voucher Book ─────────────────────────────────────────────
+
+class StaffVoucherView(APIView):
+    """
+    GET  /hr/staff-vouchers/              → list all STAFF users with their voucher books
+    GET  /hr/staff-vouchers/<staff_id>/   → get one staff member's voucher book
+    PATCH /hr/staff-vouchers/<staff_id>/  → HR sets book_number, voucher_start, voucher_end, current_voucher
+    """
+    permission_classes = [IsAnyStaff]
+
+    def _get_staff_user(self, staff_id):
+        from core.models import User, Role
+        from hr_module.models import ExecutiveOfficer
+        from django.db.models import Q
+
+        # 1. Try treating it as a User ID
+        try:
+            return User.objects.get(pk=staff_id, role=Role.STAFF)
+        except User.DoesNotExist:
+            pass
+        
+        # 2. Try treating it as an ExecutiveOfficer ID
+        try:
+            officer = ExecutiveOfficer.objects.get(pk=staff_id)
+            user = User.objects.filter(Q(email__iexact=officer.email) | Q(full_name__iexact=officer.full_name), role=Role.STAFF).first()
+            if user:
+                return user
+        except ExecutiveOfficer.DoesNotExist:
+            pass
+
+        return None
+
+    def get(self, request, staff_id=None):
+        from hr_module.models import StaffVoucherBook
+        from core.models import User, Role
+
+        if staff_id:
+            user = self._get_staff_user(staff_id)
+            if not user:
+                return Response({'error': 'Staff user account not found. Please ensure the employee has an active user account.'}, status=404)
+            vb, _ = StaffVoucherBook.objects.get_or_create(staff=user)
+            return Response(self._serialize(vb, request))
+
+        # List all STAFF members with their voucher data
+        staff_users = User.objects.filter(role=Role.STAFF, is_active=True)
+        result = []
+        for u in staff_users:
+            vb, _ = StaffVoucherBook.objects.get_or_create(staff=u)
+            result.append(self._serialize(vb, request))
+        return Response(result)
+
+    def patch(self, request, staff_id):
+        from hr_module.models import StaffVoucherBook
+
+        user = self._get_staff_user(staff_id)
+        if not user:
+            return Response({'error': 'Staff user account not found.'}, status=404)
+
+        # Check uniqueness of book_number before assigning
+        new_book_number = request.data.get('book_number')
+        if new_book_number is not None:
+            try:
+                new_book_number = int(new_book_number)
+                existing = StaffVoucherBook.objects.filter(book_number=new_book_number).exclude(staff=user).first()
+                if existing:
+                    return Response({'error': f'Book Number {new_book_number} is already assigned to {existing.staff.full_name}.'}, status=400)
+            except ValueError:
+                return Response({'error': 'Invalid book number.'}, status=400)
+
+        vb, _ = StaffVoucherBook.objects.get_or_create(staff=user)
+
+        allowed = ['book_number', 'voucher_start', 'voucher_end', 'current_voucher', 'next_book_number', 'next_voucher_start', 'next_voucher_end']
+        for field in allowed:
+            val = request.data.get(field)
+            if val is not None:
+                try:
+                    setattr(vb, field, int(val))
+                except (ValueError, TypeError):
+                    return Response({'error': f'Invalid value for {field}'}, status=400)
+
+        vb.updated_by = request.user
+        vb.save()
+        return Response(self._serialize(vb, request))
+
+    @staticmethod
+    def _serialize(vb, request):
+        return {
+            'staff_id': str(vb.staff.id),
+            'staff_name': vb.staff.full_name,
+            'staff_uid': vb.staff.staff_uid,
+            'book_number': vb.book_number,
+            'voucher_start': vb.voucher_start,
+            'voucher_end': vb.voucher_end,
+            'current_voucher': vb.current_voucher,
+            'next_book_number': vb.next_book_number,
+            'next_voucher_start': vb.next_voucher_start,
+            'next_voucher_end': vb.next_voucher_end,
+            'updated_at': vb.updated_at.isoformat() if vb.updated_at else None,
+        }
+
+class StaffVoucherBookActivateNextView(APIView):
+    """
+    POST /hr/staff-vouchers/<staff_id>/activate-next/
+    Forcefully rolls over the voucher book to the queued next book early.
+    """
+    permission_classes = [IsAnyStaff]
+
+    def post(self, request, staff_id):
+        from hr_module.models import StaffVoucherBook
+        from core.models import Role
+
+        # Find the user
+        user = None
+        if '-' in staff_id and len(staff_id) > 10:  # Is UUID
+            user = User.objects.filter(id=staff_id, role=Role.STAFF).first()
+        else:
+            try:
+                officer = ExecutiveOfficer.objects.get(pk=staff_id)
+                user = User.objects.filter(Q(email__iexact=officer.email) | Q(full_name__iexact=officer.full_name), role=Role.STAFF).first()
+            except:
+                pass
+
+        if not user:
+            return Response({'error': 'Staff user not found.'}, status=404)
+
+        vb = StaffVoucherBook.objects.filter(staff=user).first()
+        if not vb:
+            return Response({'error': 'No voucher book found.'}, status=404)
+
+        if not vb.next_book_number:
+            return Response({'error': 'No queued next book found.'}, status=400)
+
+        # Roll over
+        vb.book_number = vb.next_book_number
+        vb.voucher_start = vb.next_voucher_start
+        vb.voucher_end = vb.next_voucher_end
+        vb.current_voucher = vb.next_voucher_start
+        vb.next_book_number = None
+        vb.next_voucher_start = None
+        vb.next_voucher_end = None
+        vb.updated_by = request.user
+        vb.save()
+
+        return Response(StaffVoucherBookView._serialize(vb, request))
+
+
+class StaffVoucherIncrementView(APIView):
+    """
+    POST /hr/staff-vouchers/<staff_id>/increment/
+    Advance the current_voucher by 1. Call this after each successful
+    Add Member or Donation Collection save.
+    """
+    permission_classes = [IsAnyStaff]
+
+    def post(self, request, staff_id):
+        from hr_module.models import StaffVoucherBook
+        
+        # Reuse logic from StaffVoucherView if possible, or duplicate the helper
+        from core.models import User, Role
+        from hr_module.models import ExecutiveOfficer
+        from django.db.models import Q
+
+        user = None
+        try:
+            user = User.objects.get(pk=staff_id, role=Role.STAFF)
+        except User.DoesNotExist:
+            try:
+                officer = ExecutiveOfficer.objects.get(pk=staff_id)
+                user = User.objects.filter(Q(email__iexact=officer.email) | Q(full_name__iexact=officer.full_name), role=Role.STAFF).first()
+            except ExecutiveOfficer.DoesNotExist:
+                pass
+
+        if not user:
+            return Response({'error': 'Staff user account not found.'}, status=404)
+
+        vb, _ = StaffVoucherBook.objects.get_or_create(staff=user)
+        vb.increment()
+        return Response({
+            'current_voucher': vb.current_voucher,
+            'book_number': vb.book_number,
+            'voucher_start': vb.voucher_start,
+            'voucher_end': vb.voucher_end,
+        })
+
+
+# ── Promoter Registry ─────────────────────────────────────────────
+
+from hr_module.models import PromoterRegistryEntry
+from hr_module.serializers import PromoterRegistrySerializer
+from accounts_module.models import Income as _Income
+from django.utils import timezone as _tz
+from django.db.models import Sum, Q as _Q
+
+
+def _sync_registry_totals(entry):
+    """Re-compute cash_collected/online_collected from Income records."""
+    incomes = _Income.objects.filter(created_by=entry.promoter, date=entry.date)
+    agg = incomes.aggregate(
+        cash=Sum('amount', filter=_Q(payment_method='CASH')),
+        online=Sum('amount', filter=~_Q(payment_method='CASH')),
+    )
+    entry.cash_collected = agg['cash'] or 0
+    entry.online_collected = agg['online'] or 0
+    entry.save(update_fields=['cash_collected', 'online_collected'])
+
+
+class PromoterRegistryListCreateView(generics.ListCreateAPIView):
+    """
+    GET  /hr/promoter-registry/?date=YYYY-MM-DD
+    POST /hr/promoter-registry/
+    """
+    permission_classes = [IsAnyStaff]
+    serializer_class = PromoterRegistrySerializer
+    queryset = PromoterRegistryEntry.objects.select_related('promoter', 'created_by').all()
+    filterset_fields = ['promoter', 'date', 'is_closed']
+    search_fields = ['entry_code', 'promoter__full_name']
+    ordering_fields = ['-date', '-created_at']
+
+    def perform_create(self, serializer):
+        entry = serializer.save(created_by=self.request.user)
+        _sync_registry_totals(entry)
+
+
+class PromoterRegistryDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    GET, PATCH, DELETE /hr/promoter-registry/<pk>/
+    PATCH {"is_closed": true} closes the day for that promoter.
+    """
+    permission_classes = [IsAnyStaff]
+    serializer_class = PromoterRegistrySerializer
+    queryset = PromoterRegistryEntry.objects.select_related('promoter', 'created_by').all()
+
+    def perform_update(self, serializer):
+        instance = self.get_object()
+        kwargs = {}
+        closing = self.request.data.get('is_closed') and not instance.is_closed
+        if closing:
+            kwargs['closed_at'] = _tz.now()
+            kwargs['closed_by'] = self.request.user
+        _sync_registry_totals(instance)
+        instance.refresh_from_db()
+        serializer.save(**kwargs)
+
+
+class PromoterRegistryDailySummaryView(APIView):
+    """
+    GET /hr/promoter-registry/daily-summary/?date=YYYY-MM-DD
+    Returns a row for EVERY staff member who is marked PRESENT on that date
+    (from Attendance), merged with their Income totals and any existing registry entry.
+    """
+    permission_classes = [IsAnyStaff]
+
+    def get(self, request):
+        date_str = request.query_params.get('date', str(_tz.localdate()))
+        try:
+            from datetime import date as _date
+            target_date = _date.fromisoformat(date_str)
+        except ValueError:
+            return Response({'error': 'Invalid date format. Use YYYY-MM-DD.'}, status=400)
+
+        from core.models import Role, User
+
+        # ── 1. All STAFF marked PRESENT on this date ────────────────
+        staff_users = {u.full_name.lower(): str(u.id) for u in User.objects.filter(role=Role.STAFF) if u.full_name}
+
+        present_attendances = (
+            Attendance.objects
+            .filter(date=target_date, status__in=['PRESENT', 'LATE', 'HALF_DAY'])
+            .select_related('employee')
+        )
+        
+        present_staff = {}
+        for a in present_attendances:
+            if not a.employee or not a.employee.full_name:
+                continue
+            name_lower = a.employee.full_name.lower()
+            if name_lower in staff_users:
+                user_id = staff_users[name_lower]
+                present_staff[user_id] = a.employee.full_name
+
+        # ── 2. Income totals for this date, grouped by creator ───────
+        incomes = _Income.objects.filter(date=target_date).select_related('created_by')
+        totals = {}
+        for inc in incomes:
+            if not inc.created_by_id:
+                continue
+            sid = str(inc.created_by_id)
+            if sid not in totals:
+                totals[sid] = {
+                    'staff_name': inc.created_by.full_name if inc.created_by else '',
+                    'cash': 0, 'online': 0,
+                    'receipts': []
+                }
+            if inc.payment_method == 'CASH':
+                totals[sid]['cash'] += float(inc.amount)
+            else:
+                totals[sid]['online'] += float(inc.amount)
+                
+            # Track receipts to find min and max
+            ref = inc.reference_number or inc.receipt_number
+            if ref and ref.isdigit():
+                totals[sid]['receipts'].append(int(ref))
+
+        # ── 3. Existing registry entries for this date ───────────────
+        entries = {
+            str(e.promoter_id): e
+            for e in PromoterRegistryEntry.objects.filter(date=target_date).select_related('promoter', 'closed_by')
+        }
+
+        # ── 3.5. Fetch Voucher Books for all staff ───────────────────
+        from hr_module.models import StaffVoucherBook
+        voucher_books = {
+            str(vb.staff_id): {
+                'book_number': vb.book_number,
+                'voucher_end': vb.voucher_end,
+                'current_voucher': vb.current_voucher,
+                'next_book_number': vb.next_book_number
+            }
+            for vb in StaffVoucherBook.objects.all()
+        }
+
+        # ── 4. Merge: union of present staff + income creators + existing entries
+        all_ids = set(present_staff.keys()) | set(totals.keys()) | set(entries.keys())
+
+        summary = []
+        for sid in all_ids:
+            entry = entries.get(sid)
+            income_data = totals.get(sid, {'cash': 0, 'online': 0, 'staff_name': ''})
+            # Prefer name from attendance > income > entry
+            name = (
+                present_staff.get(sid)
+                or (entry.promoter.full_name if entry else None)
+                or income_data.get('staff_name', '')
+            )
+            is_present = sid in present_staff
+            vb_info = voucher_books.get(sid)
+            
+            # Compute auto min and max readings
+            receipts = income_data.get('receipts', [])
+            auto_starting = min(receipts) if receipts else ''
+            auto_ending = max(receipts) if receipts else ''
+            
+            summary.append({
+                'staff_id': sid,
+                'staff_name': name,
+                'is_present': is_present,
+                'cash_collected': income_data['cash'],
+                'online_collected': income_data['online'],
+                'auto_starting_reading': auto_starting,
+                'auto_ending_reading': auto_ending,
+                'book_number': str(vb_info['book_number']) if vb_info else '',
+                'voucher_book': vb_info,
+                'registry_entry': PromoterRegistrySerializer(entry, context={'request': request}).data if entry else None,
+                'is_closed': entry.is_closed if entry else False,
+            })
+
+        # Sort: present first, then by name
+        summary.sort(key=lambda x: (not x['is_present'], x['staff_name']))
+        return Response(summary)
+
+
+
+class PromoterRegistryCheckClosedView(APIView):
+    """
+    GET /hr/promoter-registry/is-closed/?staff_id=<uuid>&date=YYYY-MM-DD
+    Called by mobile app before allowing a new donation or membership.
+    """
+    permission_classes = [IsAnyStaff]
+
+    def get(self, request):
+        staff_id = request.query_params.get('staff_id')
+        date_str = request.query_params.get('date', str(_tz.localdate()))
+        if not staff_id:
+            return Response({'error': 'staff_id required'}, status=400)
+        is_closed = PromoterRegistryEntry.objects.filter(
+            promoter_id=staff_id, date=date_str, is_closed=True
+        ).exists()
+        return Response({'is_closed': is_closed})

@@ -106,6 +106,33 @@ app.get('/qr', (req, res) => {
   `);
 });
 
+// Check WhatsApp registration endpoint
+app.get('/check-whatsapp', requireToken, async (req, res) => {
+  try {
+    const { phone } = req.query;
+    if (!phone) {
+      return res.status(400).json({ success: false, error: 'Missing phone parameter' });
+    }
+
+    let cleanPhone = phone.toString().replace(/\D/g, '');
+    if (cleanPhone.length === 10) cleanPhone = '91' + cleanPhone;
+    const jid = `${cleanPhone}@s.whatsapp.net`;
+
+    if (!isConnected || !sock) {
+      // If gateway is offline, we cannot verify — be optimistic
+      return res.json({ success: true, phone: cleanPhone, has_whatsapp: null, reason: 'gateway_offline' });
+    }
+
+    const result = await sock.onWhatsApp(jid);
+    const exists = result && result.length > 0 && result[0].exists === true;
+    console.log(`📞 WhatsApp check for ${cleanPhone}: ${exists ? '✅ registered' : '❌ not registered'}`);
+    return res.json({ success: true, phone: cleanPhone, has_whatsapp: exists });
+  } catch (err) {
+    console.error('WhatsApp check error:', err);
+    return res.json({ success: false, has_whatsapp: null, error: err.message });
+  }
+});
+
 // Status check endpoint
 app.get('/status', (req, res) => {
   res.json({ connected: isConnected });

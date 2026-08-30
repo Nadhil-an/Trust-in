@@ -58,6 +58,13 @@ export default function PayrollPage() {
 
   useEffect(() => { load() }, [load])
 
+  // Real-time synchronization
+  useEffect(() => {
+    const handleRefresh = () => load()
+    window.addEventListener('dashboard-refresh', handleRefresh)
+    return () => window.removeEventListener('dashboard-refresh', handleRefresh)
+  }, [load])
+
   const loadPayrollData = async () => {
     if (!genForm.employee || !genForm.month || !genForm.year) return
     setGenLoading(true)

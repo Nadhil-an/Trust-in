@@ -18,6 +18,13 @@ export default function TransactionList() {
 
   useEffect(() => { load() }, [load])
 
+  // Real-time synchronization
+  useEffect(() => {
+    const handleRefresh = () => load()
+    window.addEventListener('dashboard-refresh', handleRefresh)
+    return () => window.removeEventListener('dashboard-refresh', handleRefresh)
+  }, [load])
+
   return (
     <div>
       <PageHeader title="Transaction Register" subtitle="Complete financial transaction history" />

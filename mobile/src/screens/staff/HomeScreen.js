@@ -7,7 +7,7 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { staffApi, notifyApi } from '../../api';
+import { staffApi, notifyApi, eventsApi } from '../../api';
 import { useAuthStore } from '../../store/authStore';
 import { useNotificationSocket } from '../../hooks/useWebSocket';
 import Toast from 'react-native-toast-message';
@@ -60,6 +60,7 @@ const StaffHomeScreen = ({ navigation, route }) => {
   const [topStaff, setTopStaff] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
   const sliderRef = React.useRef(null);
 
   // Auto-slide carousel infinitely to the right
@@ -198,6 +199,14 @@ const StaffHomeScreen = ({ navigation, route }) => {
       try {
         const lbRes = await staffApi.leaderboard({ limit: 3 });
         if(lbRes.data) setTopStaff(lbRes.data);
+      } catch (err) {}
+
+      try {
+        const evRes = await eventsApi.list();
+        if(evRes.data && evRes.data.results) {
+          const upcoming = evRes.data.results.filter(e => e.category === 'Upcoming' || !e.category);
+          setUpcomingEvents(upcoming.slice(0, 2));
+        }
       } catch (err) {}
     } catch (_) {}
   };
@@ -393,7 +402,7 @@ const StaffHomeScreen = ({ navigation, route }) => {
                               )}
                               <View style={styles.lbInfo}>
                                 <Text style={styles.lbName} numberOfLines={1}>{staff.name}</Text>
-                                <Text style={styles.lbStaffId}>Staff ID: ST{String(staff.staff_id).substring(0, 3).toUpperCase()}</Text>
+                                <Text style={styles.lbStaffId}>Staff ID: {staff.staff_uid || 'N/A'}</Text>
                               </View>
                               <Text style={styles.lbAmount}>₹ {staff.amount.toLocaleString('en-IN')}</Text>
                             </View>
@@ -500,9 +509,38 @@ const StaffHomeScreen = ({ navigation, route }) => {
           </TouchableOpacity>
         </View>
 
-        <View style={[styles.eventCard, { justifyContent: 'center', alignItems: 'center', paddingVertical: 24, marginBottom: 20 }]}>
-          <Text style={{ color: '#64748B', fontSize: 13 }}>No upcoming events at the moment.</Text>
-        </View>
+        {upcomingEvents.length === 0 ? (
+          <View style={[styles.eventCard, { justifyContent: 'center', alignItems: 'center', paddingVertical: 24, marginBottom: 20 }]}>
+            <Text style={{ color: '#64748B', fontSize: 13 }}>No upcoming events at the moment.</Text>
+          </View>
+        ) : (
+          upcomingEvents.map((item) => (
+            <TouchableOpacity
+              key={item.id}
+              style={styles.eventCard}
+              activeOpacity={0.85}
+              onPress={() => navigation.navigate('EventDetail', { event: item })}
+            >
+              <Image source={{ uri: item.image }} style={styles.eventImage} resizeMode="cover" />
+              <View style={styles.eventContent}>
+                <Text style={styles.eventTitle}>{item.title}</Text>
+                <Text style={styles.eventDesc} numberOfLines={2}>
+                  {item.short_description || item.description}
+                </Text>
+                <View style={{ flexDirection: 'row', gap: 14, alignItems: 'center' }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                    <Ionicons name="calendar-outline" size={12} color="#0284c7" />
+                    <Text style={{ fontSize: 10, color: '#64748B', fontWeight: '500' }}>{item.date}</Text>
+                  </View>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                    <Ionicons name="location-outline" size={12} color="#0284c7" />
+                    <Text style={{ fontSize: 10, color: '#64748B', fontWeight: '500' }}>{item.location}</Text>
+                  </View>
+                </View>
+              </View>
+            </TouchableOpacity>
+          ))
+        )}
 
       </ScrollView>
 
@@ -530,7 +568,7 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     marginBottom: 10,
-    backgroundColor: '#F8FBFF', // Match container background so it doesn't look transparent when scrolled
+    backgroundColor: '#F1F5F9', // Darker white
     paddingBottom: 10,
     zIndex: 10,
   },
@@ -814,8 +852,42 @@ const styles = StyleSheet.create({
   lbHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+  },
+  eventCard: {
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+    marginBottom: 14,
+  },
+  eventImage: {
+    width: '100%',
+    aspectRatio: 3/2,
+    backgroundColor: '#f1f5f9',
+  },
+  eventContent: {
+    padding: 14,
+  },
+  eventTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 4,
+  },
+  eventDesc: {
+    fontSize: 12,
+    color: '#64748B',
+    lineHeight: 16,
+    marginBottom: 8,
   },
   lbTitle: {
     fontSize: 13.5,

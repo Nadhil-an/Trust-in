@@ -18,6 +18,13 @@ export default function LeavePage() {
   }, [search])
   useEffect(() => { load() }, [load])
 
+  // Real-time synchronization
+  useEffect(() => {
+    const handleRefresh = () => load()
+    window.addEventListener('dashboard-refresh', handleRefresh)
+    return () => window.removeEventListener('dashboard-refresh', handleRefresh)
+  }, [load])
+
   const handleAction = async (id, action) => {
     setActing(true)
     try { await hrApi.leave.action(id,{action, reason}); toast.success(`Leave ${action}d.`); setApprovalModal(null); load() }

@@ -151,6 +151,13 @@ export default function Inventory() {
 
   useEffect(() => { load() }, [load])
 
+  // Real-time synchronization
+  useEffect(() => {
+    const handleRefresh = () => load()
+    window.addEventListener('dashboard-refresh', handleRefresh)
+    return () => window.removeEventListener('dashboard-refresh', handleRefresh)
+  }, [load])
+
   const handleAdjust = async () => {
     if (!adjustItem) return
     const newQty = parseInt(adjustQty)

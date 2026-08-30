@@ -32,7 +32,9 @@ export default function PerformancePoints() {
         hrApi.officers.list({ limit: 100 })
       ])
       setLeaderboardData(boardRes.data)
-      setOfficers(officersRes.data.results || officersRes.data)
+      const allOfficers = officersRes.data.results || officersRes.data
+      const staffOnly = allOfficers.filter(o => o.designation && o.designation.toUpperCase() === 'STAFF')
+      setOfficers(staffOnly)
     } catch (_) {
       toast.error("Failed to load performance points data")
     } finally {

@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Alert, KeyboardAvoidingView, Platform, Modal
+  Alert, KeyboardAvoidingView, Platform, Modal, TextInput, Image
 } from 'react-native'; 
+import * as ImagePicker from 'expo-image-picker';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import * as Clipboard from 'expo-clipboard';
 import { useTranslation } from 'react-i18next';
@@ -10,7 +11,8 @@ import { isValidPhone, isValidEmail } from '../../utils/validators';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
 import { Button, Input, PhotoPicker, ActionSheet } from '../../components/shared';
-import { membersApi } from '../../api';
+import { membersApi, staffApi, notifyApi } from '../../api';
+import { useAuthStore } from '../../store/authStore';
 import Toast from 'react-native-toast-message';
 
 const MEMBER_TYPES = ['General', 'Donor', 'Volunteer', 'Beneficiary', 'Life Member', 'Honorary'];
@@ -88,11 +90,43 @@ const AddMemberScreen = ({ navigation, route }) => {
     transaction_id: editItem?.transaction_id || '',
     notes: '',
     temp_password: '',
+    voucher_id: '',
   });
 
   const [errors, setErrors] = useState({});
   const [successData, setSuccessData] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
+  const [receiptImageUri, setReceiptImageUri] = useState(null);
+
+  // Status: null (not checked) | 'checking' | true (has WA) | false (no WA) | 'unverified' (gateway offline)
+  const [whatsappStatus, setWhatsappStatus] = useState(null);
+  const whatsappTimer = useRef(null);
+
+  // Silent background WhatsApp check — debounced 1.5s after user stops typing
+  useEffect(() => {
+    if (!form.phone || form.phone.length < 10) {
+      setWhatsappStatus(null);
+      return;
+    }
+    setWhatsappStatus('checking');
+    clearTimeout(whatsappTimer.current);
+    whatsappTimer.current = setTimeout(async () => {
+      try {
+        const res = await notifyApi.checkWhatsapp(form.phone);
+        const status = res.data?.has_whatsapp;
+        if (status === true) {
+          setWhatsappStatus(true);
+        } else if (status === false) {
+          setWhatsappStatus(false);
+        } else {
+          setWhatsappStatus('unverified');
+        }
+      } catch {
+        setWhatsappStatus('unverified');
+      }
+    }, 1500);
+    return () => clearTimeout(whatsappTimer.current);
+  }, [form.phone]);
 
   useEffect(() => {
     if (editItem) {
@@ -107,6 +141,20 @@ const AddMemberScreen = ({ navigation, route }) => {
       });
     }
   }, [editItem]);
+
+  const user = useAuthStore(s => s.user);
+  const [voucher, setVoucher] = useState(null);
+
+  React.useEffect(() => {
+    if (user?.id) {
+      staffApi.vouchers.get(user.id)
+        .then(res => {
+          setVoucher(res.data);
+          set('voucher_id', String(res.data.current_voucher));
+        })
+        .catch(err => console.log('No voucher assigned or offline', err));
+    }
+  }, [user?.id]);
 
   const set = (key, val) => {
     setForm(f => ({ ...f, [key]: val }));
@@ -130,6 +178,8 @@ const AddMemberScreen = ({ navigation, route }) => {
       if (!form.full_name.trim()) errs.full_name = t('common.required');
       if (!form.phone.trim()) errs.phone = t('common.required');
       else if (!isValidPhone(form.phone)) errs.phone = 'Invalid 10-digit phone number';
+      const needsPhoto = whatsappStatus === false || whatsappStatus === 'unverified';
+      if (needsPhoto && !receiptImageUri) errs.receiptImage = 'Photo of receipt is required when WhatsApp receipt cannot be sent';
       if (form.email && !isValidEmail(form.email)) errs.email = 'Invalid email address';
       if (!form.age) errs.age = t('common.required');
       if (!form.gender) errs.gender = t('common.required');
@@ -149,10 +199,30 @@ const AddMemberScreen = ({ navigation, route }) => {
 
     setErrors(errs);
     if (Object.keys(errs).length > 0) {
-      Toast.show({ type: 'error', text1: 'Please fix the highlighted errors' });
+      if (errs.receiptImage) {
+        Alert.alert('Receipt Required', errs.receiptImage);
+      } else {
+        Toast.show({ type: 'error', text1: 'Please fix the highlighted errors' });
+      }
       return false;
     }
     return true;
+  };
+
+  const captureReceipt = async () => {
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+    if (permissionResult.granted === false) {
+      Alert.alert('Permission Denied', 'You need to grant camera access to take a photo.');
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 0.7,
+    });
+    if (!result.canceled) {
+      setReceiptImageUri(result.assets[0].uri);
+    }
   };
 
   const nextStep = () => {
@@ -167,7 +237,25 @@ const AddMemberScreen = ({ navigation, route }) => {
   const handleSubmit = async () => {
     setLoading(true);
     try {
+      // ── Day-closed guard ─────────────────────────────────────────
+      if (!editItem && user?.id) {
+        const today = new Date().toISOString().split('T')[0];
+        try {
+          const closedRes = await staffApi.checkDayClosed(user.id, today);
+          if (closedRes.data?.is_closed) {
+            Alert.alert(
+              'Day Closed',
+              'Your collections for today have been closed by HR. Please contact your supervisor.',
+              [{ text: 'OK' }]
+            );
+            setLoading(false);
+            return;
+          }
+        } catch (_) {} // If endpoint unavailable, allow submission
+      }
+
       const formData = new FormData();
+
 
       const genderMap = { 'Male': 'MALE', 'Female': 'FEMALE', 'Other': 'OTHER' };
       const membershipMap = {
@@ -182,7 +270,7 @@ const AddMemberScreen = ({ navigation, route }) => {
 
       Object.keys(form).forEach(key => {
         if (form[key] !== '' && form[key] !== null && 
-            !['id_type', 'id_number', 'temp_password', 'age', 'payment_mode', 'transaction_id', 'amount', 'payment_date', 'notes'].includes(key)) {
+            !['id_type', 'id_number', 'temp_password', 'age', 'payment_mode', 'transaction_id', 'amount', 'payment_date', 'notes', 'voucher_id', 'phone'].includes(key)) {
           let value = form[key];
           if (key === 'gender') value = genderMap[value] || value;
           if (key === 'membership_type') value = membershipMap[value] || 'GENERAL';
@@ -194,11 +282,20 @@ const AddMemberScreen = ({ navigation, route }) => {
       const mappedPaymentMode = form.payment_mode === 'GPay' ? 'UPI' : 'CASH';
       if (form.payment_mode) formData.append('payment_mode', mappedPaymentMode);
       if (form.payment_mode === 'GPay' && form.transaction_id) formData.append('transaction_id', form.transaction_id);
+      if (form.voucher_id) formData.append('voucher_id', form.voucher_id);
 
       if (form.age) {
         const currentYear = new Date().getFullYear();
         const dobYear = currentYear - parseInt(form.age, 10);
         formData.append('date_of_birth', `${dobYear}-01-01`);
+      }
+
+      if (form.phone) {
+        formData.append('phone', form.phone);
+      }
+
+      if (receiptImageUri) {
+        formData.append('document', { uri: receiptImageUri, type: 'image/jpeg', name: 'receipt.jpg' });
       }
 
       if (photos.length > 0) {
@@ -212,6 +309,9 @@ const AddMemberScreen = ({ navigation, route }) => {
         navigation.goBack();
       } else {
         const res = await membersApi.create(formData);
+        if (voucher && user?.id) {
+          await staffApi.vouchers.increment(user.id).catch(() => {});
+        }
         setShowPreview(false);
         setSuccessData({
           member_id: res.data.member_id,
@@ -255,7 +355,77 @@ const AddMemberScreen = ({ navigation, route }) => {
               </View>
 
               <Input label="Full Name" value={form.full_name} onChangeText={v => set('full_name', v)} placeholder="Enter full name" required error={errors.full_name} icon="person-outline" />
-              <Input label="Phone Number" value={form.phone} onChangeText={v => set('phone', v)} type="phone" placeholder="Enter phone number" required error={errors.phone} maxLength={10} keyboardType="numeric" icon="call-outline" />
+              
+              <Text style={styles.inputLabel}>Phone (for WhatsApp receipt) <Text style={{ color: Colors.error }}>*</Text></Text>
+              <View style={[styles.phoneInputWrapper, errors.phone && styles.inputError]}>
+                <Ionicons name="call-outline" size={20} color="#64748B" style={styles.phoneInputIcon} />
+                <TextInput
+                  style={styles.phoneInput}
+                  value={form.phone}
+                  onChangeText={v => set('phone', v)}
+                  placeholder="10-digit number"
+                  placeholderTextColor="#94A3B8"
+                  keyboardType="numeric"
+                  maxLength={10}
+                />
+                {form.phone.length === 10 && (
+                  whatsappStatus === 'checking' ? (
+                    <Text style={{ fontSize: 11, color: '#6B7280', marginRight: 8 }}>Checking...</Text>
+                  ) : whatsappStatus === true ? (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 8 }}>
+                      <Ionicons name="logo-whatsapp" size={16} color="#22C55E" />
+                      <Text style={{ fontSize: 11, color: '#16A34A', marginLeft: 3 }}>WhatsApp ✓</Text>
+                    </View>
+                  ) : whatsappStatus === false ? (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 8 }}>
+                      <Ionicons name="warning-outline" size={16} color="#EF4444" />
+                      <Text style={{ fontSize: 11, color: '#DC2626', marginLeft: 3 }}>No WhatsApp</Text>
+                    </View>
+                  ) : whatsappStatus === 'unverified' ? (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 8 }}>
+                      <Ionicons name="help-circle-outline" size={16} color="#D97706" />
+                      <Text style={{ fontSize: 11, color: '#B45309', marginLeft: 3 }}>Unverified</Text>
+                    </View>
+                  ) : null
+                )}
+              </View>
+              {errors.phone ? <Text style={styles.errorText}>{errors.phone}</Text> : null}
+              
+              {whatsappStatus === false && (
+                <Text style={{ fontSize: 12, color: '#DC2626', marginTop: 4, marginLeft: 4 }}>
+                  ⚠️ This number is not registered on WhatsApp. A receipt photo is required.
+                </Text>
+              )}
+              {whatsappStatus === 'unverified' && (
+                <Text style={{ fontSize: 12, color: '#B45309', marginTop: 4, marginLeft: 4 }}>
+                  ⚠️ WhatsApp status could not be verified. Please capture a receipt photo as proof.
+                </Text>
+              )}
+
+              {(whatsappStatus === false || whatsappStatus === 'unverified') && (
+                <View style={{ marginBottom: 16, padding: 12, backgroundColor: '#FEF2F2', borderRadius: 8, borderWidth: 1, borderColor: '#FECACA', marginTop: 16 }}>
+                  <Text style={{ fontSize: 13, color: '#991B1B', marginBottom: 10, fontWeight: '600' }}>
+                    {whatsappStatus === 'unverified'
+                      ? '⚠️ WhatsApp status unconfirmed. Please capture a receipt photo as proof.'
+                      : '⚠️ No WhatsApp on this number. Please capture a photo of the written receipt.'}
+                  </Text>
+                  {receiptImageUri ? (
+                    <View style={{ position: 'relative' }}>
+                      <Image source={{ uri: receiptImageUri }} style={{ width: '100%', height: 150, borderRadius: 8 }} />
+                      <TouchableOpacity onPress={() => setReceiptImageUri(null)} style={{ position: 'absolute', top: 5, right: 5, backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 15, padding: 4 }}>
+                        <Ionicons name="close" size={20} color="#FFF" />
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    <TouchableOpacity onPress={captureReceipt} style={{ backgroundColor: '#EF4444', padding: 12, borderRadius: 8, alignItems: 'center', flexDirection: 'row', justifyContent: 'center' }}>
+                      <Ionicons name="camera" size={20} color="#FFF" style={{ marginRight: 8 }} />
+                      <Text style={{ color: '#FFF', fontWeight: '700' }}>Take Receipt Photo</Text>
+                    </TouchableOpacity>
+                  )}
+                  {errors.receiptImage ? <Text style={styles.errorText}>{errors.receiptImage}</Text> : null}
+                </View>
+              )}
+
               <Input label="Email Address" value={form.email} onChangeText={v => set('email', v)} type="email" placeholder="Enter email address" error={errors.email} icon="mail-outline" />
               <Input label="Age" value={form.age} onChangeText={v => set('age', v)} type="number" placeholder="Enter age" required error={errors.age} icon="calendar-outline" />
               <SelectField label="Gender" icon="male-female-outline" value={form.gender} placeholder="Select gender" onPress={() => openSheet('Select Gender', GENDER_OPTIONS, 'gender')} required error={errors.gender} />
@@ -287,10 +457,34 @@ const AddMemberScreen = ({ navigation, route }) => {
           <>
             <SectionHeader title="3. Payment Collection" icon="wallet-outline" />
             <View style={styles.card}>
-              <SelectField label="Payment Method" icon="card-outline" value={form.payment_mode} placeholder="Select payment method" onPress={() => openSheet('Select Payment Method', PAYMENT_METHODS, 'payment_mode')} required error={errors.payment_mode} />
+              <Text style={styles.inputLabel}>Payment Method <Text style={{ color: Colors.error }}>*</Text></Text>
+              <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
+                <TouchableOpacity 
+                  style={[styles.paymentBtn, form.payment_mode === 'Cash' && styles.paymentBtnActive]}
+                  onPress={() => { set('payment_mode', 'Cash'); setErrors(e => ({ ...e, payment_mode: '' })); }}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="cash-outline" size={24} color={form.payment_mode === 'Cash' ? '#FFFFFF' : FORM_BLUE} />
+                  <Text style={[styles.paymentBtnText, form.payment_mode === 'Cash' && styles.paymentBtnTextActive]}>Cash</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={[styles.paymentBtn, form.payment_mode === 'GPay' && styles.paymentBtnActive]}
+                  onPress={() => { set('payment_mode', 'GPay'); setErrors(e => ({ ...e, payment_mode: '' })); }}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="phone-portrait-outline" size={24} color={form.payment_mode === 'GPay' ? '#FFFFFF' : FORM_BLUE} />
+                  <Text style={[styles.paymentBtnText, form.payment_mode === 'GPay' && styles.paymentBtnTextActive]}>GPay / UPI</Text>
+                </TouchableOpacity>
+              </View>
+              {errors.payment_mode ? <Text style={styles.errorText}>{errors.payment_mode}</Text> : null}
+
               <Input label="Amount (₹)" value={form.amount} editable={false} placeholder="Enter amount" required icon="cash-outline" />
               <Input label="Payment Date" value={form.payment_date} editable={false} placeholder="Select date" required icon="calendar-outline" />
-              <Input label="Transaction ID / Reference (Optional)" value={form.transaction_id} onChangeText={v => set('transaction_id', v)} placeholder="Enter transaction ID" error={errors.transaction_id} icon="receipt-outline" />
+              
+              {form.payment_mode !== 'Cash' && (
+                <Input label="Transaction ID / Reference (Optional)" value={form.transaction_id} onChangeText={v => set('transaction_id', v)} placeholder="Enter transaction ID" error={errors.transaction_id} icon="receipt-outline" />
+              )}
+              
               <Input label="Notes (Optional)" value={form.notes} onChangeText={v => set('notes', v)} placeholder="Add any notes here..." type="multiline" icon="document-text-outline" />
             </View>
           </>
@@ -316,6 +510,27 @@ const AddMemberScreen = ({ navigation, route }) => {
       <KeyboardAwareScrollView enableOnAndroid={true} extraScrollHeight={20} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <StepDots total={TOTAL_STEPS} current={step} />
         
+        {voucher && (
+          <View style={{ backgroundColor: '#EEF2FF', padding: 12, borderRadius: 12, marginBottom: 16, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#C7D2FE' }}>
+            <View style={{ backgroundColor: '#4338CA', padding: 8, borderRadius: 8, marginRight: 12 }}>
+              <Ionicons name="ticket" size={20} color="#FFFFFF" />
+            </View>
+            <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <View>
+                <Text style={{ fontSize: 12, color: '#4338CA', fontWeight: '700', textTransform: 'uppercase', marginBottom: 2 }}>Voucher ID (Book {voucher.book_number})</Text>
+                <TextInput
+                  style={{ fontSize: 20, color: '#312E81', fontWeight: '900', padding: 0, margin: 0 }}
+                  value={form.voucher_id}
+                  onChangeText={v => set('voucher_id', v)}
+                  keyboardType="numeric"
+                  placeholder="Enter ID"
+                  placeholderTextColor="#94A3B8"
+                />
+              </View>
+            </View>
+          </View>
+        )}
+
         {renderStep()}
 
         {/* Footer Buttons */}
@@ -470,6 +685,14 @@ const styles = StyleSheet.create({
   },
   
   inputWrapper: { marginBottom: 16 },
+  phoneInputWrapper: {
+    flexDirection: 'row', alignItems: 'center',
+    borderWidth: 1, borderColor: Colors.gray300, borderRadius: 8,
+    paddingHorizontal: 12, backgroundColor: Colors.white,
+    marginBottom: 16, height: 48
+  },
+  phoneInputIcon: { marginRight: 8 },
+  phoneInput: { flex: 1, fontSize: 15, color: Colors.textPrimary, height: '100%' },
   inputLabel: { fontSize: 13, fontWeight: '600', color: Colors.gray700, marginBottom: 6 },
   selectBox: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
@@ -481,6 +704,14 @@ const styles = StyleSheet.create({
   selectText: { fontSize: 15, color: Colors.textPrimary, flex: 1 },
   inputError: { borderColor: Colors.error },
   errorText: { color: Colors.error, fontSize: 12, marginTop: 4 },
+  
+  paymentBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    paddingVertical: 12, borderRadius: 10, borderWidth: 1, borderColor: FORM_BLUE, backgroundColor: Colors.white
+  },
+  paymentBtnActive: { backgroundColor: FORM_BLUE },
+  paymentBtnText: { fontSize: 15, fontWeight: '600', color: FORM_BLUE },
+  paymentBtnTextActive: { color: Colors.white },
   
   photoUploadBox: {
     width: 140, height: 140, borderRadius: 12, borderWidth: 1, borderColor: FORM_BLUE_LIGHT,
@@ -516,6 +747,8 @@ const styles = StyleSheet.create({
   actionButtonsRow: { flexDirection: 'row', gap: 10, width: '100%', marginBottom: 12 },
   copyBtn: { flex: 1 },
   shareBtn: { flex: 1, backgroundColor: FORM_BLUE },
+  checkboxRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16, marginTop: -4 },
+  checkboxLabel: { marginLeft: 10, fontSize: 13, color: Colors.gray600 },
 });
 
 export default AddMemberScreen;

@@ -58,6 +58,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_login_ip = models.GenericIPAddressField(blank=True, null=True)
     failed_login_attempts = models.PositiveSmallIntegerField(default=0)
     locked_until = models.DateTimeField(blank=True, null=True)
+    staff_uid = models.CharField(max_length=20, unique=True, blank=True, null=True, db_index=True)
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email', 'full_name']
@@ -70,6 +71,20 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f"{self.full_name} ({self.role})"
+
+    def save(self, *args, **kwargs):
+        if not self.staff_uid and self.role and self.role != Role.MEMBER:
+            # Find the last assigned SLT-XXXX ID
+            last_user = User.objects.filter(staff_uid__startswith='SLT-').order_by('staff_uid').last()
+            if last_user and last_user.staff_uid:
+                try:
+                    last_id = int(last_user.staff_uid.split('-')[1])
+                    self.staff_uid = f"SLT-{last_id + 1:04d}"
+                except (ValueError, IndexError):
+                    self.staff_uid = "SLT-0001"
+            else:
+                self.staff_uid = "SLT-0001"
+        super().save(*args, **kwargs)
 
     def is_account_locked(self):
         if self.locked_until and timezone.now() < self.locked_until:
@@ -134,7 +149,39 @@ class SystemNotification(models.Model):
         db_table = 'core_notifications'
         ordering = ['-created_at']
 
+class Event(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.CharField(max_length=255)
+    short_description = models.CharField(max_length=255, blank=True)
+    content = models.TextField(blank=True)
+    date = models.DateField(default=timezone.now)
+    location = models.CharField(max_length=255)
+    category = models.CharField(max_length=50, default='Upcoming')  # Upcoming or Past
+    image = models.ImageField(upload_to='events/', blank=True, null=True, validators=[validate_image_file])
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'core_events'
+        ordering = ['-date', '-created_at']
+
+    def __str__(self):
+        return self.title
+
     def mark_read(self):
         self.is_read = True
         self.read_at = timezone.now()
         self.save(update_fields=['is_read', 'read_at'])
+
+class RoleFeaturePermission(models.Model):
+    """Stores which features are enabled for which roles."""
+    role = models.CharField(max_length=35, choices=Role.choices)
+    feature_key = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'core_role_features'
+        unique_together = ('role', 'feature_key')
+
+    def __str__(self):
+        return f"{self.role} -> {self.feature_key}"

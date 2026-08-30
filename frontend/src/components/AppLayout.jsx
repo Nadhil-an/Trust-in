@@ -5,88 +5,8 @@ import { useNotificationStore } from '../store/notificationStore'
 import { coreApi } from '../api'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
-
-const NAV_CONFIG = {
-  MANAGER: [
-    { label: 'Dashboard', icon: '📊', path: '/slt/mgr/overview' },
-    { label: 'Assessment Requests', icon: '📋', path: '/slt/mgr/requests', badge: 'requests' },
-    { label: 'Scheduled Payouts', icon: '🎯', path: '/slt/shared/scheduled-payouts' },
-    { label: 'Charity Inventory', icon: '📦', path: '/slt/mgr/inventory' },
-    { label: 'Minutes Registry', icon: '📝', path: '/slt/mgr/minutes' },
-    { label: 'Partners', icon: '🤝', path: '/slt/mgr/partners' },
-    { label: 'Reports', icon: '📈', path: '/slt/shared/analytics' },
-  ],
-  ACCOUNTANT: [
-    { type: 'header', label: 'OVERVIEW' },
-    { label: 'Dashboard', icon: '📊', path: '/slt/finance/overview' },
-    { label: 'Pending Payouts', icon: '⏳', path: '/slt/disburse/pending', badge: 'pending' },
-    { label: 'Scheduled Payouts', icon: '🎯', path: '/slt/shared/scheduled-payouts' },
-    { label: 'Money Requests', icon: '💰', path: '/slt/finance/fund-requests', badge: 'pending' },
-    { type: 'header', label: 'LEDGERS' },
-    { label: 'Donations', icon: '💝', path: '/slt/finance/donations' },
-    { label: 'Cash Book', icon: '💵', path: '/slt/finance/cash-ledger' },
-    { label: 'Bank', icon: '🏦', path: '/slt/finance/bank-ledger' },
-    { label: 'Income', icon: '📥', path: '/slt/finance/income' },
-    { label: 'Expenses', icon: '📤', path: '/slt/finance/expenditure' },
-    { type: 'header', label: 'TRANSACTIONS' },
-    { label: 'Cheques', icon: '🧾', path: '/slt/finance/cheques' },
-    { label: 'Transfers', icon: '🔄', path: '/slt/finance/transfers' },
-    { label: 'Transactions', icon: '📋', path: '/slt/finance/transactions' },
-    { type: 'header', label: 'PAYOUTS & CLOSING' },
-    { label: 'Pending Salaries', icon: '🧑‍💼', path: '/slt/finance/salary-review' },
-    { label: 'Payouts', icon: '💸', path: '/slt/disburse/payouts' },
-    { label: 'Cash Closing', icon: '🔒', path: '/slt/disburse/daily-close' },
-    { type: 'header', label: 'ANALYTICS' },
-    { label: 'Reports', icon: '📈', path: '/slt/shared/analytics' },
-  ],
-  HR: [
-    { type: 'header', label: 'OVERVIEW' },
-    { label: 'Dashboard', icon: '📊', path: '/slt/hr/overview' },
-    { type: 'header', label: 'DIRECTORY' },
-    { label: 'Members', icon: '👥', path: '/slt/hr/members' },
-    { label: 'Volunteers', icon: '🙋', path: '/slt/hr/volunteers' },
-    { label: 'Executive Members', icon: '👔', path: '/slt/hr/executive-members' },
-    { label: 'Staff Members', icon: '👨‍💼', path: '/slt/hr/officers' },
-    { type: 'header', label: 'TIME & PAYROLL' },
-    { label: 'Attendance', icon: '✅', path: '/slt/hr/attendance' },
-    { label: 'Leave Management', icon: '📅', path: '/slt/hr/leave', badge: 'leave' },
-    { label: 'Salary & Payroll', icon: '💰', path: '/slt/hr/payroll' },
-    { label: 'Payment Advances', icon: '💵', path: '/slt/hr/payment-advances' },
-    { type: 'header', label: 'SUPPORT & PERFORMANCE' },
-    { label: 'Complaints', icon: '🗣️', path: '/slt/hr/complaints' },
-    { label: 'Staff Reports', icon: '📄', path: '/slt/hr/staff-reports' },
-    { label: 'Achieved Points', icon: '🏆', path: '/slt/hr/performance' },
-    { label: 'Analytics Reports', icon: '📈', path: '/slt/shared/analytics' },
-  ],
-
-  ADMIN: [
-    { label: 'User Management', icon: '👤', path: '/slt/sys/user-control' },
-    { label: 'Mobile Access', icon: '📱', path: '/slt/sys/mobile-access' },
-    { label: 'Audit Log', icon: '🔍', path: '/slt/sys/audit-trail' },
-    { label: 'Reports', icon: '📈', path: '/slt/shared/analytics' },
-  ],
-  DATA_ENTRY: [
-    { type: 'header', label: 'MAIN' },
-    { label: 'Data Entry Hub', icon: '📝', path: '/slt/entry/hub' },
-    { label: 'Scheduled Payouts', icon: '🎯', path: '/slt/shared/scheduled-payouts' },
-
-    { type: 'header', label: 'FINANCE & DONATIONS' },
-    { label: 'Donation Entry', icon: '💝', path: '/slt/entry/donation' },
-    { label: 'Purchase Entry', icon: '🛒', path: '/slt/entry/purchase' },
-
-    { type: 'header', label: 'PEOPLE & RELATIONS' },
-    { label: 'Membership Entry', icon: '🪪', path: '/slt/entry/membership' },
-    { label: 'Partners Entry', icon: '🤝', path: '/slt/entry/partners' },
-
-    { type: 'header', label: 'CHARITY ASSETS' },
-    { label: 'Inward Entry', icon: '📥', path: '/slt/entry/inward' },
-    { label: 'Outward Entry', icon: '📤', path: '/slt/entry/outward' },
-
-    { type: 'header', label: 'MATERIAL INVENTORY' },
-    { label: 'Material Inward', icon: '📦', path: '/slt/entry/material-inward' },
-    { label: 'Material Outward', icon: '📤', path: '/slt/entry/material-outward' },
-  ],
-}
+import { MASTER_NAV_CONFIG, ADMIN_NAV_CONFIG } from '../config/features'
+import { useFeatureStore } from '../store/featureStore'
 
 function NotificationDrawer({ onClose }) {
   const { notifications, setNotifications, markRead, markAllRead } = useNotificationStore()
@@ -212,12 +132,25 @@ function GlobalSearch() {
 export default function AppLayout() {
   const { user, logout } = useAuthStore()
   const { unreadCount, isOpen, toggleDrawer, closeDrawer } = useNotificationStore()
+  const { hasFeature, myFeatures, loading } = useFeatureStore()
   const location = useLocation()
   const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
 
-  const navItems = NAV_CONFIG[user?.role] || []
+  // Build nav items dynamically
+  const navItems = React.useMemo(() => {
+    if (user?.role === 'ADMIN') return ADMIN_NAV_CONFIG
+    
+    // For non-admin, filter master config by features
+    return MASTER_NAV_CONFIG.filter(item => {
+      // If the item specifies a hardcoded role (like the main dashboards), enforce it
+      if (item.roles && !item.roles.includes(user?.role)) return false
+      
+      // Check feature access
+      return hasFeature(item.key)
+    })
+  }, [user, hasFeature, myFeatures])
 
   const handleLogout = async () => {
     await logout()
@@ -244,15 +177,53 @@ export default function AppLayout() {
         <div className="sidebar-nav">
           <div className="nav-section-label">{user?.role} MODULE</div>
           {(() => {
+            if (loading && myFeatures.length === 0 && user?.role !== 'ADMIN') {
+              return (
+                <div style={{ padding: '20px', opacity: 0.5 }}>
+                  <div className="animate-pulse flex flex-col gap-4">
+                    <div className="h-4 bg-gray-400 rounded w-3/4"></div>
+                    <div className="h-4 bg-gray-400 rounded w-1/2"></div>
+                    <div className="h-4 bg-gray-400 rounded w-5/6"></div>
+                    <div className="h-4 bg-gray-400 rounded w-2/3"></div>
+                  </div>
+                </div>
+              )
+            }
+
             const activeItem = [...navItems]
               .filter(i => i.path)
               .sort((a, b) => b.path.length - a.path.length)
               .find(i => location.pathname === i.path || location.pathname.startsWith(i.path + '/'));
 
+            // Group by category if non-admin
+            if (user?.role !== 'ADMIN') {
+              const grouped = {}
+              navItems.forEach(item => {
+                const cat = item.category || 'OTHER'
+                if (!grouped[cat]) grouped[cat] = []
+                grouped[cat].push(item)
+              })
+              
+              return Object.entries(grouped).map(([category, items]) => (
+                <React.Fragment key={category}>
+                  <div className="nav-section-label" style={{ marginTop: 8, opacity: category === 'OTHER' ? 0 : 1 }}>{category}</div>
+                  {items.map(item => {
+                    const isActive = activeItem && activeItem.path === item.path;
+                    return (
+                      <div key={item.path}
+                        className={`nav-item ${isActive ? 'active' : ''}`}
+                        onClick={() => { navigate(item.path); setMobileOpen(false) }}>
+                        <span className="nav-icon">{item.icon}</span>
+                        <span>{item.label}</span>
+                      </div>
+                    )
+                  })}
+                </React.Fragment>
+              ))
+            }
+
+            // ADMIN flat rendering
             return navItems.map((item, idx) => {
-              if (item.type === 'header') {
-                return <div key={`header-${idx}`} className="nav-section-label" style={{ marginTop: 8 }}>{item.label}</div>
-              }
               const isActive = activeItem && activeItem.path === item.path;
               return (
                 <div key={item.path}

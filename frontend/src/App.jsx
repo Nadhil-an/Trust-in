@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { useAuthStore } from './store/authStore'
 import { useNotificationStore } from './store/notificationStore'
+import { useFeatureStore } from './store/featureStore'
 
 // Pages
 import LoginPage from './pages/LoginPage'
@@ -43,11 +44,13 @@ import PerformancePoints from './pages/hr/PerformancePoints'
 import ReportsPage from './pages/Reports'
 import AdminUsers from './pages/admin/Users'
 import MobileAccess from './pages/admin/MobileAccess'
+import FeatureAccess from './pages/admin/FeatureAccess'
 import AuditLogPage from './pages/admin/AuditLog'
 import ProfilePage from './pages/Profile'
 import NotFoundPage from './pages/NotFound'
 import DataEntryDashboard from './pages/data-entry/Dashboard'
 import InwardEntry from './pages/data-entry/InwardEntry'
+import PromotorRegistry from './pages/data-entry/PromotorRegistry'
 import OutwardEntry from './pages/data-entry/OutwardEntry'
 import PurchaseEntry from './pages/data-entry/PurchaseEntry'
 import DonationEntry from './pages/data-entry/DonationEntry'
@@ -55,13 +58,31 @@ import MembershipEntry from './pages/data-entry/MembershipEntry'
 import PartnersEntry from './pages/data-entry/PartnersEntry'
 import MaterialInward from './pages/data-entry/MaterialInward'
 import MaterialOutward from './pages/data-entry/MaterialOutward'
+import EventEntry from './pages/data-entry/EventEntry'
 import ScheduledPayouts from './pages/shared/ScheduledPayouts'
 
 // ── Protected Route ───────────────────────────────────────
-function ProtectedRoute({ children, roles = [] }) {
+function ProtectedRoute({ children, roles = [], featureKey = null }) {
   const { isAuthenticated, user } = useAuthStore()
+  const { hasFeature, loading } = useFeatureStore()
+  
   if (!isAuthenticated) return <Navigate to="/slt/portal/auth" replace />
+  
+  if (user?.role === 'ADMIN') return children
+  
   if (roles.length > 0 && !roles.includes(user?.role)) return <Navigate to="/" replace />
+  
+  if (featureKey) {
+    if (loading) {
+      return (
+        <div className="h-screen w-screen flex items-center justify-center bg-gray-50">
+          <div className="text-sm font-medium text-gray-500 animate-pulse">Checking access...</div>
+        </div>
+      )
+    }
+    if (!hasFeature(featureKey)) return <Navigate to="/" replace />
+  }
+  
   return children
 }
 
@@ -81,10 +102,12 @@ function HomeRedirect() {
 export default function App() {
   const { isAuthenticated, user, fetchProfile } = useAuthStore()
   const { connectWebSocket, disconnect } = useNotificationStore()
+  const { fetchFeatures } = useFeatureStore()
 
   useEffect(() => {
     if (isAuthenticated) {
       fetchProfile()
+      fetchFeatures()
     }
   }, [isAuthenticated])
 
@@ -122,66 +145,69 @@ export default function App() {
           <Route index element={<HomeRedirect />} />
 
           {/* Manager */}
-          <Route path="slt/mgr/overview"         element={<ProtectedRoute roles={['MANAGER','ADMIN']}><ManagerDashboard /></ProtectedRoute>} />
-          <Route path="slt/mgr/requests"         element={<ProtectedRoute roles={['MANAGER','ACCOUNTANT','ADMIN']}><Requests /></ProtectedRoute>} />
-          <Route path="slt/mgr/requests/:id"     element={<ProtectedRoute roles={['MANAGER','ACCOUNTANT','ADMIN']}><RequestDetail /></ProtectedRoute>} />
-          <Route path="slt/mgr/minutes"          element={<ProtectedRoute roles={['MANAGER','ADMIN']}><Minutes /></ProtectedRoute>} />
-          <Route path="slt/mgr/partners"         element={<ProtectedRoute roles={['MANAGER','ADMIN']}><Partners /></ProtectedRoute>} />
-          <Route path="slt/mgr/inventory"        element={<ProtectedRoute roles={['MANAGER','ADMIN']}><Inventory /></ProtectedRoute>} />
+          <Route path="slt/mgr/overview"         element={<ProtectedRoute roles={['MANAGER']}><ManagerDashboard /></ProtectedRoute>} />
+          <Route path="slt/mgr/requests"         element={<ProtectedRoute featureKey="assessment_requests"><Requests /></ProtectedRoute>} />
+          <Route path="slt/mgr/requests/:id"     element={<ProtectedRoute featureKey="assessment_requests"><RequestDetail /></ProtectedRoute>} />
+          <Route path="slt/mgr/minutes"          element={<ProtectedRoute featureKey="minutes_registry"><Minutes /></ProtectedRoute>} />
+          <Route path="slt/mgr/partners"         element={<ProtectedRoute featureKey="partners_entry"><Partners /></ProtectedRoute>} />
+          <Route path="slt/mgr/inventory"        element={<ProtectedRoute featureKey="charity_inventory"><Inventory /></ProtectedRoute>} />
 
           {/* Accounts */}
-          <Route path="slt/finance/overview"         element={<ProtectedRoute roles={['ACCOUNTANT','ADMIN']}><AccountsDashboard /></ProtectedRoute>} />
-          <Route path="slt/finance/summary"          element={<ProtectedRoute roles={['ACCOUNTANT','ADMIN']}><AccountsOverview /></ProtectedRoute>} />
-          <Route path="slt/finance/donations"        element={<ProtectedRoute roles={['ACCOUNTANT','ADMIN']}><Donations /></ProtectedRoute>} />
-          <Route path="slt/finance/fund-requests"    element={<ProtectedRoute roles={['ACCOUNTANT','ADMIN']}><MoneyRequests /></ProtectedRoute>} />
-          <Route path="slt/finance/cash-ledger"      element={<ProtectedRoute roles={['ACCOUNTANT','ADMIN']}><CashBook /></ProtectedRoute>} />
-          <Route path="slt/finance/bank-ledger"      element={<ProtectedRoute roles={['ACCOUNTANT','ADMIN']}><BankAccounts /></ProtectedRoute>} />
-          <Route path="slt/finance/income"           element={<ProtectedRoute roles={['ACCOUNTANT','ADMIN']}><IncomeList /></ProtectedRoute>} />
-          <Route path="slt/finance/expenditure"      element={<ProtectedRoute roles={['ACCOUNTANT','ADMIN']}><ExpenseList /></ProtectedRoute>} />
-          <Route path="slt/finance/cheques"          element={<ProtectedRoute roles={['ACCOUNTANT','ADMIN']}><ChequeList /></ProtectedRoute>} />
-          <Route path="slt/finance/transfers"        element={<ProtectedRoute roles={['ACCOUNTANT','ADMIN']}><TransferList /></ProtectedRoute>} />
-          <Route path="slt/finance/transactions"     element={<ProtectedRoute roles={['ACCOUNTANT','ADMIN']}><TransactionList /></ProtectedRoute>} />
-          <Route path="slt/finance/salary-review"    element={<ProtectedRoute roles={['ACCOUNTANT','ADMIN']}><PendingSalaries /></ProtectedRoute>} />
+          <Route path="slt/finance/overview"         element={<ProtectedRoute roles={['ACCOUNTANT']}><AccountsDashboard /></ProtectedRoute>} />
+          <Route path="slt/finance/summary"          element={<ProtectedRoute roles={['ACCOUNTANT']}><AccountsOverview /></ProtectedRoute>} />
+          <Route path="slt/finance/donations"        element={<ProtectedRoute featureKey="donations_view"><Donations /></ProtectedRoute>} />
+          <Route path="slt/finance/fund-requests"    element={<ProtectedRoute featureKey="money_requests"><MoneyRequests /></ProtectedRoute>} />
+          <Route path="slt/finance/cash-ledger"      element={<ProtectedRoute featureKey="cash_book"><CashBook /></ProtectedRoute>} />
+          <Route path="slt/finance/bank-ledger"      element={<ProtectedRoute featureKey="bank_ledger"><BankAccounts /></ProtectedRoute>} />
+          <Route path="slt/finance/income"           element={<ProtectedRoute featureKey="income_view"><IncomeList /></ProtectedRoute>} />
+          <Route path="slt/finance/expenditure"      element={<ProtectedRoute featureKey="expenses_view"><ExpenseList /></ProtectedRoute>} />
+          <Route path="slt/finance/cheques"          element={<ProtectedRoute featureKey="cheques"><ChequeList /></ProtectedRoute>} />
+          <Route path="slt/finance/transfers"        element={<ProtectedRoute featureKey="transfers"><TransferList /></ProtectedRoute>} />
+          <Route path="slt/finance/transactions"     element={<ProtectedRoute featureKey="transactions"><TransactionList /></ProtectedRoute>} />
+          <Route path="slt/finance/salary-review"    element={<ProtectedRoute featureKey="salary_review"><PendingSalaries /></ProtectedRoute>} />
 
           {/* Cashier / Disbursements (Accountant) */}
-          <Route path="slt/disburse/pending"         element={<ProtectedRoute roles={['ACCOUNTANT','ADMIN']}><PendingDisbursements /></ProtectedRoute>} />
-          <Route path="slt/disburse/payouts"         element={<ProtectedRoute roles={['ACCOUNTANT','ADMIN']}><DisbursementList /></ProtectedRoute>} />
-          <Route path="slt/disburse/daily-close"     element={<ProtectedRoute roles={['ACCOUNTANT','ADMIN']}><CashClosing /></ProtectedRoute>} />
+          <Route path="slt/disburse/pending"         element={<ProtectedRoute featureKey="pending_payouts"><PendingDisbursements /></ProtectedRoute>} />
+          <Route path="slt/disburse/payouts"         element={<ProtectedRoute featureKey="payouts"><DisbursementList /></ProtectedRoute>} />
+          <Route path="slt/disburse/daily-close"     element={<ProtectedRoute featureKey="cash_closing"><CashClosing /></ProtectedRoute>} />
 
           {/* HR */}
-          <Route path="slt/hr/overview"              element={<ProtectedRoute roles={['HR','ADMIN']}><HRDashboard /></ProtectedRoute>} />
-          <Route path="slt/hr/members"               element={<ProtectedRoute roles={['HR','ADMIN']}><Members /></ProtectedRoute>} />
-          <Route path="slt/hr/volunteers"            element={<ProtectedRoute roles={['HR','ADMIN']}><Volunteers /></ProtectedRoute>} />
-          <Route path="slt/hr/executive-members"     element={<ProtectedRoute roles={['HR','ADMIN']}><ExecMembers /></ProtectedRoute>} />
-          <Route path="slt/hr/officers"              element={<ProtectedRoute roles={['HR','ADMIN']}><Officers /></ProtectedRoute>} />
-          <Route path="slt/hr/attendance"            element={<ProtectedRoute roles={['HR','ADMIN']}><AttendancePage /></ProtectedRoute>} />
-          <Route path="slt/hr/leave"                 element={<ProtectedRoute roles={['HR','ADMIN']}><LeavePage /></ProtectedRoute>} />
-          <Route path="slt/hr/payroll"               element={<ProtectedRoute roles={['HR','ADMIN']}><PayrollPage /></ProtectedRoute>} />
-          <Route path="slt/hr/complaints"            element={<ProtectedRoute roles={['HR','ADMIN']}><Complaints /></ProtectedRoute>} />
-          <Route path="slt/hr/staff-reports"         element={<ProtectedRoute roles={['HR','ADMIN']}><StaffReports /></ProtectedRoute>} />
-          <Route path="slt/hr/payment-advances"      element={<ProtectedRoute roles={['HR','ADMIN']}><PaymentAdvances /></ProtectedRoute>} />
-          <Route path="slt/hr/performance"           element={<ProtectedRoute roles={['HR','ADMIN']}><PerformancePoints /></ProtectedRoute>} />
+          <Route path="slt/hr/overview"              element={<ProtectedRoute roles={['HR']}><HRDashboard /></ProtectedRoute>} />
+          <Route path="slt/hr/members"               element={<ProtectedRoute featureKey="hr_members"><Members /></ProtectedRoute>} />
+          <Route path="slt/hr/volunteers"            element={<ProtectedRoute featureKey="hr_volunteers"><Volunteers /></ProtectedRoute>} />
+          <Route path="slt/hr/executive-members"     element={<ProtectedRoute featureKey="hr_exec_members"><ExecMembers /></ProtectedRoute>} />
+          <Route path="slt/hr/officers"              element={<ProtectedRoute featureKey="hr_officers"><Officers /></ProtectedRoute>} />
+          <Route path="slt/hr/attendance"            element={<ProtectedRoute featureKey="hr_attendance"><AttendancePage /></ProtectedRoute>} />
+          <Route path="slt/hr/leave"                 element={<ProtectedRoute featureKey="hr_leave"><LeavePage /></ProtectedRoute>} />
+          <Route path="slt/hr/payroll"               element={<ProtectedRoute featureKey="hr_payroll"><PayrollPage /></ProtectedRoute>} />
+          <Route path="slt/hr/complaints"            element={<ProtectedRoute featureKey="hr_complaints"><Complaints /></ProtectedRoute>} />
+          <Route path="slt/hr/staff-reports"         element={<ProtectedRoute featureKey="hr_staff_reports"><StaffReports /></ProtectedRoute>} />
+          <Route path="slt/hr/payment-advances"      element={<ProtectedRoute featureKey="hr_payment_advances"><PaymentAdvances /></ProtectedRoute>} />
+          <Route path="slt/hr/performance"           element={<ProtectedRoute featureKey="hr_performance"><PerformancePoints /></ProtectedRoute>} />
 
           {/* Shared */}
-          <Route path="slt/shared/scheduled-payouts" element={<ProtectedRoute roles={['MANAGER','ACCOUNTANT','DATA_ENTRY','ADMIN']}><ScheduledPayouts /></ProtectedRoute>} />
-          <Route path="slt/shared/analytics"         element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
+          <Route path="slt/shared/scheduled-payouts" element={<ProtectedRoute featureKey="scheduled_payouts"><ScheduledPayouts /></ProtectedRoute>} />
+          <Route path="slt/shared/analytics"         element={<ProtectedRoute featureKey="analytics_reports"><ReportsPage /></ProtectedRoute>} />
           <Route path="slt/account/profile"          element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
 
           {/* Admin */}
           <Route path="slt/sys/user-control"         element={<ProtectedRoute roles={['ADMIN']}><AdminUsers /></ProtectedRoute>} />
+          <Route path="slt/sys/feature-access"       element={<ProtectedRoute roles={['ADMIN']}><FeatureAccess /></ProtectedRoute>} />
           <Route path="slt/sys/mobile-access"        element={<ProtectedRoute roles={['ADMIN']}><MobileAccess /></ProtectedRoute>} />
           <Route path="slt/sys/audit-trail"          element={<ProtectedRoute roles={['ADMIN']}><AuditLogPage /></ProtectedRoute>} />
 
           {/* Data Entry */}
-          <Route path="slt/entry/hub"                element={<ProtectedRoute roles={['MANAGER','ACCOUNTANT','HR','ADMIN','DATA_ENTRY']}><DataEntryDashboard /></ProtectedRoute>} />
-          <Route path="slt/entry/inward"             element={<ProtectedRoute roles={['MANAGER','ACCOUNTANT','HR','ADMIN','DATA_ENTRY']}><InwardEntry /></ProtectedRoute>} />
-          <Route path="slt/entry/outward"            element={<ProtectedRoute roles={['MANAGER','ACCOUNTANT','HR','ADMIN','DATA_ENTRY']}><OutwardEntry /></ProtectedRoute>} />
-          <Route path="slt/entry/purchase"           element={<ProtectedRoute roles={['MANAGER','ACCOUNTANT','HR','ADMIN','DATA_ENTRY']}><PurchaseEntry /></ProtectedRoute>} />
-          <Route path="slt/entry/donation"           element={<ProtectedRoute roles={['MANAGER','ACCOUNTANT','HR','ADMIN','DATA_ENTRY']}><DonationEntry /></ProtectedRoute>} />
-          <Route path="slt/entry/membership"         element={<ProtectedRoute roles={['MANAGER','ACCOUNTANT','HR','ADMIN','DATA_ENTRY']}><MembershipEntry /></ProtectedRoute>} />
-          <Route path="slt/entry/partners"           element={<ProtectedRoute roles={['MANAGER','ACCOUNTANT','HR','ADMIN','DATA_ENTRY']}><PartnersEntry /></ProtectedRoute>} />
-          <Route path="slt/entry/material-inward"    element={<ProtectedRoute roles={['MANAGER','ACCOUNTANT','HR','ADMIN','DATA_ENTRY']}><MaterialInward /></ProtectedRoute>} />
-          <Route path="slt/entry/material-outward"   element={<ProtectedRoute roles={['MANAGER','ACCOUNTANT','HR','ADMIN','DATA_ENTRY']}><MaterialOutward /></ProtectedRoute>} />
+          <Route path="slt/entry/hub"                element={<ProtectedRoute roles={['DATA_ENTRY']}><DataEntryDashboard /></ProtectedRoute>} />
+          <Route path="slt/entry/inward"             element={<ProtectedRoute featureKey="inward_entry"><InwardEntry /></ProtectedRoute>} />
+          <Route path="slt/entry/outward"            element={<ProtectedRoute featureKey="outward_entry"><OutwardEntry /></ProtectedRoute>} />
+          <Route path="slt/entry/purchase"           element={<ProtectedRoute featureKey="purchase_entry"><PurchaseEntry /></ProtectedRoute>} />
+          <Route path="slt/entry/promoters-registry" element={<ProtectedRoute featureKey="promoters_registry"><PromotorRegistry /></ProtectedRoute>} />
+          <Route path="slt/entry/donation"           element={<ProtectedRoute featureKey="donation_entry"><DonationEntry /></ProtectedRoute>} />
+          <Route path="slt/entry/membership"         element={<ProtectedRoute featureKey="membership_entry"><MembershipEntry /></ProtectedRoute>} />
+          <Route path="slt/entry/partners"           element={<ProtectedRoute featureKey="partners_entry"><PartnersEntry /></ProtectedRoute>} />
+          <Route path="slt/entry/material-inward"    element={<ProtectedRoute featureKey="material_inward"><MaterialInward /></ProtectedRoute>} />
+          <Route path="slt/entry/material-outward"   element={<ProtectedRoute featureKey="material_outward"><MaterialOutward /></ProtectedRoute>} />
+          <Route path="slt/entry/events"             element={<ProtectedRoute featureKey="events_entry"><EventEntry /></ProtectedRoute>} />
 
           <Route path="*" element={<NotFoundPage />} />
         </Route>

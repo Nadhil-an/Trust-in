@@ -17,7 +17,7 @@ DEBUG = os.getenv('DEBUG', 'True') == 'True'
 FIELD_ENCRYPTION_KEY = os.getenv('FIELD_ENCRYPTION_KEY', '')
 # Allow all hosts in development — includes LAN IP for mobile app access
 _allowed = os.getenv('ALLOWED_HOSTS', '')
-ALLOWED_HOSTS = _allowed.split(',') if _allowed else ['*', 'localhost', '127.0.0.1', '10.108.62.21', '10.108.62.21:8000']
+ALLOWED_HOSTS = _allowed.split(',') if _allowed else ['*', 'localhost', '127.0.0.1', '10.15.73.21', '10.15.73.21:8000']
 
 # ── Apps ──────────────────────────────────────────────────────────
 INSTALLED_APPS = [
@@ -164,7 +164,7 @@ REST_FRAMEWORK = {
 # ── CORS ──────────────────────────────────────────────────────────
 CORS_ALLOWED_ORIGINS = os.getenv(
     'CORS_ALLOWED_ORIGINS',
-    'http://localhost:5173,http://127.0.0.1:5173,http://localhost:8081,http://10.108.62.21:8081,http://10.108.62.21:19000,http://10.108.62.21:19006'
+    'http://localhost:5173,http://127.0.0.1:5173,http://localhost:8081,http://10.15.73.21:8081,http://10.15.73.21:19000,http://10.15.73.21:19006'
 ).split(',')
 CORS_ALLOW_ALL_ORIGINS = DEBUG  # Allow all origins in development mode for mobile LAN access
 CORS_ALLOW_CREDENTIALS = True
@@ -184,7 +184,14 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY:
     # Use R2 for user-uploaded media files
-    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
     AWS_S3_OBJECT_PARAMETERS = {'CacheControl': 'max-age=86400'}
     AWS_DEFAULT_ACL = None # R2 doesn't support ACLs in the same way, rely on bucket policies
     AWS_S3_SIGNATURE_VERSION = 's3v4'
@@ -192,6 +199,14 @@ if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY:
 else:
     # Fallback to local storage (Development/Docker)
     MEDIA_URL = '/media/'
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
 
 # ── Cache ──────────────────────────────────────────────────
 CACHES = {

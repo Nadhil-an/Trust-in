@@ -7,6 +7,152 @@ import toast from "react-hot-toast"
 import { isValidPhone, isValidEmail } from "../../utils/validators"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts"
 
+// Voucher Book sub-component — only shown when role=STAFF
+function VoucherBookSection({ staffId, staffName, hideHeader }) {
+  const [vb, setVb] = useState(null)
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({ 
+    book_number: '', voucher_start: '', voucher_end: '', current_voucher: '',
+    next_book_number: '', next_voucher_start: '', next_voucher_end: ''
+  })
+
+  useEffect(() => {
+    if (!staffId) return
+    hrApi.vouchers.get(staffId).then(res => {
+      setVb(res.data)
+      setForm({
+        book_number: res.data.book_number || '',
+        voucher_start: res.data.voucher_start || '',
+        voucher_end: res.data.voucher_end || '',
+        current_voucher: res.data.current_voucher || '',
+        next_book_number: res.data.next_book_number || '',
+        next_voucher_start: res.data.next_voucher_start || '',
+        next_voucher_end: res.data.next_voucher_end || '',
+      })
+    }).catch(() => {})
+  }, [staffId])
+
+  const handleSave = async () => {
+    setSaving(true)
+    try {
+      const res = await hrApi.vouchers.update(staffId, form)
+      setVb(res.data)
+      toast.success('Voucher book updated!')
+    } catch (err) { 
+      toast.error(err.response?.data?.error || 'Failed to update voucher book') 
+    }
+    finally { setSaving(false) }
+  }
+
+  const F = (k, v) => setForm(f => ({ ...f, [k]: v }))
+
+  return (
+    <div style={{ marginTop: hideHeader ? '0' : '1.5rem', borderTop: hideHeader ? 'none' : '2px dashed #E0E7FF', paddingTop: hideHeader ? '0' : '1.5rem' }}>
+      {!hideHeader && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+          <span style={{ fontSize: 20 }}>🎫</span>
+          <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#1E4DB7' }}>Voucher Book Assignment</h4>
+          {vb && (
+            <span style={{ fontSize: 11, background: '#EEF2FF', color: '#4338CA', fontWeight: 700, borderRadius: 20, padding: '2px 10px' }}>
+              Current: #{vb.current_voucher}
+            </span>
+          )}
+        </div>
+      )}
+      {hideHeader && vb && (
+        <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 14, fontWeight: 600, color: '#374151' }}>Staff: {staffName}</span>
+          <span style={{ fontSize: 12, background: '#EEF2FF', color: '#4338CA', fontWeight: 700, borderRadius: 20, padding: '2px 10px' }}>
+            Current: #{vb.current_voucher}
+          </span>
+        </div>
+      )}
+      <div style={{ background: '#F8FAFF', border: '1px solid #C7D7FE', borderRadius: 12, padding: '16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label" style={{ fontSize: 11 }}>Book Number</label>
+            <input className="form-control" type="number" min="1" value={form.book_number}
+              onChange={e => F('book_number', e.target.value)}
+              style={{ fontSize: 13 }} placeholder="e.g. 1" />
+          </div>
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label" style={{ fontSize: 11 }}>Voucher Start</label>
+            <input className="form-control" type="number" min="1" value={form.voucher_start}
+              onChange={e => F('voucher_start', e.target.value)}
+              style={{ fontSize: 13 }} placeholder="e.g. 1" />
+          </div>
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label" style={{ fontSize: 11 }}>Voucher End</label>
+            <input className="form-control" type="number" min="1" value={form.voucher_end}
+              onChange={e => F('voucher_end', e.target.value)}
+              style={{ fontSize: 13 }} placeholder="e.g. 100" />
+          </div>
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label" style={{ fontSize: 11 }}>Current Voucher</label>
+            <input className="form-control" type="number" min="1" value={form.current_voucher}
+              onChange={e => F('current_voucher', e.target.value)}
+              style={{ fontSize: 13 }} placeholder="e.g. 1" />
+          </div>
+        </div>
+        
+        <div style={{ marginTop: 24, marginBottom: 12, borderTop: '1px solid #E5E7EB', paddingTop: 16 }}>
+          <h5 style={{ margin: 0, marginBottom: 12, fontSize: 13, color: '#4B5563', fontWeight: 600 }}>Queued Book (Next)</h5>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label" style={{ fontSize: 11 }}>Book Number</label>
+              <input className="form-control" type="number" min="1" value={form.next_book_number}
+                onChange={e => F('next_book_number', e.target.value)}
+                style={{ fontSize: 13 }} placeholder="Optional" />
+            </div>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label" style={{ fontSize: 11 }}>Voucher Start</label>
+              <input className="form-control" type="number" min="1" value={form.next_voucher_start}
+                onChange={e => F('next_voucher_start', e.target.value)}
+                style={{ fontSize: 13 }} placeholder="Optional" />
+            </div>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label" style={{ fontSize: 11 }}>Voucher End</label>
+              <input className="form-control" type="number" min="1" value={form.next_voucher_end}
+                onChange={e => F('next_voucher_end', e.target.value)}
+                style={{ fontSize: 13 }} placeholder="Optional" />
+            </div>
+          </div>
+        </div>
+
+        <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saving}
+            className="btn btn-primary"
+            style={{ padding: '6px 18px', fontSize: 13 }}
+          >
+            {saving ? 'Saving...' : '💾 Save Voucher Book'}
+          </button>
+          {vb && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <span style={{ fontSize: 12, color: '#6B7280' }}>
+                Book {vb.book_number} · Vouchers {vb.voucher_start}–{vb.voucher_end}
+              </span>
+              {vb.next_book_number && (
+                <span style={{ fontSize: 11, color: '#D97706', fontWeight: 500 }}>
+                  Queued: Book {vb.next_book_number} ({vb.next_voucher_start}–{vb.next_voucher_end})
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const formatRole = (role) => {
+  if (!role) return "-";
+  if (role.toUpperCase() === 'HR') return 'HR';
+  return role.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+}
+
 const init = { 
   username: "",
   full_name: "",
@@ -21,7 +167,7 @@ const init = {
   employment_type: "FULL_TIME",
   status: "ACTIVE",
   joining_date: format(new Date(), "yyyy-MM-dd"),
-  basic_salary: 0,
+  basic_salary: "",
   hra: 0,
   ta: 0,
   other_allowances: 0,
@@ -31,6 +177,7 @@ const init = {
 export default function Officers() {
   const [searchParams, setSearchParams] = useSearchParams()
   const employmentTypeFilter = searchParams.get('employment_type') || ''
+  const roleFilter = searchParams.get('designation') || ''
   
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -43,6 +190,10 @@ export default function Officers() {
   const [saving, setSaving] = useState(false)
   const [showPass, setShowPass] = useState(false)
   const [platform, setPlatform] = useState("WEB")
+
+  // Voucher modal state
+  const [showVoucherModal, setShowVoucherModal] = useState(false)
+  const [voucherStaff, setVoucherStaff] = useState(null)
 
   const webRoles = ["MANAGER","ACCOUNTANT","HR","ADMIN", "DATA_ENTRY"]
   const mobileRoles = ["STAFF", "MEMBER", "FIELD_ASSESSMENT_OFFICER", "ASSESSMENT_CALCULATION_OFFICER", "GENERAL_ENQUIRY_OFFICER"]
@@ -63,12 +214,20 @@ export default function Officers() {
     setLoading(true)
     const params = { search }
     if (employmentTypeFilter) params.employment_type = employmentTypeFilter
+    if (roleFilter) params.designation = roleFilter
     
     try { const res = await hrApi.officers.list(params); setItems(res.data.results || res.data) }
     catch (_) {} finally { setLoading(false) }
-  }, [search, employmentTypeFilter])
+  }, [search, employmentTypeFilter, roleFilter])
   
   useEffect(() => { load() }, [load])
+
+  // Real-time synchronization
+  useEffect(() => {
+    const handleRefresh = () => load()
+    window.addEventListener('dashboard-refresh', handleRefresh)
+    return () => window.removeEventListener('dashboard-refresh', handleRefresh)
+  }, [load])
 
   const fetchGraphData = async (officerId, days) => {
     setGraphLoading(true)
@@ -179,6 +338,19 @@ export default function Officers() {
           <select 
             className="filter-select" 
             style={{ width: '200px' }} 
+            value={roleFilter} 
+            onChange={(e) => {
+              if (e.target.value) searchParams.set('designation', e.target.value)
+              else searchParams.delete('designation')
+              setSearchParams(searchParams)
+            }}
+          >
+            <option value="">All Roles</option>
+            {[...webRoles, ...mobileRoles].map(r => <option key={r} value={r}>{formatRole(r)}</option>)}
+          </select>
+          <select 
+            className="filter-select" 
+            style={{ width: '200px' }} 
             value={employmentTypeFilter} 
             onChange={(e) => {
               if (e.target.value) searchParams.set('employment_type', e.target.value)
@@ -196,34 +368,43 @@ export default function Officers() {
         {loading ? <LoadingState /> : (
           <div className="table-wrap">
             <table>
-              <thead><tr><th>Emp ID</th><th>Name</th><th>Designation</th><th>Department</th><th>Type</th><th>Joining Date</th><th>Status</th><th>Actions</th></tr></thead>
+              <thead><tr><th>Emp ID</th><th>Name</th><th>Role</th><th>Department</th><th>Type</th><th>Joining Date</th><th>Status</th><th>Actions</th></tr></thead>
               <tbody>
                 {items.length===0 ? <tr><td colSpan={8}><EmptyState icon="👨‍💼" title="No staff members" /></td></tr>
-                  : items.map(o=>(<tr key={o.id} onClick={()=>openViewModal(o)} style={{cursor: 'pointer'}} className="hover-row"><td className="td-mono">{o.employee_id}</td><td>{o.full_name}</td><td>{o.designation}</td><td>{o.department}</td><td><span className="badge badge-blue">{o.employment_type}</span></td><td>{o.joining_date ? format(new Date(o.joining_date),"dd MMM yyyy") : "-"}</td><td><span className={`badge ${o.status==="ACTIVE"?"badge-green":"badge-gray"}`}>{o.status}</span></td>
+                  : items.map(o=>(<tr key={o.id} onClick={()=>openViewModal(o)} style={{cursor: 'pointer'}} className="hover-row"><td className="td-mono">{o.employee_id}</td><td>{o.full_name}</td><td>{formatRole(o.designation)}</td><td>{o.department}</td><td><span className="badge badge-blue">{o.employment_type}</span></td><td>{o.joining_date ? format(new Date(o.joining_date),"dd MMM yyyy") : "-"}</td><td><span className={`badge ${o.status==="ACTIVE"?"badge-green":"badge-gray"}`}>{o.status}</span></td>
                     <td>
-                      <button className="btn btn-sm btn-secondary" onClick={(e)=>{
-                        e.stopPropagation(); 
-                        setSelected(o);
-                        const ss = o.salary_structure || {};
-                        const isMobile = mobileRoles.includes(o.designation) || mobileRoles.includes(o.role);
-                        setPlatform(isMobile ? "MOBILE" : "WEB");
-                        setShowPass(false);
-                        setForm({
-                          ...o,
-                          username: o.username || o.employee_id || "",
-                          role: o.role || (webRoles.concat(mobileRoles).includes(o.designation) ? o.designation : "HR"),
-                          phone: o.phone || "",
-                          email: o.email || "",
-                          is_active: o.status !== "INACTIVE",
-                          password: "",
-                          basic_salary: ss.basic_salary || 0,
-                          hra: ss.hra || 0,
-                          ta: ss.ta || 0,
-                          other_allowances: ss.other_allowances || 0,
-                          pf_deduction: ss.pf_deduction || 0
-                        });
-                        setShowModal(true)
-                      }}>Edit</button>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        {(o.role === 'STAFF' || o.designation === 'STAFF' || o.designation === 'Staff') && (
+                          <button className="btn btn-sm btn-secondary" style={{ color: '#4F46E5', borderColor: '#C7D2FE', background: '#EEF2FF' }} onClick={(e)=>{
+                            e.stopPropagation();
+                            setVoucherStaff(o);
+                            setShowVoucherModal(true);
+                          }}>Voucher</button>
+                        )}
+                        <button className="btn btn-sm btn-secondary" onClick={(e)=>{
+                          e.stopPropagation(); 
+                          setSelected(o);
+                          const ss = o.salary_structure || {};
+                          const isMobile = mobileRoles.includes(o.designation) || mobileRoles.includes(o.role);
+                          setPlatform(isMobile ? "MOBILE" : "WEB");
+                          setShowPass(false);
+                          setForm({
+                            ...o,
+                            username: o.username || o.employee_id || "",
+                            role: o.role || (webRoles.concat(mobileRoles).includes(o.designation) ? o.designation : "HR"),
+                            phone: o.phone || "",
+                            email: o.email || "",
+                            is_active: o.status !== "INACTIVE",
+                            password: "",
+                            basic_salary: ss.basic_salary || "",
+                            hra: ss.hra || 0,
+                            ta: ss.ta || 0,
+                            other_allowances: ss.other_allowances || 0,
+                            pf_deduction: ss.pf_deduction || 0
+                          });
+                          setShowModal(true)
+                        }}>Edit</button>
+                      </div>
                     </td>
                   </tr>))}
               </tbody>
@@ -287,13 +468,17 @@ export default function Officers() {
                 <div className="form-group"><label className="form-label">Date of Birth</label><input className="form-control" type="date" value={form.date_of_birth || ""} onChange={e=>F("date_of_birth", e.target.value)} /></div>
                 <div className="form-group"><label className="form-label">Department</label><input className="form-control" value={form.department || ""} onChange={e=>F("department", e.target.value)} /></div>
                 <div className="form-group"><label className="form-label">Joining Date</label><input className="form-control" type="date" value={form.joining_date || ""} onChange={e=>F("joining_date", e.target.value)} /></div>
-                <div className="form-group"><label className="form-label">Basic Salary</label><input type="number" step="0.01" className="form-control" value={form.basic_salary || 0} onChange={e=>F("basic_salary", e.target.value)} /></div>
-                <div className="form-group"><label className="form-label">HRA</label><input type="number" step="0.01" className="form-control" value={form.hra || 0} onChange={e=>F("hra", e.target.value)} /></div>
-                <div className="form-group"><label className="form-label">TA</label><input type="number" step="0.01" className="form-control" value={form.ta || 0} onChange={e=>F("ta", e.target.value)} /></div>
-                <div className="form-group"><label className="form-label">Other Allowances</label><input type="number" step="0.01" className="form-control" value={form.other_allowances || 0} onChange={e=>F("other_allowances", e.target.value)} /></div>
-                <div className="form-group"><label className="form-label">PF Deduction</label><input type="number" step="0.01" className="form-control" value={form.pf_deduction || 0} onChange={e=>F("pf_deduction", e.target.value)} /></div>
+                <div className="form-group"><label className="form-label">Basic Salary</label><input type="number" step="0.01" className="form-control" value={form.basic_salary} onChange={e=>F("basic_salary", e.target.value)} /></div>
               </div>
             </div>
+
+            {/* Voucher Book — only for STAFF role */}
+            {form.role === 'STAFF' && selected && (
+              <VoucherBookSection
+                staffId={selected.user_id || selected.id}
+                staffName={form.full_name}
+              />
+            )}
           </form>
         </Modal>
       )}
@@ -319,7 +504,7 @@ export default function Officers() {
                 date_of_birth: viewItem.date_of_birth || "",
                 is_active: viewItem.status !== "INACTIVE",
                 password: "",
-                basic_salary: ss.basic_salary || 0,
+                basic_salary: ss.basic_salary || "",
                 hra: ss.hra || 0,
                 ta: ss.ta || 0,
                 other_allowances: ss.other_allowances || 0,
@@ -378,6 +563,18 @@ export default function Officers() {
               </ResponsiveContainer>
             </div>
           )}
+        </Modal>
+      )}
+
+      {/* Dedicated Voucher Book Modal */}
+      {showVoucherModal && voucherStaff && (
+        <Modal isOpen={true} onClose={()=>setShowVoucherModal(false)} title="Voucher Book Assignment" size="modal-md"
+          footer={<button className="btn btn-secondary" onClick={()=>setShowVoucherModal(false)}>Close</button>}>
+          <VoucherBookSection 
+            staffId={voucherStaff.user_id || voucherStaff.id} 
+            staffName={voucherStaff.full_name} 
+            hideHeader={true} 
+          />
         </Modal>
       )}
 

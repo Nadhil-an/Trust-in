@@ -20,6 +20,24 @@ from accounts_module.serializers import (CashAccountSerializer, CashTransactionS
                                           IncomeSerializer, ExpenseSerializer, ChequeSerializer,
                                           TransferSerializer, TransactionSerializer)
 
+def _sync_promoter_registry(user, target_date):
+    if not user:
+        return
+    from hr_module.models import PromoterRegistryEntry
+    from django.db.models import Sum, Q
+    from accounts_module.models import Income
+    entry = PromoterRegistryEntry.objects.filter(promoter=user, date=target_date).first()
+    if entry:
+        incomes = Income.objects.filter(created_by=user, date=target_date)
+        agg = incomes.aggregate(
+            cash=Sum('amount', filter=Q(payment_method='CASH')),
+            online=Sum('amount', filter=~Q(payment_method='CASH')),
+        )
+        entry.cash_collected = agg['cash'] or 0
+        entry.online_collected = agg['online'] or 0
+        entry.save(update_fields=['cash_collected', 'online_collected'])
+
+
 
 # ── Dashboard ─────────────────────────────────────────────────────
 
@@ -207,6 +225,20 @@ class IncomeListCreateView(generics.ListCreateAPIView):
             qs = qs.filter(created_by=self.request.user)
         return qs
 
+    def create(self, request, *args, **kwargs):
+        print("INCOMING INCOME POST")
+        print("DATA:", request.data)
+        print("FILES:", request.FILES)
+        from rest_framework import status
+        from rest_framework.response import Response
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            print("INCOME VALIDATION ERRORS:", serializer.errors)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
     def perform_create(self, serializer):
         staff_id = self.request.data.get('staff_id')
         if staff_id and self.request.user.role in [Role.ADMIN, Role.DATA_ENTRY, Role.ACCOUNTANT]:
@@ -218,6 +250,9 @@ class IncomeListCreateView(generics.ListCreateAPIView):
                 income = serializer.save(created_by=self.request.user)
         else:
             income = serializer.save(created_by=self.request.user)
+            
+        _sync_promoter_registry(income.created_by, income.date)
+        
         # Auto-update account balance
         if income.account_type == 'CASH' and income.cash_account:
             acc = income.cash_account
@@ -293,11 +328,15 @@ class IncomeDetailView(generics.RetrieveUpdateDestroyAPIView):
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def perform_update(self, serializer):
-        serializer.save()
+        income = serializer.save()
+        _sync_promoter_registry(income.created_by, income.date)
         push_dashboard_refresh(['ACCOUNTANT', 'MANAGER', 'ADMIN', 'STAFF'])
 
     def perform_destroy(self, instance):
+        user = instance.created_by
+        date = instance.date
         instance.delete()
+        _sync_promoter_registry(user, date)
         push_dashboard_refresh(['ACCOUNTANT', 'MANAGER', 'ADMIN', 'STAFF'])
 
 

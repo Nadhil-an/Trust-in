@@ -30,6 +30,13 @@ export default function StaffReports() {
 
   useEffect(() => { load() }, [load])
 
+  // Real-time synchronization
+  useEffect(() => {
+    const handleRefresh = () => load()
+    window.addEventListener('dashboard-refresh', handleRefresh)
+    return () => window.removeEventListener('dashboard-refresh', handleRefresh)
+  }, [load])
+
   const handleUpdateStatus = async (id, newStatus) => {
     setSaving(true)
     try {

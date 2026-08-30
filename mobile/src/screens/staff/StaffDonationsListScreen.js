@@ -77,7 +77,15 @@ const StaffDonationsListScreen = ({ navigation }) => {
           <Ionicons name={item.source === 'MEMBERSHIP' ? 'people' : 'cash'} size={20} color={item.source === 'MEMBERSHIP' ? '#0284C7' : Colors.success} />
         </View>
         <View style={styles.textWrap}>
-          <Text style={styles.name}>{item.donor_name}</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <Text style={styles.name} numberOfLines={1}>{item.donor_name}</Text>
+            {item.reference_number ? (
+              <View style={styles.voucherBadge}>
+                <Ionicons name="ticket" size={12} color="#4338CA" />
+                <Text style={styles.voucherBadgeText}>{item.reference_number}</Text>
+              </View>
+            ) : null}
+          </View>
           <Text style={styles.details}>₹{item.amount} • {item.payment_method}</Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
             <View style={[styles.badge, { backgroundColor: item.source === 'MEMBERSHIP' ? '#E0F2FE' : '#ECFDF5' }]}>
@@ -383,7 +391,13 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', marginRight: 12,
   },
   textWrap: { flex: 1, paddingRight: 8 },
-  name: { fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 2 },
+  name: { fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 2, flex: 1, paddingRight: 8 },
+  voucherBadge: {
+    flexDirection: 'row', alignItems: 'center', backgroundColor: '#EEF2FF',
+    paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, borderWidth: 1, borderColor: '#C7D2FE',
+    gap: 4
+  },
+  voucherBadgeText: { fontSize: 11, fontWeight: '700', color: '#4338CA' },
   details: { fontSize: 13, color: '#4B5563', marginBottom: 2 },
   date: { fontSize: 11, color: '#9CA3AF' },
   badge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 8 },
