@@ -8,6 +8,39 @@ from channels.layers import get_channel_layer
 from core.models import SystemNotification, User
 
 
+import requests
+
+def send_expo_push(user, title, message, data=None):
+    from core.models import ExpoDevice
+    tokens = user.expo_devices.values_list('push_token', flat=True)
+    if not tokens:
+        return
+
+    payloads = []
+    for token in tokens:
+        payload = {
+            'to': token,
+            'title': title,
+            'body': message,
+            'data': data or {},
+            'sound': 'default',
+        }
+        payloads.append(payload)
+
+    try:
+        requests.post(
+            'https://exp.host/--/api/v2/push/send',
+            json=payloads,
+            headers={
+                'Accept': 'application/json',
+                'Accept-encoding': 'gzip, deflate',
+                'Content-Type': 'application/json',
+            },
+            timeout=5
+        )
+    except Exception as e:
+        print(f"Error sending Expo push: {e}")
+
 def push_notification(recipient: User, title: str, message: str,
                       notification_type: str, reference_id: str = '',
                       reference_type: str = '', priority: str = 'NORMAL'):
@@ -21,6 +54,10 @@ def push_notification(recipient: User, title: str, message: str,
         reference_type=reference_type,
         priority=priority,
     )
+    
+    # Send Expo Push Notification
+    send_expo_push(recipient, title, message, data={'type': notification_type, 'reference_id': reference_id})
+
     channel_layer = get_channel_layer()
     group_name = f"notify_{str(recipient.id)}"
     payload = {

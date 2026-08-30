@@ -12,6 +12,7 @@ export default function Donations() {
   const [users, setUsers] = useState([])
   const [selectedUser, setSelectedUser] = useState('')
   const [selectedSource, setSelectedSource] = useState('')
+  const [selectedMethod, setSelectedMethod] = useState('')
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'))
   const [items, setItems] = useState([])
   const [itemsLoading, setItemsLoading] = useState(true)
@@ -51,7 +52,8 @@ export default function Donations() {
         const filtered = allItems.filter(i => {
           const isCorrectSource = i.source === 'DONATION' || i.source === 'MEMBERSHIP'
           const matchesSource = !selectedSource || i.source === selectedSource
-          return isCorrectSource && matchesSource
+          const matchesMethod = !selectedMethod || i.payment_method === selectedMethod
+          return isCorrectSource && matchesSource && matchesMethod
         })
         setItems(filtered)
       } catch (err) {
@@ -61,7 +63,7 @@ export default function Donations() {
       }
     }
     fetchIncome()
-  }, [selectedUser, selectedDate, selectedSource])
+  }, [selectedUser, selectedDate, selectedSource, selectedMethod])
 
   if (loading) return <LoadingState />
   const acc = data || {}
@@ -124,6 +126,17 @@ export default function Donations() {
               <option value="">All Sources</option>
               <option value="DONATION">Donation</option>
               <option value="MEMBERSHIP">Membership</option>
+            </select>
+            <select 
+              value={selectedMethod} 
+              onChange={e => setSelectedMethod(e.target.value)}
+              style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14, minWidth: 160, backgroundColor: '#f9fafb' }}
+            >
+              <option value="">All Methods</option>
+              <option value="CASH">Cash</option>
+              <option value="UPI">UPI</option>
+              <option value="CHEQUE">Cheque</option>
+              <option value="BANK">Bank Transfer</option>
             </select>
             <select 
               value={selectedUser} 

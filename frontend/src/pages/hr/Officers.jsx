@@ -35,11 +35,26 @@ function VoucherBookSection({ staffId, staffName, hideHeader }) {
   const handleSave = async () => {
     setSaving(true)
     try {
-      const res = await hrApi.vouchers.update(staffId, form)
+      const payload = { ...form }
+      Object.keys(payload).forEach(key => {
+        if (payload[key] === '') payload[key] = null;
+      })
+      
+      const res = await hrApi.vouchers.update(staffId, payload)
       setVb(res.data)
       toast.success('Voucher book updated!')
     } catch (err) { 
-      toast.error(err.response?.data?.error || 'Failed to update voucher book') 
+      let errorMsg = 'Failed to update voucher book'
+      if (err.response?.data) {
+        if (typeof err.response.data === 'string') errorMsg = err.response.data
+        else if (err.response.data.error) errorMsg = err.response.data.error
+        else {
+          const firstError = Object.values(err.response.data)[0]
+          if (Array.isArray(firstError)) errorMsg = firstError[0]
+          else if (typeof firstError === 'string') errorMsg = firstError
+        }
+      }
+      toast.error(errorMsg) 
     }
     finally { setSaving(false) }
   }
@@ -194,6 +209,7 @@ export default function Officers() {
   // Voucher modal state
   const [showVoucherModal, setShowVoucherModal] = useState(false)
   const [voucherStaff, setVoucherStaff] = useState(null)
+  const [showBatchVoucherModal, setShowBatchVoucherModal] = useState(false)
 
   const webRoles = ["MANAGER","ACCOUNTANT","HR","ADMIN", "DATA_ENTRY"]
   const mobileRoles = ["STAFF", "MEMBER", "FIELD_ASSESSMENT_OFFICER", "ASSESSMENT_CALCULATION_OFFICER", "GENERAL_ENQUIRY_OFFICER"]
@@ -325,13 +341,16 @@ export default function Officers() {
   return (
     <div>
       <PageHeader title={employmentTypeFilter === 'FULL_TIME' ? "Full-Time Staff" : "Staff Members"} subtitle="Staff and employees">
-        <button className="btn btn-primary" onClick={()=>{
-          setSelected(null);
-          setPlatform("WEB");
-          setShowPass(false);
-          setForm(init);
-          setShowModal(true);
-        }}>+ Add Staff Member</button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button className="btn btn-secondary" style={{ color: '#4F46E5', borderColor: '#C7D2FE', background: '#EEF2FF', fontWeight: 600 }} onClick={() => setShowBatchVoucherModal(true)}>🎫 Manage Vouchers</button>
+          <button className="btn btn-primary" onClick={()=>{
+            setSelected(null);
+            setPlatform("WEB");
+            setShowPass(false);
+            setForm(init);
+            setShowModal(true);
+          }}>+ Add Staff Member</button>
+        </div>
       </PageHeader>
       <div className="data-card">
         <FilterBar search={search} onSearch={setSearch}>
@@ -468,7 +487,13 @@ export default function Officers() {
                 <div className="form-group"><label className="form-label">Date of Birth</label><input className="form-control" type="date" value={form.date_of_birth || ""} onChange={e=>F("date_of_birth", e.target.value)} /></div>
                 <div className="form-group"><label className="form-label">Department</label><input className="form-control" value={form.department || ""} onChange={e=>F("department", e.target.value)} /></div>
                 <div className="form-group"><label className="form-label">Joining Date</label><input className="form-control" type="date" value={form.joining_date || ""} onChange={e=>F("joining_date", e.target.value)} /></div>
+                
+                {/* Salary Components */}
                 <div className="form-group"><label className="form-label">Basic Salary</label><input type="number" step="0.01" className="form-control" value={form.basic_salary} onChange={e=>F("basic_salary", e.target.value)} /></div>
+                <div className="form-group"><label className="form-label">HRA</label><input type="number" step="0.01" className="form-control" value={form.hra} onChange={e=>F("hra", e.target.value)} /></div>
+                <div className="form-group"><label className="form-label">TA</label><input type="number" step="0.01" className="form-control" value={form.ta} onChange={e=>F("ta", e.target.value)} /></div>
+                <div className="form-group"><label className="form-label">Other Allowances</label><input type="number" step="0.01" className="form-control" value={form.other_allowances} onChange={e=>F("other_allowances", e.target.value)} /></div>
+                <div className="form-group"><label className="form-label">PF Deduction</label><input type="number" step="0.01" className="form-control" value={form.pf_deduction} onChange={e=>F("pf_deduction", e.target.value)} /></div>
               </div>
             </div>
 
@@ -576,6 +601,85 @@ export default function Officers() {
             hideHeader={true} 
           />
         </Modal>
+      )}
+
+      {/* Batch Voucher Sidebar */}
+      {showBatchVoucherModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          zIndex: 999,
+          display: 'flex',
+          justifyContent: 'flex-end'
+        }}>
+          <div style={{
+            width: '100%',
+            maxWidth: '500px',
+            backgroundColor: '#fff',
+            height: '100%',
+            boxShadow: '-4px 0 15px rgba(0,0,0,0.1)',
+            display: 'flex',
+            flexDirection: 'column',
+            animation: 'slideInRight 0.3s ease-out forwards'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '20px',
+              borderBottom: '1px solid #E5E7EB'
+            }}>
+              <h2 style={{ margin: 0, fontSize: 18, color: '#111827' }}>Manage Staff Vouchers</h2>
+              <button onClick={() => setShowBatchVoucherModal(false)} style={{
+                background: 'none', border: 'none', fontSize: 24, cursor: 'pointer', color: '#6B7280'
+              }}>&times;</button>
+            </div>
+            
+            <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
+              <div className="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Staff Name</th>
+                      <th>Designation</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {items.filter(o => o.role === 'STAFF' || o.designation === 'STAFF' || o.designation === 'Staff').map(o => (
+                      <tr key={o.id}>
+                        <td>{o.full_name}</td>
+                        <td>{formatRole(o.designation)}</td>
+                        <td>
+                          <button className="btn btn-sm btn-secondary" style={{ color: '#4F46E5', borderColor: '#C7D2FE', background: '#EEF2FF' }} onClick={() => {
+                            setVoucherStaff(o);
+                            setShowVoucherModal(true);
+                          }}>Assign</button>
+                        </td>
+                      </tr>
+                    ))}
+                    {items.filter(o => o.role === 'STAFF' || o.designation === 'STAFF' || o.designation === 'Staff').length === 0 && (
+                      <tr>
+                        <td colSpan={3} style={{ textAlign: 'center', padding: '20px', color: '#6B7280' }}>No staff members found.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          
+          <style>{`
+            @keyframes slideInRight {
+              from { transform: translateX(100%); }
+              to { transform: translateX(0); }
+            }
+          `}</style>
+        </div>
       )}
 
     </div>

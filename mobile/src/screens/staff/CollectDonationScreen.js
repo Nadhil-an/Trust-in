@@ -136,22 +136,7 @@ const CollectDonationScreen = ({ navigation, route }) => {
     }
 
     try {
-      // ── Day-closed guard ───────────────────────────────────────
-      if (!isEdit && user?.id) {
-        const today = new Date().toISOString().split('T')[0];
-        try {
-          const closedRes = await staffApi.checkDayClosed(user.id, today);
-          if (closedRes.data?.is_closed) {
-            Alert.alert(
-              'Day Closed',
-              'Your collections for today have been closed by HR. Please contact your supervisor.',
-              [{ text: 'OK' }]
-            );
-            setLoading(false);
-            return;
-          }
-        } catch (_) {} // If endpoint is unavailable, allow submission
-      }
+      // ── Day-closed guard removed to allow rollover to next day ───────────────────────────────────────
 
       if (!isOnline && !isEdit) {
         await addToQueue({ method: 'POST', url: '/mobile/donations/', data });
@@ -349,15 +334,21 @@ const CollectDonationScreen = ({ navigation, route }) => {
             </View>
             {errors.amount ? <Text style={styles.errorText}>{errors.amount}</Text> : null}
             <View style={styles.quickAmounts}>
-              {[50, 100, 500, 1000].map(amt => (
-                <TouchableOpacity 
-                  key={amt} 
-                  style={styles.quickAmountBtn}
-                  onPress={() => { set('amount', amt.toString()); setErrors(e => ({...e, amount: ''})); }}
-                >
-                  <Text style={styles.quickAmountText}>₹{amt}</Text>
-                </TouchableOpacity>
-              ))}
+              {[10, 20, 50, 100, 500].map(amt => {
+                const isActive = form.amount === amt.toString();
+                return (
+                  <TouchableOpacity 
+                    key={amt} 
+                    style={[styles.quickAmountBtn, isActive && styles.quickAmountBtnActive]}
+                    onPress={() => { set('amount', amt.toString()); setErrors(e => ({...e, amount: ''})); }}
+                  >
+                    {isActive && (
+                      <Ionicons name="checkmark-circle" size={14} color="#FFFFFF" style={{ marginRight: 4 }} />
+                    )}
+                    <Text style={[styles.quickAmountText, isActive && styles.quickAmountTextActive]}>₹{amt}</Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
 
@@ -574,6 +565,37 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#0F172A',
     height: '100%',
+  },
+
+  /* Quick Amounts */
+  quickAmounts: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginTop: 10,
+    marginBottom: 8,
+  },
+  quickAmountBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  quickAmountBtnActive: {
+    backgroundColor: '#0B57D0',
+    borderColor: '#0B57D0',
+  },
+  quickAmountText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#475569',
+  },
+  quickAmountTextActive: {
+    color: '#FFFFFF',
   },
 
   /* Checkbox Styles */

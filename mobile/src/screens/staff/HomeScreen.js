@@ -16,6 +16,7 @@ import SideDrawer from '../../components/SideDrawer';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
+import { usePushNotifications } from '../../hooks/usePushNotifications';
 
 const { width } = Dimensions.get('window');
 
@@ -44,6 +45,7 @@ const StaffHomeScreen = ({ navigation, route }) => {
   const { user } = useAuthStore();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  usePushNotifications(); // Registers token in background
   
   const getGreeting = () => {
     const hour = new Date().getHours();

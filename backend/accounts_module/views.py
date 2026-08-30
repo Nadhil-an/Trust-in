@@ -240,16 +240,27 @@ class IncomeListCreateView(generics.ListCreateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     def perform_create(self, serializer):
+        from hr_module.models import PromoterRegistryEntry
+        from datetime import date, timedelta
+        
         staff_id = self.request.data.get('staff_id')
         if staff_id and self.request.user.role in [Role.ADMIN, Role.DATA_ENTRY, Role.ACCOUNTANT]:
             from core.models import User
             try:
                 user = User.objects.get(id=staff_id)
-                income = serializer.save(created_by=user)
+                creator = user
             except User.DoesNotExist:
-                income = serializer.save(created_by=self.request.user)
+                creator = self.request.user
         else:
-            income = serializer.save(created_by=self.request.user)
+            creator = self.request.user
+
+        # Auto-rollover if today's registry is already closed
+        effective_date = date.today()
+        registry = PromoterRegistryEntry.objects.filter(promoter=creator, date=effective_date).first()
+        if registry and registry.is_closed:
+            effective_date = effective_date + timedelta(days=1)
+
+        income = serializer.save(created_by=creator, date=effective_date)
             
         _sync_promoter_registry(income.created_by, income.date)
         

@@ -91,8 +91,8 @@ export const SideDrawer = ({ visible, onClose, navigation, currentRoute = 'Home'
 
   // Group 2 Menu Items (Shared)
   const secondaryMenu = [
-    { name: 'AboutUs', label: 'About Us', icon: 'information-circle-outline', route: 'AboutUs' },
-    { name: 'ContactUs', label: 'Contact Us', icon: 'call-outline', route: 'ContactUs' },
+    { name: 'AboutUs', label: 'About Us', icon: 'information-circle-outline', route: 'AboutUs', disabled: true },
+    { name: 'ContactUs', label: 'Contact Us', icon: 'call-outline', route: 'ContactUs', disabled: true },
     { name: 'Settings', label: 'Settings', icon: 'settings-outline', route: 'Profile' },
   ];
 
@@ -175,8 +175,9 @@ export const SideDrawer = ({ visible, onClose, navigation, currentRoute = 'Home'
               {secondaryMenu.map((item) => (
                 <TouchableOpacity
                   key={item.name}
-                  style={styles.menuItem}
-                  onPress={() => navigateTo(item.route)}
+                  style={[styles.menuItem, item.disabled && { opacity: 0.5 }]}
+                  onPress={() => !item.disabled && navigateTo(item.route)}
+                  activeOpacity={item.disabled ? 1 : 0.2}
                 >
                   <Ionicons
                     name={item.icon}
@@ -185,7 +186,7 @@ export const SideDrawer = ({ visible, onClose, navigation, currentRoute = 'Home'
                     style={styles.menuIcon}
                   />
                   <Text style={styles.menuLabel}>{item.label}</Text>
-                  <Ionicons name="chevron-forward" size={16} color="#A0AEC0" />
+                  {!item.disabled && <Ionicons name="chevron-forward" size={16} color="#A0AEC0" />}
                 </TouchableOpacity>
               ))}
 

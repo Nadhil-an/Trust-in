@@ -240,22 +240,7 @@ const AddMemberScreen = ({ navigation, route }) => {
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      // ── Day-closed guard ─────────────────────────────────────────
-      if (!editItem && user?.id) {
-        const today = new Date().toISOString().split('T')[0];
-        try {
-          const closedRes = await staffApi.checkDayClosed(user.id, today);
-          if (closedRes.data?.is_closed) {
-            Alert.alert(
-              'Day Closed',
-              'Your collections for today have been closed by HR. Please contact your supervisor.',
-              [{ text: 'OK' }]
-            );
-            setLoading(false);
-            return;
-          }
-        } catch (_) {} // If endpoint unavailable, allow submission
-      }
+      // ── Day-closed guard removed to allow rollover to next day ─────────────────────────────────────────
 
       const formData = new FormData();
 

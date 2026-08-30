@@ -489,3 +489,18 @@ class RoleFeaturePermissionView(APIView):
         RoleFeaturePermission.objects.bulk_create(new_perms)
         
         return Response({'message': 'Updated successfully'})
+
+
+class ExpoPushTokenView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        from core.models import ExpoDevice
+        token = request.data.get('push_token')
+        if token:
+            ExpoDevice.objects.update_or_create(
+                push_token=token,
+                defaults={'user': request.user}
+            )
+            return Response({'status': 'ok'})
+        return Response({'error': 'Token required'}, status=400)

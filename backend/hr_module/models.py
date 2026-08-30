@@ -672,5 +672,5 @@ class PromoterRegistryEntry(models.Model):
     @property
     def has_discrepancy(self):
         """True if cash submitted doesn't match cash collected from mobile."""
-        return abs(self.cash_submitted - self.cash_collected) > 0.01
+        return abs(float(self.cash_submitted or 0) - float(self.cash_collected or 0)) > 0.01
 

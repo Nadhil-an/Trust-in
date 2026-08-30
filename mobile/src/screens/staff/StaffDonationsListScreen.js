@@ -18,8 +18,13 @@ const StaffDonationsListScreen = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('ALL');
-  
   const [donationDetails, setDonationDetails] = useState(null);
+
+  // Get today's ISO date string
+  const getTodayIso = () => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  };
 
   const fetchDonations = async (showLoading = true) => {
     if (showLoading) setLoading(true);
@@ -47,59 +52,88 @@ const StaffDonationsListScreen = ({ navigation }) => {
     return unsubscribe;
   }, [navigation]);
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity 
-      style={styles.card}
-      onPress={() => setDonationDetails(item)}
-      activeOpacity={0.8}
-    >
-      <View style={styles.cardInfo}>
-        <View style={[styles.iconWrap, { backgroundColor: item.source === 'MEMBERSHIP' ? '#E0F2FE' : '#ECFDF5' }]}>
-          <Ionicons name={item.source === 'MEMBERSHIP' ? 'people' : 'cash'} size={20} color={item.source === 'MEMBERSHIP' ? '#0284C7' : Colors.success} />
-        </View>
-        <View style={styles.textWrap}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <Text style={styles.name} numberOfLines={1}>{item.donor_name}</Text>
-            {item.reference_number ? (
-              <View style={styles.voucherBadge}>
-                <Ionicons name="ticket" size={12} color="#4338CA" />
-                <Text style={styles.voucherBadgeText}>{item.reference_number}</Text>
-              </View>
-            ) : null}
-          </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
-            <Text style={[styles.details, { marginBottom: 0 }]}>₹{item.amount} • </Text>
-            {item.payment_method === 'UPI' || item.payment_method === 'GPay' ? (
-              <Image source={require('../../../assets/gpay.png')} style={{ width: 44, height: 20, marginLeft: 2 }} resizeMode="contain" />
-            ) : item.payment_method === 'CASH' || item.payment_method === 'Cash' ? (
-              <Image source={require('../../../assets/cash.png')} style={{ width: 36, height: 20, marginLeft: 2 }} resizeMode="contain" />
-            ) : (
-              <Text style={[styles.details, { marginBottom: 0 }]}>{item.payment_method}</Text>
-            )}
-          </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
-            <View style={[styles.badge, { backgroundColor: item.source === 'MEMBERSHIP' ? '#E0F2FE' : '#ECFDF5' }]}>
-              <Text style={[styles.badgeText, { color: item.source === 'MEMBERSHIP' ? '#0284C7' : Colors.success }]}>
-                {item.source === 'MEMBERSHIP' ? 'Membership' : 'Donation'}
-              </Text>
-            </View>
-            <Text style={[styles.date, { marginLeft: 6 }]}>
-              {new Date(item.created_at || item.date).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}
-            </Text>
-          </View>
-        </View>
-      </View>
-      <View style={styles.actions}>
-        <TouchableOpacity 
-          style={styles.actionBtn}
-          onPress={() => navigation.navigate('CollectDonation', { editItem: item })}
-        >
-          <Ionicons name="pencil" size={18} color={Colors.info} />
-        </TouchableOpacity>
-      </View>
-    </TouchableOpacity>
-  );
+  // Check if a donation is a "next-day rollover" item:
+  // created today, but assigned to a future date
+  const isNextDayRollover = (item) => {
+    const todayIso = getTodayIso();
+    const createdDate = (item.created_at || '').substring(0, 10);
+    const itemDate = item.date;
+    return createdDate === todayIso && itemDate > todayIso;
+  };
 
+  const renderItem = ({ item }) => {
+    const isRollover = isNextDayRollover(item);
+    return (
+      <TouchableOpacity 
+        style={[styles.card, isRollover && styles.cardRollover]}
+        onPress={() => setDonationDetails(item)}
+        activeOpacity={0.8}
+      >
+        {/* Tomorrow banner for rolled-over items */}
+        {isRollover && (
+          <View style={styles.rolloverBanner}>
+            <Ionicons name="calendar-outline" size={12} color="#92400E" />
+            <Text style={styles.rolloverBannerText}>📅 This amount will only count for tomorrow</Text>
+          </View>
+        )}
+
+        <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}>
+          <View style={styles.cardInfo}>
+            <View style={[styles.iconWrap, { 
+              backgroundColor: isRollover ? '#FEF3C7' : (item.source === 'MEMBERSHIP' ? '#E0F2FE' : '#ECFDF5'),
+            }]}>
+              <Ionicons 
+                name={item.source === 'MEMBERSHIP' ? 'people' : 'cash'} 
+                size={20} 
+                color={isRollover ? '#D97706' : (item.source === 'MEMBERSHIP' ? '#0284C7' : Colors.success)} 
+              />
+            </View>
+            <View style={styles.textWrap}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <Text style={[styles.name, isRollover && styles.nameRollover]} numberOfLines={1}>{item.donor_name}</Text>
+                {item.reference_number ? (
+                  <View style={[styles.voucherBadge, isRollover && { backgroundColor: '#FEF3C7', borderColor: '#FDE68A' }]}>
+                    <Ionicons name="ticket" size={12} color={isRollover ? '#B45309' : '#4338CA'} />
+                    <Text style={[styles.voucherBadgeText, isRollover && { color: '#B45309' }]}>{item.reference_number}</Text>
+                  </View>
+                ) : null}
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+                <Text style={[styles.details, { marginBottom: 0 }, isRollover && { color: '#92400E' }]}>₹{item.amount} • </Text>
+                {item.payment_method === 'UPI' || item.payment_method === 'GPay' ? (
+                  <Image source={require('../../../assets/gpay.png')} style={{ width: 44, height: 20, marginLeft: 2, opacity: isRollover ? 0.6 : 1 }} resizeMode="contain" />
+                ) : item.payment_method === 'CASH' || item.payment_method === 'Cash' ? (
+                  <Image source={require('../../../assets/cash.png')} style={{ width: 36, height: 20, marginLeft: 2, opacity: isRollover ? 0.6 : 1 }} resizeMode="contain" />
+                ) : (
+                  <Text style={[styles.details, { marginBottom: 0 }]}>{item.payment_method}</Text>
+                )}
+              </View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+                <View style={[styles.badge, { backgroundColor: isRollover ? '#FEF3C7' : (item.source === 'MEMBERSHIP' ? '#E0F2FE' : '#ECFDF5') }]}>
+                  <Text style={[styles.badgeText, { color: isRollover ? '#B45309' : (item.source === 'MEMBERSHIP' ? '#0284C7' : Colors.success) }]}>
+                    {item.source === 'MEMBERSHIP' ? 'Membership' : 'Donation'}
+                  </Text>
+                </View>
+                <Text style={[styles.date, { marginLeft: 6 }]}>
+                  {new Date(item.created_at || item.date).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}
+                </Text>
+              </View>
+            </View>
+          </View>
+          <View style={styles.actions}>
+            <TouchableOpacity 
+              style={styles.actionBtn}
+              onPress={() => navigation.navigate('CollectDonation', { editItem: item })}
+            >
+              <Ionicons name="pencil" size={18} color={isRollover ? '#B45309' : Colors.info} />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  // Group by CREATION date so rolled-over items still appear under today's section
   const groupDataByDate = (data) => {
     const grouped = data.reduce((acc, item) => {
       const dateStr = item.created_at || item.joining_date || item.date;
@@ -109,9 +143,7 @@ const StaffDonationsListScreen = ({ navigation }) => {
       const year = dateObj.getFullYear();
       const formattedDate = `${day}/${month}/${year}`;
       
-      if (!acc[formattedDate]) {
-        acc[formattedDate] = [];
-      }
+      if (!acc[formattedDate]) acc[formattedDate] = [];
       acc[formattedDate].push(item);
       return acc;
     }, {});
@@ -129,6 +161,10 @@ const StaffDonationsListScreen = ({ navigation }) => {
 
     return sections;
   };
+
+  // Today totals: only items whose date IS today (excludes rolled-over items)
+  const todayIso = getTodayIso();
+  const todayItems = donations.filter(d => d.date === todayIso);
 
   return (
     <View style={styles.container}>
@@ -167,52 +203,38 @@ const StaffDonationsListScreen = ({ navigation }) => {
         </ScrollView>
       </View>
 
-      {/* Today's Summary Section */}
+      {/* Today's Summary — ONLY counts items whose date is today */}
       <View style={styles.summaryContainer}>
         <Text style={styles.summaryTitle}>{t('staff.today_total') || "Today's Collection Summary"}</Text>
         <View style={styles.summaryCards}>
           <View style={[styles.summaryCard, { backgroundColor: '#EFF6FF' }]}>
             <Text style={styles.summaryLabel}>{t('common.total')}</Text>
-            <Text style={[styles.summaryValue, { color: Colors.primary }]}>₹{(() => {
-              const todayObj = new Date();
-              const todayIso = `${todayObj.getFullYear()}-${String(todayObj.getMonth() + 1).padStart(2, '0')}-${String(todayObj.getDate()).padStart(2, '0')}`;
-              const todayDonations = donations.filter(d => d.date === todayIso || d.created_at?.startsWith(todayIso));
-              return todayDonations.reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
-            })()}</Text>
+            <Text style={[styles.summaryValue, { color: Colors.primary }]}>
+              ₹{todayItems.reduce((sum, d) => sum + parseFloat(d.amount || 0), 0)}
+            </Text>
           </View>
           <View style={[styles.summaryCard, { backgroundColor: '#ECFDF5' }]}>
             <Text style={styles.summaryLabel}>{t('staff.cash')}</Text>
-            <Text style={[styles.summaryValue, { color: Colors.success }]}>₹{(() => {
-              const todayObj = new Date();
-              const todayIso = `${todayObj.getFullYear()}-${String(todayObj.getMonth() + 1).padStart(2, '0')}-${String(todayObj.getDate()).padStart(2, '0')}`;
-              return donations.filter(d => (d.date === todayIso || d.created_at?.startsWith(todayIso)) && d.payment_method?.toUpperCase() === 'CASH')
-                              .reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
-            })()}</Text>
+            <Text style={[styles.summaryValue, { color: Colors.success }]}>
+              ₹{todayItems.filter(d => d.payment_method?.toUpperCase() === 'CASH').reduce((sum, d) => sum + parseFloat(d.amount || 0), 0)}
+            </Text>
           </View>
           <View style={[styles.summaryCard, { backgroundColor: '#FEF2F2' }]}>
             <Text style={styles.summaryLabel}>Bank/GPay</Text>
-            <Text style={[styles.summaryValue, { color: Colors.error }]}>₹{(() => {
-              const todayObj = new Date();
-              const todayIso = `${todayObj.getFullYear()}-${String(todayObj.getMonth() + 1).padStart(2, '0')}-${String(todayObj.getDate()).padStart(2, '0')}`;
-              return donations.filter(d => (d.date === todayIso || d.created_at?.startsWith(todayIso)) && d.payment_method?.toUpperCase() !== 'CASH')
-                              .reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
-            })()}</Text>
+            <Text style={[styles.summaryValue, { color: Colors.error }]}>
+              ₹{todayItems.filter(d => d.payment_method?.toUpperCase() !== 'CASH').reduce((sum, d) => sum + parseFloat(d.amount || 0), 0)}
+            </Text>
           </View>
         </View>
       </View>
 
       <SectionList
         sections={groupDataByDate(donations.filter(d => {
-          // search filter
-          if (searchQuery && !d.donor_name?.toLowerCase().includes(searchQuery.toLowerCase()) && !d.receipt_number?.toLowerCase().includes(searchQuery.toLowerCase())) {
-            return false;
-          }
-          // pill filter
+          if (searchQuery && !d.donor_name?.toLowerCase().includes(searchQuery.toLowerCase()) && !d.receipt_number?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
           if (activeFilter === 'DONATIONS' && d.source !== 'DONATION') return false;
           if (activeFilter === 'MEMBERSHIPS' && d.source !== 'MEMBERSHIP') return false;
           if (activeFilter === 'CASH' && d.payment_method?.toUpperCase() !== 'CASH') return false;
           if (activeFilter === 'GPAY/BANK' && d.payment_method?.toUpperCase() === 'CASH') return false;
-          
           return true;
         }))}
         keyExtractor={item => item.id.toString()}
@@ -247,11 +269,21 @@ const StaffDonationsListScreen = ({ navigation }) => {
 
             {donationDetails && (
               <ScrollView style={styles.previewScrollContainer} showsVerticalScrollIndicator={false}>
+                {/* Rollover info banner inside modal */}
+                {isNextDayRollover(donationDetails) && (
+                  <View style={styles.rolloverDetailBanner}>
+                    <Ionicons name="information-circle" size={16} color="#92400E" />
+                    <Text style={styles.rolloverDetailBannerText}>
+                      Submitted after your day was closed. This will be counted under{' '}
+                      {new Date(donationDetails.date + 'T00:00:00').toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}.
+                    </Text>
+                  </View>
+                )}
+
                 {/* Section 1: Donor Info */}
                 <View style={styles.previewSectionBox}>
                   <Text style={styles.previewSectionTitle}>Donor Info</Text>
                   <View style={styles.previewDivider} />
-                  
                   <View style={styles.previewRow}>
                     <Text style={styles.previewLabel}>Name:</Text>
                     <Text style={styles.previewValue}>{donationDetails.donor_name}</Text>
@@ -270,7 +302,6 @@ const StaffDonationsListScreen = ({ navigation }) => {
                 <View style={styles.previewSectionBox}>
                   <Text style={styles.previewSectionTitle}>Payment Details</Text>
                   <View style={styles.previewDivider} />
-                  
                   <View style={styles.previewRow}>
                     <Text style={styles.previewLabel}>Amount:</Text>
                     <Text style={[styles.previewValue, { color: Colors.primary, fontSize: 15 }]}>₹{donationDetails.amount}</Text>
@@ -284,9 +315,9 @@ const StaffDonationsListScreen = ({ navigation }) => {
                     <Text style={styles.previewValue}>{donationDetails.receipt_number || 'N/A'}</Text>
                   </View>
                   <View style={styles.previewRow}>
-                    <Text style={styles.previewLabel}>Date:</Text>
-                    <Text style={styles.previewValue}>
-                      {new Date(donationDetails.date || donationDetails.created_at).toLocaleDateString()}
+                    <Text style={styles.previewLabel}>Counts For:</Text>
+                    <Text style={[styles.previewValue, { color: isNextDayRollover(donationDetails) ? '#B45309' : Colors.primary }]}>
+                      {new Date((donationDetails.date || '') + 'T00:00:00').toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                     </Text>
                   </View>
                 </View>
@@ -321,20 +352,17 @@ const styles = StyleSheet.create({
   },
   searchIcon: { marginRight: 8 },
   searchInput: { flex: 1, height: 44, fontSize: 15, color: Colors.textPrimary },
-  
   filterScroll: { paddingHorizontal: 16, paddingVertical: 12, gap: 8 },
   filterPill: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: '#F3F4F6', borderWidth: 1, borderColor: '#E5E7EB' },
   filterPillActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
   filterText: { fontSize: 13, fontWeight: '600', color: '#4B5563' },
   filterTextActive: { color: Colors.white },
-  
   summaryContainer: { marginHorizontal: 16, marginTop: 16, marginBottom: 4 },
   summaryTitle: { fontSize: 15, fontWeight: '700', color: Colors.gray800, marginBottom: 10 },
   summaryCards: { flexDirection: 'row', gap: 10, justifyContent: 'space-between' },
   summaryCard: { flex: 1, padding: 12, borderRadius: 12, alignItems: 'center' },
   summaryLabel: { fontSize: 11, fontWeight: '600', color: Colors.gray600, marginBottom: 4 },
   summaryValue: { fontSize: 16, fontWeight: '800' },
-  
   listContainer: { padding: 16, paddingBottom: 40 },
   card: {
     backgroundColor: Colors.white, borderRadius: 16, padding: 16, marginBottom: 12,
@@ -343,6 +371,32 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.04, shadowRadius: 8, elevation: 2,
     borderWidth: 1, borderColor: '#E5E7EB',
   },
+  cardRollover: {
+    backgroundColor: '#FFFBEB',
+    borderColor: '#FDE68A',
+    borderStyle: 'dashed',
+    flexDirection: 'column',
+    opacity: 0.92,
+  },
+  rolloverBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#FEF3C7',
+    borderRadius: 8,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    width: '100%',
+  },
+  rolloverBannerText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#92400E',
+    flex: 1,
+  },
   cardInfo: { flexDirection: 'row', alignItems: 'center', flex: 1 },
   iconWrap: {
     width: 40, height: 40, borderRadius: 20, backgroundColor: '#ECFDF5',
@@ -350,10 +404,10 @@ const styles = StyleSheet.create({
   },
   textWrap: { flex: 1, paddingRight: 8 },
   name: { fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 2, flex: 1, paddingRight: 8 },
+  nameRollover: { color: '#92400E' },
   voucherBadge: {
     flexDirection: 'row', alignItems: 'center', backgroundColor: '#EEF2FF',
-    paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, borderWidth: 1, borderColor: '#C7D2FE',
-    gap: 4
+    paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, borderWidth: 1, borderColor: '#C7D2FE', gap: 4
   },
   voucherBadgeText: { fontSize: 11, fontWeight: '700', color: '#4338CA' },
   details: { fontSize: 13, color: '#4B5563', marginBottom: 2 },
@@ -369,103 +423,49 @@ const styles = StyleSheet.create({
   emptyText: { color: Colors.gray400, marginTop: 12, fontSize: 15 },
   sectionHeader: { backgroundColor: '#F7F9FC', paddingVertical: 8, paddingHorizontal: 4, marginBottom: 8, marginTop: 4 },
   sectionHeaderText: { fontSize: 14, fontWeight: '700', color: Colors.gray600 },
-  
-  // Details Modal Specific
-  detailsContainer: { backgroundColor: '#F9FAFB', borderRadius: 12, padding: 16, marginBottom: 20 },
-  detailRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
-  detailLabel: { fontSize: 13, color: Colors.gray500 },
-  detailValue: { fontSize: 14, fontWeight: '600', color: Colors.textPrimary },
-  okBtn: { backgroundColor: Colors.primary, padding: 14, borderRadius: 12, alignItems: 'center' },
-  okBtnText: { fontSize: 15, fontWeight: '600', color: Colors.white },
-
-  /* Preview Modal Styling */
-  previewOverlay: {
+  rolloverDetailBanner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    backgroundColor: '#FEF3C7',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+  },
+  rolloverDetailBannerText: {
+    fontSize: 12,
+    color: '#92400E',
+    fontWeight: '600',
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
+    lineHeight: 18,
+  },
+  previewOverlay: {
+    flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.7)',
+    justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20,
   },
   previewCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    width: '100%',
-    maxWidth: 380,
-    maxHeight: '85%',
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.15,
-    shadowRadius: 20,
-    elevation: 8,
+    backgroundColor: '#FFFFFF', borderRadius: 24, width: '100%',
+    maxWidth: 380, maxHeight: '85%', padding: 20,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.15, shadowRadius: 20, elevation: 8,
   },
-  previewHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  previewHeaderTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#0F172A',
-  },
-  previewCloseBtn: {
-    padding: 4,
-  },
-  previewScrollContainer: {
-    marginBottom: 16,
-  },
+  previewHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  previewHeaderTitle: { fontSize: 20, fontWeight: '800', color: '#0F172A' },
+  previewCloseBtn: { padding: 4 },
+  previewScrollContainer: { marginBottom: 16 },
   previewSectionBox: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    marginBottom: 12,
+    backgroundColor: '#F8FAFC', borderRadius: 16, padding: 16,
+    borderWidth: 1, borderColor: '#E2E8F0', marginBottom: 12,
   },
-  previewSectionTitle: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#0284C7',
-    marginBottom: 6,
-  },
-  previewDivider: {
-    height: 1,
-    backgroundColor: '#E2E8F0',
-    marginBottom: 10,
-  },
-  previewRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 8,
-  },
-  previewLabel: {
-    fontSize: 13,
-    color: '#64748B',
-    fontWeight: '500',
-    width: '35%',
-  },
-  previewValue: {
-    fontSize: 13,
-    color: '#0F172A',
-    fontWeight: '700',
-    textAlign: 'right',
-    flex: 1,
-  },
-  previewSubmitBtn: {
-    backgroundColor: '#0284C7',
-    paddingVertical: 14,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  previewSubmitBtnText: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '700',
-  },
+  previewSectionTitle: { fontSize: 14, fontWeight: '800', color: '#0284C7', marginBottom: 6 },
+  previewDivider: { height: 1, backgroundColor: '#E2E8F0', marginBottom: 10 },
+  previewRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 },
+  previewLabel: { fontSize: 13, color: '#64748B', fontWeight: '500', width: '35%' },
+  previewValue: { fontSize: 13, color: '#0F172A', fontWeight: '700', textAlign: 'right', flex: 1 },
+  previewSubmitBtn: { backgroundColor: '#0284C7', paddingVertical: 14, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  previewSubmitBtnText: { color: '#FFFFFF', fontSize: 15, fontWeight: '700' },
 });
 
 export default StaffDonationsListScreen;

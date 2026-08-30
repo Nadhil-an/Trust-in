@@ -185,3 +185,17 @@ class RoleFeaturePermission(models.Model):
 
     def __str__(self):
         return f"{self.role} -> {self.feature_key}"
+
+
+class ExpoDevice(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='expo_devices')
+    push_token = models.CharField(max_length=255, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'core_expo_devices'
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.push_token}"

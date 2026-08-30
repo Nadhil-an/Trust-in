@@ -49,12 +49,12 @@ const ProfileScreen = ({ navigation }) => {
   });
 
   const memberName = user?.full_name || user?.username || 'Staff Member';
-  const memberId = user?.username || 'ST1001';
-  const memberSince = 'May 2024';
-  const email = user?.email || 'staff@sreetrust.org';
-  const phone = user?.phone || '+91 98765 43210';
-  const location = user?.address || 'Kochi, Kerala, India';
-  const dateOfBirth = user?.date_of_birth || user?.dob || 'Not set';
+  const memberId = user?.username || null;
+  const memberSince = user?.joining_date ? new Date(user.joining_date).toLocaleDateString(undefined, {month: 'short', year: 'numeric'}) : null;
+  const email = user?.email || null;
+  const phone = user?.phone || null;
+  const location = user?.address || null;
+  const dateOfBirth = user?.date_of_birth || user?.dob || null;
   const avatar = user?.avatar;
 
   const openEditModal = () => {
@@ -204,8 +204,8 @@ const ProfileScreen = ({ navigation }) => {
             </TouchableOpacity>
             <View style={styles.profileHeaderInfo}>
               <Text style={styles.name}>{memberName}</Text>
-              <Text style={styles.metaText}>{t('member.member_id')}: {memberId}</Text>
-              <Text style={styles.metaText}>{t('member.member_since')} {memberSince}</Text>
+              {memberId && <Text style={styles.metaText}>{t('member.member_id')}: {memberId}</Text>}
+              {memberSince && <Text style={styles.metaText}>{t('member.member_since')} {memberSince}</Text>}
             </View>
           </View>
 
@@ -213,25 +213,33 @@ const ProfileScreen = ({ navigation }) => {
 
           {/* Contact Details */}
           <View style={styles.infoList}>
-            <View style={styles.infoRow}>
-              <Ionicons name="mail-outline" size={18} color="#0284c7" />
-              <Text style={styles.infoValue}>{email}</Text>
-            </View>
+            {email && (
+              <View style={styles.infoRow}>
+                <Ionicons name="mail-outline" size={18} color="#0284c7" />
+                <Text style={styles.infoValue}>{email}</Text>
+              </View>
+            )}
 
-            <View style={styles.infoRow}>
-              <Ionicons name="call-outline" size={18} color="#0284c7" />
-              <Text style={styles.infoValue}>{phone}</Text>
-            </View>
+            {phone && (
+              <View style={styles.infoRow}>
+                <Ionicons name="call-outline" size={18} color="#0284c7" />
+                <Text style={styles.infoValue}>{phone}</Text>
+              </View>
+            )}
 
-            <View style={styles.infoRow}>
-              <Ionicons name="location-outline" size={18} color="#0284c7" />
-              <Text style={styles.infoValue}>{location}</Text>
-            </View>
+            {location && (
+              <View style={styles.infoRow}>
+                <Ionicons name="location-outline" size={18} color="#0284c7" />
+                <Text style={styles.infoValue}>{location}</Text>
+              </View>
+            )}
 
-            <View style={styles.infoRow}>
-              <Ionicons name="calendar-outline" size={18} color="#0284c7" />
-              <Text style={styles.infoValue}>DOB: {dateOfBirth}</Text>
-            </View>
+            {dateOfBirth && (
+              <View style={styles.infoRow}>
+                <Ionicons name="calendar-outline" size={18} color="#0284c7" />
+                <Text style={styles.infoValue}>DOB: {dateOfBirth}</Text>
+              </View>
+            )}
           </View>
         </View>
 
@@ -457,9 +465,9 @@ const styles = StyleSheet.create({
 
   divider: { height: 1, backgroundColor: '#bae6fd', marginVertical: 14 },
 
-  infoList: { gap: 10, marginBottom: 4 },
-  infoRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  infoValue: { fontSize: 13, color: Colors.gray700, fontWeight: '600' },
+  infoList: { gap: 16, marginBottom: 8 },
+  infoRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  infoValue: { fontSize: 14, color: Colors.gray700, fontWeight: '600' },
 
   sectionTitle: { fontSize: 14, fontWeight: '700', color: Colors.gray600, marginLeft: 4, marginTop: 6 },
   menuBox: {
@@ -473,7 +481,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 14,
+    padding: 18,
     borderBottomWidth: 1,
     borderBottomColor: Colors.gray100,
   },

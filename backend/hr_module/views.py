@@ -187,7 +187,14 @@ class MemberListCreateView(generics.ListCreateAPIView):
             from notify.whatsapp_service import send_whatsapp_message
             from accounts_module.models import Income
 
-            # 1. Create Receipt Record & Unique Receipt Number
+            # Determine effective date based on whether today's register is closed
+            from datetime import date, timedelta
+            from hr_module.models import PromoterRegistryEntry
+            effective_date = date.today()
+            registry = PromoterRegistryEntry.objects.filter(promoter=self.request.user, date=effective_date).first()
+            if registry and registry.is_closed:
+                effective_date = effective_date + timedelta(days=1)
+
             receipt = MembershipReceipt.objects.create(
                 member=member,
                 amount=getattr(member, 'monthly_fee', 100.00) or 100.00
@@ -210,7 +217,8 @@ class MemberListCreateView(generics.ListCreateAPIView):
                 reference_number=voucher_id or transaction_id,
                 account_type='BANK' if payment_mode in ['UPI', 'NEFT', 'RTGS', 'IMPS'] else 'CASH',
                 document=document,
-                created_by=self.request.user
+                created_by=self.request.user,
+                date=effective_date
             )
 
             # 2. Generate A4 PDF Document
@@ -1024,10 +1032,8 @@ class PerformancePointLeaderboardView(APIView):
 
 
 def get_attendance_effective_date():
-    """Returns the effective attendance date based on an 8:00 AM daily reset cycle."""
+    """Returns the effective attendance date based on a 12:00 AM daily reset cycle."""
     now_local = timezone.localtime(timezone.now())
-    if now_local.hour < 8:
-        return (now_local - timezone.timedelta(days=1)).date()
     return now_local.date()
 
 
@@ -1541,15 +1547,26 @@ class PromoterRegistryDailySummaryView(APIView):
         for sid in all_ids:
             entry = entries.get(sid)
             
+            income_data = totals.get(sid, {'cash': 0, 'online': 0, 'staff_name': ''})
+            has_collections = income_data['cash'] > 0 or income_data['online'] > 0
+
             # If a specific verification_status is requested, filter the staff
             if verification_status == 'VERIFIED':
-                if not entry or entry.verification_status != 'VERIFIED':
-                    continue
+                if not entry:
+                    # No entry yet. If they have collections, they MUST be verified first.
+                    if has_collections:
+                        continue
+                else:
+                    if entry.verification_status != 'VERIFIED':
+                        continue
             elif verification_status == 'UNVERIFIED':
-                if entry and entry.verification_status != 'UNVERIFIED':
-                    continue
-
-            income_data = totals.get(sid, {'cash': 0, 'online': 0, 'staff_name': ''})
+                if not entry:
+                    # No entry yet. If they have NO collections, nothing to verify.
+                    if not has_collections:
+                        continue
+                else:
+                    if entry.verification_status != 'UNVERIFIED':
+                        continue
             # Prefer name from attendance > income > entry
             name = (
                 present_staff.get(sid)

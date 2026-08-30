@@ -16,4 +16,5 @@ urlpatterns = [
     path('notifications/<str:pk>/read/', views.NotificationMarkReadView.as_view(), name='notification_read'),
     path('search/', views.GlobalSearchView.as_view(), name='global_search'),
     path('features/', views.RoleFeaturePermissionView.as_view(), name='features'),
+    path('update-push-token/', views.ExpoPushTokenView.as_view(), name='update_push_token'),
 ] + router.urls

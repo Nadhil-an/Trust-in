@@ -158,7 +158,6 @@ export default function AttendanceScreen({ navigation, route }) {
   };
 
   const currentHour = new Date().getHours();
-  const isBefore8AM = currentHour < 8;
 
   const isCheckedOut = !!(todayAtt && todayAtt.check_out);
   const isCheckedIn = !!(todayAtt && todayAtt.check_in && !todayAtt.check_out);
@@ -220,7 +219,7 @@ export default function AttendanceScreen({ navigation, route }) {
                   <View>
                     <Text style={styles.todayTitle}>Today's Attendance</Text>
                     <Text style={{ fontSize: 10, color: '#1A74EE', fontWeight: '700', marginTop: 2 }}>
-                      ⏰ Resets Daily at 8:00 AM
+                      ⏰ Resets Daily at 12:00 AM
                     </Text>
                   </View>
                   <Text style={styles.todayDate}>{new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</Text>
@@ -347,14 +346,6 @@ export default function AttendanceScreen({ navigation, route }) {
                         )}
                       </TouchableOpacity>
                     </View>
-                  ) : isBefore8AM ? (
-                    <TouchableOpacity
-                      style={[styles.actionBtn, { backgroundColor: '#94a3b8' }]}
-                      disabled={true}
-                    >
-                      <Ionicons name="time-outline" size={20} color="#ffffff" />
-                      <Text style={styles.actionBtnText}>Check-In Opens at 8:00 AM</Text>
-                    </TouchableOpacity>
                   ) : (
                     <View style={styles.captureSection}>
                       <Text style={styles.sectionLabel}>Complete Check In</Text>

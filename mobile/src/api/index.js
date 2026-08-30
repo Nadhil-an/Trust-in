@@ -288,5 +288,9 @@ export const eventsApi = {
   },
 };
 
+export const coreApi = {
+  updatePushToken: (data) => api.post('/core/update-push-token/', data),
+};
+
 export default api;
 
