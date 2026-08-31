@@ -526,6 +526,38 @@ class ExecutiveOfficerDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = ExecutiveOfficer.objects.all()
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
+    def perform_destroy(self, instance):
+        from core.models import User
+        from django.db.models import Q
+        
+        # Try to find corresponding user by username (using employee_id)
+        # or by matching full_name/email/phone
+        q = Q(username__iexact=instance.employee_id)
+        if instance.phone:
+            q |= Q(username__iexact=instance.phone)
+            q |= Q(phone__iexact=instance.phone)
+        if instance.email:
+            q |= Q(email__iexact=instance.email)
+        
+        # Match name if not admin/manager
+        users = User.objects.filter(q).exclude(role__in=['ADMIN', 'MANAGER'])
+        for u in users:
+            try:
+                u.delete()
+            except Exception:
+                pass
+                
+        # Also clean up any other matching user records by name
+        name_users = User.objects.filter(full_name__iexact=instance.full_name).exclude(role__in=['ADMIN', 'MANAGER'])
+        for u in name_users:
+            try:
+                u.delete()
+            except Exception:
+                pass
+
+        instance.delete()
+        push_dashboard_refresh(['HR', 'MANAGER', 'ADMIN', 'STAFF'])
+
 
 class OfficerPayrollDataView(APIView):
     permission_classes = [IsHR]

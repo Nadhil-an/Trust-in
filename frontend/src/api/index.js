@@ -224,6 +224,7 @@ export const hrApi = {
     create: (data) => api.post('/hr/officers/', data),
     get: (id) => api.get(`/hr/officers/${id}/`),
     update: (id, data) => api.patch(`/hr/officers/${id}/`, data),
+    delete: (id) => api.delete(`/hr/officers/${id}/`),
     documents: (id) => api.get(`/hr/officers/${id}/documents/`),
     attendanceGraph: (id, params) => api.get(`/hr/officers/${id}/attendance-graph/`, { params }),
     payrollData: (id, params) => api.get(`/hr/officers/${id}/payroll-data/`, { params }),

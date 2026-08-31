@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from "react"
 import { useSearchParams } from "react-router-dom"
 import { hrApi, coreApi } from "../../api"
-import { LoadingState, EmptyState, PageHeader, FilterBar, Modal } from "../../components/shared"
+import { LoadingState, EmptyState, PageHeader, FilterBar, Modal, ConfirmModal } from "../../components/shared"
 import { format } from "date-fns"
 import toast from "react-hot-toast"
 import { isValidPhone, isValidEmail } from "../../utils/validators"
@@ -211,6 +211,10 @@ export default function Officers() {
   const [voucherStaff, setVoucherStaff] = useState(null)
   const [showBatchVoucherModal, setShowBatchVoucherModal] = useState(false)
 
+  // Delete state
+  const [deleteId, setDeleteId] = useState(null)
+  const [deleting, setDeleting] = useState(false)
+
   const webRoles = ["MANAGER","ACCOUNTANT","HR","ADMIN", "DATA_ENTRY"]
   const mobileRoles = ["STAFF", "MEMBER", "FIELD_ASSESSMENT_OFFICER", "ASSESSMENT_CALCULATION_OFFICER", "GENERAL_ENQUIRY_OFFICER"]
 
@@ -330,6 +334,21 @@ export default function Officers() {
       setSaving(false) 
     }
   }
+
+  const handleDelete = async () => {
+    if (!deleteId) return
+    setDeleting(true)
+    try {
+      await hrApi.officers.delete(deleteId)
+      toast.success("Staff member and user account deleted successfully")
+      setDeleteId(null)
+      load()
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Failed to delete staff member")
+    } finally {
+      setDeleting(false)
+    }
+  }
   
   const openViewModal = (o) => {
     setViewItem(o)
@@ -423,6 +442,10 @@ export default function Officers() {
                           });
                           setShowModal(true)
                         }}>Edit</button>
+                        <button className="btn btn-sm btn-secondary" style={{ color: '#EF4444', borderColor: '#FEE2E2', background: '#FEF2F2' }} onClick={(e)=>{
+                          e.stopPropagation();
+                          setDeleteId(o.id);
+                        }}>Delete</button>
                       </div>
                     </td>
                   </tr>))}
@@ -681,6 +704,16 @@ export default function Officers() {
           `}</style>
         </div>
       )}
+
+      <ConfirmModal 
+        isOpen={!!deleteId} 
+        onClose={() => setDeleteId(null)} 
+        onConfirm={handleDelete} 
+        title="Delete Staff Member?"
+        message="Are you sure you want to delete this staff member? This will delete their database record, their attendance/salary history, and their login credentials (username and password)."
+        confirmText={deleting ? "Deleting..." : "Delete"}
+        isDanger={true}
+      />
 
     </div>
   )

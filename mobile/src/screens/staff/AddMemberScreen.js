@@ -90,7 +90,7 @@ const AddMemberScreen = ({ navigation, route }) => {
     transaction_id: editItem?.transaction_id || '',
     notes: '',
     temp_password: '',
-    voucher_id: '',
+    voucher_id: '0',
   });
 
   const [errors, setErrors] = useState({});
@@ -152,7 +152,7 @@ const AddMemberScreen = ({ navigation, route }) => {
         .then(res => {
           setVoucher(res.data);
           if (!isEdit) {
-            set('voucher_id', String(res.data.current_voucher));
+            set('voucher_id', '0');
           }
         })
         .catch(err => console.log('No voucher assigned or offline', err));
