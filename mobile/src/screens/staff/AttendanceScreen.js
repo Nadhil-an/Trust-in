@@ -134,10 +134,13 @@ export default function AttendanceScreen({ navigation, route }) {
       const formData = new FormData();
       formData.append('action', action);
       formData.append('location', pendingLocation);
+      
+      const photoName = pendingPhoto.uri.split('/').pop() || `attendance_${action}_${Date.now()}.jpg`;
+      
       formData.append('photo', {
         uri: pendingPhoto.uri,
         type: pendingPhoto.mimeType || 'image/jpeg',
-        name: `attendance_${action}_selfie.jpg`,
+        name: photoName,
       });
 
       if (action === 'check_in') {

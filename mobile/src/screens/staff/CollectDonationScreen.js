@@ -150,7 +150,8 @@ const CollectDonationScreen = ({ navigation, route }) => {
         sendData = new FormData();
         Object.keys(data).forEach(key => {
           if (key === 'document_uri') {
-            sendData.append('document', { uri: data.document_uri, type: 'image/jpeg', name: 'receipt.jpg' });
+            const docName = data.document_uri.split('/').pop() || 'receipt.jpg';
+            sendData.append('document', { uri: data.document_uri, type: 'image/jpeg', name: docName });
           } else if (data[key] !== null && data[key] !== undefined && data[key] !== '') {
             sendData.append(key, data[key]);
           }

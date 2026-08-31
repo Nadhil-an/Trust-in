@@ -84,9 +84,19 @@ export function FilterBar({ search, onSearch, children }) {
 }
 
 export function Modal({ isOpen, onClose, title, children, footer, size = '', overlayClass = '' }) {
+  const mouseDownTarget = React.useRef(null)
+
   if (!isOpen) return null
   return (
-    <div className={`modal-overlay ${overlayClass}`} onClick={e => e.target === e.currentTarget && onClose()}>
+    <div 
+      className={`modal-overlay ${overlayClass}`} 
+      onMouseDown={e => { mouseDownTarget.current = e.target }}
+      onMouseUp={e => {
+        if (mouseDownTarget.current === e.currentTarget && e.target === e.currentTarget) {
+          onClose()
+        }
+      }}
+    >
       <div className={`modal ${size}`}>
         <div className="modal-header">
           <div className="modal-title">{title}</div>
@@ -100,9 +110,19 @@ export function Modal({ isOpen, onClose, title, children, footer, size = '', ove
 }
 
 export function ConfirmModal({ isOpen, onClose, onConfirm, title="Are you sure?", message="This action cannot be undone.", confirmText="Confirm", cancelText="Cancel", isDanger=true }) {
+  const mouseDownTarget = React.useRef(null)
+
   if (!isOpen) return null
   return (
-    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+    <div 
+      className="modal-overlay" 
+      onMouseDown={e => { mouseDownTarget.current = e.target }}
+      onMouseUp={e => {
+        if (mouseDownTarget.current === e.currentTarget && e.target === e.currentTarget) {
+          onClose()
+        }
+      }}
+    >
       <div className="modal" style={{ maxWidth: 400 }}>
         <div className="modal-header">
           <div className="modal-title" style={{ color: isDanger ? 'var(--red-600)' : 'inherit' }}>{title}</div>

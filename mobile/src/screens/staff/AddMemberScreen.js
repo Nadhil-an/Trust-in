@@ -283,11 +283,13 @@ const AddMemberScreen = ({ navigation, route }) => {
       }
 
       if (receiptImageUri) {
-        formData.append('document', { uri: receiptImageUri, type: 'image/jpeg', name: 'receipt.jpg' });
+        const docName = receiptImageUri.split('/').pop() || 'receipt.jpg';
+        formData.append('document', { uri: receiptImageUri, type: 'image/jpeg', name: docName });
       }
 
       if (photos.length > 0) {
-        formData.append('photo', { uri: photos[0].uri, type: 'image/jpeg', name: 'photo.jpg' });
+        const photoName = photos[0].uri.split('/').pop() || 'photo.jpg';
+        formData.append('photo', { uri: photos[0].uri, type: 'image/jpeg', name: photoName });
       }
 
       if (isEdit) {
@@ -332,7 +334,7 @@ const AddMemberScreen = ({ navigation, route }) => {
       case 0:
         return (
           <>
-            <SectionHeader title={t('staff.personal_info')} icon="person-outline" />
+            <SectionHeader title={t('staff.personal_info', '1. Personal Information')} icon="person-outline" />
             <View style={styles.card}>
               <Text style={styles.inputLabel}>{t('staff.add_photo', 'Add Photo')}</Text>
               <View style={{ alignItems: 'center', marginBottom: 16 }}>
@@ -342,16 +344,16 @@ const AddMemberScreen = ({ navigation, route }) => {
                 <Text style={styles.photoHint}>Upload a clear member photo</Text>
               </View>
 
-              <Input label={t('staff.full_name')} value={form.full_name} onChangeText={v => set('full_name', v)} placeholder={t('staff.full_name_placeholder')} required error={errors.full_name} icon="person-outline" />
+              <Input label={t('staff.full_name', 'Full Name')} value={form.full_name} onChangeText={v => set('full_name', v)} placeholder={t('staff.full_name_placeholder', 'Full name')} required error={errors.full_name} icon="person-outline" />
               
-              <Text style={styles.inputLabel}>{t('staff.phone_whatsapp')} <Text style={{ color: Colors.error }}>*</Text></Text>
+              <Text style={styles.inputLabel}>{t('staff.phone_whatsapp', 'Phone (for WhatsApp receipt)')} <Text style={{ color: Colors.error }}>*</Text></Text>
               <View style={[styles.phoneInputWrapper, errors.phone && styles.inputError]}>
                 <Ionicons name="call-outline" size={20} color="#64748B" style={styles.phoneInputIcon} />
                 <TextInput
                   style={styles.phoneInput}
                   value={form.phone}
                   onChangeText={v => set('phone', v)}
-                  placeholder={t('staff.phone_placeholder')}
+                  placeholder={t('staff.phone_placeholder', '10-digit number')}
                   placeholderTextColor="#94A3B8"
                   keyboardType="numeric"
                   maxLength={10}
@@ -414,13 +416,13 @@ const AddMemberScreen = ({ navigation, route }) => {
                 </View>
               )}
 
-              <Input label={t('staff.email')} value={form.email} onChangeText={v => set('email', v)} type="email" placeholder={t('staff.email')} error={errors.email} icon="mail-outline" />
-              <Input label={t('staff.age')} value={form.age} onChangeText={v => set('age', v)} type="number" placeholder={t('staff.age')} required error={errors.age} icon="calendar-outline" />
-              <SelectField label={t('staff.gender')} icon="male-female-outline" value={form.gender} placeholder={t('staff.gender')} onPress={() => openSheet(t('staff.gender'), GENDER_OPTIONS, 'gender')} required error={errors.gender} />
-              <Input label={t('staff.address')} value={form.address} onChangeText={v => set('address', v)} placeholder={t('staff.address')} required error={errors.address} icon="home-outline" />
-              <Input label={t('staff.district')} value={form.district} onChangeText={v => set('district', v)} placeholder={t('staff.district')} required error={errors.district} icon="location-outline" />
-              <Input label={t('staff.state')} value={form.state} onChangeText={v => set('state', v)} placeholder={t('staff.state')} required error={errors.state} icon="map-outline" />
-              <Input label={t('staff.pincode')} value={form.pincode} onChangeText={v => set('pincode', v)} type="number" placeholder={t('staff.pincode')} required error={errors.pincode} maxLength={6} icon="mail-unread-outline" />
+              <Input label={t('staff.email', 'Email Address')} value={form.email} onChangeText={v => set('email', v)} type="email" placeholder={t('staff.email', 'Email Address')} error={errors.email} icon="mail-outline" />
+              <Input label={t('staff.age', 'Age')} value={form.age} onChangeText={v => set('age', v)} type="number" placeholder={t('staff.age', 'Age')} required error={errors.age} icon="calendar-outline" />
+              <SelectField label={t('staff.gender', 'Gender')} icon="male-female-outline" value={form.gender} placeholder={t('staff.gender', 'Select Gender')} onPress={() => openSheet(t('staff.gender', 'Gender'), GENDER_OPTIONS, 'gender')} required error={errors.gender} />
+              <Input label={t('staff.address', 'Address')} value={form.address} onChangeText={v => set('address', v)} placeholder={t('staff.address', 'Address')} required error={errors.address} icon="home-outline" />
+              <Input label={t('staff.district', 'District')} value={form.district} onChangeText={v => set('district', v)} placeholder={t('staff.district', 'District')} required error={errors.district} icon="location-outline" />
+              <Input label={t('staff.state', 'State')} value={form.state} onChangeText={v => set('state', v)} placeholder={t('staff.state', 'State')} required error={errors.state} icon="map-outline" />
+              <Input label={t('staff.pincode', 'Pincode')} value={form.pincode} onChangeText={v => set('pincode', v)} type="number" placeholder={t('staff.pincode', 'Pincode')} required error={errors.pincode} maxLength={6} icon="mail-unread-outline" />
             </View>
           </>
         );
@@ -445,7 +447,7 @@ const AddMemberScreen = ({ navigation, route }) => {
           <>
             <SectionHeader title={t('staff.payment_collection', '3. Payment Collection')} icon="wallet-outline" />
             <View style={styles.card}>
-              <Text style={styles.inputLabel}>{t('staff.payment_method')} <Text style={{ color: Colors.error }}>*</Text></Text>
+              <Text style={styles.inputLabel}>{t('staff.payment_method', 'Payment Method')} <Text style={{ color: Colors.error }}>*</Text></Text>
               <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
                 <TouchableOpacity 
                   style={[styles.paymentBtn, form.payment_mode === 'Cash' && styles.paymentBtnActive]}
@@ -464,7 +466,7 @@ const AddMemberScreen = ({ navigation, route }) => {
               </View>
               {errors.payment_mode ? <Text style={styles.errorText}>{errors.payment_mode}</Text> : null}
 
-              <Input label={t('staff.amount')} value={form.amount} editable={false} placeholder={t('staff.amount')} required icon="cash-outline" />
+              <Input label={t('staff.amount', 'Amount')} value={form.amount} editable={false} placeholder={t('staff.amount', 'Amount')} required icon="cash-outline" />
               <Input label={t('staff.payment_date', 'Payment Date')} value={form.payment_date} editable={false} placeholder={t('staff.payment_date', 'Payment Date')} required icon="calendar-outline" />
               
               {form.payment_mode !== 'Cash' && (

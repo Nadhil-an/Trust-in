@@ -122,9 +122,10 @@ const ProfileScreen = ({ navigation }) => {
         
         // Ensure photo is sent as a file
         if (editForm.avatar && !editForm.avatar.startsWith('http')) {
+          const avatarName = editForm.avatar.split('/').pop() || 'avatar.jpg';
           formData.append('photo', {
             uri: editForm.avatar,
-            name: 'avatar.jpg',
+            name: avatarName,
             type: 'image/jpeg',
           });
         }

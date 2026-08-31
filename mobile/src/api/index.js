@@ -114,10 +114,11 @@ export const faoApi = {
     Object.entries(data).forEach(([key, val]) => {
       if (key === 'uploaded_photos' && Array.isArray(val)) {
         val.forEach((photo, i) => {
+          const photoName = photo.uri.split('/').pop() || `fao_photo_${i}.jpg`;
           formData.append('uploaded_photos', {
             uri: photo.uri,
             type: photo.mimeType || 'image/jpeg',
-            name: `fao_photo_${i}.jpg`,
+            name: photoName,
           });
         });
       } else if (val !== null && val !== undefined) {
@@ -144,10 +145,11 @@ export const geoApi = {
     Object.entries(data).forEach(([key, val]) => {
       if (key === 'uploaded_photos' && Array.isArray(val)) {
         val.forEach((photo, i) => {
+          const photoName = photo.uri.split('/').pop() || `geo_photo_${i}.jpg`;
           formData.append('uploaded_photos', {
             uri: photo.uri,
             type: photo.mimeType || 'image/jpeg',
-            name: `geo_photo_${i}.jpg`,
+            name: photoName,
           });
         });
       } else if (val !== null && val !== undefined) {
