@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react"
 import { hrApi } from "../../api"
-import { LoadingState, EmptyState, PageHeader, FilterBar } from "../../components/shared"
+import { LoadingState, EmptyState, PageHeader, FilterBar, Modal } from "../../components/shared"
 import { format } from "date-fns"
 import toast from "react-hot-toast"
 
@@ -9,6 +9,7 @@ export default function PromotorRegistry() {
   const [loading, setLoading] = useState(true)
   const [savingId, setSavingId] = useState(null)
   const [dateFilter, setDateFilter] = useState(format(new Date(), 'yyyy-MM-dd'))
+  const [mismatchModalData, setMismatchModalData] = useState(null)
 
   // ── Load & merge daily summary ───────────────────────────────────
   const load = useCallback(async () => {
@@ -76,7 +77,26 @@ export default function PromotorRegistry() {
   }
 
   // ── Save / Close Day / Reopen ────────────────────────────────────
-  const handleSave = async (row, action = 'save') => {
+  const handleSave = async (row, action = 'save', forceClose = false) => {
+    // Discrepancy warning before closing
+    if (action === 'close' && !forceClose) {
+      const cashCollectedFloat = parseFloat(row.cash_collected) || 0
+      const cashSubmittedFloat = parseFloat(row.cash_submitted) || 0
+      const cashOk = Math.abs(cashSubmittedFloat - cashCollectedFloat) < 0.01
+
+      if (!cashOk) {
+        const diff = Math.abs(cashSubmittedFloat - cashCollectedFloat)
+        setMismatchModalData({
+          row,
+          action,
+          cashCollected: cashCollectedFloat,
+          cashSubmitted: cashSubmittedFloat,
+          difference: diff
+        })
+        return
+      }
+    }
+
     setSavingId(row.staff_id)
     try {
       const payload = {
@@ -90,18 +110,6 @@ export default function PromotorRegistry() {
         cash_submitted: parseFloat(row.cash_submitted) || 0,
         ...(action === 'close' ? { is_closed: true } : action === 'reopen' ? { is_closed: false } : {}),
         ...(action === 'unverify' ? { verification_status: 'UNVERIFIED' } : {})
-      }
-
-      // Discrepancy warning before closing
-      if (action === 'close') {
-        const cashOk = Math.abs(parseFloat(row.cash_submitted || 0) - parseFloat(row.cash_collected)) < 0.01
-        if (!cashOk) {
-          const diff = Math.abs(parseFloat(row.cash_submitted || 0) - parseFloat(row.cash_collected))
-          const ok = window.confirm(
-            `⚠️ Cash Mismatch!\n\nCash Collected (mobile): ₹${parseFloat(row.cash_collected).toFixed(2)}\nCash Submitted at office: ₹${parseFloat(row.cash_submitted || 0).toFixed(2)}\nDifference: ₹${diff.toFixed(2)}\n\nDo you still want to close the day for ${row.staff_name}?`
-          )
-          if (!ok) { setSavingId(null); return }
-        }
       }
 
       if (row.entry_id) {
@@ -333,12 +341,15 @@ export default function PromotorRegistry() {
 
                         {/* Cash Submitted at Office */}
                         <td style={{ padding: '6px 8px', borderRight: '2px solid #DDD6FE' }}>
-                          <div style={{ position: 'relative' }}>
+                          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <input type="number" className="form-control"
                               style={{
                                 minWidth: 100, textAlign: 'center',
+                                paddingRight: hasMismatch ? 28 : 8,
                                 background: row.is_closed ? '#F5F3FF' : hasMismatch ? '#FEF2F2' : '#FAF5FF',
-                                borderColor: hasMismatch ? '#FCA5A5' : undefined,
+                                borderColor: hasMismatch ? '#EF4444' : undefined,
+                                color: hasMismatch ? '#991B1B' : undefined,
+                                fontWeight: hasMismatch ? 700 : 'normal'
                               }}
                               value={row.cash_submitted}
                               disabled={row.is_closed}
@@ -346,8 +357,8 @@ export default function PromotorRegistry() {
                               onChange={e => updateField(row.staff_id, 'cash_submitted', e.target.value)}
                             />
                             {hasMismatch && (
-                              <span title={`Expected ₹${cashFloat.toFixed(2)}`}
-                                style={{ position: 'absolute', top: -2, right: -2, fontSize: 14, cursor: 'help' }}>⚠️</span>
+                              <span title={`Cash Mismatch! Expected ₹${cashFloat.toFixed(2)}, Submitted ₹${cashSubmittedFloat.toFixed(2)}`}
+                                style={{ position: 'absolute', right: 8, fontSize: 13, cursor: 'help', lineHeight: 1, userSelect: 'none' }}>⚠️</span>
                             )}
                           </div>
                         </td>
@@ -436,6 +447,69 @@ export default function PromotorRegistry() {
           </>
         )}
       </div>
+
+      {/* Styled Cash Mismatch Warning Modal */}
+      {mismatchModalData && (
+        <Modal 
+          isOpen={true} 
+          onClose={() => setMismatchModalData(null)} 
+          title="⚠️ Cash Mismatch Warning"
+          footer={
+            <>
+              <button 
+                type="button" 
+                className="btn btn-secondary" 
+                onClick={() => setMismatchModalData(null)}
+              >
+                Cancel
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-primary" 
+                style={{ background: '#EF4444', borderColor: '#EF4444', fontWeight: 600 }}
+                onClick={() => {
+                  const { row, action } = mismatchModalData;
+                  setMismatchModalData(null);
+                  handleSave(row, action, true);
+                }}
+              >
+                Yes, Close Day Anyway
+              </button>
+            </>
+          }
+        >
+          <div style={{ textAlign: 'center', marginBottom: 20 }}>
+            <div style={{ width: 56, height: 56, borderRadius: 28, background: '#FEE2E2', color: '#DC2626', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto', fontSize: 28 }}>
+              ⚠️
+            </div>
+            <h4 style={{ margin: '0 0 6px 0', fontSize: 18, color: '#111827', fontWeight: 700 }}>
+              Cash Discrepancy Detected
+            </h4>
+            <p style={{ margin: 0, fontSize: 13, color: '#6B7280' }}>
+              The cash submitted at office does not match mobile collection for <strong style={{ color: '#1F2937' }}>{mismatchModalData.row.staff_name}</strong>.
+            </p>
+          </div>
+
+          <div style={{ backgroundColor: '#FEF2F2', borderRadius: 12, padding: 16, border: '1px solid #FCA5A5', marginBottom: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 13 }}>
+              <span style={{ color: '#7F1D1D', fontWeight: 500 }}>Cash Collected (Mobile App):</span>
+              <strong style={{ color: '#991B1B' }}>₹{mismatchModalData.cashCollected.toFixed(2)}</strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 13 }}>
+              <span style={{ color: '#7F1D1D', fontWeight: 500 }}>Cash Submitted (at Office):</span>
+              <strong style={{ color: '#991B1B' }}>₹{mismatchModalData.cashSubmitted.toFixed(2)}</strong>
+            </div>
+            <div style={{ borderTop: '1px dashed #FCA5A5', paddingTop: 8, marginTop: 8, display: 'flex', justifyContent: 'space-between', fontSize: 14, fontWeight: 700 }}>
+              <span style={{ color: '#991B1B' }}>Unmatched Difference:</span>
+              <span style={{ color: '#DC2626' }}>₹{mismatchModalData.difference.toFixed(2)}</span>
+            </div>
+          </div>
+
+          <p style={{ margin: 0, fontSize: 13, color: '#374151', textAlign: 'center', fontWeight: 500 }}>
+            Do you still want to close the day for <strong>{mismatchModalData.row.staff_name}</strong>?
+          </p>
+        </Modal>
+      )}
     </div>
   )
 }

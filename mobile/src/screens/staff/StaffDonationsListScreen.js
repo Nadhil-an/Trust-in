@@ -179,10 +179,17 @@ const StaffDonationsListScreen = ({ navigation }) => {
       return acc;
     }, {});
 
-    const sections = Object.keys(grouped).map(date => ({
-      title: date,
-      data: grouped[date]
-    }));
+    const sections = Object.keys(grouped).map(date => {
+      const sortedData = [...grouped[date]].sort((a, b) => {
+        const timeA = new Date(a.created_at || a.date).getTime();
+        const timeB = new Date(b.created_at || b.date).getTime();
+        return timeB - timeA;
+      });
+      return {
+        title: date,
+        data: sortedData
+      };
+    });
 
     sections.sort((a, b) => {
       const [dayA, monthA, yearA] = a.title.split('/');

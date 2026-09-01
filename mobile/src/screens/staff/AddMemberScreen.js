@@ -97,37 +97,6 @@ const AddMemberScreen = ({ navigation, route }) => {
   const [errors, setErrors] = useState({});
   const [successData, setSuccessData] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
-  const [receiptImageUri, setReceiptImageUri] = useState(null);
-
-  // Status: null (not checked) | 'checking' | true (has WA) | false (no WA) | 'unverified' (gateway offline)
-  const [whatsappStatus, setWhatsappStatus] = useState(null);
-  const whatsappTimer = useRef(null);
-
-  // Silent background WhatsApp check — debounced 1.5s after user stops typing
-  useEffect(() => {
-    if (!form.phone || form.phone.length < 10) {
-      setWhatsappStatus(null);
-      return;
-    }
-    setWhatsappStatus('checking');
-    clearTimeout(whatsappTimer.current);
-    whatsappTimer.current = setTimeout(async () => {
-      try {
-        const res = await notifyApi.checkWhatsapp(form.phone);
-        const status = res.data?.has_whatsapp;
-        if (status === true) {
-          setWhatsappStatus(true);
-        } else if (status === false) {
-          setWhatsappStatus(false);
-        } else {
-          setWhatsappStatus('unverified');
-        }
-      } catch {
-        setWhatsappStatus('unverified');
-      }
-    }, 1500);
-    return () => clearTimeout(whatsappTimer.current);
-  }, [form.phone]);
 
   useEffect(() => {
     if (editItem) {
@@ -182,8 +151,6 @@ const AddMemberScreen = ({ navigation, route }) => {
       if (!form.full_name.trim()) errs.full_name = t('common.required');
       if (!form.phone.trim()) errs.phone = t('common.required');
       else if (!isValidPhone(form.phone)) errs.phone = 'Invalid 10-digit phone number';
-      const needsPhoto = whatsappStatus === false || whatsappStatus === 'unverified';
-      if (needsPhoto && !receiptImageUri) errs.receiptImage = 'Photo of receipt is required when WhatsApp receipt cannot be sent';
       if (form.email && !isValidEmail(form.email)) errs.email = 'Invalid email address';
       if (!form.age) errs.age = t('common.required');
       if (!form.gender) errs.gender = t('common.required');
@@ -203,31 +170,13 @@ const AddMemberScreen = ({ navigation, route }) => {
 
     setErrors(errs);
     if (Object.keys(errs).length > 0) {
-      if (errs.receiptImage) {
-        Alert.alert('Receipt Required', errs.receiptImage);
-      } else {
-        Toast.show({ type: 'error', text1: 'Please fix the highlighted errors' });
-      }
+      Toast.show({ type: 'error', text1: 'Please fix the highlighted errors' });
       return false;
     }
     return true;
   };
 
-  const captureReceipt = async () => {
-    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
-    if (permissionResult.granted === false) {
-      Alert.alert('Permission Denied', 'You need to grant camera access to take a photo.');
-      return;
-    }
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      quality: 0.7,
-    });
-    if (!result.canceled) {
-      setReceiptImageUri(result.assets[0].uri);
-    }
-  };
+
 
   const nextStep = () => {
     if (!validateStep()) return;
@@ -370,64 +319,10 @@ const AddMemberScreen = ({ navigation, route }) => {
                   placeholderTextColor="#94A3B8"
                   keyboardType="numeric"
                   maxLength={10}
+                  editable={!isEdit}
                 />
-                {form.phone.length === 10 && (
-                  whatsappStatus === 'checking' ? (
-                    <Text style={{ fontSize: 11, color: '#6B7280', marginRight: 8 }}>Checking...</Text>
-                  ) : whatsappStatus === true ? (
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 8 }}>
-                      <Ionicons name="logo-whatsapp" size={16} color="#22C55E" />
-                      <Text style={{ fontSize: 11, color: '#16A34A', marginLeft: 3 }}>WhatsApp ✓</Text>
-                    </View>
-                  ) : whatsappStatus === false ? (
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 8 }}>
-                      <Ionicons name="warning-outline" size={16} color="#EF4444" />
-                      <Text style={{ fontSize: 11, color: '#DC2626', marginLeft: 3 }}>No WhatsApp</Text>
-                    </View>
-                  ) : whatsappStatus === 'unverified' ? (
-                    <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 8 }}>
-                      <Ionicons name="help-circle-outline" size={16} color="#D97706" />
-                      <Text style={{ fontSize: 11, color: '#B45309', marginLeft: 3 }}>Unverified</Text>
-                    </View>
-                  ) : null
-                )}
               </View>
               {errors.phone ? <Text style={styles.errorText}>{errors.phone}</Text> : null}
-              
-              {whatsappStatus === false && (
-                <Text style={{ fontSize: 12, color: '#DC2626', marginTop: 4, marginLeft: 4 }}>
-                  ⚠️ This number is not registered on WhatsApp. A receipt photo is required.
-                </Text>
-              )}
-              {whatsappStatus === 'unverified' && (
-                <Text style={{ fontSize: 12, color: '#B45309', marginTop: 4, marginLeft: 4 }}>
-                  ⚠️ WhatsApp status could not be verified. Please capture a receipt photo as proof.
-                </Text>
-              )}
-
-              {(whatsappStatus === false || whatsappStatus === 'unverified') && (
-                <View style={{ marginBottom: 16, padding: 12, backgroundColor: '#FEF2F2', borderRadius: 8, borderWidth: 1, borderColor: '#FECACA', marginTop: 16 }}>
-                  <Text style={{ fontSize: 13, color: '#991B1B', marginBottom: 10, fontWeight: '600' }}>
-                    {whatsappStatus === 'unverified'
-                      ? '⚠️ WhatsApp status unconfirmed. Please capture a receipt photo as proof.'
-                      : '⚠️ No WhatsApp on this number. Please capture a photo of the written receipt.'}
-                  </Text>
-                  {receiptImageUri ? (
-                    <View style={{ position: 'relative' }}>
-                      <Image source={{ uri: receiptImageUri }} style={{ width: '100%', height: 150, borderRadius: 8 }} />
-                      <TouchableOpacity onPress={() => setReceiptImageUri(null)} style={{ position: 'absolute', top: 5, right: 5, backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 15, padding: 4 }}>
-                        <Ionicons name="close" size={20} color="#FFF" />
-                      </TouchableOpacity>
-                    </View>
-                  ) : (
-                    <TouchableOpacity onPress={captureReceipt} style={{ backgroundColor: '#EF4444', padding: 12, borderRadius: 8, alignItems: 'center', flexDirection: 'row', justifyContent: 'center' }}>
-                      <Ionicons name="camera" size={20} color="#FFF" style={{ marginRight: 8 }} />
-                      <Text style={{ color: '#FFF', fontWeight: '700' }}>Take Receipt Photo</Text>
-                    </TouchableOpacity>
-                  )}
-                  {errors.receiptImage ? <Text style={styles.errorText}>{errors.receiptImage}</Text> : null}
-                </View>
-              )}
 
               <Input label={t('staff.email', 'Email Address')} value={form.email} onChangeText={v => set('email', v)} type="email" placeholder={t('staff.email', 'Email Address')} error={errors.email} icon="mail-outline" />
               <Input label={t('staff.age', 'Age')} value={form.age} onChangeText={v => set('age', v)} type="number" placeholder={t('staff.age', 'Age')} required error={errors.age} icon="calendar-outline" />

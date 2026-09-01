@@ -43,9 +43,7 @@ const CollectDonationScreen = ({ navigation, route }) => {
   
   const user = useAuthStore(s => s.user);
   const [voucher, setVoucher] = useState(null);
-  // null = not checked, true = has WA, false = no WA, 'checking' = in progress
-  const [whatsappStatus, setWhatsappStatus] = useState(null);
-  const whatsappTimer = useRef(null);
+  const [loadingVoucher, setLoadingVoucher] = useState(true);
 
   // Check attendance on screen load
   useEffect(() => {
@@ -58,6 +56,7 @@ const CollectDonationScreen = ({ navigation, route }) => {
 
   React.useEffect(() => {
     if (user?.id) {
+      setLoadingVoucher(true);
       staffApi.vouchers.get(user.id)
         .then(res => {
           setVoucher(res.data);
@@ -65,51 +64,23 @@ const CollectDonationScreen = ({ navigation, route }) => {
             set('voucher_id', String(res.data.current_voucher));
           }
         })
-        .catch(err => console.log('No voucher assigned or offline', err));
+        .catch(err => console.log('No voucher assigned or offline', err))
+        .finally(() => setLoadingVoucher(false));
+    } else {
+      setLoadingVoucher(false);
     }
-  }, [user?.id]);
+  }, [user?.id, isEdit]);
 
   const set = (key, val) => { setForm(f => ({ ...f, [key]: val })); setErrors(e => ({ ...e, [key]: '' })); };
 
-  // Silent background WhatsApp check — debounced 1.5s after user stops typing
-  // Status: null (not checked) | 'checking' | true (has WA) | false (no WA) | 'unverified' (gateway offline)
-  useEffect(() => {
-    if (noPhone || !form.phone || form.phone.length < 10) {
-      setWhatsappStatus(null);
-      return;
-    }
-    setWhatsappStatus('checking');
-    clearTimeout(whatsappTimer.current);
-    whatsappTimer.current = setTimeout(async () => {
-      try {
-        const res = await notifyApi.checkWhatsapp(form.phone);
-        const status = res.data?.has_whatsapp;
-        if (status === true) {
-          setWhatsappStatus(true);       // confirmed has WhatsApp
-        } else if (status === false) {
-          setWhatsappStatus(false);      // confirmed no WhatsApp
-        } else {
-          setWhatsappStatus('unverified'); // gateway offline — cannot confirm
-        }
-      } catch {
-        setWhatsappStatus('unverified'); // network error — cannot confirm
-      }
-    }, 1500);
-    return () => clearTimeout(whatsappTimer.current);
-  }, [form.phone, noPhone]);
+
 
   const validate = () => {
     const errs = {};
     if (!noName && !form.donor_name.trim()) errs.donor_name = t('common.required');
     if (!noPhone && form.phone && !isValidPhone(form.phone)) errs.phone = t('errors.invalid_phone_msg', 'Enter a valid 10-digit phone number');
     if (!isPositiveNumber(form.amount)) errs.amount = t('errors.validation', 'Enter a valid positive amount');
-    // Photo required if: no phone OR no WhatsApp OR WhatsApp could not be verified
-    const needsPhoto = noPhone || whatsappStatus === false || whatsappStatus === 'unverified';
-    if (needsPhoto && !receiptImageUri) errs.receiptImage = 'Photo of receipt is required when WhatsApp receipt cannot be sent';
     setErrors(errs);
-    if (errs.receiptImage) {
-      Alert.alert('Receipt Photo Required', 'This donor cannot receive a WhatsApp receipt. Please take a photo of the written receipt before submitting.');
-    }
     return Object.keys(errs).length === 0;
   };
 
@@ -228,7 +199,7 @@ const CollectDonationScreen = ({ navigation, route }) => {
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <KeyboardAwareScrollView enableOnAndroid={true} extraScrollHeight={20} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           
-          {!hasVoucherAssigned ? (
+          {loadingVoucher ? null : !hasVoucherAssigned ? (
             <View style={{
               backgroundColor: '#FEF2F2',
               borderWidth: 1,
@@ -315,69 +286,12 @@ const CollectDonationScreen = ({ navigation, route }) => {
                 maxLength={10}
                 editable={!noPhone}
               />
-              {/* WhatsApp status badge — appears inline after 10 digits */}
-              {!noPhone && form.phone.length === 10 && (
-                whatsappStatus === 'checking' ? (
-                  <Text style={{ fontSize: 11, color: '#6B7280', marginRight: 8 }}>Checking...</Text>
-                ) : whatsappStatus === true ? (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 8 }}>
-                    <Ionicons name="logo-whatsapp" size={16} color="#22C55E" />
-                    <Text style={{ fontSize: 11, color: '#16A34A', marginLeft: 3 }}>WhatsApp ✓</Text>
-                  </View>
-                ) : whatsappStatus === false ? (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 8 }}>
-                    <Ionicons name="warning-outline" size={16} color="#EF4444" />
-                    <Text style={{ fontSize: 11, color: '#DC2626', marginLeft: 3 }}>No WhatsApp</Text>
-                  </View>
-                ) : whatsappStatus === 'unverified' ? (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 8 }}>
-                    <Ionicons name="help-circle-outline" size={16} color="#D97706" />
-                    <Text style={{ fontSize: 11, color: '#B45309', marginLeft: 3 }}>Unverified</Text>
-                  </View>
-                ) : null
-              )}
             </View>
-            {/* Warning text below phone field */}
-            {!noPhone && whatsappStatus === false && (
-              <Text style={{ fontSize: 12, color: '#DC2626', marginTop: 4, marginLeft: 4 }}>
-                ⚠️ This number is not registered on WhatsApp. A receipt photo is required.
-              </Text>
-            )}
-            {!noPhone && whatsappStatus === 'unverified' && (
-              <Text style={{ fontSize: 12, color: '#B45309', marginTop: 4, marginLeft: 4 }}>
-                ⚠️ WhatsApp status could not be verified. Please capture a receipt photo as proof.
-              </Text>
-            )}
-            <TouchableOpacity onPress={() => { setNoPhone(!noPhone); if (!noPhone) set('phone', ''); setWhatsappStatus(null); }} style={styles.checkboxRow} activeOpacity={0.7}>
+
+            <TouchableOpacity onPress={() => { setNoPhone(!noPhone); if (!noPhone) set('phone', ''); }} style={styles.checkboxRow} activeOpacity={0.7}>
               <Ionicons name={noPhone ? "checkbox" : "square-outline"} size={22} color={noPhone ? "#0B57D0" : "#64748B"} />
               <Text style={styles.checkboxLabel}>{t('staff.no_phone_interest')}</Text>
             </TouchableOpacity>
-
-            {/* Receipt photo panel — shown when no phone OR no WhatsApp OR unverified */}
-            {(noPhone || whatsappStatus === false || whatsappStatus === 'unverified') && (
-              <View style={{ marginTop: 10, padding: 12, backgroundColor: '#FEF2F2', borderRadius: 8, borderWidth: 1, borderColor: '#FECACA' }}>
-                <Text style={{ fontSize: 13, color: '#991B1B', marginBottom: 10, fontWeight: '600' }}>
-                  {noPhone
-                    ? '⚠️ Phone number omitted. Please capture a photo of the written receipt.'
-                    : whatsappStatus === 'unverified'
-                      ? '⚠️ WhatsApp status unconfirmed. Please capture a receipt photo as proof.'
-                      : '⚠️ No WhatsApp on this number. Please capture a photo of the written receipt.'}
-                </Text>
-                {receiptImageUri ? (
-                  <View style={{ position: 'relative' }}>
-                    <Image source={{ uri: receiptImageUri }} style={{ width: '100%', height: 150, borderRadius: 8 }} />
-                    <TouchableOpacity onPress={() => setReceiptImageUri(null)} style={{ position: 'absolute', top: 5, right: 5, backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 15, padding: 4 }}>
-                      <Ionicons name="close" size={20} color="#FFF" />
-                    </TouchableOpacity>
-                  </View>
-                ) : (
-                  <TouchableOpacity onPress={captureReceipt} style={{ backgroundColor: '#EF4444', padding: 12, borderRadius: 8, alignItems: 'center', flexDirection: 'row', justifyContent: 'center' }}>
-                    <Ionicons name="camera" size={20} color="#FFF" style={{ marginRight: 8 }} />
-                    <Text style={{ color: '#FFF', fontWeight: '700' }}>Take Receipt Photo</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            )}
 
             {/* Donation Amount */}
             <Text style={styles.inputLabel}>{t('staff.donation_amount')} <Text style={styles.asterisk}>*</Text></Text>
