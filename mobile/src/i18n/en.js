@@ -101,11 +101,18 @@ export default {
     home_title: "Today's Overview",
     members_added: 'Members Added',
     donations_collected: 'Donations Collected',
+    donation_collected: 'Donations Collected',
     assessments_submitted: 'Assessments Submitted',
+    attendance_marked: 'Attendance Marked',
     quick_actions: 'Quick Actions',
     add_member: 'Add Member',
+    add_members: 'Add Members',
     collect_donation: 'Collect Donation',
+    collection_donation: 'Collect Donation',
     new_assessment: 'New Assessment',
+    leaderboard: 'Leaderboard',
+    together_we_can: 'Together We Can',
+    together_subtitle: 'Every small effort counts towards\na better tomorrow.',
     search_member: 'Search Member',
     my_assessments: 'My Assessments',
     member_registration: 'Member Registration',
@@ -522,9 +529,16 @@ export default {
   // Events banner
   events: {
     upcoming: 'Upcoming',
+    upcoming_events: 'Upcoming Events',
     completed: 'Completed',
     announcement: 'Announcement',
     no_events: 'No announcements',
+  },
+
+  attendance: {
+    not_marked_title: '⚠️ Attendance Not Marked!',
+    not_marked_msg: 'You must mark your attendance for today before you can {{action}}.\n\nPlease mark your attendance first to proceed.',
+    mark_now: 'Mark Attendance Now',
   },
 
   // Errors

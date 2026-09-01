@@ -17,6 +17,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 import { usePushNotifications } from '../../hooks/usePushNotifications';
+import { useOfflineStore } from '../../store/offlineStore';
+import { OfflineBar } from '../../components/shared';
+import { verifyAttendanceMarked } from '../../utils/attendanceGuard';
 
 const { width } = Dimensions.get('window');
 
@@ -43,9 +46,36 @@ const QuickActionCard = ({ icon, title, onPress }) => (
 
 const StaffHomeScreen = ({ navigation, route }) => {
   const { user } = useAuthStore();
+  const { queue: offlineQueue } = useOfflineStore();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
   usePushNotifications(); // Registers token in background
+
+  const [stats, setStats] = useState({});
+  const [topStaff, setTopStaff] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+
+  const offlineDonationItems = React.useMemo(() => {
+    return (offlineQueue || []).filter(item => item?.url?.includes('donations') && item?.data);
+  }, [offlineQueue]);
+
+  const offlineDonationsTotal = React.useMemo(() => {
+    return offlineDonationItems.reduce((sum, item) => sum + (Number(item?.data?.amount) || 0), 0);
+  }, [offlineDonationItems]);
+
+  const offlineCashTotal = React.useMemo(() => {
+    return offlineDonationItems.filter(item => (item?.data?.payment_method || '').toUpperCase() === 'CASH').reduce((sum, item) => sum + (Number(item?.data?.amount) || 0), 0);
+  }, [offlineDonationItems]);
+
+  const offlineBankTotal = React.useMemo(() => {
+    return offlineDonationItems.filter(item => (item?.data?.payment_method || '').toUpperCase() !== 'CASH').reduce((sum, item) => sum + (Number(item?.data?.amount) || 0), 0);
+  }, [offlineDonationItems]);
+
+  const displayTotalDonations = (stats?.donations || 0) + offlineDonationsTotal;
+  const displayCashDonations = (stats?.cash_donations || 0) + offlineCashTotal;
+  const displayBankDonations = (stats?.bank_donations || 0) + offlineBankTotal;
   
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -67,11 +97,6 @@ const StaffHomeScreen = ({ navigation, route }) => {
     }, [route?.params?.openDrawer, navigation])
   );
   
-  const [stats, setStats] = useState({});
-  const [topStaff, setTopStaff] = useState([]);
-  const [refreshing, setRefreshing] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [upcomingEvents, setUpcomingEvents] = useState([]);
   const sliderRef = React.useRef(null);
 
   // Auto-slide carousel infinitely to the right
@@ -284,6 +309,8 @@ const StaffHomeScreen = ({ navigation, route }) => {
         </View>
       </View>
 
+      <OfflineBar />
+
       <ScrollView
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#1689D8" />}
         contentContainerStyle={styles.scroll}
@@ -345,7 +372,10 @@ const StaffHomeScreen = ({ navigation, route }) => {
                         </View>
                         <View>
                           <Text style={styles.collTotalLabel}>{t('staff.total_collection', 'Total Collection')}</Text>
-                          <Text style={styles.collTotalVal}>₹ {(stats.donations || 0).toLocaleString()}</Text>
+                          <Text style={styles.collTotalVal}>
+                            ₹ {displayTotalDonations.toLocaleString()}
+                            {offlineDonationsTotal > 0 && <Text style={{ fontSize: 11, color: '#F59E0B' }}> (₹{offlineDonationsTotal} offline)</Text>}
+                          </Text>
                         </View>
                       </View>
 
@@ -355,7 +385,7 @@ const StaffHomeScreen = ({ navigation, route }) => {
                             <Ionicons name="cash-outline" size={14} color="#16A34A" />
                           </View>
                           <Text style={styles.collThirdLabel}>{t('staff.in_cash', 'In Cash')}</Text>
-                          <Text style={styles.collThirdVal}>₹{(stats.cash_donations || 0).toLocaleString()}</Text>
+                          <Text style={styles.collThirdVal}>₹{displayCashDonations.toLocaleString()}</Text>
                         </View>
                         
                         <View style={styles.collThirdBox}>
@@ -363,7 +393,7 @@ const StaffHomeScreen = ({ navigation, route }) => {
                             <Ionicons name="card-outline" size={14} color="#0284C7" />
                           </View>
                           <Text style={styles.collThirdLabel}>{t('staff.in_bank', 'In Bank')}</Text>
-                          <Text style={styles.collThirdVal}>₹{(stats.bank_donations || 0).toLocaleString()}</Text>
+                          <Text style={styles.collThirdVal}>₹{displayBankDonations.toLocaleString()}</Text>
                         </View>
 
                         <View style={styles.collThirdBox}>
@@ -371,7 +401,7 @@ const StaffHomeScreen = ({ navigation, route }) => {
                             <Ionicons name="people-outline" size={14} color="#D97706" />
                           </View>
                           <Text style={styles.collThirdLabel}>{t('staff.members', 'Members')}</Text>
-                          <Text style={styles.collThirdVal}>₹{(stats.membership_amount || 0).toLocaleString()}</Text>
+                          <Text style={styles.collThirdVal}>₹{(stats?.membership_amount || 0).toLocaleString()}</Text>
                         </View>
                       </View>
                     </View>
@@ -442,25 +472,25 @@ const StaffHomeScreen = ({ navigation, route }) => {
         <View style={styles.statsRow}>
           <StatCard
             title={t('staff.members_added')}
-            value={(stats.members || 0).toString()}
+            value={(stats?.members || 0).toString()}
             icon="person-add-outline"
             onPress={() => navigation.navigate('StaffMembersList')}
           />
           <StatCard
             title={t('staff.donation_collected')}
-            value={`₹ ${(stats.donations || 0).toLocaleString()}`}
+            value={`₹ ${displayTotalDonations.toLocaleString()}`}
             icon="heart-outline"
             onPress={() => navigation.navigate('StaffDonationsList')}
           />
           <StatCard
             title={t('staff.assessments_submitted', 'Assessments Submitted')}
-            value={(stats.assessments || 0).toString()}
+            value={(stats?.assessments || 0).toString()}
             icon="document-text-outline"
             onPress={() => navigation.navigate('StaffAssessmentsList')}
           />
           <StatCard
             title={t('staff.attendance_marked', 'Attendance Marked')}
-            value={`${stats.attendancePercentage || 0}%`}
+            value={`${stats?.attendancePercentage || 0}%`}
             icon="calendar-outline"
             onPress={() => navigation.navigate('StaffAttendance', { fromDashboard: true })}
           />
@@ -475,17 +505,26 @@ const StaffHomeScreen = ({ navigation, route }) => {
           <QuickActionCard
             title={t('staff.add_members', 'Add Members')}
             icon="person-add"
-            onPress={() => navigation.navigate('AddMember')}
+            onPress={async () => {
+              const ok = await verifyAttendanceMarked(navigation, 'add members');
+              if (ok) navigation.navigate('AddMember');
+            }}
           />
           <QuickActionCard
             title={t('staff.collection_donation', 'Collection Donation')}
             icon="heart"
-            onPress={() => navigation.navigate('CollectDonation')}
+            onPress={async () => {
+              const ok = await verifyAttendanceMarked(navigation, 'collect donations');
+              if (ok) navigation.navigate('CollectDonation');
+            }}
           />
           <QuickActionCard
             title={t('staff.new_assessment', 'New Assessment')}
             icon="document-text"
-            onPress={() => navigation.navigate('NewAssessment')}
+            onPress={async () => {
+              const ok = await verifyAttendanceMarked(navigation, 'perform new assessments');
+              if (ok) navigation.navigate('NewAssessment');
+            }}
           />
           <QuickActionCard
             title={t('nav.attendance', 'Attendance')}
@@ -514,15 +553,15 @@ const StaffHomeScreen = ({ navigation, route }) => {
         </LinearGradient>
 
         <View style={[styles.sectionHeader, { marginTop: 10 }]}>
-          <Text style={styles.sectionTitle}>Upcoming Events</Text>
+          <Text style={styles.sectionTitle}>{t('events.upcoming_events', 'Upcoming Events')}</Text>
           <TouchableOpacity onPress={() => navigation.navigate('Events')}>
-            <Text style={styles.viewAllText}>View All</Text>
+            <Text style={styles.viewAllText}>{t('common.see_all', 'View All')}</Text>
           </TouchableOpacity>
         </View>
 
         {upcomingEvents.length === 0 ? (
           <View style={[styles.eventCard, { justifyContent: 'center', alignItems: 'center', paddingVertical: 24, marginBottom: 20 }]}>
-            <Text style={{ color: '#64748B', fontSize: 13 }}>No upcoming events at the moment.</Text>
+            <Text style={{ color: '#64748B', fontSize: 13 }}>{t('events.no_events', 'No upcoming events at the moment.')}</Text>
           </View>
         ) : (
           upcomingEvents.map((item) => (

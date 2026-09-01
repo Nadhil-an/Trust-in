@@ -36,7 +36,7 @@ rmdir /s /q node_modules & del /f /q package-lock.json & npm install --legacy-pe
 
 STEP 2 - Start Expo (run every time):
 cd mobile
-set REACT_NATIVE_PACKAGER_HOSTNAME=192.168.1.34 && npx expo start -c
+set REACT_NATIVE_PACKAGER_HOSTNAME=10.90.237.21 && npx expo start -c
 
 =========================================================
   PRODUCTION NOTES

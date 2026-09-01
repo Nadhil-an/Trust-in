@@ -14,6 +14,7 @@ import { useAuthStore } from '../../store/authStore';
 import { useOfflineStore } from '../../store/offlineStore';
 import Toast from 'react-native-toast-message';
 import { isValidPhone, isPositiveNumber } from '../../utils/validators';
+import { verifyAttendanceMarked } from '../../utils/attendanceGuard';
 
 const PAYMENT_METHODS = [
   { key: 'CASH', label: 'Cash', icon: 'cash-outline', isImage: true },
@@ -45,6 +46,15 @@ const CollectDonationScreen = ({ navigation, route }) => {
   // null = not checked, true = has WA, false = no WA, 'checking' = in progress
   const [whatsappStatus, setWhatsappStatus] = useState(null);
   const whatsappTimer = useRef(null);
+
+  // Check attendance on screen load
+  useEffect(() => {
+    verifyAttendanceMarked(navigation, 'collect donations').then(isMarked => {
+      if (!isMarked) {
+        navigation.goBack();
+      }
+    });
+  }, [navigation]);
 
   React.useEffect(() => {
     if (user?.id) {
@@ -119,7 +129,19 @@ const CollectDonationScreen = ({ navigation, route }) => {
     }
   };
 
+  const hasVoucherAssigned = voucher && Number(voucher.book_number) > 0 && Number(voucher.current_voucher) > 0;
+
   const handleSubmit = async () => {
+    const isAttendanceOk = await verifyAttendanceMarked(navigation, 'collect donations');
+    if (!isAttendanceOk) return;
+    if (!hasVoucherAssigned && !isEdit) {
+      Alert.alert(
+        'Voucher Book Not Assigned',
+        'You cannot collect donations until HR/Admin assigns a voucher book to your account. Please contact the office to get a voucher book assigned.'
+      );
+      return;
+    }
+
     if (!validate()) return;
     setLoading(true);
     const data = {
@@ -140,8 +162,21 @@ const CollectDonationScreen = ({ navigation, route }) => {
 
       if (!isOnline && !isEdit) {
         await addToQueue({ method: 'POST', url: '/mobile/donations/', data });
-        Toast.show({ type: 'success', text1: 'Donation Saved Offline', text2: 'Will sync when connected.' });
-        navigation.goBack();
+        
+        // Optimistically advance local voucher counter so next offline receipt uses next sequential number
+        const currentNum = Number(form.voucher_id || voucher?.current_voucher || 0);
+        if (voucher) {
+          setVoucher(v => ({ ...v, current_voucher: currentNum + 1 }));
+        }
+
+        setSuccessData({
+          receipt_number: form.voucher_id || (currentNum ? String(currentNum) : 'OFFLINE-QUEUED'),
+          donor_name: data.donor_name,
+          amount: data.amount,
+          phone: form.phone,
+          noPhone: noPhone,
+          isOffline: true
+        });
         return;
       }
       
@@ -193,7 +228,31 @@ const CollectDonationScreen = ({ navigation, route }) => {
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <KeyboardAwareScrollView enableOnAndroid={true} extraScrollHeight={20} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           
-          {voucher && (
+          {!hasVoucherAssigned ? (
+            <View style={{
+              backgroundColor: '#FEF2F2',
+              borderWidth: 1,
+              borderColor: '#FCA5A5',
+              borderLeftWidth: 5,
+              borderLeftColor: '#EF4444',
+              borderRadius: 14,
+              padding: 16,
+              marginBottom: 16,
+              flexDirection: 'row',
+              alignItems: 'flex-start',
+              gap: 12,
+            }}>
+              <Ionicons name="warning" size={24} color="#DC2626" />
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 15, fontWeight: '800', color: '#991B1B', marginBottom: 4 }}>
+                  No Voucher Book Assigned!
+                </Text>
+                <Text style={{ fontSize: 13, color: '#7F1D1D', lineHeight: 18 }}>
+                  You have not been assigned a voucher book by HR/Admin. Please contact the office to assign a voucher book to your account before collecting donations.
+                </Text>
+              </View>
+            </View>
+          ) : (
             <View style={{ backgroundColor: '#EEF2FF', padding: 12, borderRadius: 12, marginBottom: 16, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#C7D2FE' }}>
               <View style={{ backgroundColor: '#4338CA', padding: 8, borderRadius: 8, marginRight: 12 }}>
                 <Ionicons name="ticket" size={20} color="#FFFFFF" />
@@ -421,13 +480,13 @@ const CollectDonationScreen = ({ navigation, route }) => {
 
           {/* Submit Button */}
           <TouchableOpacity 
-            style={[styles.submitButton, loading && styles.submitButtonDisabled]} 
+            style={[styles.submitButton, (!hasVoucherAssigned || loading) && styles.submitButtonDisabled]} 
             onPress={handleSubmit} 
-            disabled={loading}
+            disabled={!hasVoucherAssigned && !isEdit}
             activeOpacity={0.8}
           >
             <Text style={styles.submitButtonText}>
-              {loading ? (isEdit ? t('staff.updating') : t('staff.recording')) : (isEdit ? t('staff.update_donation') : t('staff.record_donation'))}
+              {!hasVoucherAssigned && !isEdit ? 'Voucher Book Required' : (loading ? (isEdit ? t('staff.updating') : t('staff.recording')) : (isEdit ? t('staff.update_donation') : t('staff.record_donation')))}
             </Text>
           </TouchableOpacity>
           
@@ -449,6 +508,17 @@ const CollectDonationScreen = ({ navigation, route }) => {
             </Text>
             {successData?.receipt_number && (
               <Text style={styles.modalText}>{t('staff.voucher_id', 'Voucher ID')}: {successData?.receipt_number}</Text>
+            )}
+            
+            {successData?.isOffline && (
+              <View style={{ backgroundColor: '#FEF3C7', padding: 10, borderRadius: 10, marginTop: 12, borderWidth: 1, borderColor: '#FCD34D', width: '100%' }}>
+                <Text style={{ fontSize: 12, color: '#92400E', textAlign: 'center', fontWeight: '700' }}>
+                  ⚡ Saved Offline in Device Queue
+                </Text>
+                <Text style={{ fontSize: 11, color: '#B45309', textAlign: 'center', marginTop: 2 }}>
+                  Will auto-sync to all users & dashboards once internet reconnects.
+                </Text>
+              </View>
             )}
             
             <View style={{ width: '100%', marginTop: 24, gap: 10 }}>

@@ -10,6 +10,7 @@ import {
 } from 'recharts'
 import BirthdayBanner from '../../components/BirthdayBanner'
 import StaffPerformanceReport from '../../components/reports/StaffPerformanceReport'
+import StaffPerformanceFilter from '../../components/reports/StaffPerformanceFilter'
 
 // ── colour tokens ────────────────────────────────────────────────
 const C = {
@@ -107,6 +108,7 @@ export default function HRDashboard() {
   const [loading, setLoading] = useState(true)
   const [active, setActive] = useState(null)
   const [showReport, setShowReport] = useState(false)
+  const [showStaffFilterReport, setShowStaffFilterReport] = useState(false)
   const navigate = useNavigate()
 
   const load = async () => {
@@ -141,6 +143,10 @@ export default function HRDashboard() {
 
   const greeting = new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 17 ? 'Afternoon' : 'Evening'
 
+  if (showStaffFilterReport) {
+    return <StaffPerformanceFilter initialPeriod="daily" onClose={() => setShowStaffFilterReport(false)} />
+  }
+
   return (
     <div>
       {/* Printable Staff Performance Report Modal */}
@@ -153,6 +159,9 @@ export default function HRDashboard() {
           <p style={{ fontSize: 13, color: '#9ca3af', margin: '3px 0 0' }}>Good {greeting} — {format(new Date(), 'EEEE, dd MMMM yyyy')}</p>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
+          <button className="btn btn-secondary" onClick={() => setShowStaffFilterReport(true)} style={{ background: '#F0FDF4', color: '#16A34A', fontWeight: 700, border: '1px solid #BBF7D0' }}>
+            📈 Staff Performance
+          </button>
           <button className="btn btn-secondary" onClick={() => setShowReport(true)} style={{ background: '#EEF2FF', color: '#4F46E5', fontWeight: 700, border: '1px solid #C7D2FE' }}>
             📊 Performance Report
           </button>

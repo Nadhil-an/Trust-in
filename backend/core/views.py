@@ -34,7 +34,7 @@ def set_auth_cookies(response, access_token, refresh_token):
 
 
 class LoginThrottle(AnonRateThrottle):
-    rate = '5/minute'
+    rate = '30/minute'
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
@@ -42,6 +42,7 @@ class LoginView(APIView):
 
     def post(self, request):
         import time, random
+        from django.db.models import Q
         time.sleep(random.uniform(0.05, 0.15))
 
         username = request.data.get('username', '').strip()
@@ -50,13 +51,20 @@ class LoginView(APIView):
         if not username or not password:
             return Response({'error': 'Username and password are required.'}, status=400)
 
-        # First check if user exists to handle lockout safely without leaking existence
-        user_obj = User.objects.filter(username=username).first()
+        # Flexible user lookup by case-insensitive username, email, or encrypted phone number
+        clean_username = username.strip()
+        user_obj = User.objects.filter(Q(username__iexact=clean_username) | Q(email__iexact=clean_username)).first()
+        if not user_obj:
+            for u in User.objects.exclude(phone='').iterator():
+                if u.phone and u.phone.strip() == clean_username:
+                    user_obj = u
+                    break
 
         if user_obj and user_obj.is_account_locked():
             return Response({'error': 'Account is temporarily locked. Try again later.'}, status=403)
 
-        user = authenticate(request, username=username, password=password)
+        target_username = user_obj.username if user_obj else clean_username
+        user = authenticate(request, username=target_username, password=password)
         if not user:
             if user_obj:
                 user_obj.failed_login_attempts += 1
@@ -135,6 +143,11 @@ class TokenRefreshView(APIView):
             return Response({'error': 'Refresh token not provided.'}, status=401)
         try:
             token = RefreshToken(refresh_token)
+            user_id = token.get('user_id')
+            if user_id:
+                user = User.objects.filter(id=user_id).first()
+                if not user or not user.is_active:
+                    return Response({'error': 'User account is inactive or deleted.'}, status=401)
             access = token.access_token
             jwt_settings = settings.SIMPLE_JWT
             # Return access token in both JSON body (for mobile app) and cookie (for web)
@@ -337,6 +350,19 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def perform_update(self, serializer):
         user = serializer.save()
+        if not user.is_active:
+            try:
+                from asgiref.sync import async_to_sync
+                from channels.layers import get_channel_layer
+                channel_layer = get_channel_layer()
+                if channel_layer:
+                    async_to_sync(channel_layer.group_send)(
+                        f"notify_{str(user.id)}",
+                        {'type': 'force_logout', 'message': 'Account deactivated by HR'}
+                    )
+            except Exception as e:
+                print("WebSocket force logout error:", e)
+
         from django.db.models import Q
         from hr_module.models import ExecutiveOfficer
         dob = self.request.data.get('date_of_birth') if hasattr(self.request, 'data') else None
@@ -354,7 +380,21 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def perform_destroy(self, instance):
         instance.is_active = False
-        instance.save()
+        instance.set_unusable_password()
+        instance.save(update_fields=['is_active', 'password'])
+
+        try:
+            from asgiref.sync import async_to_sync
+            from channels.layers import get_channel_layer
+            channel_layer = get_channel_layer()
+            if channel_layer:
+                async_to_sync(channel_layer.group_send)(
+                    f"notify_{str(instance.id)}",
+                    {'type': 'force_logout', 'message': 'Account deactivated by HR'}
+                )
+        except Exception as e:
+            print("WebSocket force logout error:", e)
+
         from django.db.models import Q
         from hr_module.models import ExecutiveOfficer
         ExecutiveOfficer.objects.filter(

@@ -4,12 +4,14 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   ScrollView,
   Image,
   Modal,
   TextInput,
   ActivityIndicator,
-  Switch
+  Switch,
+  Alert
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
@@ -39,6 +41,7 @@ const ProfileScreen = ({ navigation }) => {
   // Edit Profile Modal state
   const [editModal, setEditModal] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
+  const [photoModalVisible, setPhotoModalVisible] = useState(false);
   const [editForm, setEditForm] = useState({
     full_name: '',
     phone: '',
@@ -69,7 +72,34 @@ const ProfileScreen = ({ navigation }) => {
     setEditModal(true);
   };
 
-  const pickImage = async () => {
+  const openPhotoPickerOptions = () => {
+    setPhotoModalVisible(true);
+  };
+
+  const takeCameraPhoto = async () => {
+    try {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        Toast.show({ type: 'error', text1: 'Permission denied', text2: 'Camera permission required to take photo.' });
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setEditForm(prev => ({ ...prev, avatar: result.assets[0].uri }));
+      }
+    } catch (e) {
+      Toast.show({ type: 'error', text1: 'Camera error' });
+    }
+  };
+
+  const pickGalleryImage = async () => {
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
@@ -307,7 +337,7 @@ const ProfileScreen = ({ navigation }) => {
             <ScrollView showsVerticalScrollIndicator={false}>
               {/* Photo Upload Avatar Picker */}
               <View style={{ alignItems: 'center', marginBottom: 20 }}>
-                <TouchableOpacity onPress={pickImage} activeOpacity={0.8} style={styles.avatarPickerWrapper}>
+                <TouchableOpacity onPress={openPhotoPickerOptions} activeOpacity={0.8} style={styles.avatarPickerWrapper}>
                   {editForm.avatar ? (
                     <Image source={{ uri: editForm.avatar }} style={styles.avatarPickerImg} />
                   ) : (
@@ -320,7 +350,7 @@ const ProfileScreen = ({ navigation }) => {
                   </View>
                 </TouchableOpacity>
                 <Text style={{ fontSize: 12, color: '#0284c7', fontWeight: '700', marginTop: 8 }}>
-                  Tap to Upload Photo
+                  Tap to Take or Upload Photo
                 </Text>
               </View>
 
@@ -420,6 +450,51 @@ const ProfileScreen = ({ navigation }) => {
             </TouchableOpacity>
           </View>
         </View>
+      </Modal>
+
+      {/* Custom Styled Photo Picker Options Modal */}
+      <Modal visible={photoModalVisible} transparent animationType="fade" onRequestClose={() => setPhotoModalVisible(false)}>
+        <TouchableOpacity style={styles.photoModalOverlay} activeOpacity={1} onPress={() => setPhotoModalVisible(false)}>
+          <TouchableWithoutFeedback>
+            <View style={styles.photoModalContent}>
+              <View style={styles.photoModalHeader}>
+                <View style={styles.photoModalIconWrap}>
+                  <Ionicons name="camera" size={24} color="#0284c7" />
+                </View>
+                <Text style={styles.photoModalTitle}>Profile Photo</Text>
+                <Text style={styles.photoModalSub}>Choose how you would like to set your profile picture</Text>
+              </View>
+
+              <View style={styles.photoOptionsList}>
+                <TouchableOpacity style={styles.photoOptionCard} onPress={() => { setPhotoModalVisible(false); takeCameraPhoto(); }} activeOpacity={0.7}>
+                  <View style={[styles.photoOptionIconWrap, { backgroundColor: '#e0f2fe' }]}>
+                    <Ionicons name="camera" size={22} color="#0284c7" />
+                  </View>
+                  <View style={styles.photoOptionTextWrap}>
+                    <Text style={styles.photoOptionTitle}>Take Photo</Text>
+                    <Text style={styles.photoOptionSub}>Use your camera to take a new picture</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.photoOptionCard} onPress={() => { setPhotoModalVisible(false); pickGalleryImage(); }} activeOpacity={0.7}>
+                  <View style={[styles.photoOptionIconWrap, { backgroundColor: '#f0fdf4' }]}>
+                    <Ionicons name="images" size={22} color="#16a34a" />
+                  </View>
+                  <View style={styles.photoOptionTextWrap}>
+                    <Text style={styles.photoOptionTitle}>Choose from Gallery</Text>
+                    <Text style={styles.photoOptionSub}>Select an image from your photo library</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity style={styles.photoModalCancelBtn} onPress={() => setPhotoModalVisible(false)} activeOpacity={0.8}>
+                <Text style={styles.photoModalCancelText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </TouchableWithoutFeedback>
+        </TouchableOpacity>
       </Modal>
     </View>
   );
@@ -522,7 +597,91 @@ const styles = StyleSheet.create({
     position: 'absolute', bottom: 0, right: 0, backgroundColor: '#0284c7',
     width: 28, height: 28, borderRadius: 14, justifyContent: 'center', alignItems: 'center',
     borderWidth: 2, borderColor: '#FFFFFF'
-  }
+  },
+
+  /* Custom Photo Modal Styling */
+  photoModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    justifyContent: 'flex-end',
+  },
+  photoModalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    paddingBottom: 36,
+  },
+  photoModalHeader: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  photoModalIconWrap: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: '#E0F2FE',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  photoModalTitle: {
+    fontSize: 19,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: 4,
+  },
+  photoModalSub: {
+    fontSize: 13,
+    color: '#64748B',
+    textAlign: 'center',
+  },
+  photoOptionsList: {
+    gap: 12,
+    marginBottom: 16,
+  },
+  photoOptionCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  photoOptionIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14,
+  },
+  photoOptionTextWrap: {
+    flex: 1,
+  },
+  photoOptionTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 2,
+  },
+  photoOptionSub: {
+    fontSize: 12,
+    color: '#64748B',
+  },
+  photoModalCancelBtn: {
+    backgroundColor: '#F1F5F9',
+    paddingVertical: 14,
+    borderRadius: 14,
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  photoModalCancelText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#64748B',
+  },
 });
 
 export default ProfileScreen;

@@ -21,6 +21,8 @@ const Input = ({
   onBlur,
   onFocus,
   autoFocus = false,
+  autoCapitalize,
+  autoCorrect = false,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [focused, setFocused] = useState(false);
@@ -62,7 +64,8 @@ const Input = ({
           numberOfLines={isMultiline ? 4 : 1}
           maxLength={maxLength}
           autoFocus={autoFocus}
-          autoCapitalize={type === 'email' ? 'none' : 'sentences'}
+          autoCapitalize={autoCapitalize !== undefined ? autoCapitalize : 'none'}
+          autoCorrect={autoCorrect}
           onFocus={(e) => { setFocused(true); onFocus && onFocus(e); }}
           onBlur={() => { setFocused(false); onBlur && onBlur(); }}
         />

@@ -74,6 +74,14 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             'module': event.get('module', 'ALL')
         }))
 
+    async def force_logout(self, event):
+        """Handles 'force_logout' event — forces client to immediately logout."""
+        await self.send(text_data=json.dumps({
+            'type': 'FORCE_LOGOUT',
+            'message': event.get('message', 'Account deactivated by HR')
+        }))
+        await self.close(code=4001)
+
     # ── DB helpers ─────────────────────────────────────────────
 
     @database_sync_to_async

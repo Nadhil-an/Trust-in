@@ -39,6 +39,10 @@ export const useWebSocket = (path, onMessage) => {
       wsRef.current.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
+          if (data?.type === 'FORCE_LOGOUT' || data?.type === 'ACCOUNT_DEACTIVATED') {
+            useAuthStore.getState().logout();
+            return;
+          }
           if (savedOnMessage.current) {
              savedOnMessage.current(data);
           }

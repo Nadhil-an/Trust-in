@@ -4,12 +4,17 @@ import NetInfo from '@react-native-community/netinfo';
 import { useOfflineStore } from '../store/offlineStore';
 import api from '../api';
 
+import Toast from 'react-native-toast-message';
+
 export const useOfflineSync = () => {
   const { queue, removeFromQueue, setOnline } = useOfflineStore();
 
   const processQueue = useCallback(async () => {
     if (queue.length === 0) return;
-    console.log(`[Offline] Processing ${queue.length} queued actions`);
+    const initialCount = queue.length;
+    console.log(`[Offline] Processing ${initialCount} queued actions`);
+    let syncedCount = 0;
+
     for (const item of queue) {
       try {
         const { method, url, data } = item;
@@ -35,11 +40,20 @@ export const useOfflineSync = () => {
 
         await api({ method, url, data: sendData, headers });
         await removeFromQueue(item.id);
+        syncedCount += 1;
         console.log(`[Offline] Synced action ${item.id}`);
       } catch (e) {
         console.log(`[Offline] Failed to sync ${item.id}:`, e.message);
         // Keep in queue for next sync
       }
+    }
+
+    if (syncedCount > 0) {
+      Toast.show({
+        type: 'success',
+        text1: 'Offline Sync Complete! 🚀',
+        text2: `Successfully synced ${syncedCount} offline transaction${syncedCount > 1 ? 's' : ''} to all dashboards.`
+      });
     }
   }, [queue, removeFromQueue]);
 

@@ -16,8 +16,7 @@ DEBUG = os.getenv('DEBUG', 'True') == 'True'
 # ── Field-Level Encryption ────────────────────────────────────────
 FIELD_ENCRYPTION_KEY = os.getenv('FIELD_ENCRYPTION_KEY', '')
 # Allow all hosts in development — includes LAN IP for mobile app access
-_allowed = os.getenv('ALLOWED_HOSTS', '')
-ALLOWED_HOSTS = _allowed.split(',') if _allowed else ['*', 'localhost', '127.0.0.1', '192.168.1.34', '192.168.1.34:8000', '10.15.73.21', '10.15.73.21:8000']
+ALLOWED_HOSTS = ['*']
 
 # ── Apps ──────────────────────────────────────────────────────────
 INSTALLED_APPS = [
@@ -164,7 +163,7 @@ REST_FRAMEWORK = {
 # ── CORS ──────────────────────────────────────────────────────────
 CORS_ALLOWED_ORIGINS = os.getenv(
     'CORS_ALLOWED_ORIGINS',
-    'http://localhost:5173,http://127.0.0.1:5173,http://localhost:8081,http://192.168.1.34:8081,http://192.168.1.34:19000,http://192.168.1.34:19006,http://10.15.73.21:8081,http://10.15.73.21:19000,http://10.15.73.21:19006'
+    'http://localhost:5173,http://127.0.0.1:5173,http://localhost:8081,http://192.168.1.34:8081,http://192.168.1.34:19000,http://192.168.1.34:19006,http://10.15.73.21:8081,http://10.15.73.21:19000,http://10.15.73.21:19006,http://10.90.237.21:5173,http://10.90.237.21:5174,http://10.90.237.21:8081,http://10.90.237.21:19000,http://10.90.237.21:19006'
 ).split(',')
 CORS_ALLOW_ALL_ORIGINS = DEBUG  # Allow all origins in development mode for mobile LAN access
 CORS_ALLOW_CREDENTIALS = True

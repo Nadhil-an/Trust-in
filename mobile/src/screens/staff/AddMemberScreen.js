@@ -14,6 +14,7 @@ import { Button, Input, PhotoPicker, ActionSheet } from '../../components/shared
 import { membersApi, staffApi, notifyApi } from '../../api';
 import { useAuthStore } from '../../store/authStore';
 import Toast from 'react-native-toast-message';
+import { verifyAttendanceMarked } from '../../utils/attendanceGuard';
 
 const MEMBER_TYPES = ['General', 'Donor', 'Volunteer', 'Beneficiary', 'Life Member', 'Honorary'];
 const GENDER_OPTIONS = ['Male', 'Female', 'Other'];
@@ -237,7 +238,19 @@ const AddMemberScreen = ({ navigation, route }) => {
     }
   };
 
+  // Check attendance on screen load
+  useEffect(() => {
+    verifyAttendanceMarked(navigation, 'add members').then(isMarked => {
+      if (!isMarked) {
+        navigation.goBack();
+      }
+    });
+  }, [navigation]);
+
   const handleSubmit = async () => {
+    const isAttendanceOk = await verifyAttendanceMarked(navigation, 'add members');
+    if (!isAttendanceOk) return;
+
     setLoading(true);
     try {
       // ── Day-closed guard removed to allow rollover to next day ─────────────────────────────────────────

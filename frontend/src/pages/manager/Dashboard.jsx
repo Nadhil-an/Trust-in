@@ -10,6 +10,7 @@ import {
 } from 'recharts'
 import BirthdayBanner from '../../components/BirthdayBanner'
 import StaffPerformanceReport from '../../components/reports/StaffPerformanceReport'
+import StaffPerformanceFilter from '../../components/reports/StaffPerformanceFilter'
 
 // ── colour tokens ────────────────────────────────────────────────
 const CLR = {
@@ -154,6 +155,7 @@ export default function ManagerDashboard() {
   const [loading, setLoading] = useState(true)
   const [active, setActive] = useState(null) // 'requests' | 'finance' | 'attendance' | 'donations'
   const [showReport, setShowReport] = useState(false)
+  const [showStaffFilterReport, setShowStaffFilterReport] = useState(false)
   const navigate = useNavigate()
 
   const load = async () => {
@@ -202,6 +204,10 @@ export default function ManagerDashboard() {
 
   const attTotal = (attendance.present||0) + (attendance.absent||0) + (attendance.late||0) + (attendance.on_leave||0)
 
+  if (showStaffFilterReport) {
+    return <StaffPerformanceFilter initialPeriod="daily" onClose={() => setShowStaffFilterReport(false)} />
+  }
+
   return (
     <div>
       {/* Printable Staff Performance Report Modal */}
@@ -212,6 +218,9 @@ export default function ManagerDashboard() {
         subtitle={`Good ${new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 17 ? 'Afternoon' : 'Evening'} — ${format(new Date(), 'EEEE, dd MMMM yyyy')}`}
       >
         <div style={{ display: 'flex', gap: 10 }}>
+          <button className="btn btn-secondary" onClick={() => setShowStaffFilterReport(true)} style={{ background: '#F0FDF4', color: '#16A34A', fontWeight: 700, border: '1px solid #BBF7D0' }}>
+            📈 Staff Performance
+          </button>
           <button className="btn btn-secondary" onClick={() => setShowReport(true)} style={{ background: '#EEF2FF', color: '#4F46E5', fontWeight: 700, border: '1px solid #C7D2FE' }}>
             📊 Performance Report
           </button>

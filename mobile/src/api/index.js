@@ -2,6 +2,7 @@ import axios from 'axios';
 import { Config } from '../constants/Config';
 import * as SecureStore from 'expo-secure-store';
 import { useAuthStore } from '../store/authStore';
+import { Alert } from 'react-native';
 
 const api = axios.create({
   baseURL: Config.API_BASE_URL,
@@ -24,7 +25,7 @@ api.interceptors.request.use(async (config) => {
   return config;
 }, (error) => Promise.reject(error));
 
-// ── Response Interceptor — auto-refresh expired token ───────────────────────
+// ── Response Interceptor — auto-refresh expired token / force logout on account deactivation ───────────────
 api.interceptors.response.use((response) => response, async (error) => {
   const originalRequest = error.config;
   if (error.response?.status === 401 && !originalRequest._retry) {
@@ -43,6 +44,34 @@ api.interceptors.response.use((response) => response, async (error) => {
     } catch (e) {
       await SecureStore.deleteItemAsync(Config.ACCESS_TOKEN_KEY);
       await SecureStore.deleteItemAsync(Config.REFRESH_TOKEN_KEY);
+      const errCode = e.response?.data?.code;
+      if (errCode === 'user_inactive') {
+        Alert.alert(
+          'Access Removed',
+          'Your access has been removed. Please contact the office.',
+          [{ text: 'OK', onPress: () => useAuthStore.getState().logout() }],
+          { cancelable: false }
+        );
+      } else {
+        useAuthStore.getState().logout();
+      }
+    }
+  }
+
+  if (error.response?.status === 401 || error.response?.status === 403) {
+    await SecureStore.deleteItemAsync(Config.ACCESS_TOKEN_KEY);
+    await SecureStore.deleteItemAsync(Config.REFRESH_TOKEN_KEY);
+    const errCode = error.response?.data?.code;
+    const errMsg = error.response?.data?.detail || error.response?.data?.error || '';
+    
+    if (errCode === 'user_inactive' || errMsg.toLowerCase().includes('inactive') || error.response?.status === 403) {
+      Alert.alert(
+        'Access Removed',
+        'Your access has been removed. Please contact the office.',
+        [{ text: 'OK', onPress: () => useAuthStore.getState().logout() }],
+        { cancelable: false }
+      );
+    } else {
       useAuthStore.getState().logout();
     }
   }

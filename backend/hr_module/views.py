@@ -499,7 +499,7 @@ class ExecutiveMemberDetailView(generics.RetrieveUpdateDestroyAPIView):
 class ExecutiveOfficerListCreateView(generics.ListCreateAPIView):
     serializer_class = ExecutiveOfficerSerializer
     queryset = ExecutiveOfficer.objects.all()
-    filterset_fields = ['status', 'employment_type', 'department']
+    filterset_fields = ['employment_type', 'department']
     search_fields = ['employee_id', 'full_name', 'phone', 'designation']
     ordering_fields = ['full_name', 'joining_date']
     parser_classes = [MultiPartParser, FormParser, JSONParser]
@@ -511,6 +511,15 @@ class ExecutiveOfficerListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         qs = super().get_queryset()
+        status_param = self.request.query_params.get('status')
+        if status_param:
+            if status_param.upper() in ['INACTIVE', 'TERMINATED']:
+                qs = qs.filter(status__in=['INACTIVE', 'TERMINATED'])
+            else:
+                qs = qs.filter(status__iexact=status_param)
+        else:
+            if self.request.query_params.get('show_all') != 'true':
+                qs = qs.filter(status='ACTIVE')
         designation = self.request.query_params.get('designation')
         if designation:
             qs = qs.filter(designation__iexact=designation)
@@ -530,8 +539,7 @@ class ExecutiveOfficerDetailView(generics.RetrieveUpdateDestroyAPIView):
         from core.models import User
         from django.db.models import Q
         
-        # Try to find corresponding user by username (using employee_id)
-        # or by matching full_name/email/phone
+        # Deactivate user login access to immediately block mobile app access while preserving history
         q = Q(username__iexact=instance.employee_id)
         if instance.phone:
             q |= Q(username__iexact=instance.phone)
@@ -539,24 +547,78 @@ class ExecutiveOfficerDetailView(generics.RetrieveUpdateDestroyAPIView):
         if instance.email:
             q |= Q(email__iexact=instance.email)
         
-        # Match name if not admin/manager
-        users = User.objects.filter(q).exclude(role__in=['ADMIN', 'MANAGER'])
-        for u in users:
-            try:
-                u.delete()
-            except Exception:
-                pass
-                
-        # Also clean up any other matching user records by name
-        name_users = User.objects.filter(full_name__iexact=instance.full_name).exclude(role__in=['ADMIN', 'MANAGER'])
-        for u in name_users:
-            try:
-                u.delete()
-            except Exception:
-                pass
+        users = list(User.objects.filter(q).exclude(role__in=['ADMIN', 'MANAGER']))
+        name_users = list(User.objects.filter(full_name__iexact=instance.full_name).exclude(role__in=['ADMIN', 'MANAGER']))
+        
+        all_users = set(users + name_users)
+        for u in all_users:
+            u.is_active = False
+            u.set_unusable_password()
+            u.save(update_fields=['is_active', 'password'])
 
-        instance.delete()
+            # Send immediate force logout signal to user's WebSocket channel
+            try:
+                from asgiref.sync import async_to_sync
+                from channels.layers import get_channel_layer
+                channel_layer = get_channel_layer()
+                if channel_layer:
+                    async_to_sync(channel_layer.group_send)(
+                        f"notify_{str(u.id)}",
+                        {'type': 'force_logout', 'message': 'Account deleted by HR'}
+                    )
+            except Exception as e:
+                print("WebSocket force logout error:", e)
+
+        # Mark officer profile status as INACTIVE to remove from active staff list while preserving all history
+        instance.status = 'INACTIVE'
+        reason = self.request.data.get('termination_reason')
+        if reason:
+            instance.termination_reason = reason
+        instance.save(update_fields=['status', 'termination_reason'])
+
         push_dashboard_refresh(['HR', 'MANAGER', 'ADMIN', 'STAFF'])
+
+
+class ExecutiveOfficerReactivateView(APIView):
+    permission_classes = [IsHR]
+
+    def post(self, request, pk):
+        try:
+            instance = ExecutiveOfficer.objects.get(pk=pk)
+        except ExecutiveOfficer.DoesNotExist:
+            return Response({'error': 'Staff not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        from core.models import User
+        from django.db.models import Q
+
+        # Find associated users and reactivate them
+        q = Q(username__iexact=instance.employee_id)
+        if instance.phone:
+            q |= Q(username__iexact=instance.phone)
+            q |= Q(phone__iexact=instance.phone)
+        if instance.email:
+            q |= Q(email__iexact=instance.email)
+
+        password = request.data.get('password')
+        if not password:
+            return Response({'error': 'Password is required for reactivation.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        users = list(User.objects.filter(q).exclude(role__in=['ADMIN', 'MANAGER']))
+        name_users = list(User.objects.filter(full_name__iexact=instance.full_name).exclude(role__in=['ADMIN', 'MANAGER']))
+        all_users = set(users + name_users)
+        
+        # If no user account found, we could create one or just let the system handle it
+        for u in all_users:
+            u.is_active = True
+            u.set_password(password)
+            u.save(update_fields=['is_active', 'password'])
+
+        instance.status = 'ACTIVE'
+        instance.save(update_fields=['status'])
+
+        push_dashboard_refresh(['HR', 'MANAGER', 'ADMIN', 'STAFF'])
+        
+        return Response({'message': f'Staff reactivated successfully. Password updated.'})
 
 
 class OfficerPayrollDataView(APIView):
@@ -1120,6 +1182,7 @@ class StaffAttendanceView(APIView):
                 if 'location' in request.data:
                     att.check_in_location = request.data['location']
                 att.save()
+                push_dashboard_refresh(['HR', 'MANAGER', 'ADMIN', 'STAFF'])
         elif action == 'check_out':
             att.check_out = now_time
             if att.check_in:
@@ -1131,6 +1194,7 @@ class StaffAttendanceView(APIView):
             if 'location' in request.data:
                 att.check_out_location = request.data['location']
             att.save()
+            push_dashboard_refresh(['HR', 'MANAGER', 'ADMIN', 'STAFF'])
 
         return Response(AttendanceSerializer(att).data)
 
@@ -1321,7 +1385,7 @@ class StaffVoucherView(APIView):
 
         vb, _ = StaffVoucherBook.objects.get_or_create(staff=user)
 
-        allowed = ['book_number', 'voucher_start', 'voucher_end', 'current_voucher', 'next_book_number', 'next_voucher_start', 'next_voucher_end']
+        allowed = ['book_number', 'voucher_start', 'voucher_end', 'current_voucher', 'next_book_number', 'next_voucher_start', 'next_voucher_end', 'next_current_voucher']
         for field in allowed:
             val = request.data.get(field)
             if val is not None:
@@ -1347,6 +1411,7 @@ class StaffVoucherView(APIView):
             'next_book_number': vb.next_book_number,
             'next_voucher_start': vb.next_voucher_start,
             'next_voucher_end': vb.next_voucher_end,
+            'next_current_voucher': vb.next_current_voucher,
             'updated_at': vb.updated_at.isoformat() if vb.updated_at else None,
         }
 
@@ -1386,10 +1451,11 @@ class StaffVoucherBookActivateNextView(APIView):
         vb.book_number = vb.next_book_number
         vb.voucher_start = vb.next_voucher_start
         vb.voucher_end = vb.next_voucher_end
-        vb.current_voucher = vb.next_voucher_start
+        vb.current_voucher = vb.next_current_voucher if vb.next_current_voucher is not None else vb.next_voucher_start
         vb.next_book_number = None
         vb.next_voucher_start = None
         vb.next_voucher_end = None
+        vb.next_current_voucher = None
         vb.updated_by = request.user
         vb.save()
 
@@ -1584,21 +1650,11 @@ class PromoterRegistryDailySummaryView(APIView):
 
             # If a specific verification_status is requested, filter the staff
             if verification_status == 'VERIFIED':
-                if not entry:
-                    # No entry yet. If they have collections, they MUST be verified first.
-                    if has_collections:
-                        continue
-                else:
-                    if entry.verification_status != 'VERIFIED':
-                        continue
+                if not entry or entry.verification_status != 'VERIFIED':
+                    continue
             elif verification_status == 'UNVERIFIED':
-                if not entry:
-                    # No entry yet. If they have NO collections, nothing to verify.
-                    if not has_collections:
-                        continue
-                else:
-                    if entry.verification_status != 'UNVERIFIED':
-                        continue
+                if entry and entry.verification_status == 'VERIFIED':
+                    continue
             # Prefer name from attendance > income > entry
             name = (
                 present_staff.get(sid)

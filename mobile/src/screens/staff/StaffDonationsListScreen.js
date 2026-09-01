@@ -10,9 +10,11 @@ import { donationApi } from '../../api';
 import Toast from 'react-native-toast-message';
 import { useNotificationSocket } from '../../hooks/useWebSocket';
 import { useTranslation } from 'react-i18next';
+import { useOfflineStore } from '../../store/offlineStore';
 
 const StaffDonationsListScreen = ({ navigation }) => {
   const { t } = useTranslation();
+  const { queue } = useOfflineStore();
   const [donations, setDonations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -25,6 +27,24 @@ const StaffDonationsListScreen = ({ navigation }) => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   };
+
+  const offlineDonationItems = React.useMemo(() => {
+    return queue.filter(item => item.url?.includes('donations') && item.data).map(item => ({
+      id: `offline-${item.id}`,
+      donor_name: item.data.donor_name || 'Anonymous',
+      amount: item.data.amount,
+      payment_method: item.data.payment_method || 'CASH',
+      source: item.data.source || 'DONATION',
+      reference_number: item.data.reference_number || 'OFFLINE',
+      created_at: item.timestamp,
+      date: getTodayIso(),
+      isOfflinePending: true,
+    }));
+  }, [queue]);
+
+  const combinedDonations = React.useMemo(() => {
+    return [...offlineDonationItems, ...donations];
+  }, [offlineDonationItems, donations]);
 
   const fetchDonations = async (showLoading = true) => {
     if (showLoading) setLoading(true);
@@ -63,14 +83,23 @@ const StaffDonationsListScreen = ({ navigation }) => {
 
   const renderItem = ({ item }) => {
     const isRollover = isNextDayRollover(item);
+    const isOffline = item.isOfflinePending;
     return (
       <TouchableOpacity 
-        style={[styles.card, isRollover && styles.cardRollover]}
+        style={[styles.card, isRollover && styles.cardRollover, isOffline && { backgroundColor: '#FEF3C7', borderColor: '#FCD34D' }]}
         onPress={() => setDonationDetails(item)}
         activeOpacity={0.8}
       >
+        {/* Offline pending sync banner */}
+        {isOffline && (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#D97706', borderRadius: 8, paddingVertical: 4, paddingHorizontal: 10, marginBottom: 10, width: '100%' }}>
+            <Ionicons name="cloud-offline-outline" size={14} color="#FFFFFF" />
+            <Text style={{ fontSize: 11, fontWeight: '700', color: '#FFFFFF', flex: 1 }}>⚡ OFFLINE QUEUED — Pending internet sync</Text>
+          </View>
+        )}
+
         {/* Tomorrow banner for rolled-over items */}
-        {isRollover && (
+        {isRollover && !isOffline && (
           <View style={styles.rolloverBanner}>
             <Ionicons name="calendar-outline" size={12} color="#92400E" />
             <Text style={styles.rolloverBannerText}>📅 This amount will only count for tomorrow</Text>
@@ -80,26 +109,26 @@ const StaffDonationsListScreen = ({ navigation }) => {
         <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}>
           <View style={styles.cardInfo}>
             <View style={[styles.iconWrap, { 
-              backgroundColor: isRollover ? '#FEF3C7' : (item.source === 'MEMBERSHIP' ? '#E0F2FE' : '#ECFDF5'),
+              backgroundColor: isOffline ? '#FEF3C7' : (isRollover ? '#FEF3C7' : (item.source === 'MEMBERSHIP' ? '#E0F2FE' : '#ECFDF5')),
             }]}>
               <Ionicons 
                 name={item.source === 'MEMBERSHIP' ? 'people' : 'cash'} 
                 size={20} 
-                color={isRollover ? '#D97706' : (item.source === 'MEMBERSHIP' ? '#0284C7' : Colors.success)} 
+                color={isOffline ? '#D97706' : (isRollover ? '#D97706' : (item.source === 'MEMBERSHIP' ? '#0284C7' : Colors.success))} 
               />
             </View>
             <View style={styles.textWrap}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <Text style={[styles.name, isRollover && styles.nameRollover]} numberOfLines={1}>{item.donor_name}</Text>
                 {item.reference_number ? (
-                  <View style={[styles.voucherBadge, isRollover && { backgroundColor: '#FEF3C7', borderColor: '#FDE68A' }]}>
-                    <Ionicons name="ticket" size={12} color={isRollover ? '#B45309' : '#4338CA'} />
-                    <Text style={[styles.voucherBadgeText, isRollover && { color: '#B45309' }]}>{item.reference_number}</Text>
+                  <View style={[styles.voucherBadge, (isRollover || isOffline) && { backgroundColor: '#FEF3C7', borderColor: '#FDE68A' }]}>
+                    <Ionicons name="ticket" size={12} color={(isRollover || isOffline) ? '#B45309' : '#4338CA'} />
+                    <Text style={[styles.voucherBadgeText, (isRollover || isOffline) && { color: '#B45309' }]}>{item.reference_number}</Text>
                   </View>
                 ) : null}
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
-                <Text style={[styles.details, { marginBottom: 0 }, isRollover && { color: '#92400E' }]}>₹{item.amount} • </Text>
+                <Text style={[styles.details, { marginBottom: 0 }, (isRollover || isOffline) && { color: '#92400E' }]}>₹{item.amount} • </Text>
                 {item.payment_method === 'UPI' || item.payment_method === 'GPay' ? (
                   <Image source={require('../../../assets/gpay.png')} style={{ width: 44, height: 20, marginLeft: 2, opacity: isRollover ? 0.6 : 1 }} resizeMode="contain" />
                 ) : item.payment_method === 'CASH' || item.payment_method === 'Cash' ? (
@@ -109,9 +138,9 @@ const StaffDonationsListScreen = ({ navigation }) => {
                 )}
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
-                <View style={[styles.badge, { backgroundColor: isRollover ? '#FEF3C7' : (item.source === 'MEMBERSHIP' ? '#E0F2FE' : '#ECFDF5') }]}>
-                  <Text style={[styles.badgeText, { color: isRollover ? '#B45309' : (item.source === 'MEMBERSHIP' ? '#0284C7' : Colors.success) }]}>
-                    {item.source === 'MEMBERSHIP' ? 'Membership' : 'Donation'}
+                <View style={[styles.badge, { backgroundColor: isOffline ? '#FEF3C7' : (isRollover ? '#FEF3C7' : (item.source === 'MEMBERSHIP' ? '#E0F2FE' : '#ECFDF5')) }]}>
+                  <Text style={[styles.badgeText, { color: isOffline ? '#B45309' : (isRollover ? '#B45309' : (item.source === 'MEMBERSHIP' ? '#0284C7' : Colors.success)) }]}>
+                    {isOffline ? 'OFFLINE QUEUED' : (item.source === 'MEMBERSHIP' ? 'Membership' : 'Donation')}
                   </Text>
                 </View>
                 <Text style={[styles.date, { marginLeft: 6 }]}>
@@ -121,19 +150,21 @@ const StaffDonationsListScreen = ({ navigation }) => {
             </View>
           </View>
           <View style={styles.actions}>
-            <TouchableOpacity 
-              style={styles.actionBtn}
-              onPress={() => navigation.navigate('CollectDonation', { editItem: item })}
-            >
-              <Ionicons name="pencil" size={18} color={isRollover ? '#B45309' : Colors.info} />
-            </TouchableOpacity>
+            {!isOffline && (
+              <TouchableOpacity 
+                style={styles.actionBtn}
+                onPress={() => navigation.navigate('CollectDonation', { editItem: item })}
+              >
+                <Ionicons name="pencil" size={18} color={isRollover ? '#B45309' : Colors.info} />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </TouchableOpacity>
     );
   };
 
-  // Group by CREATION date so rolled-over items still appear under today's section
+  // Group by CREATION date so rolled-over & offline items still appear under today's section
   const groupDataByDate = (data) => {
     const grouped = data.reduce((acc, item) => {
       const dateStr = item.created_at || item.joining_date || item.date;
@@ -150,7 +181,7 @@ const StaffDonationsListScreen = ({ navigation }) => {
 
     const sections = Object.keys(grouped).map(date => ({
       title: date,
-      data: grouped[date].reverse()
+      data: grouped[date]
     }));
 
     sections.sort((a, b) => {
@@ -162,9 +193,9 @@ const StaffDonationsListScreen = ({ navigation }) => {
     return sections;
   };
 
-  // Today totals: only items whose date IS today (excludes rolled-over items)
+  // Today totals: only items whose date IS today (includes offline items, excludes rolled-over items)
   const todayIso = getTodayIso();
-  const todayItems = donations.filter(d => d.date === todayIso);
+  const todayItems = combinedDonations.filter(d => d.date === todayIso);
 
   return (
     <View style={styles.container}>
@@ -229,7 +260,7 @@ const StaffDonationsListScreen = ({ navigation }) => {
       </View>
 
       <SectionList
-        sections={groupDataByDate(donations.filter(d => {
+        sections={groupDataByDate(combinedDonations.filter(d => {
           if (searchQuery && !d.donor_name?.toLowerCase().includes(searchQuery.toLowerCase()) && !d.receipt_number?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
           if (activeFilter === 'DONATIONS' && d.source !== 'DONATION') return false;
           if (activeFilter === 'MEMBERSHIPS' && d.source !== 'MEMBERSHIP') return false;

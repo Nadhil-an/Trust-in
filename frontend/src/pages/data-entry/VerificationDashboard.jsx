@@ -53,6 +53,13 @@ export default function VerificationDashboard() {
 
   useEffect(() => { load() }, [load])
 
+  // Real-time synchronization
+  useEffect(() => {
+    const handleRefresh = () => load()
+    window.addEventListener('dashboard-refresh', handleRefresh)
+    return () => window.removeEventListener('dashboard-refresh', handleRefresh)
+  }, [load])
+
   const updateField = (staffId, field, value) => {
     setRows(prev => prev.map(r =>
       r.staff_id === staffId ? { ...r, [field]: value, hasChanges: true } : r

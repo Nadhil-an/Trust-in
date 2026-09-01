@@ -8,6 +8,7 @@ export { default as OfflineBar } from './OfflineBar';
 export { default as LoadingScreen } from './LoadingScreen';
 export { default as EmptyState } from './EmptyState';
 export { default as Header } from './Header';
+export { default as GlobalAttendanceModal } from './GlobalAttendanceModal';
 export { default as StatusPill } from './StatusPill';
 export { default as Avatar } from './Avatar';
 export { default as StatCard } from './StatCard';

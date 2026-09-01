@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/Colors';
 import { useAuthStore } from '../store/authStore';
 import { LoadingScreen } from '../components/shared';
-import { View, Text } from 'react-native';
+import { View, Text, AppState } from 'react-native';
 
 // Auth Screens
 import LoginScreen from '../screens/auth/LoginScreen';
@@ -196,12 +196,26 @@ const MainStack = () => {
 };
 
 export const AppNavigator = () => {
-  const { isAuthenticated, isLoading, initialize } = useAuthStore();
+  const { isAuthenticated, isLoading, initialize, logout } = useAuthStore();
   const [init, setInit] = useState(false);
 
   useEffect(() => {
     initialize().then(() => setInit(true));
   }, [initialize]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'active' && useAuthStore.getState().isAuthenticated) {
+        try {
+          const { authApi } = require('../api');
+          authApi.getProfile().catch(() => {
+            logout();
+          });
+        } catch (_) {}
+      }
+    });
+    return () => subscription.remove();
+  }, [logout]);
 
   if (!init || isLoading) {
     return <LoadingScreen message="Initializing App..." />;

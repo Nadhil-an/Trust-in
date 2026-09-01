@@ -96,8 +96,13 @@ function HomeRedirect() {
     HR:         '/slt/hr/overview',
     ADMIN:      '/slt/sys/user-control',
     DATA_ENTRY: '/slt/entry/hub',
+    STAFF:      '/slt/account/profile',
+    FIELD_ASSESSMENT_OFFICER: '/slt/account/profile',
+    ASSESSMENT_CALCULATION_OFFICER: '/slt/account/profile',
+    GENERAL_ENQUIRY_OFFICER: '/slt/account/profile',
+    MEMBER:     '/slt/account/profile',
   }
-  return <Navigate to={roleHome[user?.role] || '/slt/portal/auth'} replace />
+  return <Navigate to={roleHome[user?.role] || '/slt/account/profile'} replace />
 }
 
 export default function App() {

@@ -15,6 +15,7 @@ import { Button, Input, PhotoPicker, Card } from '../../components/shared';
 import { assessmentApi, membersApi } from '../../api';
 import { useOfflineStore } from '../../store/offlineStore';
 import Toast from 'react-native-toast-message';
+import { verifyAttendanceMarked } from '../../utils/attendanceGuard';
 
 const FORM_BLUE = '#1A74EE';
 const FORM_BLUE_LIGHT = '#E8F1FD';
@@ -203,7 +204,19 @@ const NewAssessmentScreen = ({ navigation, route }) => {
     else handleSubmit();
   };
 
+  // Check attendance on screen load
+  useEffect(() => {
+    verifyAttendanceMarked(navigation, 'perform new assessments').then(isMarked => {
+      if (!isMarked) {
+        navigation.goBack();
+      }
+    });
+  }, [navigation]);
+
   const handleSubmit = async () => {
+    const isAttendanceOk = await verifyAttendanceMarked(navigation, 'perform new assessments');
+    if (!isAttendanceOk) return;
+
     setLoading(true);
     const formData = new FormData();
     Object.keys(form).forEach(key => {

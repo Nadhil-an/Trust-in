@@ -98,11 +98,18 @@ export default {
     home_title: 'ഇന്നത്തെ അവലോകനം',
     members_added: 'ചേർത്ത അംഗങ്ങൾ',
     donations_collected: 'ശേഖരിച്ച സംഭാവനകൾ',
+    donation_collected: 'ശേഖരിച്ച സംഭാവനകൾ',
     assessments_submitted: 'സമർപ്പിച്ച വിലയിരുത്തലുകൾ',
+    attendance_marked: 'ഹാജർ ശതമാനം',
     quick_actions: 'വേഗ പ്രവർത്തനങ്ങൾ',
     add_member: 'അംഗത്തെ ചേർക്കുക',
+    add_members: 'അംഗങ്ങളെ ചേർക്കുക',
     collect_donation: 'സംഭാവന ശേഖരിക്കുക',
+    collection_donation: 'സംഭാവന ശേഖരിക്കുക',
     new_assessment: 'പുതിയ വിലയിരുത്തൽ',
+    leaderboard: 'ലീഡർബോർഡ്',
+    together_we_can: 'ഒന്നിച്ച് നമുക്ക് സാധിക്കും',
+    together_subtitle: 'ഓരോ ചെറിയ ശ്രമവും മികച്ച നാളെയ്ക്ക് വഴിയൊരുക്കുന്നു.',
     search_member: 'അംഗത്തെ തിരയുക',
     my_assessments: 'എൻ്റെ വിലയിരുത്തലുകൾ',
     member_registration: 'അംഗ രജിസ്ട്രേഷൻ',
@@ -510,9 +517,16 @@ export default {
 
   events: {
     upcoming: 'വരാനിരിക്കുന്നത്',
+    upcoming_events: 'വരാനിരിക്കുന്ന പരിപാടികൾ',
     completed: 'പൂർത്തിയായി',
     announcement: 'പ്രഖ്യാപനം',
     no_events: 'അറിയിപ്പുകൾ ഇല്ല',
+  },
+
+  attendance: {
+    not_marked_title: '⚠️ ഹാജർ രേഖപ്പെടുത്തിയിട്ടില്ല!',
+    not_marked_msg: 'ഈ പ്രവർത്തനം ചെയ്യുന്നതിന് മുമ്പ് ഇന്നത്തെ ഹാജർ രേഖപ്പെടുത്തേണ്ടതുണ്ട്.\n\nതുടരുന്നതിന് ദയവായി ഹാജർ ആദ്യം രേഖപ്പെടുത്തുക.',
+    mark_now: 'ഹാജർ ഇപ്പോൾ രേഖപ്പെടുത്തുക',
   },
 
   errors: {

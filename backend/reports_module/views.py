@@ -380,8 +380,11 @@ class StaffPerformanceReportView(APIView):
         if not end_date:
             end_date = today
         if not start_date:
-            days = 7 if period == 'weekly' else 30
-            start_date = end_date - timedelta(days=days)
+            if period == 'daily':
+                start_date = end_date
+            else:
+                days = 7 if period == 'weekly' else 30
+                start_date = end_date - timedelta(days=days)
 
         duration_days = max(1, (end_date - start_date).days)
         prev_end_date = start_date - timedelta(days=1)
@@ -457,6 +460,29 @@ class StaffPerformanceReportView(APIView):
 
             display_name = user.full_name or user.username
 
+            # Membership leads & Donations
+            curr_memberships = Income.objects.filter(
+                created_by=user,
+                source='MEMBERSHIP',
+                date__gte=start_date,
+                date__lte=end_date
+            ).aggregate(total=Sum('amount'))['total'] or 0.0
+
+            total_amount = float(curr_donations) + float(curr_memberships)
+
+            # Attendance
+            from hr_module.views import get_officer_for_user
+            from hr_module.models import Attendance
+            officer = get_officer_for_user(user)
+            attendance_days = 0
+            if officer:
+                attendance_days = Attendance.objects.filter(
+                    employee=officer,
+                    date__gte=start_date,
+                    date__lte=end_date,
+                    status='PRESENT'
+                ).count()
+
             performance_list.append({
                 'id': str(user.id),
                 'name': display_name,
@@ -467,6 +493,9 @@ class StaffPerformanceReportView(APIView):
                 'enquiries': enquiries_count,
                 'engagement_rate': engagement_rate,
                 'month_ratio': month_ratio,
+                'attendance_days': attendance_days,
+                'membership_leads': leads_members,
+                'total_amount': total_amount
             })
 
         performance_list.sort(key=lambda x: (x['donation'], x['leads']), reverse=True)

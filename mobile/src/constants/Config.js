@@ -1,26 +1,18 @@
 import Constants from 'expo-constants';
 
 // ── Server IP & Host Configuration ──────────────────────────────────────────
-const LOCAL_IP = '192.168.1.34';
-// ⬇️  UPDATE THIS to your EC2 domain or IP when deploying
-const PRODUCTION_HOST = 'internalapi.sreelakshmicharity.org';
+const SERVER_HOST = '10.90.237.21';
 
-// Automatically detect host IP from Expo bundler, or fallback to LOCAL_IP / PRODUCTION_HOST
+// Automatically detect host IP from Expo bundler, or fallback to SERVER_HOST
 const getHost = () => {
-  if (__DEV__) {
-    const manifestHost = Constants.expoConfig?.hostUri?.split(':')[0];
-    return manifestHost || LOCAL_IP;
-  }
-  return PRODUCTION_HOST;
+  const manifestHost = Constants.expoConfig?.hostUri?.split(':')[0];
+  return manifestHost || SERVER_HOST;
 };
 
 const HOST = getHost();
-
-// In production: HTTPS + WSS (secure) — no port needed (Nginx handles it on 443)
-// In dev: HTTP + WS with port 8000
-const PROTOCOL = __DEV__ ? 'http' : 'https';
-const WS_PROTOCOL = __DEV__ ? 'ws' : 'wss';
-const PORT_SUFFIX = __DEV__ ? ':8000' : '';
+const PROTOCOL = 'http';
+const WS_PROTOCOL = 'ws';
+const PORT_SUFFIX = ':8000';
 
 export const Config = {
   API_BASE_URL: `${PROTOCOL}://${HOST}${PORT_SUFFIX}/api`,

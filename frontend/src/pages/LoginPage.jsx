@@ -66,9 +66,15 @@ export default function LoginPage() {
                 name="username"
                 placeholder="Username"
                 value={form.username}
-                onChange={handleChange}
+                onChange={(e) => {
+                  clearError();
+                  setForm(f => ({ ...f, username: e.target.value.toLowerCase() }));
+                }}
                 required
                 autoComplete="username"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck="false"
                 autoFocus
               />
             </div>
@@ -89,6 +95,9 @@ export default function LoginPage() {
                 onChange={handleChange}
                 required
                 autoComplete="current-password"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck="false"
                 style={{ paddingRight: 44 }}
               />
               <button type="button" onClick={() => setShowPass(!showPass)} className="login-eye-btn">

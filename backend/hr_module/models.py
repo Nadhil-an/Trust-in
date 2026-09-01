@@ -217,6 +217,7 @@ class EmployeeStatus(models.TextChoices):
     RESIGNED = 'RESIGNED', 'Resigned'
     TERMINATED = 'TERMINATED', 'Terminated'
     RETIRED = 'RETIRED', 'Retired'
+    INACTIVE = 'INACTIVE', 'Inactive'
 
 
 class ExecutiveOfficer(models.Model):
@@ -243,6 +244,7 @@ class ExecutiveOfficer(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
+    termination_reason = models.TextField(blank=True, null=True)
 
     class Meta:
         db_table = 'hr_executive_officers'
@@ -571,15 +573,16 @@ class StaffVoucherBook(models.Model):
         related_name='voucher_book',
         limit_choices_to={'role': 'STAFF'},
     )
-    book_number = models.PositiveIntegerField(default=1, help_text="Voucher book number (e.g. 1, 2, 3)")
-    voucher_start = models.PositiveIntegerField(default=1, help_text="First voucher number in the book")
-    voucher_end = models.PositiveIntegerField(default=100, help_text="Last voucher number in the book")
-    current_voucher = models.PositiveIntegerField(default=1, help_text="Next voucher to be issued")
+    book_number = models.PositiveIntegerField(default=0, help_text="Voucher book number (e.g. 1, 2, 3)")
+    voucher_start = models.PositiveIntegerField(default=0, help_text="First voucher number in the book")
+    voucher_end = models.PositiveIntegerField(default=0, help_text="Last voucher number in the book")
+    current_voucher = models.PositiveIntegerField(default=0, help_text="Next voucher to be issued")
 
     # Queued Next Book Fields
     next_book_number = models.PositiveIntegerField(null=True, blank=True, help_text="Queued next book number")
     next_voucher_start = models.PositiveIntegerField(null=True, blank=True, help_text="First voucher number of next book")
     next_voucher_end = models.PositiveIntegerField(null=True, blank=True, help_text="Last voucher number of next book")
+    next_current_voucher = models.PositiveIntegerField(null=True, blank=True, help_text="Starting/Current voucher number of next book")
 
     updated_at = models.DateTimeField(auto_now=True)
     updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='voucher_updates')
@@ -592,15 +595,18 @@ class StaffVoucherBook(models.Model):
 
     def increment(self):
         """Advance the current voucher by 1. Rolls over to queued book if available. Raises Exception if exhausted."""
+        if self.book_number == 0 or self.voucher_end == 0:
+            raise ValueError("No active voucher book assigned. Please contact HR.")
         if self.current_voucher >= self.voucher_end:
-            if self.next_book_number is not None:
+            if self.next_book_number is not None and self.next_book_number > 0:
                 self.book_number = self.next_book_number
                 self.voucher_start = self.next_voucher_start
                 self.voucher_end = self.next_voucher_end
-                self.current_voucher = self.next_voucher_start
+                self.current_voucher = self.next_current_voucher if self.next_current_voucher is not None else self.next_voucher_start
                 self.next_book_number = None
                 self.next_voucher_start = None
                 self.next_voucher_end = None
+                self.next_current_voucher = None
             else:
                 raise ValueError("Voucher book exhausted. Please contact HR to assign a new voucher book.")
         else:
@@ -608,7 +614,7 @@ class StaffVoucherBook(models.Model):
         
         self.save(update_fields=[
             'book_number', 'voucher_start', 'voucher_end', 'current_voucher',
-            'next_book_number', 'next_voucher_start', 'next_voucher_end', 'updated_at'
+            'next_book_number', 'next_voucher_start', 'next_voucher_end', 'next_current_voucher', 'updated_at'
         ])
 class VerificationStatus(models.TextChoices):
     UNVERIFIED = 'UNVERIFIED', 'Unverified'

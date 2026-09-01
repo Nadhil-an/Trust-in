@@ -29,6 +29,14 @@ export const useAuthStore = create((set, get) => ({
         } catch (_) {}
 
         set({ user, accessToken, isAuthenticated: true, isLoading: false });
+
+        // Validate account status with server asynchronously
+        try {
+          const { authApi } = require('../api');
+          authApi.profile().catch(() => {
+            get().logout();
+          });
+        } catch (_) {}
       } else {
         set({ isLoading: false });
       }

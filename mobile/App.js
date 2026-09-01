@@ -5,7 +5,8 @@ import Toast from 'react-native-toast-message';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { useOfflineSync } from './src/hooks/useOfflineSync';
 import { initI18n } from './src/i18n';
-import { LoadingScreen } from './src/components/shared';
+import { LoadingScreen, GlobalAttendanceModal } from './src/components/shared';
+import OfflineBar from './src/components/shared/OfflineBar';
 
 // Initialize i18n
 let i18nInitialized = false;
@@ -14,7 +15,12 @@ initI18n().then(() => { i18nInitialized = true; });
 // Main App Component wrapper to use hooks that require Context
 const AppContent = () => {
   useOfflineSync();
-  return <AppNavigator />;
+  return (
+    <>
+      <AppNavigator />
+      <GlobalAttendanceModal />
+    </>
+  );
 };
 
 export default function App() {
