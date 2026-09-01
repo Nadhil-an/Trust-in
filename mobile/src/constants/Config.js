@@ -1,7 +1,7 @@
 import Constants from 'expo-constants';
 
 // ── Server IP & Host Configuration ──────────────────────────────────────────
-const SERVER_HOST = '13.235.70.127';
+const SERVER_HOST = 'trust.sreelakshmicharity.org'; // Using the main domain since internalapi is timing out
 
 // Automatically detect host IP from Expo bundler, or fallback to SERVER_HOST
 const getHost = () => {
@@ -10,9 +10,9 @@ const getHost = () => {
 };
 
 const HOST = getHost();
-const PROTOCOL = 'http';
-const WS_PROTOCOL = 'ws';
-const PORT_SUFFIX = ''; // Requests go through Nginx on port 80
+const PROTOCOL = 'https'; // Using https since domains usually have SSL
+const WS_PROTOCOL = 'wss';
+const PORT_SUFFIX = ''; // Requests go through Nginx on port 80/443
 
 export const Config = {
   API_BASE_URL: `${PROTOCOL}://${HOST}${PORT_SUFFIX}/api`,

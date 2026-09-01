@@ -66,10 +66,7 @@ export default function LoginPage() {
                 name="username"
                 placeholder="Username"
                 value={form.username}
-                onChange={(e) => {
-                  clearError();
-                  setForm(f => ({ ...f, username: e.target.value.toLowerCase() }));
-                }}
+                onChange={handleChange}
                 required
                 autoComplete="username"
                 autoCapitalize="none"
