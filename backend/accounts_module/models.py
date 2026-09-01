@@ -134,7 +134,7 @@ class Income(models.Model):
     receipt_number = models.CharField(max_length=20, unique=True, db_index=True)
     date = models.DateField(default=date.today)
     donor_name = models.CharField(max_length=255, blank=True)
-    donor_phone = EncryptedCharField(max_length=20, blank=True)  # Encrypted PII — donor contact
+    donor_phone = EncryptedCharField(max_length=20, blank=True, null=True)  # Encrypted PII — donor contact
     source = models.CharField(max_length=20, choices=IncomeSource.choices)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     payment_method = models.CharField(max_length=20, choices=PaymentMethod.choices)
