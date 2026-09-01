@@ -1,7 +1,7 @@
 import Constants from 'expo-constants';
 
 // ── Server IP & Host Configuration ──────────────────────────────────────────
-const SERVER_HOST = '10.90.237.21';
+const SERVER_HOST = '13.235.70.127';
 
 // Automatically detect host IP from Expo bundler, or fallback to SERVER_HOST
 const getHost = () => {
@@ -12,7 +12,7 @@ const getHost = () => {
 const HOST = getHost();
 const PROTOCOL = 'http';
 const WS_PROTOCOL = 'ws';
-const PORT_SUFFIX = ':8000';
+const PORT_SUFFIX = ''; // Requests go through Nginx on port 80
 
 export const Config = {
   API_BASE_URL: `${PROTOCOL}://${HOST}${PORT_SUFFIX}/api`,
