@@ -202233,3 +202233,40 @@ WebSocket CONNECT /ws/notify/ [127.0.0.1:1942]
 [mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-01&verification_status=VERIFIED 200 [0.03, 127.0.0.1:1946][0m
 [mHTTP PATCH /api/hr/promoter-registry/7fbeac53-347a-438b-86a0-c3a1356d3ac9/ 200 [0.04, 127.0.0.1:6323][0m
 [mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-01&verification_status=VERIFIED 200 [0.03, 127.0.0.1:7959][0m
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:19555]
+WebSocket REJECT /ws/notify/ [127.0.0.1:19555]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:19555]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:50710]
+WebSocket REJECT /ws/notify/ [127.0.0.1:50710]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:50710]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:20862]
+WebSocket REJECT /ws/notify/ [127.0.0.1:20862]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:20862]
+Unauthorized: /api/core/features/
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/core/features/ 401 [0.04, 127.0.0.1:50712][0m
+[31;1mHTTP GET /api/auth/profile/ 401 [0.04, 127.0.0.1:50711][0m
+Unauthorized: /api/auth/profile/
+Unauthorized: /api/core/features/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.02, 127.0.0.1:20863][0m
+[31;1mHTTP GET /api/core/features/ 401 [0.02, 127.0.0.1:20864][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.05, 127.0.0.1:20865][0m
+[mHTTP GET /api/core/features/ 200 [0.02, 127.0.0.1:54150][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 127.0.0.1:54151][0m
+[mHTTP GET /api/core/features/ 200 [0.02, 127.0.0.1:64230][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 127.0.0.1:37236][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-01&verification_status=VERIFIED 200 [0.05, 127.0.0.1:63330][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-01&verification_status=VERIFIED 200 [0.02, 127.0.0.1:27122][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:6380]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:6380]
+[mHTTP POST /api/auth/logout/ 200 [0.03, 127.0.0.1:12445][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:6380]
+[mHTTP POST /api/auth/login/ 200 [0.24, 127.0.0.1:51289][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:50563]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:50563]
+[mHTTP GET /api/core/features/ 200 [0.02, 127.0.0.1:56739][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 127.0.0.1:50564][0m
