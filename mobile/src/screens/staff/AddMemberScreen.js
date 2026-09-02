@@ -122,7 +122,7 @@ const AddMemberScreen = ({ navigation, route }) => {
         .then(res => {
           setVoucher(res.data);
           if (!isEdit) {
-            set('voucher_id', '0');
+            set('voucher_id', String(res.data.current_voucher));
           }
         })
         .catch(err => console.log('No voucher assigned or offline', err));
@@ -244,9 +244,10 @@ const AddMemberScreen = ({ navigation, route }) => {
         formData.append('phone', form.phone);
       }
 
-      if (receiptImageUri) {
-        const docName = receiptImageUri.split('/').pop() || 'receipt.jpg';
-        formData.append('document', { uri: receiptImageUri, type: 'image/jpeg', name: docName });
+      if (idPhotos.length > 0) {
+        const docUri = idPhotos[0].uri;
+        const docName = docUri.split('/').pop() || 'document.jpg';
+        formData.append('document', { uri: docUri, type: 'image/jpeg', name: docName });
       }
 
       if (photos.length > 0) {

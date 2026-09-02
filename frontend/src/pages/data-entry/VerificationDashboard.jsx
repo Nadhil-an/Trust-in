@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react"
 import { hrApi, accountsApi } from "../../api"
-import { LoadingState, EmptyState, PageHeader, FilterBar } from "../../components/shared"
+import { LoadingState, EmptyState, PageHeader, FilterBar, ConfirmModal } from "../../components/shared"
 import { format } from "date-fns"
 import toast from "react-hot-toast"
 
@@ -11,6 +11,7 @@ export default function VerificationDashboard() {
   const [savingId, setSavingId] = useState(null)
   const [dateFilter, setDateFilter] = useState(format(new Date(), 'yyyy-MM-dd'))
   const [searchTerm, setSearchTerm] = useState('')
+  const [confirmState, setConfirmState] = useState({ isOpen: false, row: null, type: '' })
 
   const [modalOpen, setModalOpen] = useState(false)
   const [modalType, setModalType] = useState('') // 'CASH' or 'UPI'
@@ -67,7 +68,6 @@ export default function VerificationDashboard() {
   }
 
   const handleVerify = async (row) => {
-    if (!window.confirm(`Verify collections for ${row.staff_name}?`)) return
     setSavingId(row.staff_id)
     try {
       const payload = {
@@ -115,7 +115,6 @@ export default function VerificationDashboard() {
   }
 
   const handleDeleteTransaction = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this transaction? This will affect the total collected.')) return
     try {
       await accountsApi.income.delete(id)
       toast.success('Transaction deleted')
@@ -129,7 +128,11 @@ export default function VerificationDashboard() {
   const filteredRows = rows.filter(r => 
     r.staff_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     r.entry_code?.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  ).sort((a, b) => {
+    const totalA = (parseFloat(a.cash_collected) || 0) + (parseFloat(a.online_collected) || 0);
+    const totalB = (parseFloat(b.cash_collected) || 0) + (parseFloat(b.online_collected) || 0);
+    return totalB - totalA;
+  });
 
   const totals = filteredRows.reduce((acc, r) => ({
     cash_collected: acc.cash_collected + parseFloat(r.cash_collected || 0),
@@ -161,6 +164,22 @@ export default function VerificationDashboard() {
           subtitle="Verify daily mobile collections before moving them to Promoter Registry"
         />
       </div>
+
+      <ConfirmModal 
+        isOpen={confirmState.isOpen} 
+        onClose={() => setConfirmState({ isOpen: false, row: null, type: '' })}
+        onConfirm={() => {
+          if (confirmState.type === 'VERIFY' && confirmState.row) {
+            handleVerify(confirmState.row)
+          } else if (confirmState.type === 'DELETE' && confirmState.row) {
+            handleDeleteTransaction(confirmState.row)
+          }
+        }}
+        title={confirmState.type === 'VERIFY' ? 'Verify Collections' : 'Delete Transaction'}
+        message={confirmState.type === 'VERIFY' ? `Are you sure you want to verify collections for ${confirmState.row?.staff_name}?` : 'Are you sure you want to delete this transaction? This will affect the total collected.'}
+        isDanger={confirmState.type === 'DELETE'}
+        confirmText={confirmState.type === 'VERIFY' ? 'Verify' : 'Delete'}
+      />
 
       <div className="data-card printable-area">
         <div className="print-header">
@@ -322,7 +341,7 @@ export default function VerificationDashboard() {
                         <button
                           className="btn"
                           style={{ background: '#10B981', color: 'white', padding: '6px 16px', borderRadius: 6, border: 'none', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}
-                          onClick={() => handleVerify(row)}
+                          onClick={() => setConfirmState({ isOpen: true, row: row, type: 'VERIFY' })}
                           disabled={savingId === row.staff_id}
                         >
                           <span style={{ fontSize: 16 }}>✔️</span> {savingId === row.staff_id ? '...' : 'Verify'}
@@ -404,7 +423,7 @@ export default function VerificationDashboard() {
                       <td style={{ padding: 12 }}>{t.donor_name || 'N/A'}</td>
                       <td style={{ padding: 12, textAlign: 'center' }}>
                         <button 
-                          onClick={() => handleDeleteTransaction(t.id)}
+                          onClick={() => setConfirmState({ isOpen: true, row: t.id, type: 'DELETE' })}
                           style={{ background: '#FEE2E2', color: '#EF4444', border: 'none', padding: '6px 10px', borderRadius: 4, cursor: 'pointer' }}>
                           <span style={{ fontSize: 16 }}>🗑️</span>
                         </button>

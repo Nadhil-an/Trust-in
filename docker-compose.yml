@@ -63,9 +63,9 @@ services:
       # Shared media — same bind mount as whatsapp-gateway
       - ./backend/media:/app/media
       - ./backend/staticfiles:/app/staticfiles
-    # No external port — only accessible through frontend nginx proxy
-    expose:
-      - "8000"
+    # Expose port 8000 to the host (localhost only) so System Nginx can proxy to it
+    ports:
+      - "127.0.0.1:8000:8000"
     env_file:
       - ./backend/.env
     environment:
@@ -83,19 +83,6 @@ services:
         condition: service_healthy
       whatsapp-gateway:
         condition: service_started
-
-  # ── 5. Frontend Nginx (serves React + proxies /api/ and /ws/) ─────────
-  # This is the ONLY service exposed to the internet (port 80)
-  # System Nginx on EC2 handles HTTPS (443) and proxies to this container (80)
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    restart: unless-stopped
-    ports:
-      - "80:80"
-    depends_on:
-      - backend
 
 # ── Persistent Volumes ────────────────────────────────────────────────
 volumes:

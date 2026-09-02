@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react"
 import { hrApi } from "../../api"
-import { LoadingState, EmptyState, PageHeader, FilterBar, Modal } from "../../components/shared"
+import { LoadingState, EmptyState, PageHeader, FilterBar, Modal, ConfirmModal } from "../../components/shared"
 import { format } from "date-fns"
 import toast from "react-hot-toast"
 
@@ -10,6 +10,7 @@ export default function PromotorRegistry() {
   const [savingId, setSavingId] = useState(null)
   const [dateFilter, setDateFilter] = useState(format(new Date(), 'yyyy-MM-dd'))
   const [mismatchModalData, setMismatchModalData] = useState(null)
+  const [confirmState, setConfirmState] = useState({ isOpen: false, row: null, type: '' })
 
   // ── Load & merge daily summary ───────────────────────────────────
   const load = useCallback(async () => {
@@ -128,7 +129,6 @@ export default function PromotorRegistry() {
   }
 
   const handleActivateNext = async (staffId) => {
-    if (!window.confirm("Are you sure you want to activate the queued voucher book for this staff?")) return
     try {
       await hrApi.vouchers.activateNext(staffId)
       toast.success("Next voucher book activated!")
@@ -197,6 +197,22 @@ export default function PromotorRegistry() {
           subtitle="Daily collection reconciliation — auto-populated from mobile app transactions"
         />
       </div>
+
+      <ConfirmModal 
+        isOpen={confirmState.isOpen} 
+        onClose={() => setConfirmState({ isOpen: false, row: null, type: '' })}
+        onConfirm={() => {
+          if (confirmState.type === 'UNVERIFY' && confirmState.row) {
+            handleSave(confirmState.row, 'unverify')
+          } else if (confirmState.type === 'ACTIVATE_NEXT' && confirmState.row) {
+            handleActivateNext(confirmState.row)
+          }
+        }}
+        title={confirmState.type === 'UNVERIFY' ? 'Unverify Collections' : 'Activate Next Voucher Book'}
+        message={confirmState.type === 'UNVERIFY' ? 'Are you sure you want to unverify this? It will be moved back to the Verification Dashboard.' : 'Are you sure you want to activate the queued voucher book for this staff?'}
+        isDanger={confirmState.type === 'UNVERIFY'}
+        confirmText={confirmState.type === 'UNVERIFY' ? 'Unverify' : 'Activate'}
+      />
 
       <div className="data-card printable-area">
         <div className="print-header">
@@ -295,7 +311,7 @@ export default function PromotorRegistry() {
                           {row.voucher_book && row.voucher_book.next_book_number && (row.voucher_book.voucher_end - row.voucher_book.current_voucher <= 2) && (
                             <button 
                               type="button"
-                              onClick={() => handleActivateNext(row.staff_id)}
+                              onClick={() => setConfirmState({ isOpen: true, row: row.staff_id, type: 'ACTIVATE_NEXT' })}
                               style={{ marginTop: 4, width: '100%', padding: '4px 8px', fontSize: 10, background: '#F59E0B', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}
                             >
                               <span>⚡ Activate Next Book</span>
@@ -407,11 +423,7 @@ export default function PromotorRegistry() {
                               <button 
                                 className="btn btn-sm" 
                                 style={{ background: '#FEE2E2', color: '#EF4444', border: 'none', padding: '5px 12px', borderRadius: 6, cursor: 'pointer', fontSize: 12 }} 
-                                onClick={() => {
-                                  if(window.confirm('Are you sure you want to unverify this? It will be moved back to the Verification Dashboard.')) {
-                                    handleSave(row, 'unverify')
-                                  }
-                                }}
+                                onClick={() => setConfirmState({ isOpen: true, row: row, type: 'UNVERIFY' })}
                               >
                                 Unverify
                               </button>
