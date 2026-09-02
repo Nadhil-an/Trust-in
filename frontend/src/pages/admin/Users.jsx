@@ -48,6 +48,7 @@ export default function AdminUsers() {
   const [showPass, setShowPass] = useState(false)
   const [userToDelete, setUserToDelete] = useState(null)
   const [platform, setPlatform] = useState("WEB")
+  const [showInactive, setShowInactive] = useState(false)
 
   const webRoles = ["MANAGER","ACCOUNTANT","HR","ADMIN", "DATA_ENTRY"]
   const mobileRoles = ["STAFF", "MEMBER", "FIELD_ASSESSMENT_OFFICER", "ASSESSMENT_CALCULATION_OFFICER", "GENERAL_ENQUIRY_OFFICER"]
@@ -70,6 +71,9 @@ export default function AdminUsers() {
     window.addEventListener('dashboard-refresh', handleRefresh)
     return () => window.removeEventListener('dashboard-refresh', handleRefresh)
   }, [load])
+
+  const filteredUsers = showInactive ? users : users.filter(u => u.is_active)
+
 
   const handleSave = async (e) => {
     e.preventDefault(); setSaving(true); setModalError(null);
@@ -94,6 +98,9 @@ export default function AdminUsers() {
   return (
     <div>
       <PageHeader title="User Management" subtitle="System access and roles">
+        <button className="btn btn-secondary" onClick={() => setShowInactive(s => !s)} style={{marginRight:8}}>
+          {showInactive ? "Hide Inactive" : `Show Inactive (${users.filter(u=>!u.is_active).length})`}
+        </button>
         <button className="btn btn-primary" onClick={()=>{setSelected(null);setModalError(null);setForm({username:"",full_name:"",role:"HR",email:"",phone:"",is_active:true,password:""});setShowModal(true)}}>+ Add User</button>
       </PageHeader>
       <div className="data-card">
@@ -102,8 +109,8 @@ export default function AdminUsers() {
             <table>
               <thead><tr><th>Username</th><th>Name</th><th>Role</th><th>Email</th><th>Status</th><th>Last Login</th><th>Actions</th></tr></thead>
               <tbody>
-                {users.length===0 ? <tr><td colSpan={7}><EmptyState icon="👤" title="No users" /></td></tr>
-                  : users.map(u=>(<tr key={u.id}>
+                {filteredUsers.length===0 ? <tr><td colSpan={7}><EmptyState icon="👤" title="No users" /></td></tr>
+                  : filteredUsers.map(u=>(<tr key={u.id}>
                     <td><strong>{u.username}</strong></td>
                     <td>{u.full_name}</td>
                     <td><span className="badge badge-blue">{u.role}</span></td>
