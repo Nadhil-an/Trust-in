@@ -88,22 +88,14 @@ DATABASES = {
 }
 
 # ── Django Channels / WebSocket ───────────────────────────────────
-USE_REDIS = os.getenv('USE_REDIS', 'False') == 'True'
-REDIS_URL = os.getenv('REDIS_URL', 'redis://127.0.0.1:6379/0')
-
-if USE_REDIS:
-    CHANNEL_LAYERS = {
-        "default": {
-            "BACKEND": "channels_redis.core.RedisChannelLayer",
-            "CONFIG": {"hosts": [REDIS_URL]},
-        }
+# Using InMemoryChannelLayer — perfectly suited for single-server deployments.
+# Redis channel layer is not needed and caused timeouts on the free-tier EC2.
+REDIS_URL = os.getenv('REDIS_URL', 'redis://redis:6379/0')
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
     }
-else:
-    CHANNEL_LAYERS = {
-        "default": {
-            "BACKEND": "channels.layers.InMemoryChannelLayer",
-        }
-    }
+}
 
 # ── Auth ──────────────────────────────────────────────────────────
 AUTH_USER_MODEL = 'core.User'
