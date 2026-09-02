@@ -4,7 +4,7 @@ import Constants from 'expo-constants';
 // __DEV__ is true when running via Expo Go or `npx expo start`
 // It is false when building a production APK/AAB
 
-const PRODUCTION_HOST = 'trust.sreelakshmicharity.org';
+const PRODUCTION_HOST = 'api.sreelakshmicharity.org';
 
 const getApiConfig = () => {
   if (__DEV__) {
