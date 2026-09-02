@@ -221,6 +221,7 @@ export const hrApi = {
   },
   officers: {
     list: (params) => api.get('/hr/officers/', { params }),
+    designations: () => api.get('/hr/officers/designations/'),
     create: (data) => api.post('/hr/officers/', data),
     get: (id) => api.get(`/hr/officers/${id}/`),
     update: (id, data) => api.patch(`/hr/officers/${id}/`, data),

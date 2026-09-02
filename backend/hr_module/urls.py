@@ -20,6 +20,7 @@ urlpatterns = [
     path('executive-members/<uuid:pk>/', views.ExecutiveMemberDetailView.as_view()),
     # Executive Officers
     path('officers/', views.ExecutiveOfficerListCreateView.as_view()),
+    path('officers/designations/', views.DesignationListView.as_view()),
     path('officers/<uuid:pk>/', views.ExecutiveOfficerDetailView.as_view()),
     path('officers/<uuid:pk>/reactivate/', views.ExecutiveOfficerReactivateView.as_view()),
     path('officers/<uuid:pk>/attendance-graph/', views.OfficerAttendanceGraphView.as_view()),

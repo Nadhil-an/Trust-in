@@ -621,6 +621,14 @@ class ExecutiveOfficerReactivateView(APIView):
         return Response({'message': f'Staff reactivated successfully. Password updated.'})
 
 
+class DesignationListView(APIView):
+    permission_classes = [IsAnyStaff]
+
+    def get(self, request):
+        designations = ExecutiveOfficer.objects.exclude(designation__isnull=True).exclude(designation='').values_list('designation', flat=True).distinct()
+        return Response([d for d in designations])
+
+
 class OfficerPayrollDataView(APIView):
     permission_classes = [IsHR]
 

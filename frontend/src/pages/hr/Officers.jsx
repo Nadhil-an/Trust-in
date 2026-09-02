@@ -251,6 +251,7 @@ export default function Officers() {
   const [modalError, setModalError] = useState(null)
   const [showPass, setShowPass] = useState(false)
   const [platform, setPlatform] = useState("WEB")
+  const [dynamicRoles, setDynamicRoles] = useState([])
 
   // Voucher modal state
   const [showVoucherModal, setShowVoucherModal] = useState(false)
@@ -311,9 +312,13 @@ export default function Officers() {
     if (roleFilter) params.designation = roleFilter
     
     try {
-      const res = await hrApi.officers.list(params);
+      const [res, rolesRes] = await Promise.all([
+        hrApi.officers.list(params),
+        hrApi.officers.designations()
+      ]);
       const listData = Array.isArray(res.data) ? res.data : (Array.isArray(res.data?.results) ? res.data.results : []);
       setItems(listData);
+      setDynamicRoles(rolesRes.data || []);
     }
     catch (_) {} finally { setLoading(false) }
   }, [search, employmentTypeFilter, roleFilter, showTerminated])
@@ -469,6 +474,8 @@ export default function Officers() {
     setShowViewModal(true)
   }
 
+  const allAvailableRoles = Array.from(new Set([...webRoles, ...mobileRoles, ...dynamicRoles])).filter(Boolean);
+
   return (
     <div>
       <PageHeader title={employmentTypeFilter === 'FULL_TIME' ? "Full-Time Staff" : "Staff Members"} subtitle="Staff and employees">
@@ -497,7 +504,7 @@ export default function Officers() {
             }}
           >
             <option value="">All Roles</option>
-            {[...webRoles, ...mobileRoles].map(r => <option key={r} value={r}>{formatRole(r)}</option>)}
+            {allAvailableRoles.map(r => <option key={r} value={r}>{formatRole(r)}</option>)}
           </select>
           <select 
             className="filter-select" 
@@ -641,10 +648,18 @@ export default function Officers() {
               </div>
             </div>
             <div className="form-group">
-              <label className="form-label required">Role</label>
-              <select className="form-control" value={form.role} onChange={e=>F("role", e.target.value)}>
-                {(platform === 'WEB' ? webRoles : mobileRoles).map(r=><option key={r} value={r}>{r.replace(/_/g, ' ')}</option>)}
-              </select>
+              <label className="form-label required">Role / Designation</label>
+              <input 
+                className="form-control" 
+                list="roles-list" 
+                required 
+                value={form.role} 
+                onChange={e=>F("role", e.target.value)}
+                placeholder="Select or type new role..."
+              />
+              <datalist id="roles-list">
+                {(platform === 'WEB' ? Array.from(new Set([...webRoles, ...dynamicRoles])) : Array.from(new Set([...mobileRoles, ...dynamicRoles]))).map(r=><option key={r} value={r}>{r.replace(/_/g, ' ')}</option>)}
+              </datalist>
             </div>
             <div className="form-group">
               <label className="form-label">Email</label>
