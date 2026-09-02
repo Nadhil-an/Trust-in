@@ -649,17 +649,14 @@ export default function Officers() {
             </div>
             <div className="form-group">
               <label className="form-label required">Role / Designation</label>
-              <input 
+              <select 
                 className="form-control" 
-                list="roles-list" 
                 required 
                 value={form.role} 
                 onChange={e=>F("role", e.target.value)}
-                placeholder="Select or type new role..."
-              />
-              <datalist id="roles-list">
-                {(platform === 'WEB' ? Array.from(new Set([...webRoles, ...dynamicRoles])) : Array.from(new Set([...mobileRoles, ...dynamicRoles]))).map(r=><option key={r} value={r}>{r.replace(/_/g, ' ')}</option>)}
-              </datalist>
+              >
+                {allAvailableRoles.map(r=><option key={r} value={r}>{r.replace(/_/g, ' ')}</option>)}
+              </select>
             </div>
             <div className="form-group">
               <label className="form-label">Email</label>
