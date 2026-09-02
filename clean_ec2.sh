@@ -38,7 +38,8 @@ docker system prune -a --volumes -f
 
 # ── Step 4: Pull latest code ───────────────────────────────────────────
 echo "📥 [4/5] Pulling latest code from GitHub..."
-cd /opt/sree-trust
+# We use the current directory where the script is located
+cd "$(dirname "$0")"
 # Assuming the user has git setup here. Otherwise they will need to re-clone or scp.
 if [ -d ".git" ]; then
     git fetch --all
