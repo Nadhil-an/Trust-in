@@ -144,6 +144,10 @@ export default function AccountsDashboard() {
           <p style={{ fontSize: 13, color: '#9ca3af', margin: '3px 0 0' }}>Good {greeting} — {format(new Date(), 'EEEE, dd MMMM yyyy')}</p>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
+          <button onClick={() => navigate('/slt/disburse/day-sheet')}
+            style={{ background: '#FFFBEB', color: '#B45309', border: '1px solid #FEF3C7', borderRadius: 10, padding: '8px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+            📖 Day Book
+          </button>
           {(acc.pending_money_requests || 0) > 0 && (
             <button onClick={() => navigate('/accounts/money-requests')}
               style={{ background: '#EEF2FF', color: '#6366F1', border: '1px solid #C7D2FE', borderRadius: 10, padding: '8px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>

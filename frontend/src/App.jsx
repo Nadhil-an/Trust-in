@@ -29,6 +29,7 @@ import PendingSalaries from './pages/accounts/PendingSalaries'
 import PendingDisbursements from './pages/cashier/PendingDisbursements'
 import DisbursementList from './pages/cashier/Disbursements'
 import CashClosing from './pages/cashier/CashClosing'
+import DaySheet from './pages/cashier/DaySheet'
 import HRDashboard from './pages/hr/Dashboard'
 import Members from './pages/hr/Members'
 import Volunteers from './pages/hr/Volunteers'
@@ -176,6 +177,7 @@ export default function App() {
           <Route path="slt/disburse/pending"         element={<ProtectedRoute featureKey="pending_payouts"><PendingDisbursements /></ProtectedRoute>} />
           <Route path="slt/disburse/payouts"         element={<ProtectedRoute featureKey="payouts"><DisbursementList /></ProtectedRoute>} />
           <Route path="slt/disburse/daily-close"     element={<ProtectedRoute featureKey="cash_closing"><CashClosing /></ProtectedRoute>} />
+          <Route path="slt/disburse/day-sheet"        element={<ProtectedRoute featureKey="cash_closing"><DaySheet /></ProtectedRoute>} />
 
           {/* HR */}
           <Route path="slt/hr/overview"              element={<ProtectedRoute roles={['HR']}><HRDashboard /></ProtectedRoute>} />

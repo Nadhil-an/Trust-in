@@ -50,7 +50,7 @@ export const MASTER_NAV_CONFIG = [
   { key: 'money_requests', label: 'Money Requests', icon: '💰', path: '/slt/finance/fund-requests', category: 'PAYOUTS & CLOSING' },
   { key: 'salary_review', label: 'Pending Salaries', icon: '🧑‍💼', path: '/slt/finance/salary-review', category: 'PAYOUTS & CLOSING' },
   { key: 'payouts', label: 'Payouts', icon: '💸', path: '/slt/disburse/payouts', category: 'PAYOUTS & CLOSING' },
-  { key: 'cash_closing', label: 'Cash Closing', icon: '🔒', path: '/slt/disburse/daily-close', category: 'PAYOUTS & CLOSING' },
+  { key: 'cash_closing', label: 'Day Book', icon: '📖', path: '/slt/disburse/day-sheet', category: 'PAYOUTS & CLOSING' },
 
   // ── HR: TIME & PAYROLL
   { key: 'hr_attendance', label: 'Attendance', icon: '✅', path: '/slt/hr/attendance', category: 'TIME & PAYROLL' },

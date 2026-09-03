@@ -53,8 +53,13 @@ export default function AttendancePage() {
   return (
     <div>
       <PageHeader title="Attendance" subtitle="Daily attendance management">
-        <input className="form-control" type="date" style={{width:160}} value={date} onChange={e=>setDate(e.target.value)} />
-        <button className="btn btn-primary" onClick={()=>setShowModal(true)}>Mark Attendance</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+          <div style={{ background: '#E0E7FF', color: '#4338CA', padding: '8px 14px', borderRadius: '8px', fontWeight: 700, fontSize: '14px', border: '1px solid #C7D2FE', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontSize: '16px' }}>👥</span> Present Today: {records.filter(r => r.status === 'PRESENT').length} / {records.length || officers.length}
+          </div>
+          <input className="form-control" type="date" style={{width:160}} value={date} onChange={e=>setDate(e.target.value)} />
+          <button className="btn btn-primary" onClick={()=>setShowModal(true)}>Mark Attendance</button>
+        </div>
       </PageHeader>
       <div className="data-card">
         {loading ? <LoadingState /> : (

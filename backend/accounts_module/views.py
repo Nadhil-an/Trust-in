@@ -653,3 +653,113 @@ class TotalFundsView(APIView):
         cash_bal = sum(a.current_balance for a in CashAccount.objects.filter(is_active=True))
         bank_bal = sum(b.current_balance for b in BankAccount.objects.filter(is_active=True))
         return Response({'total': cash_bal + bank_bal})
+
+
+# ── Day Sheet ─────────────────────────────────────────────────────
+
+class DaySheetView(APIView):
+    """
+    Returns a structured Day Sheet for a given date.
+
+    DEBIT side  = Opening balances (OB CASH, OB BANK) + income collected that day
+    CREDIT side = Expenses paid that day + disbursements
+    Bottom section: physical cash/bank closing entered manually (from CashClosing model)
+    """
+    permission_classes = [IsAccountant]
+
+    def get(self, request):
+        from datetime import date as dt_date
+        from django.db.models import Sum, Q
+
+        date_str = request.query_params.get('date')
+        try:
+            if date_str:
+                from datetime import datetime
+                target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            else:
+                target_date = timezone.now().date()
+        except ValueError:
+            target_date = timezone.now().date()
+
+        # ── Opening Balances (previous day closing balances via CashTransaction OPENING)
+        # We use current balances minus today's activity to infer OB
+        cash_accounts = list(CashAccount.objects.filter(is_active=True))
+        bank_accounts = list(BankAccount.objects.filter(is_active=True))
+
+        # Cash receipts and payments today
+        today_cash_receipts = CashTransaction.objects.filter(
+            date=target_date, transaction_type__in=['RECEIPT', 'TRANSFER_IN', 'OPENING']
+        ).aggregate(t=Sum('amount'))['t'] or 0
+        today_cash_payments = CashTransaction.objects.filter(
+            date=target_date, transaction_type__in=['PAYMENT', 'TRANSFER_OUT', 'ADJUSTMENT']
+        ).aggregate(t=Sum('amount'))['t'] or 0
+
+        current_cash = sum(a.current_balance for a in cash_accounts)
+        current_bank = sum(b.current_balance for b in bank_accounts)
+
+        # Opening balance = current balance - today's net movement
+        ob_cash = float(current_cash) - float(today_cash_receipts) + float(today_cash_payments)
+        ob_bank = float(current_bank)  # Bank OB approximated as current (for display)
+
+        # ── Income entries for the day (these go on DEBIT side after OB)
+        incomes = Income.objects.filter(date=target_date).order_by('created_at')
+        income_rows = []
+        for inc in incomes:
+            income_rows.append({
+                'particular': (inc.donor_name or inc.source or '').upper(),
+                'amount': float(inc.amount),
+                'sc': 'BANK' if inc.account_type == 'BANK' else 'CASH',
+                'source': inc.source,
+                'id': str(inc.id),
+            })
+
+        # ── Expense entries for the day (CREDIT side)
+        expenses = Expense.objects.filter(date=target_date).order_by('created_at')
+        expense_rows = []
+        for exp in expenses:
+            expense_rows.append({
+                'particular': (exp.payee or exp.purpose or '').upper(),
+                'amount': float(exp.amount),
+                'sc': 'BANK' if exp.account_type == 'BANK' else 'CASH',
+                'category': exp.category,
+                'id': str(exp.id),
+            })
+
+        # ── Totals
+        debit_rows = [
+            {'particular': 'OB CASH', 'amount': round(ob_cash, 2), 'sc': 'CASH'},
+            {'particular': 'OB BANK', 'amount': round(ob_bank, 2), 'sc': 'BANK'},
+        ] + income_rows
+
+        credit_rows = expense_rows
+
+        total_debit = sum(r['amount'] for r in debit_rows)
+        total_credit = sum(r['amount'] for r in credit_rows)
+        difference = total_debit - total_credit
+
+        # ── Cash Closing (physical closing entered by cashier)
+        from cashier_module.models import CashClosing
+        closing = CashClosing.objects.filter(date=target_date).first()
+        physical_cash = float(closing.physical_cash) if closing else 0.0
+        physical_bank = float(closing.physical_bank) if closing else 0.0
+        reading_total = physical_cash + physical_bank
+
+        # Reading/Sheet Closing = Debit Total - Credit Total (net funds remaining)
+        sheet_closing = round(total_debit - total_credit, 2)
+        closing_diff = round((physical_cash + physical_bank) - sheet_closing, 2)
+
+        return Response({
+            'date': target_date.strftime('%d-%m-%Y'),
+            'debit_rows': debit_rows,
+            'credit_rows': credit_rows,
+            'total_debit': round(total_debit, 2),
+            'total_credit': round(total_credit, 2),
+            'difference': round(difference, 2),
+            'physical_cash': physical_cash,
+            'physical_bank': physical_bank,
+            'reading_total': round(reading_total, 2),
+            'sheet_closing': sheet_closing,
+            'closing_diff': closing_diff,
+            'has_closing': closing is not None,
+        })
+

@@ -27,7 +27,7 @@ export default function CashClosing() {
 
   const handleSave = async (e) => {
     e.preventDefault(); setSaving(true)
-    try { await cashierApi.cashClosing.create(form); toast.success("Cash closing recorded."); setShowModal(false); load() }
+    try { await cashierApi.cashClosing.create(form); toast.success("Day book recorded."); setShowModal(false); load() }
     catch (_) { toast.error("Save failed") } finally { setSaving(false) }
   }
 
@@ -36,8 +36,8 @@ export default function CashClosing() {
 
   return (
     <div>
-      <PageHeader title="Daily Cash Closing" subtitle="End-of-day cash reconciliation">
-        <button className="btn btn-primary" onClick={()=>setShowModal(true)}>+ Record Closing</button>
+      <PageHeader title="Day Book" subtitle="End-of-day cash reconciliation">
+        <button className="btn btn-primary" onClick={()=>setShowModal(true)}>+ Record Day Book</button>
       </PageHeader>
       <div className="data-card">
         {loading ? <LoadingState /> : (
@@ -75,9 +75,9 @@ export default function CashClosing() {
         )}
       </div>
       {showModal && (
-        <Modal isOpen={true} onClose={()=>setShowModal(false)} title="Daily Cash Closing"
+        <Modal isOpen={true} onClose={()=>setShowModal(false)} title="Day Book"
           footer={<><button className="btn btn-secondary" onClick={()=>setShowModal(false)}>Cancel</button>
-            <button className="btn btn-primary" form="closing-form" type="submit" disabled={saving}>{saving?"Saving...":"Record Closing"}</button></>}>
+            <button className="btn btn-primary" form="closing-form" type="submit" disabled={saving}>{saving?"Saving...":"Record Day Book"}</button></>}>
           <div style={{background:"var(--primary-50)",borderRadius:8,padding:14,marginBottom:16, display: 'flex', justifyContent: 'space-between'}}>
             <p style={{fontSize:13,fontWeight:600}}>Total Cash Collection: <span style={{color:"var(--primary-700)"}}>{formatINR(systemBal)}</span></p>
             <p style={{fontSize:13,fontWeight:600}}>Total Cash in Bank: <span style={{color:"var(--blue-600)"}}>{formatINR(bankBal)}</span></p>

@@ -164,10 +164,11 @@ const StaffDonationsListScreen = ({ navigation }) => {
     );
   };
 
-  // Group by CREATION date so rolled-over & offline items still appear under today's section
+  // Group by CREATION date so newly submitted items always appear under today's section
   const groupDataByDate = (data) => {
     const grouped = data.reduce((acc, item) => {
-      const dateStr = item.created_at || item.joining_date || item.date;
+      // Always use created_at as the grouping key so entries appear under the day they were submitted
+      const dateStr = item.created_at || item.date;
       const dateObj = new Date(dateStr);
       const day = String(dateObj.getDate()).padStart(2, '0');
       const month = String(dateObj.getMonth() + 1).padStart(2, '0');
@@ -200,9 +201,12 @@ const StaffDonationsListScreen = ({ navigation }) => {
     return sections;
   };
 
-  // Today totals: only items whose date IS today (includes offline items, excludes rolled-over items)
+  // Today totals: items CREATED today — includes offline + rolled-over entries
   const todayIso = getTodayIso();
-  const todayItems = combinedDonations.filter(d => d.date === todayIso);
+  const todayItems = combinedDonations.filter(d => {
+    const createdDate = (d.created_at || d.date || '').substring(0, 10);
+    return createdDate === todayIso || d.date === todayIso;
+  });
 
   return (
     <View style={styles.container}>

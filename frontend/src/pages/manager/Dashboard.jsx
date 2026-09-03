@@ -224,6 +224,9 @@ export default function ManagerDashboard() {
           <button className="btn btn-secondary" onClick={() => setShowReport(true)} style={{ background: '#EEF2FF', color: '#4F46E5', fontWeight: 700, border: '1px solid #C7D2FE' }}>
             📊 Performance Report
           </button>
+          <button className="btn btn-secondary" onClick={() => navigate('/slt/disburse/day-sheet')} style={{ background: '#FFFBEB', color: '#B45309', fontWeight: 700, border: '1px solid #FEF3C7' }}>
+            📖 Day Book
+          </button>
           <button className="btn btn-primary" onClick={() => navigate('/manager/requests')}>
             + New Request
           </button>

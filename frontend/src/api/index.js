@@ -173,6 +173,7 @@ export const accountsApi = {
     get: (id) => api.get(`/accounts/transactions/${id}/`),
   },
   moneyRequests: () => api.get('/accounts/money-requests/'),
+  daySheet: (params) => api.get('/accounts/day-sheet/', { params }),
   pendingSalaries: {
     list: () => api.get('/accounts/pending-salaries/'),
     pay: (id, data) => api.post(`/accounts/salaries/${id}/pay/`, data),
