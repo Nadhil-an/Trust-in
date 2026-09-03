@@ -50,7 +50,7 @@ class IsOwnerOrManager(BasePermission):
         if request.method in ['GET', 'HEAD', 'OPTIONS']:
             return True
 
-        if request.user.role in [Role.MANAGER, Role.ADMIN]:
+        if request.user.role in [Role.MANAGER, Role.ADMIN, Role.DATA_ENTRY, Role.ACCOUNTANT]:
             return True
 
         owner = getattr(obj, 'created_by', None)
@@ -69,7 +69,7 @@ class IsOwnerOrManagerOrHR(BasePermission):
         if request.method in ['GET', 'HEAD', 'OPTIONS']:
             return True
 
-        if request.user.role in [Role.MANAGER, Role.ADMIN, Role.HR]:
+        if request.user.role in [Role.MANAGER, Role.ADMIN, Role.HR, Role.DATA_ENTRY, Role.ACCOUNTANT]:
             return True
 
         owner = getattr(obj, 'created_by', None)
