@@ -1747,11 +1747,12 @@ class DailyTransactionHistoryView(APIView):
                 'id': str(inc.id),
                 'receipt_number': inc.reference_number or inc.receipt_number,
                 'amount': float(inc.amount),
-                'time': inc.created_at.strftime('%I:%M %p'),
+                'time': _tz.localtime(inc.created_at).strftime('%I:%M %p') if inc.created_at else '',
                 'donor_name': inc.donor_name,
                 'phone': inc.donor_phone,
                 'remarks': inc.purpose,
-                'payment_method': inc.payment_method
+                'payment_method': inc.payment_method,
+                'source': inc.source
             }
             if inc.payment_method == 'CASH':
                 cash_transactions.append(data)

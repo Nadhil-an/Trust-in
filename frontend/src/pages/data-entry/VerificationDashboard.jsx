@@ -125,8 +125,8 @@ export default function VerificationDashboard() {
     }
   }
 
-  const filteredRows = rows.filter(r => 
-    r.staff_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  const filteredRows = rows.filter(r =>
+    r.staff_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     r.entry_code?.toLowerCase().includes(searchTerm.toLowerCase())
   ).sort((a, b) => {
     const totalA = (parseFloat(a.cash_collected) || 0) + (parseFloat(a.online_collected) || 0);
@@ -165,8 +165,8 @@ export default function VerificationDashboard() {
         />
       </div>
 
-      <ConfirmModal 
-        isOpen={confirmState.isOpen} 
+      <ConfirmModal
+        isOpen={confirmState.isOpen}
         onClose={() => setConfirmState({ isOpen: false, row: null, type: '' })}
         onConfirm={() => {
           if (confirmState.type === 'VERIFY' && confirmState.row) {
@@ -197,12 +197,12 @@ export default function VerificationDashboard() {
           <FilterBar>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, border: '1px solid #E5E7EB', borderRadius: 8, padding: '6px 12px', background: 'white' }}>
               <span style={{ fontSize: 16, color: '#6B7280' }}>🔍</span>
-              <input 
-                type="text" 
-                placeholder="Search..." 
+              <input
+                type="text"
+                placeholder="Search..."
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                style={{ border: 'none', outline: 'none', background: 'transparent', width: '100%', fontSize: 14 }} 
+                style={{ border: 'none', outline: 'none', background: 'transparent', width: '100%', fontSize: 14 }}
               />
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -216,8 +216,8 @@ export default function VerificationDashboard() {
               />
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, fontSize: 13, color: '#6B7280' }}>
-              <button 
-                className="btn" 
+              <button
+                className="btn"
                 style={{ background: '#4F46E5', color: 'white', border: 'none', padding: '6px 14px', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600 }}
                 onClick={() => window.print()}
               >
@@ -237,9 +237,9 @@ export default function VerificationDashboard() {
                   <th rowSpan={2} style={thStyle()}>Name</th>
                   <th rowSpan={2} style={thStyle()}>Voucher No</th>
                   <th colSpan={2} style={thStyle('center', '#4338CA', '#EEF2FF')}>Voucher Reading</th>
-                  <th colSpan={2} style={thStyle('center', '#0369A1', '#E0F2FE')}>Vothen Reading <br/><span style={{ fontSize: 10, fontWeight: 400 }}>(Auto from Mobile)</span></th>
-                  <th rowSpan={2} style={thStyle('center', '#7C3AED', '#F5F3FF')}>Cash Submitted<br/><span style={{ fontSize: 10, fontWeight: 400 }}>at Office</span></th>
-                  <th rowSpan={2} style={thStyle('center', '#059669', '#ECFDF5')}>Total<br/>Collected</th>
+                  <th colSpan={2} style={thStyle('center', '#0369A1', '#E0F2FE')}>Vothen Reading <br /><span style={{ fontSize: 10, fontWeight: 400 }}>(Auto from Mobile)</span></th>
+                  <th rowSpan={2} style={thStyle('center', '#7C3AED', '#F5F3FF')}>Cash Submitted<br /><span style={{ fontSize: 10, fontWeight: 400 }}>at Office</span></th>
+                  <th rowSpan={2} style={thStyle('center', '#059669', '#ECFDF5')}>Total<br />Collected</th>
                   <th rowSpan={2} style={thStyle('center')}>Action</th>
                 </tr>
                 <tr style={{ background: '#F8FAFC' }}>
@@ -296,7 +296,7 @@ export default function VerificationDashboard() {
                       </td>
 
                       <td style={{ padding: '6px 8px' }}>
-                        <div 
+                        <div
                           style={{ minWidth: 90, textAlign: 'center', background: '#F0F9FF', padding: '6px', borderRadius: 4, cursor: 'pointer', color: '#0369A1', fontWeight: 600 }}
                           onClick={() => openTransactionsModal(row, 'CASH')}
                         >
@@ -305,7 +305,7 @@ export default function VerificationDashboard() {
                       </td>
 
                       <td style={{ padding: '6px 8px', borderRight: '2px solid #BAE6FD' }}>
-                        <div 
+                        <div
                           style={{ minWidth: 90, textAlign: 'center', background: '#F0F9FF', padding: '6px', borderRadius: 4, cursor: 'pointer', color: '#0369A1', fontWeight: 600 }}
                           onClick={() => openTransactionsModal(row, 'UPI')}
                         >
@@ -388,12 +388,12 @@ export default function VerificationDashboard() {
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, border: '1px solid #E5E7EB', borderRadius: 8, padding: '8px 12px', background: '#F8FAFC', marginBottom: 16 }}>
               <span style={{ fontSize: 16, color: '#6B7280' }}>🔍</span>
-              <input 
-                type="text" 
-                placeholder="Search transactions by Voucher No, Donor, or Amount..." 
+              <input
+                type="text"
+                placeholder="Search transactions by Voucher No, Donor, or Amount..."
                 value={transactionSearch}
                 onChange={e => setTransactionSearch(e.target.value)}
-                style={{ border: 'none', outline: 'none', background: 'transparent', width: '100%', fontSize: 14 }} 
+                style={{ border: 'none', outline: 'none', background: 'transparent', width: '100%', fontSize: 14 }}
               />
             </div>
 
@@ -411,7 +411,7 @@ export default function VerificationDashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {transactions.filter(t => 
+                  {transactions.filter(t =>
                     (t.receipt_number && t.receipt_number.toLowerCase().includes(transactionSearch.toLowerCase())) ||
                     (t.donor_name && t.donor_name.toLowerCase().includes(transactionSearch.toLowerCase())) ||
                     (t.amount.toString().includes(transactionSearch))
@@ -422,7 +422,7 @@ export default function VerificationDashboard() {
                       <td style={{ padding: 12, fontWeight: 700, color: '#0369A1' }}>₹{t.amount.toFixed(2)}</td>
                       <td style={{ padding: 12 }}>{t.donor_name || 'N/A'}</td>
                       <td style={{ padding: 12, textAlign: 'center' }}>
-                        <button 
+                        <button
                           onClick={() => setConfirmState({ isOpen: true, row: t.id, type: 'DELETE' })}
                           style={{ background: '#FEE2E2', color: '#EF4444', border: 'none', padding: '6px 10px', borderRadius: 4, cursor: 'pointer' }}>
                           <span style={{ fontSize: 16 }}>🗑️</span>
