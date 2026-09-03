@@ -156,7 +156,7 @@ class Income(models.Model):
 
     class Meta:
         db_table = 'accounts_income'
-        ordering = ['-date']
+        ordering = ['-date', '-created_at']
 
     def save(self, *args, **kwargs):
         if not self.receipt_number:

@@ -12,7 +12,7 @@ import { useNotificationSocket } from '../../hooks/useWebSocket';
 import { useTranslation } from 'react-i18next';
 import { useOfflineStore } from '../../store/offlineStore';
 
-const StaffDonationsListScreen = ({ navigation }) => {
+const StaffDonationsListScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { queue } = useOfflineStore();
   const [donations, setDonations] = useState([]);
@@ -71,6 +71,12 @@ const StaffDonationsListScreen = ({ navigation }) => {
     });
     return unsubscribe;
   }, [navigation]);
+
+  // Refresh whenever CollectDonation screen navigates back with a new timestamp
+  useEffect(() => {
+    const refreshAt = navigation.getState?.()?.routes?.slice(-1)?.[0]?.params?.refreshAt;
+    if (refreshAt) fetchDonations(false);
+  }, [route?.params?.refreshAt]);
 
   // Check if a donation is a "next-day rollover" item:
   // created today, but assigned to a future date

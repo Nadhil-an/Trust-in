@@ -440,7 +440,8 @@ const CollectDonationScreen = ({ navigation, route }) => {
                 style={[styles.submitButton, { backgroundColor: '#0B57D0' }]} 
                 onPress={() => {
                   setSuccessData(null);
-                  navigation.goBack();
+                  // Pass a refresh timestamp so the list screen knows to refetch
+                  navigation.navigate('StaffDonationsList', { refreshAt: Date.now() });
                 }}
               >
                 <Text style={styles.submitButtonText}>{t('common.done')}</Text>
