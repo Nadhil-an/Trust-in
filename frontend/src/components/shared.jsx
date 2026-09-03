@@ -116,6 +116,7 @@ export function ConfirmModal({ isOpen, onClose, onConfirm, title="Are you sure?"
   return (
     <div 
       className="modal-overlay" 
+      style={{ zIndex: 1100 }}
       onMouseDown={e => { mouseDownTarget.current = e.target }}
       onMouseUp={e => {
         if (mouseDownTarget.current === e.currentTarget && e.target === e.currentTarget) {
