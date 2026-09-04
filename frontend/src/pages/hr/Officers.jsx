@@ -257,6 +257,7 @@ export default function Officers() {
   const [showVoucherModal, setShowVoucherModal] = useState(false)
   const [voucherStaff, setVoucherStaff] = useState(null)
   const [showBatchVoucherModal, setShowBatchVoucherModal] = useState(false)
+  const [voucherList, setVoucherList] = useState([])
 
   const [deleteId, setDeleteId] = useState(null)
   const [deleting, setDeleting] = useState(false)
@@ -267,6 +268,11 @@ export default function Officers() {
   const [reactivateStaff, setReactivateStaff] = useState(null);
   const [reactivatePassword, setReactivatePassword] = useState('123456');
   const [reactivateError, setReactivateError] = useState(null);
+
+  const [resetPasswordStaff, setResetPasswordStaff] = useState(null);
+  const [resetPasswordValue, setResetPasswordValue] = useState('');
+  const [resetPasswordError, setResetPasswordError] = useState(null);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
 
   const handleConfirmReactivate = async (e) => {
     if (e) e.preventDefault();
@@ -312,13 +318,15 @@ export default function Officers() {
     if (roleFilter) params.designation = roleFilter
     
     try {
-      const [res, rolesRes] = await Promise.all([
+      const [res, rolesRes, vouchersRes] = await Promise.all([
         hrApi.officers.list(params),
-        hrApi.officers.designations()
+        hrApi.officers.designations(),
+        hrApi.vouchers.list().catch(() => ({ data: [] }))
       ]);
       const listData = Array.isArray(res.data) ? res.data : (Array.isArray(res.data?.results) ? res.data.results : []);
       setItems(listData);
       setDynamicRoles(rolesRes.data || []);
+      setVoucherList(vouchersRes.data || []);
     }
     catch (_) {} finally { setLoading(false) }
   }, [search, employmentTypeFilter, roleFilter, showTerminated])
@@ -467,6 +475,32 @@ export default function Officers() {
     }
   }
 
+  const handleResetPassword = (staff) => {
+    setResetPasswordStaff(staff);
+    setResetPasswordValue('');
+    setResetPasswordError(null);
+  }
+
+  const handleConfirmResetPassword = async (e) => {
+    if (e) e.preventDefault();
+    if (!resetPasswordStaff || !resetPasswordValue.trim()) {
+      setResetPasswordError("Password is required.");
+      return;
+    }
+    if (isResettingPassword) return;
+    setIsResettingPassword(true);
+    setResetPasswordError(null);
+    try {
+      await hrApi.officers.resetPassword(resetPasswordStaff.id, { password: resetPasswordValue });
+      toast.success(`Password reset successfully!`, { duration: 5000 });
+      setResetPasswordStaff(null);
+    } catch (err) {
+      setResetPasswordError(err.response?.data?.error || "Failed to reset password");
+    } finally {
+      setIsResettingPassword(false);
+    }
+  }
+
   const openViewModal = (o) => {
     setViewItem(o)
     setGraphDays(7)
@@ -542,11 +576,24 @@ export default function Officers() {
                     <td>
                       <div style={{ display: 'flex', gap: '8px' }}>
                         {(o.role === 'STAFF' || o.designation === 'STAFF' || o.designation === 'Staff') && (
-                          <button className="btn btn-sm btn-secondary" style={{ color: '#4F46E5', borderColor: '#C7D2FE', background: '#EEF2FF' }} onClick={(e)=>{
+                          <button className="btn btn-sm btn-secondary" style={{ color: '#4F46E5', borderColor: '#C7D2FE', background: '#EEF2FF', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: '1.2', padding: '4px 10px' }} onClick={(e)=>{
                             e.stopPropagation();
                             setVoucherStaff(o);
                             setShowVoucherModal(true);
-                          }}>Voucher</button>
+                          }}>
+                            {(() => {
+                              const vb = voucherList.find(v => v.staff_id === (o.user_id || o.id) || v.staff_uid === o.employee_id || v.staff_name === o.full_name);
+                              if (vb && vb.book_number > 0) {
+                                return (
+                                  <>
+                                    <span style={{fontWeight: 600}}>Book #{vb.book_number}</span>
+                                    <span style={{fontSize: '10px', color: '#6B7280'}}>Voucher #{vb.current_voucher}</span>
+                                  </>
+                                );
+                              }
+                              return "Voucher";
+                            })()}
+                          </button>
                         )}
                         {o.status === 'INACTIVE' || o.status === 'TERMINATED' ? (
                           <button className="btn btn-sm btn-primary" style={{ background: '#10B981', borderColor: '#10B981', fontWeight: 600 }} onClick={(e)=>{
@@ -559,6 +606,12 @@ export default function Officers() {
                           </button>
                         ) : (
                           <>
+                            <button className="btn btn-sm btn-secondary" style={{ color: '#059669', borderColor: '#D1FAE5', background: '#ECFDF5', fontWeight: 600 }} onClick={(e)=>{
+                              e.stopPropagation();
+                              handleResetPassword(o);
+                            }}>
+                              Reset Pass
+                            </button>
                             <button className="btn btn-sm btn-secondary" onClick={(e)=>{
                               e.stopPropagation(); 
                               setSelected(o);
@@ -864,10 +917,26 @@ export default function Officers() {
                         <td>{o.full_name}</td>
                         <td>{formatRole(o.designation)}</td>
                         <td>
-                          <button className="btn btn-sm btn-secondary" style={{ color: '#4F46E5', borderColor: '#C7D2FE', background: '#EEF2FF' }} onClick={() => {
-                            setVoucherStaff(o);
-                            setShowVoucherModal(true);
-                          }}>Assign</button>
+                          {(() => {
+                            const vb = voucherList.find(v => v.staff_id === (o.user_id || o.id) || v.staff_uid === o.employee_id || v.staff_name === o.full_name);
+                            if (vb && vb.book_number > 0) {
+                              return (
+                                <button className="btn btn-sm btn-secondary" style={{ color: '#4F46E5', borderColor: '#C7D2FE', background: '#EEF2FF', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: '1.2', padding: '4px 10px' }} onClick={() => {
+                                  setVoucherStaff(o);
+                                  setShowVoucherModal(true);
+                                }}>
+                                  <span style={{fontWeight: 600}}>Book #{vb.book_number}</span>
+                                  <span style={{fontSize: '10px', color: '#6B7280'}}>Voucher #{vb.current_voucher}</span>
+                                </button>
+                              );
+                            }
+                            return (
+                              <button className="btn btn-sm btn-secondary" style={{ color: '#4F46E5', borderColor: '#C7D2FE', background: '#EEF2FF' }} onClick={() => {
+                                setVoucherStaff(o);
+                                setShowVoucherModal(true);
+                              }}>Assign</button>
+                            );
+                          })()}
                         </td>
                       </tr>
                     ))}
@@ -1009,6 +1078,77 @@ export default function Officers() {
                 style={{ fontSize: 14, padding: '10px 14px', resize: 'vertical' }}
                 autoFocus
               ></textarea>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* Styled Reset Password Modal */}
+      {resetPasswordStaff && (
+        <Modal 
+          isOpen={true} 
+          onClose={() => setResetPasswordStaff(null)} 
+          title="Reset Password"
+          size="modal-md"
+          footer={
+            <>
+              <button 
+                type="button" 
+                className="btn btn-secondary" 
+                onClick={() => setResetPasswordStaff(null)}
+              >
+                Cancel
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-primary" 
+                style={{ background: '#059669', borderColor: '#059669', fontWeight: 600 }}
+                onClick={handleConfirmResetPassword}
+                disabled={isResettingPassword}
+              >
+                {isResettingPassword ? 'Resetting...' : 'Reset Password'}
+              </button>
+            </>
+          }
+        >
+          <div style={{ textAlign: 'center', marginBottom: 20 }}>
+            <div style={{ width: 56, height: 56, borderRadius: 28, background: '#D1FAE5', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px auto', fontSize: 26 }}>
+              🔑
+            </div>
+            <h4 style={{ margin: '0 0 6px 0', fontSize: 18, color: '#111827', fontWeight: 700 }}>
+              Reset Password for {resetPasswordStaff.full_name}
+            </h4>
+            <p style={{ margin: 0, fontSize: 13, color: '#6B7280' }}>
+              Employee ID: <strong style={{ color: '#374151' }}>{resetPasswordStaff.employee_id}</strong>
+            </p>
+          </div>
+
+          {resetPasswordError && (
+            <div style={{ backgroundColor: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B', padding: '10px 14px', borderRadius: '8px', marginBottom: '16px', fontSize: '13px' }}>
+              ⚠️ {resetPasswordError}
+            </div>
+          )}
+
+          <form onSubmit={handleConfirmResetPassword}>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label required" style={{ fontWeight: 600, color: '#374151', marginBottom: 8 }}>
+                New Password
+              </label>
+              <input 
+                type="text"
+                className="form-control" 
+                required 
+                value={resetPasswordValue} 
+                onChange={e => setResetPasswordValue(e.target.value)} 
+                placeholder="Enter a new password"
+                style={{ fontSize: 15, padding: '10px 14px' }}
+                autoFocus
+                autoComplete="new-password"
+                spellCheck="false"
+              />
+              <span style={{ fontSize: 12, color: '#6B7280', marginTop: 6, display: 'block' }}>
+                This password will be required for their next login.
+              </span>
             </div>
           </form>
         </Modal>

@@ -262,9 +262,6 @@ const AddMemberScreen = ({ navigation, route }) => {
         navigation.goBack();
       } else {
         const res = await membersApi.create(formData);
-        if (voucher && user?.id) {
-          await staffApi.vouchers.increment(user.id).catch(() => {});
-        }
         setShowPreview(false);
         setSuccessData({
           member_id: res.data.member_id,

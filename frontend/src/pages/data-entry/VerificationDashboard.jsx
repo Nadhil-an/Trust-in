@@ -237,7 +237,7 @@ export default function VerificationDashboard() {
                   <th rowSpan={2} style={thStyle()}>Name</th>
                   <th rowSpan={2} style={thStyle()}>Voucher No</th>
                   <th colSpan={2} style={thStyle('center', '#4338CA', '#EEF2FF')}>Voucher Reading</th>
-                  <th colSpan={2} style={thStyle('center', '#0369A1', '#E0F2FE')}>Vothen Reading <br /><span style={{ fontSize: 10, fontWeight: 400 }}>(Auto from Mobile)</span></th>
+                  <th colSpan={2} style={thStyle('center', '#0369A1', '#E0F2FE')}>Voucher Reading <br /><span style={{ fontSize: 10, fontWeight: 400 }}>(Auto from Mobile)</span></th>
                   <th rowSpan={2} style={thStyle('center', '#7C3AED', '#F5F3FF')}>Cash Submitted<br /><span style={{ fontSize: 10, fontWeight: 400 }}>at Office</span></th>
                   <th rowSpan={2} style={thStyle('center', '#059669', '#ECFDF5')}>Total<br />Collected</th>
                   <th rowSpan={2} style={thStyle('center')}>Action</th>
@@ -265,7 +265,7 @@ export default function VerificationDashboard() {
                     }}>
                       <td style={{ padding: '10px 14px', fontWeight: 700, color: '#111827', whiteSpace: 'nowrap' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                          <span>{row.staff_name}</span>
+                          <span style={{ textTransform: 'capitalize' }}>{row.staff_name}</span>
                           {!row.is_present && <span style={{ fontSize: 10, color: '#EF4444', background: '#FEE2E2', padding: '2px 6px', borderRadius: 4 }}>ABSENT</span>}
                         </div>
                       </td>
@@ -297,19 +297,21 @@ export default function VerificationDashboard() {
 
                       <td style={{ padding: '6px 8px' }}>
                         <div
-                          style={{ minWidth: 90, textAlign: 'center', background: '#F0F9FF', padding: '6px', borderRadius: 4, cursor: 'pointer', color: '#0369A1', fontWeight: 600 }}
+                          style={{ minWidth: 90, textAlign: 'center', background: '#F0F9FF', padding: '6px', borderRadius: 4, cursor: 'pointer', color: '#0369A1', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
                           onClick={() => openTransactionsModal(row, 'CASH')}
+                          title="Click to view full details"
                         >
-                          {row.cash_collected}
+                          {row.cash_collected} <span style={{ fontSize: 11, opacity: 0.6 }}>↗</span>
                         </div>
                       </td>
 
                       <td style={{ padding: '6px 8px', borderRight: '2px solid #BAE6FD' }}>
                         <div
-                          style={{ minWidth: 90, textAlign: 'center', background: '#F0F9FF', padding: '6px', borderRadius: 4, cursor: 'pointer', color: '#0369A1', fontWeight: 600 }}
+                          style={{ minWidth: 90, textAlign: 'center', background: '#F0F9FF', padding: '6px', borderRadius: 4, cursor: 'pointer', color: '#0369A1', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
                           onClick={() => openTransactionsModal(row, 'UPI')}
+                          title="Click to view full details"
                         >
-                          {row.online_collected}
+                          {row.online_collected} <span style={{ fontSize: 11, opacity: 0.6 }}>↗</span>
                         </div>
                       </td>
 

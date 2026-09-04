@@ -21,6 +21,14 @@ class IsAccountant(BasePermission):
         return request.user.is_authenticated and request.user.role in [Role.ACCOUNTANT, Role.ADMIN]
 
 
+class IsFinanceOrDataEntry(BasePermission):
+    """Allows Accountant, Manager, Admin, and Data Entry."""
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.role in [
+            Role.ACCOUNTANT, Role.MANAGER, Role.ADMIN, Role.DATA_ENTRY
+        ]
+
+
 
 class IsHR(BasePermission):
     def has_permission(self, request, view):

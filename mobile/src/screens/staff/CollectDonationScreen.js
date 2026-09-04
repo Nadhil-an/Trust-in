@@ -170,9 +170,6 @@ const CollectDonationScreen = ({ navigation, route }) => {
         navigation.goBack();
       } else {
         const res = await donationApi.create(sendData);
-        if (voucher && user?.id) {
-          await staffApi.vouchers.increment(user.id).catch(() => {});
-        }
         setSuccessData({
           receipt_number: res.data.reference_number || res.data.receipt_number,
           donor_name: data.donor_name,

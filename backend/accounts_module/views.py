@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
-from core.permissions import IsAccountant, IsManagerOrAccountant, IsAnyStaff, IsOwnerOrManager
+from core.permissions import IsAccountant, IsManagerOrAccountant, IsAnyStaff, IsOwnerOrManager, IsFinanceOrDataEntry
 from core.models import AuditLog, Role
 from notify.service import push_dashboard_refresh
 from notify.whatsapp_service import send_whatsapp_receipt
@@ -262,6 +262,16 @@ class IncomeListCreateView(generics.ListCreateAPIView):
 
         income = serializer.save(created_by=creator, date=effective_date)
             
+        # --- Auto-Increment Voucher atomically ---
+        from hr_module.models import StaffVoucherBook
+        vb = StaffVoucherBook.objects.filter(staff=creator).first()
+        if vb and vb.book_number > 0 and str(vb.current_voucher) == str(income.reference_number):
+            try:
+                vb.increment()
+            except ValueError:
+                pass
+        # -----------------------------------------
+
         _sync_promoter_registry(income.created_by, income.date)
         
         # Auto-update account balance
@@ -665,7 +675,7 @@ class DaySheetView(APIView):
     CREDIT side = Expenses paid that day + disbursements
     Bottom section: physical cash/bank closing entered manually (from CashClosing model)
     """
-    permission_classes = [IsAccountant]
+    permission_classes = [IsFinanceOrDataEntry]
 
     def get(self, request):
         from datetime import date as dt_date
@@ -733,13 +743,20 @@ class DaySheetView(APIView):
 
         credit_rows = expense_rows
 
-        total_debit = sum(r['amount'] for r in debit_rows)
-        total_credit = sum(r['amount'] for r in credit_rows)
-        difference = total_debit - total_credit
-
         # ── Cash Closing (physical closing entered by cashier)
         from cashier_module.models import CashClosing
         closing = CashClosing.objects.filter(date=target_date).first()
+
+        if closing:
+            if closing.debit_rows:
+                debit_rows = closing.debit_rows
+            if closing.credit_rows:
+                credit_rows = closing.credit_rows
+
+        total_debit = sum(float(r.get('amount') or 0) for r in debit_rows)
+        total_credit = sum(float(r.get('amount') or 0) for r in credit_rows)
+        difference = total_debit - total_credit
+
         physical_cash = float(closing.physical_cash) if closing else 0.0
         physical_bank = float(closing.physical_bank) if closing else 0.0
         reading_total = physical_cash + physical_bank

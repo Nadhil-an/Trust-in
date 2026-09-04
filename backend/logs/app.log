@@ -204934,3 +204934,1077 @@ WebSocket DISCONNECT /ws/notify/ [127.0.0.1:20033]
 WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:43245]
 WebSocket REJECT /ws/notify/ [127.0.0.1:43245]
 WebSocket DISCONNECT /ws/notify/ [127.0.0.1:43245]
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:42533]
+WebSocket REJECT /ws/notify/ [127.0.0.1:42533]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:42533]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:23490]
+WebSocket REJECT /ws/notify/ [127.0.0.1:23490]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:23490]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:21890]
+WebSocket REJECT /ws/notify/ [127.0.0.1:21890]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:21890]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:25134]
+WebSocket REJECT /ws/notify/ [127.0.0.1:25134]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:25134]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:21674]
+WebSocket REJECT /ws/notify/ [127.0.0.1:21674]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:21674]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:6520]
+WebSocket REJECT /ws/notify/ [127.0.0.1:6520]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:6520]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:25124]
+WebSocket REJECT /ws/notify/ [127.0.0.1:25124]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:25124]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:63439]
+WebSocket REJECT /ws/notify/ [127.0.0.1:63439]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:63439]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:46739]
+WebSocket REJECT /ws/notify/ [127.0.0.1:46739]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:46739]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:10087]
+WebSocket REJECT /ws/notify/ [127.0.0.1:10087]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:10087]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:17519]
+WebSocket REJECT /ws/notify/ [127.0.0.1:17519]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:17519]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:28396]
+WebSocket REJECT /ws/notify/ [127.0.0.1:28396]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:28396]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:62991]
+WebSocket REJECT /ws/notify/ [127.0.0.1:62991]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:62991]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:41532]
+WebSocket REJECT /ws/notify/ [127.0.0.1:41532]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:41532]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:45238]
+WebSocket REJECT /ws/notify/ [127.0.0.1:45238]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:45238]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:17247]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:37350]
+WebSocket REJECT /ws/notify/ [127.0.0.1:17247]
+WebSocket REJECT /ws/notify/ [127.0.0.1:37350]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:17247]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:37350]
+Unauthorized: /api/accounts/day-sheet/
+[31;1mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 401 [0.18, 127.0.0.1:37351][0m
+Unauthorized: /api/accounts/day-sheet/
+[31;1mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 401 [0.02, 127.0.0.1:22464][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.10, 127.0.0.1:60405][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.04, 127.0.0.1:8542][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.02, 127.0.0.1:38826][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:2768]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:2768]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:2768]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:18010]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:18010]
+[mHTTP GET /api/core/features/ 200 [0.03, 127.0.0.1:2770][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 127.0.0.1:2769][0m
+[mHTTP GET /api/core/features/ 200 [0.02, 127.0.0.1:18011][0m
+[mHTTP GET /api/auth/profile/ 200 [0.02, 127.0.0.1:18013][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.03, 127.0.0.1:18012][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.02, 127.0.0.1:18014][0m
+[mHTTP POST /api/auth/logout/ 200 [0.03, 127.0.0.1:34944][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:18010]
+[mHTTP POST /api/auth/login/ 200 [0.19, 127.0.0.1:1815][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:41110]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:41110]
+[mHTTP GET /api/core/features/ 200 [0.02, 127.0.0.1:61665][0m
+[mHTTP GET /api/auth/profile/ 200 [0.02, 127.0.0.1:61664][0m
+[mHTTP GET /api/accounts/dashboard/ 200 [0.04, 127.0.0.1:61666][0m
+[mHTTP GET /api/accounts/dashboard/ 200 [0.03, 127.0.0.1:41408][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.01, 127.0.0.1:39821][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.01, 127.0.0.1:32245][0m
+[mHTTP POST /api/auth/logout/ 200 [0.03, 127.0.0.1:59607][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:41110]
+[mHTTP POST /api/auth/login/ 200 [0.24, 127.0.0.1:63540][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:55012]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:55012]
+[mHTTP GET /api/core/features/ 200 [0.06, 127.0.0.1:50139][0m
+[mHTTP GET /api/auth/profile/ 200 [0.07, 127.0.0.1:50138][0m
+[mHTTP GET /api/hr/dashboard/ 200 [0.13, 127.0.0.1:50140][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.04, 127.0.0.1:32770][0m
+[mHTTP GET /api/hr/dashboard/ 200 [0.09, 127.0.0.1:50141][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.03, 127.0.0.1:61593][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.06, 127.0.0.1:30278][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.04, 127.0.0.1:30487][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE 200 [0.17, 127.0.0.1:30279][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE 200 [0.12, 127.0.0.1:23543][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.04, 127.0.0.1:25080][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE&designation=STAFF 200 [0.08, 127.0.0.1:25079][0m
+[mHTTP GET /api/hr/staff-vouchers/17bf9936-922b-4627-a40b-7687bf44f4b8/ 200 [0.03, 127.0.0.1:12599][0m
+[mHTTP GET /api/hr/staff-vouchers/17bf9936-922b-4627-a40b-7687bf44f4b8/ 200 [0.02, 127.0.0.1:41929][0m
+[mHTTP GET /api/hr/staff-vouchers/4a0447c6-83e5-43d9-8725-310375b66226/ 200 [0.03, 127.0.0.1:2732][0m
+[mHTTP GET /api/hr/staff-vouchers/4a0447c6-83e5-43d9-8725-310375b66226/ 200 [0.02, 127.0.0.1:25897][0m
+[mHTTP GET /api/hr/staff-vouchers/17bf9936-922b-4627-a40b-7687bf44f4b8/ 200 [0.02, 127.0.0.1:60437][0m
+[mHTTP GET /api/hr/staff-vouchers/17bf9936-922b-4627-a40b-7687bf44f4b8/ 200 [0.03, 127.0.0.1:15578][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:55012]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:13950]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:13950]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:13950]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:41386]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:41386]
+[mHTTP GET /api/core/features/ 200 [0.05, 127.0.0.1:13952][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 127.0.0.1:13951][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 127.0.0.1:41387][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 127.0.0.1:41388][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.04, 127.0.0.1:41390][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.02, 127.0.0.1:20065][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE&designation=STAFF 200 [0.08, 127.0.0.1:41389][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE&designation=STAFF 200 [0.04, 127.0.0.1:27084][0m
+[mHTTP POST /api/auth/logout/ 200 [0.03, 127.0.0.1:65140][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:41386]
+[mHTTP POST /api/auth/login/ 200 [0.29, 127.0.0.1:52470][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:47680]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:47680]
+[mHTTP GET /api/core/features/ 200 [0.05, 127.0.0.1:48546][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 127.0.0.1:48545][0m
+[mHTTP GET /api/accounts/dashboard/ 200 [0.09, 127.0.0.1:57458][0m
+[mHTTP GET /api/accounts/dashboard/ 200 [0.05, 127.0.0.1:48526][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.02, 127.0.0.1:3226][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.03, 127.0.0.1:7528][0m
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\hr_module\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\hr_module\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:53284]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:53284]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\hr_module\urls.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:60022]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:60022]
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.08, 127.0.0.1:8979][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:60022]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:23903]
+WebSocket REJECT /ws/notify/ [127.0.0.1:23903]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:23903]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:55892]
+WebSocket REJECT /ws/notify/ [127.0.0.1:55892]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:55892]
+Unauthorized: /api/core/features/
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/core/features/ 401 [0.04, 127.0.0.1:23905][0m
+[31;1mHTTP GET /api/auth/profile/ 401 [0.05, 127.0.0.1:23904][0m
+Unauthorized: /api/core/features/
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/core/features/ 401 [0.04, 127.0.0.1:55893][0m
+[31;1mHTTP GET /api/auth/profile/ 401 [0.04, 127.0.0.1:55894][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.05, 127.0.0.1:55895][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 127.0.0.1:6765][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 127.0.0.1:6764][0m
+[mHTTP GET /api/core/features/ 200 [0.05, 127.0.0.1:7662][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 127.0.0.1:53944][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.06, 127.0.0.1:31691][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.04, 127.0.0.1:1277][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:13181]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:13181]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:13181]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:3180]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:3180]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:3180]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:59305]
+[mHTTP GET /api/auth/profile/ 200 [0.05, 127.0.0.1:3181][0m
+WebSocket CONNECT /ws/notify/ [127.0.0.1:59305]
+[mHTTP GET /api/core/features/ 200 [0.07, 127.0.0.1:3182][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 127.0.0.1:59306][0m
+[mHTTP GET /api/core/features/ 200 [0.06, 127.0.0.1:59307][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.06, 127.0.0.1:59308][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.03, 127.0.0.1:59309][0m
+[mHTTP POST /api/auth/logout/ 200 [0.04, 127.0.0.1:51186][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:59305]
+[mHTTP POST /api/auth/login/ 200 [0.30, 127.0.0.1:27869][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:7073]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:7073]
+[mHTTP GET /api/core/features/ 200 [0.06, 127.0.0.1:1631][0m
+[mHTTP GET /api/auth/profile/ 200 [0.07, 127.0.0.1:1630][0m
+[mHTTP GET /api/hr/dashboard/ 200 [0.10, 127.0.0.1:24339][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.05, 127.0.0.1:15931][0m
+[mHTTP GET /api/hr/dashboard/ 200 [0.11, 127.0.0.1:56057][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.03, 127.0.0.1:2580][0m
+[mHTTP GET /api/hr/attendance/?date=2026-09-04 200 [0.09, 127.0.0.1:5069][0m
+[mHTTP GET /api/hr/attendance/?date=2026-09-04 200 [0.07, 127.0.0.1:9887][0m
+[mHTTP GET /api/hr/officers/ 200 [0.23, 127.0.0.1:49671][0m
+[mHTTP GET /api/hr/officers/ 200 [0.15, 127.0.0.1:61492][0m
+[mHTTP GET /api/hr/leave/?search= 200 [0.04, 127.0.0.1:9349][0m
+[mHTTP GET /api/hr/leave/?search= 200 [0.03, 127.0.0.1:65164][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.06, 127.0.0.1:12166][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.07, 127.0.0.1:54217][0m
+[mHTTP GET /api/hr/staff-vouchers/ 200 [0.16, 127.0.0.1:12167][0m
+[mHTTP GET /api/hr/staff-vouchers/ 200 [0.11, 127.0.0.1:18272][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE 200 [0.31, 127.0.0.1:38329][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE 200 [0.15, 127.0.0.1:48435][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.04, 127.0.0.1:11561][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE&designation=STAFF 200 [0.11, 127.0.0.1:11560][0m
+[mHTTP GET /api/hr/staff-vouchers/ 200 [0.11, 127.0.0.1:11562][0m
+[mHTTP GET /api/hr/staff-vouchers/a7af8b9f-5b62-4b02-a61b-b6c95fb2bfc3/ 200 [0.04, 127.0.0.1:21932][0m
+[mHTTP GET /api/hr/staff-vouchers/a7af8b9f-5b62-4b02-a61b-b6c95fb2bfc3/ 200 [0.03, 127.0.0.1:33185][0m
+[mHTTP GET /api/hr/officers/19e451dd-d3b0-479e-be45-ab1217485238/attendance-graph/?days=7 200 [0.04, 127.0.0.1:26656][0m
+[mHTTP GET /api/hr/officers/19e451dd-d3b0-479e-be45-ab1217485238/attendance-graph/?days=7 200 [0.06, 127.0.0.1:32472][0m
+[mHTTP GET /api/hr/staff-vouchers/a7af8b9f-5b62-4b02-a61b-b6c95fb2bfc3/ 200 [0.04, 127.0.0.1:47082][0m
+[mHTTP GET /api/hr/staff-vouchers/a7af8b9f-5b62-4b02-a61b-b6c95fb2bfc3/ 200 [0.03, 127.0.0.1:30161][0m
+Bad Request: /api/hr/staff-vouchers/a7af8b9f-5b62-4b02-a61b-b6c95fb2bfc3/
+[31;1mHTTP PATCH /api/hr/staff-vouchers/a7af8b9f-5b62-4b02-a61b-b6c95fb2bfc3/ 400 [0.04, 127.0.0.1:41514][0m
+[mHTTP DELETE /api/hr/officers/c4cf704a-1233-4363-b3c9-9a9b6f388d76/ 204 [0.07, 127.0.0.1:27806][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.08, 127.0.0.1:22593][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE&designation=STAFF 200 [0.13, 127.0.0.1:22592][0m
+[mHTTP GET /api/hr/staff-vouchers/ 200 [0.12, 127.0.0.1:22594][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.05, 127.0.0.1:38436][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE&designation=STAFF 200 [0.12, 127.0.0.1:19545][0m
+[mHTTP GET /api/hr/staff-vouchers/ 200 [0.12, 127.0.0.1:16621][0m
+[mHTTP GET /api/hr/staff-vouchers/a7af8b9f-5b62-4b02-a61b-b6c95fb2bfc3/ 200 [0.03, 127.0.0.1:40476][0m
+[mHTTP GET /api/hr/staff-vouchers/a7af8b9f-5b62-4b02-a61b-b6c95fb2bfc3/ 200 [0.03, 127.0.0.1:10999][0m
+[mHTTP PATCH /api/hr/staff-vouchers/a7af8b9f-5b62-4b02-a61b-b6c95fb2bfc3/ 200 [0.05, 127.0.0.1:39324][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:7073]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:48739]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:48739]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:48739]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:50876]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:50876]
+[mHTTP GET /api/auth/profile/ 200 [0.05, 127.0.0.1:48740][0m
+[mHTTP GET /api/core/features/ 200 [0.06, 127.0.0.1:48741][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 127.0.0.1:50877][0m
+[mHTTP GET /api/core/features/ 200 [0.07, 127.0.0.1:50878][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.08, 127.0.0.1:8646][0m
+[mHTTP GET /api/hr/staff-vouchers/ 200 [0.14, 127.0.0.1:8647][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.08, 127.0.0.1:9948][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE&designation=STAFF 200 [0.18, 127.0.0.1:8645][0m
+[mHTTP GET /api/hr/staff-vouchers/ 200 [0.09, 127.0.0.1:15870][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE&designation=STAFF 200 [0.11, 127.0.0.1:15698][0m
+[mHTTP GET /api/hr/staff-vouchers/a7af8b9f-5b62-4b02-a61b-b6c95fb2bfc3/ 200 [0.03, 127.0.0.1:38663][0m
+[mHTTP GET /api/hr/staff-vouchers/a7af8b9f-5b62-4b02-a61b-b6c95fb2bfc3/ 200 [0.02, 127.0.0.1:23819][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.06, 127.0.0.1:15493][0m
+[mHTTP GET /api/hr/staff-vouchers/ 200 [0.12, 127.0.0.1:15494][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE&designation=STAFF 200 [0.13, 127.0.0.1:15492][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:50876]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:49673]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:49673]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:49673]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:53120]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:53120]
+[mHTTP GET /api/core/features/ 200 [0.05, 127.0.0.1:49675][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 127.0.0.1:49674][0m
+[mHTTP GET /api/core/features/ 200 [0.06, 127.0.0.1:53121][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 127.0.0.1:53122][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.08, 127.0.0.1:5398][0m
+[mHTTP GET /api/hr/staff-vouchers/ 200 [0.14, 127.0.0.1:5399][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE&designation=STAFF 200 [0.19, 127.0.0.1:53123][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.09, 127.0.0.1:41322][0m
+[mHTTP GET /api/hr/staff-vouchers/ 200 [0.13, 127.0.0.1:23831][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE&designation=STAFF 200 [0.11, 127.0.0.1:45648][0m
+[mHTTP POST /api/auth/logout/ 200 [0.04, 127.0.0.1:9481][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:53120]
+[mHTTP POST /api/auth/login/ 200 [0.23, 127.0.0.1:3365][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:49215]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:49215]
+[mHTTP GET /api/auth/profile/ 200 [0.05, 127.0.0.1:13341][0m
+[mHTTP GET /api/core/features/ 200 [0.05, 127.0.0.1:13342][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-04&verification_status=VERIFIED 200 [0.04, 127.0.0.1:14973][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-04&verification_status=VERIFIED 200 [0.04, 127.0.0.1:25072][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-04&verification_status=UNVERIFIED 200 [0.03, 127.0.0.1:47201][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-04&verification_status=UNVERIFIED 200 [0.04, 127.0.0.1:34243][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:49215]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:30115]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:30115]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:30115]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:12091]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:12091]
+[mHTTP GET /api/core/features/ 200 [0.07, 127.0.0.1:30117][0m
+[mHTTP GET /api/auth/profile/ 200 [0.08, 127.0.0.1:30116][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 127.0.0.1:12092][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 127.0.0.1:12093][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-04&verification_status=UNVERIFIED 200 [0.05, 127.0.0.1:12094][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-04&verification_status=UNVERIFIED 200 [0.03, 127.0.0.1:62759][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-03&verification_status=UNVERIFIED 200 [0.04, 127.0.0.1:46307][0m
+[mHTTP GET /api/hr/promoter-registry/transactions/?staff_id=081d2688-82bb-43d0-bca4-f42b7f93812a&date=2026-09-03 200 [0.02, 127.0.0.1:6657][0m
+[mHTTP GET /api/hr/promoter-registry/transactions/?staff_id=081d2688-82bb-43d0-bca4-f42b7f93812a&date=2026-09-03 200 [0.04, 127.0.0.1:29488][0m
+[mHTTP GET /api/hr/promoter-registry/transactions/?staff_id=081d2688-82bb-43d0-bca4-f42b7f93812a&date=2026-09-03 200 [0.02, 127.0.0.1:54758][0m
+[mHTTP GET /api/hr/promoter-registry/transactions/?staff_id=081d2688-82bb-43d0-bca4-f42b7f93812a&date=2026-09-03 200 [0.02, 127.0.0.1:29418][0m
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\accounts_module\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:14147]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:14147]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\hr_module\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:51571]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:51571]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:51571]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:58674]
+WebSocket REJECT /ws/notify/ [127.0.0.1:58674]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:58674]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:43790]
+WebSocket REJECT /ws/notify/ [127.0.0.1:43790]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:43790]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:27100]
+WebSocket REJECT /ws/notify/ [127.0.0.1:27100]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:27100]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:11466]
+WebSocket REJECT /ws/notify/ [127.0.0.1:11466]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:11466]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:31299]
+WebSocket REJECT /ws/notify/ [127.0.0.1:31299]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:31299]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:39205]
+WebSocket REJECT /ws/notify/ [127.0.0.1:39205]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:39205]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:49287]
+WebSocket REJECT /ws/notify/ [127.0.0.1:49287]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:49287]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:4014]
+WebSocket REJECT /ws/notify/ [127.0.0.1:4014]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:4014]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:33269]
+WebSocket REJECT /ws/notify/ [127.0.0.1:33269]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:33269]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:2643]
+WebSocket REJECT /ws/notify/ [127.0.0.1:2643]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:2643]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:9343]
+WebSocket REJECT /ws/notify/ [127.0.0.1:9343]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:9343]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:11172]
+WebSocket REJECT /ws/notify/ [127.0.0.1:11172]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:11172]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:24135]
+WebSocket REJECT /ws/notify/ [127.0.0.1:24135]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:24135]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:22825]
+WebSocket REJECT /ws/notify/ [127.0.0.1:22825]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:22825]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:56200]
+WebSocket REJECT /ws/notify/ [127.0.0.1:56200]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:56200]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:46935]
+WebSocket REJECT /ws/notify/ [127.0.0.1:46935]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:46935]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:48685]
+WebSocket REJECT /ws/notify/ [127.0.0.1:48685]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:48685]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:63339]
+WebSocket REJECT /ws/notify/ [127.0.0.1:63339]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:63339]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:15398]
+WebSocket REJECT /ws/notify/ [127.0.0.1:15398]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:15398]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:61892]
+WebSocket REJECT /ws/notify/ [127.0.0.1:61892]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:61892]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:31923]
+WebSocket REJECT /ws/notify/ [127.0.0.1:31923]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:31923]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:49671]
+WebSocket REJECT /ws/notify/ [127.0.0.1:49671]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:49671]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:43551]
+WebSocket REJECT /ws/notify/ [127.0.0.1:43551]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:43551]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:57545]
+WebSocket REJECT /ws/notify/ [127.0.0.1:57545]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:57545]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:12143]
+WebSocket REJECT /ws/notify/ [127.0.0.1:12143]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:12143]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:31846]
+WebSocket REJECT /ws/notify/ [127.0.0.1:31846]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:31846]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:8196]
+WebSocket REJECT /ws/notify/ [127.0.0.1:8196]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:8196]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:63979]
+WebSocket REJECT /ws/notify/ [127.0.0.1:63979]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:63979]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:12818]
+WebSocket REJECT /ws/notify/ [127.0.0.1:12818]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:12818]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:22580]
+WebSocket REJECT /ws/notify/ [127.0.0.1:22580]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:22580]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:54876]
+WebSocket REJECT /ws/notify/ [127.0.0.1:54876]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:54876]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:18375]
+WebSocket REJECT /ws/notify/ [127.0.0.1:18375]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:18375]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:52137]
+WebSocket REJECT /ws/notify/ [127.0.0.1:52137]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:52137]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:42465]
+WebSocket REJECT /ws/notify/ [127.0.0.1:42465]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:42465]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:20473]
+WebSocket REJECT /ws/notify/ [127.0.0.1:20473]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:20473]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:38225]
+WebSocket REJECT /ws/notify/ [127.0.0.1:38225]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:38225]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:52483]
+WebSocket REJECT /ws/notify/ [127.0.0.1:52483]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:52483]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:35138]
+WebSocket REJECT /ws/notify/ [127.0.0.1:35138]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:35138]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:51370]
+WebSocket REJECT /ws/notify/ [127.0.0.1:51370]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:51370]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:50640]
+WebSocket REJECT /ws/notify/ [127.0.0.1:50640]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:50640]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:6313]
+WebSocket REJECT /ws/notify/ [127.0.0.1:6313]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:6313]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:51509]
+WebSocket REJECT /ws/notify/ [127.0.0.1:51509]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:51509]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:30762]
+WebSocket REJECT /ws/notify/ [127.0.0.1:30762]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:30762]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:15421]
+WebSocket REJECT /ws/notify/ [127.0.0.1:15421]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:15421]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:44985]
+WebSocket REJECT /ws/notify/ [127.0.0.1:44985]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:44985]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:51868]
+WebSocket REJECT /ws/notify/ [127.0.0.1:51868]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:51868]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:4973]
+WebSocket REJECT /ws/notify/ [127.0.0.1:4973]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:4973]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:18910]
+WebSocket REJECT /ws/notify/ [127.0.0.1:18910]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:18910]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:51430]
+WebSocket REJECT /ws/notify/ [127.0.0.1:51430]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:51430]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:29875]
+WebSocket REJECT /ws/notify/ [127.0.0.1:29875]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:29875]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:62693]
+WebSocket REJECT /ws/notify/ [127.0.0.1:62693]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:62693]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:8141]
+WebSocket REJECT /ws/notify/ [127.0.0.1:8141]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:8141]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:44703]
+WebSocket REJECT /ws/notify/ [127.0.0.1:44703]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:44703]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:64887]
+WebSocket REJECT /ws/notify/ [127.0.0.1:64887]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:64887]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:50368]
+WebSocket REJECT /ws/notify/ [127.0.0.1:50368]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:50368]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:54726]
+WebSocket REJECT /ws/notify/ [127.0.0.1:54726]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:54726]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:34049]
+WebSocket REJECT /ws/notify/ [127.0.0.1:34049]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:34049]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:34407]
+WebSocket REJECT /ws/notify/ [127.0.0.1:34407]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:34407]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:8611]
+WebSocket REJECT /ws/notify/ [127.0.0.1:8611]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:8611]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:28647]
+WebSocket REJECT /ws/notify/ [127.0.0.1:28647]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:28647]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:1987]
+WebSocket REJECT /ws/notify/ [127.0.0.1:1987]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:1987]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:34518]
+WebSocket REJECT /ws/notify/ [127.0.0.1:34518]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:34518]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:63464]
+WebSocket REJECT /ws/notify/ [127.0.0.1:63464]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:63464]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:29357]
+WebSocket REJECT /ws/notify/ [127.0.0.1:29357]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:29357]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:52206]
+WebSocket REJECT /ws/notify/ [127.0.0.1:52206]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:52206]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:20792]
+WebSocket REJECT /ws/notify/ [127.0.0.1:20792]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:20792]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:21663]
+WebSocket REJECT /ws/notify/ [127.0.0.1:21663]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:21663]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:64994]
+WebSocket REJECT /ws/notify/ [127.0.0.1:64994]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:64994]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:39955]
+WebSocket REJECT /ws/notify/ [127.0.0.1:39955]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:39955]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:48036]
+WebSocket REJECT /ws/notify/ [127.0.0.1:48036]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:48036]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:12078]
+WebSocket REJECT /ws/notify/ [127.0.0.1:12078]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:12078]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:60204]
+WebSocket REJECT /ws/notify/ [127.0.0.1:60204]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:60204]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:19294]
+WebSocket REJECT /ws/notify/ [127.0.0.1:19294]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:19294]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:18321]
+WebSocket REJECT /ws/notify/ [127.0.0.1:18321]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:18321]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:60976]
+WebSocket REJECT /ws/notify/ [127.0.0.1:60976]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:60976]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:54501]
+WebSocket REJECT /ws/notify/ [127.0.0.1:54501]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:54501]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:37539]
+WebSocket REJECT /ws/notify/ [127.0.0.1:37539]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:37539]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:23807]
+WebSocket REJECT /ws/notify/ [127.0.0.1:23807]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:23807]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:36753]
+WebSocket REJECT /ws/notify/ [127.0.0.1:36753]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:36753]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:37460]
+WebSocket REJECT /ws/notify/ [127.0.0.1:37460]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:37460]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:58034]
+WebSocket REJECT /ws/notify/ [127.0.0.1:58034]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:58034]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:37586]
+WebSocket REJECT /ws/notify/ [127.0.0.1:37586]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:37586]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:48454]
+WebSocket REJECT /ws/notify/ [127.0.0.1:48454]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:48454]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:39622]
+WebSocket REJECT /ws/notify/ [127.0.0.1:39622]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:39622]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:22848]
+WebSocket REJECT /ws/notify/ [127.0.0.1:22848]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:22848]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:32144]
+WebSocket REJECT /ws/notify/ [127.0.0.1:32144]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:32144]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:43966]
+WebSocket REJECT /ws/notify/ [127.0.0.1:43966]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:43966]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:59562]
+WebSocket REJECT /ws/notify/ [127.0.0.1:59562]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:59562]
+Unauthorized: /api/core/features/
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/core/features/ 401 [0.03, 127.0.0.1:43968][0m
+[31;1mHTTP GET /api/auth/profile/ 401 [0.03, 127.0.0.1:43967][0m
+Unauthorized: /api/core/features/
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/core/features/ 401 [0.02, 127.0.0.1:59564][0m
+[31;1mHTTP GET /api/auth/profile/ 401 [0.02, 127.0.0.1:59563][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.02, 127.0.0.1:59565][0m
+[mHTTP GET /api/core/features/ 200 [0.02, 127.0.0.1:46757][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 127.0.0.1:46758][0m
+[mHTTP GET /api/core/features/ 200 [0.02, 127.0.0.1:64955][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 127.0.0.1:3836][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-04&verification_status=UNVERIFIED 200 [0.05, 127.0.0.1:32979][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-04&verification_status=UNVERIFIED 200 [0.02, 127.0.0.1:32980][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:1199]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:1199]
+[mHTTP POST /api/auth/logout/ 200 [0.02, 127.0.0.1:40762][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:1199]
+[mHTTP POST /api/auth/login/ 200 [0.20, 127.0.0.1:56004][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:26712]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:26712]
+[mHTTP GET /api/auth/profile/ 200 [0.02, 127.0.0.1:23364][0m
+[mHTTP GET /api/core/features/ 200 [0.02, 127.0.0.1:63574][0m
+[mHTTP GET /api/accounts/dashboard/ 200 [0.04, 127.0.0.1:63575][0m
+[mHTTP GET /api/accounts/dashboard/ 200 [0.03, 127.0.0.1:21204][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.03, 127.0.0.1:3403][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.01, 127.0.0.1:61869][0m
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+[mHTTP POST /api/auth/login/ 200 [0.28, 127.0.0.1:45550][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:52579]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:52579]
+[mHTTP GET /api/core/features/ 200 [0.04, 127.0.0.1:60680][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 127.0.0.1:60682][0m
+[mHTTP GET /api/accounts/dashboard/ 200 [0.08, 127.0.0.1:60681][0m
+[mHTTP GET /api/accounts/dashboard/ 200 [0.04, 127.0.0.1:60683][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.03, 127.0.0.1:34574][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.02, 127.0.0.1:1070][0m
+[mHTTP POST /api/auth/logout/ 200 [0.02, 127.0.0.1:24944][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:52579]
+[mHTTP POST /api/auth/login/ 200 [0.22, 127.0.0.1:8039][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:56188]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:56188]
+[mHTTP GET /api/auth/profile/ 200 [0.03, 127.0.0.1:56189][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 127.0.0.1:56190][0m
+[mHTTP GET /api/core/users/ 200 [0.69, 127.0.0.1:56191][0m
+[mHTTP GET /api/core/users/ 200 [0.03, 127.0.0.1:14562][0m
+[mHTTP GET /api/core/features/?all=true 200 [0.01, 127.0.0.1:21223][0m
+[mHTTP GET /api/core/features/?all=true 200 [0.01, 127.0.0.1:61171][0m
+[mHTTP POST /api/core/features/ 200 [0.02, 127.0.0.1:63091][0m
+[mHTTP POST /api/auth/logout/ 200 [0.02, 127.0.0.1:58372][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:56188]
+[mHTTP POST /api/auth/login/ 200 [0.18, 127.0.0.1:17628][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:10444]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:10444]
+[mHTTP GET /api/core/features/ 200 [0.03, 127.0.0.1:2211][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 127.0.0.1:49298][0m
+[mHTTP POST /api/auth/logout/ 200 [0.02, 127.0.0.1:12261][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:10444]
+[mHTTP POST /api/auth/login/ 200 [0.21, 127.0.0.1:63875][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:54977]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:54977]
+[mHTTP GET /api/auth/profile/ 200 [0.02, 127.0.0.1:18705][0m
+[mHTTP GET /api/core/features/ 200 [0.02, 127.0.0.1:52197][0m
+Forbidden: /api/accounts/day-sheet/
+[31;1mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 403 [0.02, 127.0.0.1:52198][0m
+Forbidden: /api/accounts/day-sheet/
+[31;1mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 403 [0.01, 127.0.0.1:58994][0m
+Forbidden: /api/accounts/day-sheet/
+[31;1mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 403 [0.01, 127.0.0.1:3224][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:54977]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:59947]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:59947]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:59947]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:22751]
+[mHTTP GET /api/core/features/ 200 [0.02, 127.0.0.1:59949][0m
+[mHTTP GET /api/auth/profile/ 200 [0.02, 127.0.0.1:59948][0m
+WebSocket CONNECT /ws/notify/ [127.0.0.1:22751]
+[mHTTP GET /api/auth/profile/ 200 [0.02, 127.0.0.1:22753][0m
+[mHTTP GET /api/core/features/ 200 [0.02, 127.0.0.1:22752][0m
+Forbidden: /api/accounts/day-sheet/
+[31;1mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 403 [0.02, 127.0.0.1:22754][0m
+Forbidden: /api/accounts/day-sheet/
+[31;1mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 403 [0.01, 127.0.0.1:22755][0m
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\permissions.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:49838]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:49838]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\accounts_module\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:53655]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:53655]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:53655]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:31653]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:31653]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:31653]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:48537]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:48537]
+[mHTTP GET /api/core/features/ 200 [0.03, 127.0.0.1:31655][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 127.0.0.1:31654][0m
+[mHTTP GET /api/core/features/ 200 [0.08, 127.0.0.1:48538][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 127.0.0.1:48540][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.10, 127.0.0.1:48539][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.01, 127.0.0.1:48541][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.01, 127.0.0.1:29553][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.01, 127.0.0.1:38753][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:48537]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:50219]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:50219]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:50219]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:39278]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:39278]
+[mHTTP GET /api/auth/profile/ 200 [0.02, 127.0.0.1:50220][0m
+[mHTTP GET /api/core/features/ 200 [0.02, 127.0.0.1:50221][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 127.0.0.1:39279][0m
+[mHTTP GET /api/core/features/ 200 [0.03, 127.0.0.1:39280][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.03, 127.0.0.1:39281][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.01, 127.0.0.1:39282][0m
+Unauthorized: /api/accounts/day-sheet/
+[31;1mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 401 [0.01, 127.0.0.1:40817][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.01, 127.0.0.1:49786][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.01, 127.0.0.1:10930][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.03, 127.0.0.1:53492][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:39278]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:17505]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:17505]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:17505]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:18138]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:18138]
+[mHTTP GET /api/core/features/ 200 [0.07, 127.0.0.1:17507][0m
+[mHTTP GET /api/auth/profile/ 200 [0.07, 127.0.0.1:17506][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 127.0.0.1:18139][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 127.0.0.1:18140][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.04, 127.0.0.1:18141][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.03, 127.0.0.1:18142][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.03, 127.0.0.1:27188][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.04, 127.0.0.1:61770][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:18138]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:26066]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:26066]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:26066]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:21353]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:21353]
+[mHTTP GET /api/core/features/ 200 [0.04, 127.0.0.1:26068][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 127.0.0.1:26067][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 127.0.0.1:21354][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 127.0.0.1:21356][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.06, 127.0.0.1:21355][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.03, 127.0.0.1:21357][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.02, 127.0.0.1:2873][0m
+Unauthorized: /api/accounts/day-sheet/
+[31;1mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 401 [0.01, 127.0.0.1:6646][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.01, 127.0.0.1:37314][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.01, 127.0.0.1:9037][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-07 200 [0.02, 127.0.0.1:18357][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.02, 127.0.0.1:36665][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:21353]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:38130]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:38130]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:38130]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:45269]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:45269]
+[mHTTP GET /api/auth/profile/ 200 [0.05, 127.0.0.1:38131][0m
+[mHTTP GET /api/core/features/ 200 [0.05, 127.0.0.1:38132][0m
+[mHTTP GET /api/core/features/ 200 [0.03, 127.0.0.1:45271][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 127.0.0.1:45270][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.04, 127.0.0.1:45272][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.03, 127.0.0.1:45273][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.03, 127.0.0.1:57130][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.02, 127.0.0.1:11550][0m
+Forbidden: /api/cashier/cash-closing/
+[31;1mHTTP POST /api/cashier/cash-closing/ 403 [0.02, 127.0.0.1:14748][0m
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\cashier_module\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:47679]
+WebSocket REJECT /ws/notify/ [127.0.0.1:47679]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:47679]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:58099]
+WebSocket REJECT /ws/notify/ [127.0.0.1:58099]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:58099]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:42570]
+WebSocket REJECT /ws/notify/ [127.0.0.1:42570]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:42570]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:29501]
+WebSocket REJECT /ws/notify/ [127.0.0.1:29501]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:29501]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:41707]
+WebSocket REJECT /ws/notify/ [127.0.0.1:41707]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:41707]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:65222]
+WebSocket REJECT /ws/notify/ [127.0.0.1:65222]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:65222]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:31479]
+WebSocket REJECT /ws/notify/ [127.0.0.1:31479]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:31479]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:9747]
+WebSocket REJECT /ws/notify/ [127.0.0.1:9747]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:9747]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:13506]
+WebSocket REJECT /ws/notify/ [127.0.0.1:13506]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:13506]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:57974]
+WebSocket REJECT /ws/notify/ [127.0.0.1:57974]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:57974]
+Unauthorized: /api/cashier/cash-closing/
+[31;1mHTTP POST /api/cashier/cash-closing/ 401 [0.03, 127.0.0.1:21316][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.07, 127.0.0.1:62886][0m
+Forbidden: /api/cashier/cash-closing/
+[31;1mHTTP POST /api/cashier/cash-closing/ 403 [0.03, 127.0.0.1:48522][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:58438]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:58438]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:58438]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:62606]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:62606]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:62606]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:62747]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:62747]
+[mHTTP GET /api/core/features/ 200 [0.05, 127.0.0.1:62608][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 127.0.0.1:62607][0m
+[mHTTP GET /api/core/features/ 200 [0.03, 127.0.0.1:62748][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 127.0.0.1:62750][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.07, 127.0.0.1:62749][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.03, 127.0.0.1:62751][0m
+Forbidden: /api/cashier/cash-closing/
+[31;1mHTTP POST /api/cashier/cash-closing/ 403 [0.02, 127.0.0.1:53152][0m
+Forbidden: /api/cashier/cash-closing/
+[31;1mHTTP POST /api/cashier/cash-closing/ 403 [0.02, 127.0.0.1:56280][0m
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\cashier_module\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:25193]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:25193]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:25193]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:12329]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:12329]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:12329]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:44350]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:44350]
+[mHTTP GET /api/core/features/ 200 [0.05, 127.0.0.1:12331][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 127.0.0.1:12330][0m
+[mHTTP GET /api/core/features/ 200 [0.10, 127.0.0.1:44351][0m
+[mHTTP GET /api/auth/profile/ 200 [0.12, 127.0.0.1:44352][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.05, 127.0.0.1:44353][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.02, 127.0.0.1:3984][0m
+Bad Request: /api/cashier/cash-closing/
+[31;1mHTTP POST /api/cashier/cash-closing/ 400 [0.03, 127.0.0.1:54971][0m
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:23754]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:4620]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:23754]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:4620]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:23754]
+[mHTTP GET /api/auth/profile/ 200 [0.05, 127.0.0.1:23755][0m
+[mHTTP GET /api/core/features/ 200 [0.05, 127.0.0.1:23756][0m
+[mHTTP GET /api/core/features/ 200 [0.02, 127.0.0.1:4622][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 127.0.0.1:4621][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.03, 127.0.0.1:4623][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.01, 127.0.0.1:4624][0m
+Bad Request: /api/cashier/cash-closing/
+[31;1mHTTP POST /api/cashier/cash-closing/ 400 [0.03, 127.0.0.1:49266][0m
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:22551]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:22551]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:22551]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:13490]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:39919]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:13490]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:13490]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:39919]
+[mHTTP GET /api/core/features/ 200 [0.16, 127.0.0.1:13492][0m
+[mHTTP GET /api/auth/profile/ 200 [0.17, 127.0.0.1:13491][0m
+[mHTTP GET /api/core/features/ 200 [0.07, 127.0.0.1:39920][0m
+[mHTTP GET /api/auth/profile/ 200 [0.07, 127.0.0.1:39922][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.08, 127.0.0.1:39921][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.03, 127.0.0.1:39923][0m
+[mHTTP POST /api/cashier/cash-closing/ 201 [0.04, 127.0.0.1:11824][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.03, 127.0.0.1:9480][0m
+[mHTTP POST /api/cashier/cash-closing/ 200 [0.04, 127.0.0.1:34762][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.03, 127.0.0.1:21063][0m
+Unauthorized: /api/accounts/day-sheet/
+[31;1mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 401 [0.01, 127.0.0.1:53161][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.01, 127.0.0.1:1564][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.01, 127.0.0.1:51106][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:39919]
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:51735]
+WebSocket REJECT /ws/notify/ [127.0.0.1:51735]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:51735]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:54120]
+WebSocket REJECT /ws/notify/ [127.0.0.1:54120]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:54120]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:43368]
+WebSocket REJECT /ws/notify/ [127.0.0.1:43368]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:43368]
+Unauthorized: /api/auth/profile/
+Unauthorized: /api/core/features/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.12, 127.0.0.1:43367][0m
+[31;1mHTTP GET /api/core/features/ 401 [0.11, 127.0.0.1:43369][0m
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.04, 127.0.0.1:43371][0m
+Unauthorized: /api/core/features/
+[31;1mHTTP GET /api/core/features/ 401 [0.04, 127.0.0.1:43370][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.09, 127.0.0.1:43372][0m
+[mHTTP GET /api/core/features/ 200 [0.01, 127.0.0.1:12658][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 127.0.0.1:37255][0m
+[mHTTP GET /api/auth/profile/ 200 [0.11, 127.0.0.1:12657][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-05 200 [0.07, 127.0.0.1:56268][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 127.0.0.1:62095][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-05 200 [0.03, 127.0.0.1:62096][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:63298]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:63298]
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.02, 127.0.0.1:9235][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-04 200 [0.01, 127.0.0.1:19465][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-12 200 [0.01, 127.0.0.1:1746][0m
+[mHTTP POST /api/cashier/cash-closing/ 201 [0.02, 127.0.0.1:53617][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-12 200 [0.01, 127.0.0.1:24486][0m
+[mHTTP POST /api/cashier/cash-closing/ 200 [0.02, 127.0.0.1:58842][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-12 200 [0.02, 127.0.0.1:29617][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-13 200 [0.01, 127.0.0.1:60611][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-12 200 [0.01, 127.0.0.1:19460][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-13 200 [0.01, 127.0.0.1:44331][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-12 200 [0.01, 127.0.0.1:57093][0m
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:61343]
+WebSocket REJECT /ws/notify/ [127.0.0.1:61343]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:61343]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:10921]
+WebSocket REJECT /ws/notify/ [127.0.0.1:10921]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:10921]
+Unauthorized: /api/auth/profile/
+Unauthorized: /api/core/features/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.10, 127.0.0.1:10919][0m
+[31;1mHTTP GET /api/core/features/ 401 [0.10, 127.0.0.1:10920][0m
+Unauthorized: /api/auth/profile/
+Unauthorized: /api/core/features/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.01, 127.0.0.1:10922][0m
+[31;1mHTTP GET /api/core/features/ 401 [0.01, 127.0.0.1:10923][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.33, 127.0.0.1:10924][0m
+[mHTTP GET /api/core/features/ 200 [0.03, 127.0.0.1:6842][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 127.0.0.1:6843][0m
+[mHTTP GET /api/core/features/ 200 [0.02, 127.0.0.1:18701][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 127.0.0.1:36684][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-05 200 [0.06, 127.0.0.1:36683][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-05 200 [0.03, 127.0.0.1:52604][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:45633]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:45634]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:45633]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:45634]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:45633]
+[mHTTP GET /api/core/features/ 200 [0.12, 127.0.0.1:45912][0m
+[mHTTP GET /api/auth/profile/ 200 [0.13, 127.0.0.1:45911][0m
+[mHTTP GET /api/core/features/ 200 [0.09, 127.0.0.1:45636][0m
+[mHTTP GET /api/auth/profile/ 200 [0.12, 127.0.0.1:45635][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-05 200 [0.17, 127.0.0.1:45637][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-05 200 [0.06, 127.0.0.1:45638][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-05 200 [0.05, 127.0.0.1:52453][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-12 200 [0.02, 127.0.0.1:53093][0m
+[mHTTP POST /api/cashier/cash-closing/ 200 [0.02, 127.0.0.1:43117][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-12 200 [0.02, 127.0.0.1:43335][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-13 200 [0.01, 127.0.0.1:52106][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-14 200 [0.01, 127.0.0.1:31581][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-13 200 [0.01, 127.0.0.1:44812][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-12 200 [0.01, 127.0.0.1:30170][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-11 200 [0.01, 127.0.0.1:54273][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-10 200 [0.01, 127.0.0.1:36366][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-12 200 [0.01, 127.0.0.1:25042][0m
+[mHTTP POST /api/cashier/cash-closing/ 200 [0.01, 127.0.0.1:54449][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-12 200 [0.01, 127.0.0.1:33504][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-13 200 [0.01, 127.0.0.1:7189][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-14 200 [0.01, 127.0.0.1:27199][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-11 200 [0.01, 127.0.0.1:5294][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-12 200 [0.01, 127.0.0.1:19309][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-12 200 [0.01, 127.0.0.1:43634][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-05 200 [0.01, 127.0.0.1:28108][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:45634]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:55148]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:55148]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:55148]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:8280]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:8280]
+[mHTTP GET /api/core/features/ 200 [0.04, 127.0.0.1:55150][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 127.0.0.1:55149][0m
+[mHTTP GET /api/auth/profile/ 200 [0.02, 127.0.0.1:8282][0m
+[mHTTP GET /api/core/features/ 200 [0.02, 127.0.0.1:8281][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-05 200 [0.02, 127.0.0.1:8283][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-05 200 [0.01, 127.0.0.1:8284][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:8280]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:42287]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:42287]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:42287]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:55145]
+[mHTTP GET /api/auth/profile/ 200 [0.02, 127.0.0.1:42288][0m
+[mHTTP GET /api/core/features/ 200 [0.02, 127.0.0.1:42289][0m
+WebSocket CONNECT /ws/notify/ [127.0.0.1:55145]
+[mHTTP GET /api/auth/profile/ 200 [0.02, 127.0.0.1:55146][0m
+[mHTTP GET /api/core/features/ 200 [0.02, 127.0.0.1:55147][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-05 200 [0.02, 127.0.0.1:55149][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-05 200 [0.01, 127.0.0.1:55150][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:55145]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:41972]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:41972]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:41972]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:16919]
+[mHTTP GET /api/auth/profile/ 200 [0.02, 127.0.0.1:41973][0m
+WebSocket CONNECT /ws/notify/ [127.0.0.1:16919]
+[mHTTP GET /api/core/features/ 200 [0.03, 127.0.0.1:41974][0m
+[mHTTP GET /api/auth/profile/ 200 [0.02, 127.0.0.1:16920][0m
+[mHTTP GET /api/core/features/ 200 [0.02, 127.0.0.1:16921][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:16919]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:42870]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:42870]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:42870]
+[mHTTP GET /api/core/features/ 200 [0.02, 127.0.0.1:42872][0m
+[mHTTP GET /api/auth/profile/ 200 [0.02, 127.0.0.1:42871][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:6606]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:6606]
+[mHTTP GET /api/core/features/ 200 [0.04, 127.0.0.1:6607][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 127.0.0.1:6608][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-05 200 [0.06, 127.0.0.1:6609][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-05 200 [0.02, 127.0.0.1:6610][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-01 200 [0.02, 127.0.0.1:61274][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-01 200 [0.01, 127.0.0.1:35020][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-12 200 [0.01, 127.0.0.1:44177][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-11 200 [0.01, 127.0.0.1:24956][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-13 200 [0.01, 127.0.0.1:42990][0m
+[mHTTP POST /api/cashier/cash-closing/ 201 [0.02, 127.0.0.1:24744][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-13 200 [0.01, 127.0.0.1:39668][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-14 200 [0.01, 127.0.0.1:51629][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-13 200 [0.01, 127.0.0.1:46105][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-12 200 [0.01, 127.0.0.1:14166][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-15 200 [0.01, 127.0.0.1:40460][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-11 200 [0.01, 127.0.0.1:58988][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-12 200 [0.01, 127.0.0.1:38714][0m
+[mHTTP POST /api/cashier/cash-closing/ 200 [0.02, 127.0.0.1:63588][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-12 200 [0.01, 127.0.0.1:37031][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-13 200 [0.01, 127.0.0.1:15952][0m
+[mHTTP POST /api/cashier/cash-closing/ 200 [0.02, 127.0.0.1:27397][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-13 200 [0.01, 127.0.0.1:16512][0m
+[mHTTP POST /api/cashier/cash-closing/ 200 [0.02, 127.0.0.1:25249][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-13 200 [0.01, 127.0.0.1:31078][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-14 200 [0.01, 127.0.0.1:52426][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-05 200 [0.02, 127.0.0.1:10889][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-04 200 [0.01, 127.0.0.1:1962][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-03 200 [0.01, 127.0.0.1:20151][0m
+[mHTTP POST /api/cashier/cash-closing/ 201 [0.02, 127.0.0.1:49329][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-03 200 [0.01, 127.0.0.1:14561][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-01 200 [0.01, 127.0.0.1:15556][0m
+[mHTTP POST /api/cashier/cash-closing/ 201 [0.02, 127.0.0.1:64679][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-01 200 [0.01, 127.0.0.1:1784][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-01 200 [0.01, 127.0.0.1:29388][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-12 200 [0.01, 127.0.0.1:51147][0m
+[mHTTP POST /api/cashier/cash-closing/ 200 [0.02, 127.0.0.1:56934][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-12 200 [0.01, 127.0.0.1:61415][0m
+[mHTTP POST /api/cashier/cash-closing/ 200 [0.02, 127.0.0.1:21125][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-12 200 [0.01, 127.0.0.1:62712][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-11 200 [0.01, 127.0.0.1:62368][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-12 200 [0.01, 127.0.0.1:11624][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-13 200 [0.01, 127.0.0.1:28997][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-12 200 [0.02, 127.0.0.1:5811][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-12 200 [0.01, 127.0.0.1:11063][0m
+Unauthorized: /api/accounts/day-sheet/
+[31;1mHTTP GET /api/accounts/day-sheet/?date=2026-08-12 401 [0.01, 127.0.0.1:15030][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.01, 127.0.0.1:1055][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-08-12 200 [0.02, 127.0.0.1:8793][0m
+[mHTTP POST /api/auth/logout/ 200 [0.05, 127.0.0.1:34485][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:6606]
+[mHTTP POST /api/auth/login/ 200 [0.14, 127.0.0.1:51071][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:52394]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:52394]
+[mHTTP GET /api/core/features/ 200 [0.03, 127.0.0.1:59318][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 127.0.0.1:59317][0m
+[mHTTP GET /api/accounts/dashboard/ 200 [0.05, 127.0.0.1:59319][0m
+[mHTTP GET /api/accounts/dashboard/ 200 [0.02, 127.0.0.1:36983][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-05 200 [0.01, 127.0.0.1:2002][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-05 200 [0.01, 127.0.0.1:43769][0m

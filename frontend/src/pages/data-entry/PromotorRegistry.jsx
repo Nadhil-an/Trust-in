@@ -12,6 +12,13 @@ export default function PromotorRegistry() {
   const [mismatchModalData, setMismatchModalData] = useState(null)
   const [confirmState, setConfirmState] = useState({ isOpen: false, row: null, type: '' })
 
+  const [modalOpen, setModalOpen] = useState(false)
+  const [modalType, setModalType] = useState('') // 'CASH' or 'UPI'
+  const [modalStaff, setModalStaff] = useState(null)
+  const [modalLoading, setModalLoading] = useState(false)
+  const [transactions, setTransactions] = useState([])
+  const [transactionSearch, setTransactionSearch] = useState('')
+
   // ── Load & merge daily summary ───────────────────────────────────
   const load = useCallback(async () => {
     setLoading(true)
@@ -138,6 +145,23 @@ export default function PromotorRegistry() {
     }
   }
 
+  const openTransactionsModal = async (staff, type) => {
+    setModalStaff(staff)
+    setModalType(type)
+    setModalOpen(true)
+    setModalLoading(true)
+    setTransactionSearch('')
+    try {
+      const res = await hrApi.promoterRegistry.transactions(staff.staff_id, dateFilter)
+      const data = type === 'CASH' ? res.data.cash : res.data.online
+      setTransactions([...data].sort((a, b) => b.id - a.id))
+    } catch (err) {
+      toast.error("Failed to load transactions")
+    } finally {
+      setModalLoading(false)
+    }
+  }
+
   // ── Print Styles ─────────────────────────────────────────────────
   const totals = rows.reduce((acc, r) => ({
     cash_collected: acc.cash_collected + parseFloat(r.cash_collected || 0),
@@ -261,7 +285,7 @@ export default function PromotorRegistry() {
                     <th rowSpan={2} style={thStyle()}>Name</th>
                     <th rowSpan={2} style={thStyle()}>Voucher No</th>
                     <th colSpan={2} style={thStyle('center', '#4338CA', '#EEF2FF')}>Voucher Reading</th>
-                    <th colSpan={2} style={thStyle('center', '#0369A1', '#E0F2FE')}>Vothen Reading <br/><span style={{ fontSize: 10, fontWeight: 400 }}>(Auto from Mobile)</span></th>
+                    <th colSpan={2} style={thStyle('center', '#0369A1', '#E0F2FE')}>Voucher Reading <br/><span style={{ fontSize: 10, fontWeight: 400 }}>(Auto from Mobile)</span></th>
                     <th rowSpan={2} style={thStyle('center', '#7C3AED', '#F5F3FF')}>Cash Submitted<br/><span style={{ fontSize: 10, fontWeight: 400 }}>at Office</span></th>
                     <th rowSpan={2} style={thStyle('center', '#059669', '#ECFDF5')}>Total<br/>Collected</th>
                     <th rowSpan={2} className="hide-print" style={thStyle('center')}>Status / Action</th>
@@ -339,20 +363,34 @@ export default function PromotorRegistry() {
 
                         {/* Cash Collected — auto from mobile, editable override */}
                         <td style={{ padding: '6px 8px' }}>
-                          <input type="number" className="form-control" style={{ minWidth: 90, textAlign: 'center', background: '#F0F9FF' }}
-                            value={row.cash_collected}
-                            disabled={row.is_closed}
-                            onChange={e => updateField(row.staff_id, 'cash_collected', e.target.value)}
-                          />
+                          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                            <input type="number" className="form-control" style={{ minWidth: 90, textAlign: 'center', background: '#F0F9FF', paddingRight: '20px' }}
+                              value={row.cash_collected}
+                              disabled={row.is_closed}
+                              onChange={e => updateField(row.staff_id, 'cash_collected', e.target.value)}
+                            />
+                            <span 
+                              style={{ position: 'absolute', right: '6px', cursor: 'pointer', fontSize: 11, color: '#0369A1', opacity: 0.7 }}
+                              onClick={() => openTransactionsModal(row, 'CASH')}
+                              title="Click to view full details"
+                            >↗</span>
+                          </div>
                         </td>
 
                         {/* Online Collected — auto from mobile, editable override */}
                         <td style={{ padding: '6px 8px', borderRight: '2px solid #BAE6FD' }}>
-                          <input type="number" className="form-control" style={{ minWidth: 90, textAlign: 'center', background: '#F0F9FF' }}
-                            value={row.online_collected}
-                            disabled={row.is_closed}
-                            onChange={e => updateField(row.staff_id, 'online_collected', e.target.value)}
-                          />
+                          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                            <input type="number" className="form-control" style={{ minWidth: 90, textAlign: 'center', background: '#F0F9FF', paddingRight: '20px' }}
+                              value={row.online_collected}
+                              disabled={row.is_closed}
+                              onChange={e => updateField(row.staff_id, 'online_collected', e.target.value)}
+                            />
+                            <span 
+                              style={{ position: 'absolute', right: '6px', cursor: 'pointer', fontSize: 11, color: '#0369A1', opacity: 0.7 }}
+                              onClick={() => openTransactionsModal(row, 'UPI')}
+                              title="Click to view full details"
+                            >↗</span>
+                          </div>
                         </td>
 
                         {/* Cash Submitted at Office */}
@@ -521,6 +559,59 @@ export default function PromotorRegistry() {
             Do you still want to close the day for <strong>{mismatchModalData.row.staff_name}</strong>?
           </p>
         </Modal>
+      )}
+
+      {modalOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ background: 'white', borderRadius: 12, width: '90%', maxWidth: 700, padding: 24, maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <h2 style={{ margin: 0, fontSize: 18, color: '#1F2937' }}>
+                {modalType === 'CASH' ? '💵 Cash' : '📱 Online'} Transactions - {modalStaff?.staff_name}
+              </h2>
+              <button onClick={() => setModalOpen(false)} style={{ background: 'none', border: 'none', fontSize: 24, cursor: 'pointer', color: '#6B7280' }}>&times;</button>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, border: '1px solid #E5E7EB', borderRadius: 8, padding: '8px 12px', background: '#F8FAFC', marginBottom: 16 }}>
+              <span style={{ fontSize: 16, color: '#6B7280' }}>🔍</span>
+              <input
+                type="text"
+                placeholder="Search transactions by Voucher No, Donor, or Amount..."
+                value={transactionSearch}
+                onChange={e => setTransactionSearch(e.target.value)}
+                style={{ border: 'none', outline: 'none', background: 'transparent', width: '100%', fontSize: 14 }}
+              />
+            </div>
+
+            {modalLoading ? <LoadingState /> : transactions.length === 0 ? (
+              <EmptyState icon="📉" title="No transactions found" />
+            ) : (
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ background: '#F3F4F6' }}>
+                    <th style={{ padding: 12, textAlign: 'left', borderBottom: '1px solid #E5E7EB' }}>Time</th>
+                    <th style={{ padding: 12, textAlign: 'left', borderBottom: '1px solid #E5E7EB' }}>Voucher No</th>
+                    <th style={{ padding: 12, textAlign: 'left', borderBottom: '1px solid #E5E7EB' }}>Amount</th>
+                    <th style={{ padding: 12, textAlign: 'left', borderBottom: '1px solid #E5E7EB' }}>Donor</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {transactions.filter(t =>
+                    (t.receipt_number && t.receipt_number.toLowerCase().includes(transactionSearch.toLowerCase())) ||
+                    (t.donor_name && t.donor_name.toLowerCase().includes(transactionSearch.toLowerCase())) ||
+                    (t.amount.toString().includes(transactionSearch))
+                  ).map(t => (
+                    <tr key={t.id} style={{ borderBottom: '1px solid #E5E7EB' }}>
+                      <td style={{ padding: 12, color: '#6B7280' }}>{t.time}</td>
+                      <td style={{ padding: 12, fontWeight: 500 }}>{t.receipt_number || '-'}</td>
+                      <td style={{ padding: 12, fontWeight: 700, color: '#0369A1' }}>₹{t.amount.toFixed(2)}</td>
+                      <td style={{ padding: 12 }}>{t.donor_name || 'N/A'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
       )}
     </div>
   )

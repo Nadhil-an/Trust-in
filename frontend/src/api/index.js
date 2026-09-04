@@ -228,6 +228,7 @@ export const hrApi = {
     update: (id, data) => api.patch(`/hr/officers/${id}/`, data),
     delete: (id, data) => api.delete(`/hr/officers/${id}/`, { data }),
     reactivate: (id, data) => api.post(`/hr/officers/${id}/reactivate/`, data),
+    resetPassword: (id, data) => api.post(`/hr/officers/${id}/reset-password/`, data),
     documents: (id) => api.get(`/hr/officers/${id}/documents/`),
     attendanceGraph: (id, params) => api.get(`/hr/officers/${id}/attendance-graph/`, { params }),
     payrollData: (id, params) => api.get(`/hr/officers/${id}/payroll-data/`, { params }),

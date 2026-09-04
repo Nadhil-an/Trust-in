@@ -222,6 +222,16 @@ class MemberListCreateView(generics.ListCreateAPIView):
                 date=effective_date
             )
 
+            # --- Auto-Increment Voucher atomically ---
+            from hr_module.models import StaffVoucherBook
+            vb = StaffVoucherBook.objects.filter(staff=self.request.user).first()
+            if vb and vb.book_number > 0 and str(vb.current_voucher) == str(voucher_id or transaction_id):
+                try:
+                    vb.increment()
+                except ValueError:
+                    pass
+            # -----------------------------------------
+
             # 2. Generate A4 PDF Document
             try:
                 num_val = int(str(member.member_id).replace('MEM-', ''))
@@ -570,6 +580,13 @@ class ExecutiveOfficerDetailView(generics.RetrieveUpdateDestroyAPIView):
             except Exception as e:
                 print("WebSocket force logout error:", e)
 
+            # Free up the voucher book for reassignment
+            from hr_module.models import StaffVoucherBook
+            StaffVoucherBook.objects.filter(staff=u).update(
+                book_number=0, voucher_start=0, voucher_end=0, current_voucher=0,
+                next_book_number=None, next_voucher_start=None, next_voucher_end=None, next_current_voucher=None
+            )
+
         # Mark officer profile status as INACTIVE to remove from active staff list while preserving all history
         instance.status = 'INACTIVE'
         reason = self.request.data.get('termination_reason')
@@ -620,6 +637,44 @@ class ExecutiveOfficerReactivateView(APIView):
         push_dashboard_refresh(['HR', 'MANAGER', 'ADMIN', 'STAFF'])
         
         return Response({'message': f'Staff reactivated successfully. Password updated.'})
+
+
+class ExecutiveOfficerResetPasswordView(APIView):
+    permission_classes = [IsHR]
+
+    def post(self, request, pk):
+        try:
+            instance = ExecutiveOfficer.objects.get(pk=pk)
+        except ExecutiveOfficer.DoesNotExist:
+            return Response({'error': 'Staff not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        from core.models import User
+        from django.db.models import Q
+
+        # Find associated users and update password
+        q = Q(username__iexact=instance.employee_id)
+        if instance.phone:
+            q |= Q(username__iexact=instance.phone)
+            q |= Q(phone__iexact=instance.phone)
+        if instance.email:
+            q |= Q(email__iexact=instance.email)
+
+        password = request.data.get('password')
+        if not password:
+            return Response({'error': 'Password is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        users = list(User.objects.filter(q).exclude(role__in=['ADMIN', 'MANAGER']))
+        name_users = list(User.objects.filter(full_name__iexact=instance.full_name).exclude(role__in=['ADMIN', 'MANAGER']))
+        all_users = set(users + name_users)
+        
+        if not all_users:
+            return Response({'error': 'No user account found for this staff member.'}, status=status.HTTP_404_NOT_FOUND)
+
+        for u in all_users:
+            u.set_password(password)
+            u.save(update_fields=['password'])
+
+        return Response({'message': 'Password reset successfully.'})
 
 
 class DesignationListView(APIView):
@@ -1501,7 +1556,8 @@ class StaffVoucherIncrementView(APIView):
             return Response({'error': 'Staff user account not found.'}, status=404)
 
         vb, _ = StaffVoucherBook.objects.get_or_create(staff=user)
-        vb.increment()
+        # Note: We NO LONGER increment blindly here.
+        # It is now atomically handled in Income/Member creation!
         return Response({
             'current_voucher': vb.current_voucher,
             'book_number': vb.book_number,

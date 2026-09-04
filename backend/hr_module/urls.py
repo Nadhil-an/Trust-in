@@ -23,6 +23,7 @@ urlpatterns = [
     path('officers/designations/', views.DesignationListView.as_view()),
     path('officers/<uuid:pk>/', views.ExecutiveOfficerDetailView.as_view()),
     path('officers/<uuid:pk>/reactivate/', views.ExecutiveOfficerReactivateView.as_view()),
+    path('officers/<uuid:pk>/reset-password/', views.ExecutiveOfficerResetPasswordView.as_view()),
     path('officers/<uuid:pk>/attendance-graph/', views.OfficerAttendanceGraphView.as_view()),
     path('officers/<uuid:pk>/payroll-data/', views.OfficerPayrollDataView.as_view()),
     path('officers/<uuid:emp_pk>/documents/', views.EmployeeDocumentView.as_view()),

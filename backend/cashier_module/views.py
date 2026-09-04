@@ -6,7 +6,7 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.utils import timezone
 from django.db.models import Sum
 
-from core.permissions import IsAccountant, IsAnyStaff
+from core.permissions import IsAccountant, IsAnyStaff, IsFinanceOrDataEntry
 from core.models import AuditLog
 from notify.service import push_to_role, push_request_update, push_dashboard_refresh
 from cashier_module.models import Disbursement, CashClosing, CashHandover
@@ -39,7 +39,7 @@ class CashClosingSerializer(serializers.ModelSerializer):
     class Meta:
         model = CashClosing
         fields = '__all__'
-        read_only_fields = ['id', 'closed_by', 'created_at']
+        read_only_fields = ['id', 'closed_by', 'created_at', 'system_balance', 'system_bank_balance', 'difference', 'bank_difference']
 
     def get_difference(self, obj):
         return float(obj.system_balance - obj.physical_cash)
@@ -236,13 +236,43 @@ class DisbursementListView(generics.ListAPIView):
 
 
 class CashClosingListCreateView(generics.ListCreateAPIView):
-    permission_classes = [IsAccountant]
+    permission_classes = [IsFinanceOrDataEntry]
     serializer_class = CashClosingSerializer
     queryset = CashClosing.objects.select_related('closed_by').all()
     ordering_fields = ['date']
 
+    def create(self, request, *args, **kwargs):
+        date = request.data.get('date')
+        if date:
+            existing = CashClosing.objects.filter(date=date).first()
+            if existing:
+                serializer = self.get_serializer(existing, data=request.data, partial=True)
+                serializer.is_valid(raise_exception=True)
+                self.perform_update(serializer)
+                return Response(serializer.data)
+        return super().create(request, *args, **kwargs)
+
+    def perform_update(self, serializer):
+        from accounts_module.models import BankAccount, CashAccount
+        system_bal = sum(a.current_balance for a in CashAccount.objects.filter(is_active=True))
+        system_bank_bal = sum(a.current_balance for a in BankAccount.objects.filter(is_active=True))
+        
+        physical = serializer.validated_data.get('physical_cash', serializer.instance.physical_cash)
+        physical_bank = serializer.validated_data.get('physical_bank', serializer.instance.physical_bank)
+        
+        diff = float(system_bal) - float(physical)
+        bank_diff = float(system_bank_bal) - float(physical_bank)
+        
+        serializer.save(
+            closed_by=self.request.user,
+            system_balance=system_bal,
+            difference=diff,
+            system_bank_balance=system_bank_bal,
+            bank_difference=bank_diff
+        )
+
     def perform_create(self, serializer):
-        from accounts_module.models import BankAccount
+        from accounts_module.models import BankAccount, CashAccount
         system_bal = sum(a.current_balance for a in CashAccount.objects.filter(is_active=True))
         system_bank_bal = sum(a.current_balance for a in BankAccount.objects.filter(is_active=True))
         

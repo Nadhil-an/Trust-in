@@ -8,6 +8,7 @@ export default function AttendancePage() {
   const [officers, setOfficers] = useState([])
   const [loading, setLoading] = useState(true)
   const [date, setDate] = useState(format(new Date(),"yyyy-MM-dd"))
+  const [searchTerm, setSearchTerm] = useState('')
   const [showModal, setShowModal] = useState(false)
   const [saving, setSaving] = useState(false)
   const [bulkData, setBulkData] = useState([])
@@ -50,12 +51,26 @@ export default function AttendancePage() {
     return `${hr}:${m} ${ampm}`;
   };
 
+  const filteredRecords = records.filter(r => 
+    (r.employee_name || "").toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div>
       <PageHeader title="Attendance" subtitle="Daily attendance management">
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
           <div style={{ background: '#E0E7FF', color: '#4338CA', padding: '8px 14px', borderRadius: '8px', fontWeight: 700, fontSize: '14px', border: '1px solid #C7D2FE', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ fontSize: '16px' }}>👥</span> Present Today: {records.filter(r => r.status === 'PRESENT').length} / {records.length || officers.length}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'white', border: '1px solid var(--gray-300)', borderRadius: '6px', padding: '6px 12px' }}>
+            <span style={{ fontSize: 14 }}>🔍</span>
+            <input 
+              type="text" 
+              placeholder="Search..." 
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              style={{ border: 'none', outline: 'none', background: 'transparent', width: 120, fontSize: 14 }}
+            />
           </div>
           <input className="form-control" type="date" style={{width:160}} value={date} onChange={e=>setDate(e.target.value)} />
           <button className="btn btn-primary" onClick={()=>setShowModal(true)}>Mark Attendance</button>
@@ -67,10 +82,10 @@ export default function AttendancePage() {
             <table>
               <thead><tr><th>Employee</th><th>Date</th><th>Status</th><th>Check In</th><th>Check Out</th><th>Remarks</th><th>Check In Proof</th><th>Check Out Proof</th></tr></thead>
               <tbody>
-                {records.length===0 ? <tr><td colSpan={8}><EmptyState icon="✅" title="No attendance marked for this date" /></td></tr>
-                  : records.map(r=>(
+                {filteredRecords.length===0 ? <tr><td colSpan={8}><EmptyState icon="✅" title="No attendance found for this search" /></td></tr>
+                  : filteredRecords.map(r=>(
                     <tr key={r.id}>
-                      <td>{r.employee_name}</td>
+                      <td style={{ textTransform: 'capitalize' }}>{r.employee_name}</td>
                       <td>{r.date}</td>
                       <td><span className={`badge ${r.status==="PRESENT"?"badge-green":r.status==="ABSENT"?"badge-red":"badge-yellow"}`}>{r.status}</span></td>
                       <td>
@@ -112,7 +127,7 @@ export default function AttendancePage() {
               <tbody>
                 {bulkData.map((b,i)=>(
                   <tr key={b.employee} style={{borderBottom:"1px solid var(--gray-100)"}}>
-                    <td style={{padding:"8px 12px"}}>{b.name}</td>
+                    <td style={{padding:"8px 12px", textTransform: 'capitalize'}}>{b.name}</td>
                     <td style={{padding:"8px 12px"}}>
                       <select className="form-control" style={{width:120}} value={b.status}
                         onChange={e=>{const nb=[...bulkData];nb[i]={...nb[i],status:e.target.value};setBulkData(nb)}}>

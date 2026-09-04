@@ -57,6 +57,8 @@ class CashClosing(models.Model):
         ('SUBMITTED', 'Submitted'), ('APPROVED', 'Approved'), ('DISPUTED', 'Disputed')
     ])
     notes = models.TextField(blank=True)
+    debit_rows = models.JSONField(default=list, blank=True)
+    credit_rows = models.JSONField(default=list, blank=True)
     created_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
