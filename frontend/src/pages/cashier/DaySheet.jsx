@@ -416,7 +416,7 @@ export default function DaySheet() {
                         />
                       )}
                     </div>
-                    <div style={{ ...SH.tdR, color: 'var(--info)' }}>
+                    <div style={{ ...SH.tdR }}>
                       {d.particular === 'TOTAL' ? (
                         <TableInput 
                           value={((Number(debits[3]?.amount) || 0) + (Number(debits[4]?.amount) || 0)).toString()} 
@@ -491,7 +491,7 @@ export default function DaySheet() {
                         />
                       )}
                     </div>
-                    <div style={{ ...SH.tdR, color: 'var(--success)' }}>
+                    <div style={{ ...SH.tdR }}>
                       {c.particular === 'TOTAL' ? (
                         <TableInput 
                           value={((Number(credits[3]?.amount) || 0) + (Number(credits[4]?.amount) || 0)).toString()} 
@@ -568,12 +568,12 @@ export default function DaySheet() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', background: 'var(--gray-100)', borderTop: '1px solid var(--gray-200)' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '50px 1fr 130px 90px', borderRight: '1px solid var(--gray-200)' }}>
                 <div style={{ gridColumn: '1/3', padding: '14px 16px', color: 'var(--gray-700)', fontWeight: 700, fontSize: 13, textAlign: 'right', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>Total Debit</div>
-                <div style={{ padding: '14px 12px', color: 'var(--info)', fontWeight: 800, fontSize: 15, textAlign: 'right', fontVariantNumeric: 'tabular-nums', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>{totalDebit.toLocaleString('en-IN')}</div>
+                <div style={{ padding: '14px 12px', color: 'var(--gray-900)', fontWeight: 800, fontSize: 15, textAlign: 'right', fontVariantNumeric: 'tabular-nums', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>{totalDebit.toLocaleString('en-IN')}</div>
                 <div />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '50px 1fr 130px 90px' }}>
                 <div style={{ gridColumn: '1/3', padding: '14px 16px', color: 'var(--gray-700)', fontWeight: 700, fontSize: 13, textAlign: 'right', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>Total Credit</div>
-                <div style={{ padding: '14px 12px', color: 'var(--success)', fontWeight: 800, fontSize: 15, textAlign: 'right', fontVariantNumeric: 'tabular-nums', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>{totalCredit.toLocaleString('en-IN')}</div>
+                <div style={{ padding: '14px 12px', color: 'var(--gray-900)', fontWeight: 800, fontSize: 15, textAlign: 'right', fontVariantNumeric: 'tabular-nums', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>{totalCredit.toLocaleString('en-IN')}</div>
                 <div />
               </div>
             </div>
