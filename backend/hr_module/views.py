@@ -1646,7 +1646,9 @@ class PromoterRegistryDailySummaryView(APIView):
         from core.models import Role, User
 
         # ── 1. All STAFF marked PRESENT on this date ────────────────
-        staff_users = {u.full_name.lower(): str(u.id) for u in User.objects.filter(role=Role.STAFF) if u.full_name}
+        staff_users = User.objects.filter(role=Role.STAFF)
+        staff_by_email = {u.email.lower(): str(u.id) for u in staff_users if u.email}
+        staff_by_name = {u.full_name.lower(): str(u.id) for u in staff_users if u.full_name}
 
         present_attendances = (
             Attendance.objects
@@ -1656,11 +1658,16 @@ class PromoterRegistryDailySummaryView(APIView):
         
         present_staff = {}
         for a in present_attendances:
-            if not a.employee or not a.employee.full_name:
+            if not a.employee:
                 continue
-            name_lower = a.employee.full_name.lower()
-            if name_lower in staff_users:
-                user_id = staff_users[name_lower]
+                
+            user_id = None
+            if a.employee.email and a.employee.email.lower() in staff_by_email:
+                user_id = staff_by_email[a.employee.email.lower()]
+            elif a.employee.full_name and a.employee.full_name.lower() in staff_by_name:
+                user_id = staff_by_name[a.employee.full_name.lower()]
+                
+            if user_id:
                 present_staff[user_id] = a.employee.full_name
 
         # ── 2. Income totals for this date, grouped by creator ───────
