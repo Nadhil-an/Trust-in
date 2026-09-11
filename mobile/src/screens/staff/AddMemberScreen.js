@@ -528,7 +528,7 @@ const AddMemberScreen = ({ navigation, route }) => {
                 style={styles.shareBtn}
                 onPress={() => {
                   setSuccessData(null);
-                  navigation.goBack();
+                  navigation.replace('StaffDonationsList', { refreshAt: Date.now() });
                 }}
               />
             </View>

@@ -46,8 +46,8 @@ function VoucherBookSection({ staffId, staffName, hideHeader }) {
   const [vb, setVb] = useState(null)
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({ 
-    book_number: 0, voucher_start: 0, voucher_end: 0, current_voucher: 0,
-    next_book_number: 0, next_voucher_start: 0, next_voucher_end: 0, next_current_voucher: 0
+    book_number: '', voucher_start: '', voucher_end: '', current_voucher: '',
+    next_book_number: '', next_voucher_start: '', next_voucher_end: '', next_current_voucher: ''
   })
 
   useEffect(() => {
@@ -55,14 +55,14 @@ function VoucherBookSection({ staffId, staffName, hideHeader }) {
     hrApi.vouchers.get(staffId).then(res => {
       setVb(res.data)
       setForm({
-        book_number: res.data.book_number ?? 0,
-        voucher_start: res.data.voucher_start ?? 0,
-        voucher_end: res.data.voucher_end ?? 0,
-        current_voucher: res.data.current_voucher ?? 0,
-        next_book_number: res.data.next_book_number ?? 0,
-        next_voucher_start: res.data.next_voucher_start ?? 0,
-        next_voucher_end: res.data.next_voucher_end ?? 0,
-        next_current_voucher: res.data.next_current_voucher ?? 0,
+        book_number: res.data.book_number || '',
+        voucher_start: res.data.voucher_start || '',
+        voucher_end: res.data.voucher_end || '',
+        current_voucher: res.data.current_voucher || '',
+        next_book_number: res.data.next_book_number || '',
+        next_voucher_start: res.data.next_voucher_start || '',
+        next_voucher_end: res.data.next_voucher_end || '',
+        next_current_voucher: res.data.next_current_voucher || '',
       })
     }).catch(() => {})
   }, [staffId])
@@ -96,15 +96,27 @@ function VoucherBookSection({ staffId, staffName, hideHeader }) {
 
   const F = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
+  const handleKeyDown = (e, nextId) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (nextId === 'save') {
+        handleSave();
+      } else {
+        const next = document.getElementById(nextId);
+        if (next) next.focus();
+      }
+    }
+  }
+
   return (
     <div style={{ marginTop: hideHeader ? '0' : '1.5rem', borderTop: hideHeader ? 'none' : '2px dashed #E0E7FF', paddingTop: hideHeader ? '0' : '1.5rem' }}>
       {!hideHeader && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
           <span style={{ fontSize: 20 }}>🎫</span>
           <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: '#1E4DB7' }}>Voucher Book Assignment</h4>
-          {vb && (
+          {vb && vb.book_number > 0 && (
             <span style={{ fontSize: 11, background: '#EEF2FF', color: '#4338CA', fontWeight: 700, borderRadius: 20, padding: '2px 10px' }}>
-              Current: #{vb.current_voucher ?? 0}
+              Current: #{vb.current_voucher}
             </span>
           )}
         </div>
@@ -112,35 +124,45 @@ function VoucherBookSection({ staffId, staffName, hideHeader }) {
       {hideHeader && vb && (
         <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 14, fontWeight: 600, color: '#374151' }}>Staff: {staffName}</span>
-          <span style={{ fontSize: 12, background: '#EEF2FF', color: '#4338CA', fontWeight: 700, borderRadius: 20, padding: '2px 10px' }}>
-            Current: #{vb.current_voucher ?? 0}
-          </span>
+          {vb.book_number > 0 ? (
+            <span style={{ fontSize: 12, background: '#EEF2FF', color: '#4338CA', fontWeight: 700, borderRadius: 20, padding: '2px 10px' }}>
+              Current: #{vb.current_voucher}
+            </span>
+          ) : (
+            <span style={{ fontSize: 12, background: '#F3F4F6', color: '#6B7280', fontWeight: 600, borderRadius: 20, padding: '2px 10px' }}>
+              Unassigned
+            </span>
+          )}
         </div>
       )}
       <div style={{ background: '#F8FAFF', border: '1px solid #C7D7FE', borderRadius: 12, padding: '16px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
           <div className="form-group" style={{ marginBottom: 0 }}>
             <label className="form-label" style={{ fontSize: 11 }}>Book Number</label>
-            <input className="form-control" type="number" min="0" value={form.book_number}
+            <input id="vb-book" className="form-control" type="number" min="0" value={form.book_number}
               onChange={e => F('book_number', e.target.value)}
+              onKeyDown={e => handleKeyDown(e, 'vb-start')}
               style={{ fontSize: 13 }} placeholder="0" />
           </div>
           <div className="form-group" style={{ marginBottom: 0 }}>
             <label className="form-label" style={{ fontSize: 11 }}>Voucher Start</label>
-            <input className="form-control" type="number" min="0" value={form.voucher_start}
+            <input id="vb-start" className="form-control" type="number" min="0" value={form.voucher_start}
               onChange={e => F('voucher_start', e.target.value)}
+              onKeyDown={e => handleKeyDown(e, 'vb-end')}
               style={{ fontSize: 13 }} placeholder="0" />
           </div>
           <div className="form-group" style={{ marginBottom: 0 }}>
             <label className="form-label" style={{ fontSize: 11 }}>Voucher End</label>
-            <input className="form-control" type="number" min="0" value={form.voucher_end}
+            <input id="vb-end" className="form-control" type="number" min="0" value={form.voucher_end}
               onChange={e => F('voucher_end', e.target.value)}
+              onKeyDown={e => handleKeyDown(e, 'vb-curr')}
               style={{ fontSize: 13 }} placeholder="0" />
           </div>
           <div className="form-group" style={{ marginBottom: 0 }}>
             <label className="form-label" style={{ fontSize: 11 }}>Current Voucher</label>
-            <input className="form-control" type="number" min="0" value={form.current_voucher}
+            <input id="vb-curr" className="form-control" type="number" min="0" value={form.current_voucher}
               onChange={e => F('current_voucher', e.target.value)}
+              onKeyDown={e => handleKeyDown(e, 'vb-next-book')}
               style={{ fontSize: 13 }} placeholder="0" />
           </div>
         </div>
@@ -150,26 +172,30 @@ function VoucherBookSection({ staffId, staffName, hideHeader }) {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label" style={{ fontSize: 11 }}>Book Number</label>
-              <input className="form-control" type="number" min="0" value={form.next_book_number}
+              <input id="vb-next-book" className="form-control" type="number" min="0" value={form.next_book_number}
                 onChange={e => F('next_book_number', e.target.value)}
+                onKeyDown={e => handleKeyDown(e, 'vb-next-start')}
                 style={{ fontSize: 13 }} placeholder="0" />
             </div>
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label" style={{ fontSize: 11 }}>Voucher Start</label>
-              <input className="form-control" type="number" min="0" value={form.next_voucher_start}
+              <input id="vb-next-start" className="form-control" type="number" min="0" value={form.next_voucher_start}
                 onChange={e => F('next_voucher_start', e.target.value)}
+                onKeyDown={e => handleKeyDown(e, 'vb-next-end')}
                 style={{ fontSize: 13 }} placeholder="0" />
             </div>
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label" style={{ fontSize: 11 }}>Voucher End</label>
-              <input className="form-control" type="number" min="0" value={form.next_voucher_end}
+              <input id="vb-next-end" className="form-control" type="number" min="0" value={form.next_voucher_end}
                 onChange={e => F('next_voucher_end', e.target.value)}
+                onKeyDown={e => handleKeyDown(e, 'vb-next-curr')}
                 style={{ fontSize: 13 }} placeholder="0" />
             </div>
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label" style={{ fontSize: 11 }}>Current Voucher</label>
-              <input className="form-control" type="number" min="0" value={form.next_current_voucher}
+              <input id="vb-next-curr" className="form-control" type="number" min="0" value={form.next_current_voucher}
                 onChange={e => F('next_current_voucher', e.target.value)}
+                onKeyDown={e => handleKeyDown(e, 'save')}
                 style={{ fontSize: 13 }} placeholder="0" />
             </div>
           </div>

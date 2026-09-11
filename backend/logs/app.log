@@ -206008,3 +206008,787 @@ WebSocket CONNECT /ws/notify/ [127.0.0.1:52394]
 [mHTTP GET /api/accounts/dashboard/ 200 [0.02, 127.0.0.1:36983][0m
 [mHTTP GET /api/accounts/day-sheet/?date=2026-09-05 200 [0.01, 127.0.0.1:2002][0m
 [mHTTP GET /api/accounts/day-sheet/?date=2026-09-05 200 [0.01, 127.0.0.1:43769][0m
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+[mHTTP POST /api/auth/login/ 200 [0.22, 127.0.0.1:50663][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 127.0.0.1:50194][0m
+[mHTTP GET /api/core/features/ 200 [0.05, 127.0.0.1:50195][0m
+[mHTTP GET /api/manager/dashboard/ 200 [0.15, 127.0.0.1:50196][0m
+[mHTTP GET /api/manager/dashboard/ 200 [0.04, 127.0.0.1:3544][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.02, 127.0.0.1:45919][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.02, 127.0.0.1:28121][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:52862]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:52862]
+[mHTTP GET /api/accounts/income/?source=DONATION&date=2026-09-05&search= 200 [0.02, 127.0.0.1:32047][0m
+[mHTTP GET /api/accounts/income/?source=DONATION&date=2026-09-05&search= 200 [0.01, 127.0.0.1:34919][0m
+[mHTTP GET /api/manager/dashboard/ 200 [0.03, 127.0.0.1:53317][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.02, 127.0.0.1:10655][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.03, 127.0.0.1:62047][0m
+[mHTTP GET /api/manager/dashboard/ 200 [0.06, 127.0.0.1:20212][0m
+[mHTTP GET /api/manager/requests/?search=&status= 200 [0.03, 127.0.0.1:64361][0m
+[mHTTP GET /api/manager/requests/?search=&status= 200 [0.02, 127.0.0.1:15691][0m
+[mHTTP GET /api/core/notifications/ 200 [0.01, 127.0.0.1:22539][0m
+[mHTTP GET /api/core/notifications/ 200 [0.01, 127.0.0.1:32280][0m
+[mHTTP GET /api/manager/dashboard/ 200 [0.04, 127.0.0.1:30804][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.02, 127.0.0.1:21907][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.03, 127.0.0.1:26050][0m
+[mHTTP GET /api/manager/dashboard/ 200 [0.07, 127.0.0.1:58285][0m
+[mHTTP GET /api/manager/requests/?search=&status= 200 [0.02, 127.0.0.1:24592][0m
+[mHTTP GET /api/manager/requests/?search=&status= 200 [0.03, 127.0.0.1:62691][0m
+[mHTTP GET /api/manager/requests/?search=&status= 200 [0.02, 127.0.0.1:44598][0m
+[mHTTP GET /api/manager/requests/?search=&status= 200 [0.02, 127.0.0.1:9163][0m
+[mHTTP GET /api/manager/requests/?search=&status= 200 [0.02, 127.0.0.1:25991][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:52862]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:53638]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:53638]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:53638]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:34182]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:34182]
+[mHTTP GET /api/auth/profile/ 200 [0.05, 127.0.0.1:53639][0m
+[mHTTP GET /api/core/features/ 200 [0.06, 127.0.0.1:53640][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 127.0.0.1:34183][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 127.0.0.1:34184][0m
+[mHTTP GET /api/manager/requests/?search=&status= 200 [0.06, 127.0.0.1:34185][0m
+[mHTTP GET /api/manager/requests/?search=&status= 200 [0.04, 127.0.0.1:34186][0m
+[mHTTP GET /api/manager/requests/41db7b7a-b348-4643-8251-63488461cff8/history/ 200 [0.06, 127.0.0.1:13795][0m
+[mHTTP GET /api/manager/requests/41db7b7a-b348-4643-8251-63488461cff8/history/ 200 [0.03, 127.0.0.1:54446][0m
+[mHTTP GET /api/manager/requests/41db7b7a-b348-4643-8251-63488461cff8/ 200 [0.87, 127.0.0.1:13794][0m
+[mHTTP GET /api/manager/requests/41db7b7a-b348-4643-8251-63488461cff8/ 200 [0.03, 127.0.0.1:61028][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:34182]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:10787]
+WebSocket REJECT /ws/notify/ [127.0.0.1:10787]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:10787]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:48217]
+WebSocket REJECT /ws/notify/ [127.0.0.1:48217]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:48217]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:56569]
+WebSocket REJECT /ws/notify/ [127.0.0.1:56569]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:56569]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:53365]
+WebSocket REJECT /ws/notify/ [127.0.0.1:53365]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:53365]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:53661]
+WebSocket REJECT /ws/notify/ [127.0.0.1:53661]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:53661]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:18853]
+WebSocket REJECT /ws/notify/ [127.0.0.1:18853]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:18853]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:60234]
+WebSocket REJECT /ws/notify/ [127.0.0.1:60234]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:60234]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:38242]
+WebSocket REJECT /ws/notify/ [127.0.0.1:38242]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:38242]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:14291]
+WebSocket REJECT /ws/notify/ [127.0.0.1:14291]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:14291]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:42372]
+WebSocket REJECT /ws/notify/ [127.0.0.1:42372]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:42372]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:39762]
+WebSocket REJECT /ws/notify/ [127.0.0.1:39762]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:39762]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:48412]
+WebSocket REJECT /ws/notify/ [127.0.0.1:48412]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:48412]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:41400]
+WebSocket REJECT /ws/notify/ [127.0.0.1:41400]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:41400]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:44000]
+WebSocket REJECT /ws/notify/ [127.0.0.1:44000]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:44000]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:61946]
+WebSocket REJECT /ws/notify/ [127.0.0.1:61946]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:61946]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:54627]
+WebSocket REJECT /ws/notify/ [127.0.0.1:54627]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:54627]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:17719]
+WebSocket REJECT /ws/notify/ [127.0.0.1:17719]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:17719]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:48329]
+WebSocket REJECT /ws/notify/ [127.0.0.1:48329]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:48329]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:33689]
+WebSocket REJECT /ws/notify/ [127.0.0.1:33689]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:33689]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:49319]
+WebSocket REJECT /ws/notify/ [127.0.0.1:49319]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:49319]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:36299]
+WebSocket REJECT /ws/notify/ [127.0.0.1:36299]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:36299]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:47127]
+WebSocket REJECT /ws/notify/ [127.0.0.1:47127]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:47127]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:39409]
+WebSocket REJECT /ws/notify/ [127.0.0.1:39409]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:39409]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:5560]
+WebSocket REJECT /ws/notify/ [127.0.0.1:5560]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:5560]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:7656]
+WebSocket REJECT /ws/notify/ [127.0.0.1:7656]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:7656]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:23019]
+WebSocket REJECT /ws/notify/ [127.0.0.1:23019]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:23019]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:9460]
+WebSocket REJECT /ws/notify/ [127.0.0.1:9460]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:9460]
+Unauthorized: /api/core/features/
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/core/features/ 401 [0.03, 127.0.0.1:9459][0m
+[31;1mHTTP GET /api/auth/profile/ 401 [0.04, 127.0.0.1:9458][0m
+Unauthorized: /api/core/features/
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/core/features/ 401 [0.03, 127.0.0.1:9461][0m
+[31;1mHTTP GET /api/auth/profile/ 401 [0.03, 127.0.0.1:9462][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.03, 127.0.0.1:9463][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 127.0.0.1:41608][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 127.0.0.1:41609][0m
+[mHTTP GET /api/core/features/ 200 [0.06, 127.0.0.1:7210][0m
+[mHTTP GET /api/auth/profile/ 200 [0.11, 127.0.0.1:21657][0m
+[mHTTP GET /api/manager/requests/41db7b7a-b348-4643-8251-63488461cff8/history/ 200 [0.10, 127.0.0.1:56419][0m
+[mHTTP GET /api/manager/requests/41db7b7a-b348-4643-8251-63488461cff8/ 200 [0.12, 127.0.0.1:56418][0m
+[mHTTP GET /api/manager/requests/41db7b7a-b348-4643-8251-63488461cff8/history/ 200 [0.04, 127.0.0.1:27668][0m
+[mHTTP GET /api/manager/requests/41db7b7a-b348-4643-8251-63488461cff8/ 200 [0.06, 127.0.0.1:12707][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:46348]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:46348]
+[mHTTP GET /api/core/notifications/ 200 [0.04, 127.0.0.1:57751][0m
+[mHTTP GET /api/core/notifications/ 200 [0.03, 127.0.0.1:33706][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:46348]
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\sreelakshmi_trust\settings.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:25744]
+WebSocket REJECT /ws/notify/ [10.123.202.21:25744]
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:25744]
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:55454]
+WebSocket REJECT /ws/notify/ [10.123.202.21:55454]
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:55454]
+Unauthorized: /api/core/features/
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/core/features/ 401 [0.07, 10.123.202.21:55453][0m
+[31;1mHTTP GET /api/auth/profile/ 401 [0.07, 10.123.202.21:55452][0m
+Unauthorized: /api/manager/dashboard/
+[31;1mHTTP GET /api/manager/dashboard/ 401 [0.03, 10.123.202.21:55455][0m
+Unauthorized: /api/core/features/
+Unauthorized: /api/auth/profile/
+Unauthorized: /api/manager/dashboard/
+[31;1mHTTP GET /api/core/features/ 401 [0.05, 10.123.202.21:55456][0m
+[31;1mHTTP GET /api/auth/profile/ 401 [0.05, 10.123.202.21:55457][0m
+[31;1mHTTP GET /api/manager/dashboard/ 401 [0.04, 10.123.202.21:34852][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.14, 10.123.202.21:55458][0m
+[mHTTP GET /api/core/features/ 200 [0.06, 10.123.202.21:30994][0m
+[mHTTP GET /api/auth/profile/ 200 [0.10, 10.123.202.21:30993][0m
+[mHTTP GET /api/core/features/ 200 [0.18, 10.123.202.21:23600][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.123.202.21:34227][0m
+[mHTTP GET /api/manager/dashboard/ 200 [0.36, 10.123.202.21:30995][0m
+[mHTTP GET /api/manager/dashboard/ 200 [0.11, 10.123.202.21:11627][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.03, 10.123.202.21:12720][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.02, 10.123.202.21:29465][0m
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:44283]
+WebSocket CONNECT /ws/notify/ [10.123.202.21:44283]
+[mHTTP GET /api/core/notifications/ 200 [0.04, 10.123.202.21:41061][0m
+[mHTTP GET /api/core/notifications/ 200 [0.03, 10.123.202.21:18881][0m
+Internal Server Error: /api/core/notifications/6cd55795-9fa2-4a36-9f5e-157ff057615d/read/
+Traceback (most recent call last):
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 552, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 552, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 502, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\concurrent\futures\thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "C:\Python314\Lib\concurrent\futures\thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 556, in thread_handler
+    return func(*args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\views.py", line 435, in post
+    notif.mark_read()
+    ^^^^^^^^^^^^^^^
+AttributeError: 'SystemNotification' object has no attribute 'mark_read'
+[35;1mHTTP POST /api/core/notifications/6cd55795-9fa2-4a36-9f5e-157ff057615d/read/ 500 [0.15, 10.123.202.21:42680][0m
+[mHTTP GET /api/core/notifications/ 200 [0.03, 10.123.202.21:44312][0m
+[mHTTP GET /api/core/notifications/ 200 [0.04, 10.123.202.21:52539][0m
+[mHTTP GET /api/manager/dashboard/ 200 [0.08, 10.123.202.21:4829][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.07, 10.123.202.21:1994][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.06, 10.123.202.21:55271][0m
+[mHTTP GET /api/manager/dashboard/ 200 [0.17, 10.123.202.21:37478][0m
+[mHTTP GET /api/manager/dashboard/ 200 [0.09, 10.123.202.21:9101][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.05, 10.123.202.21:12063][0m
+[mHTTP GET /api/manager/dashboard/ 200 [0.14, 10.123.202.21:60488][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.06, 10.123.202.21:33695][0m
+[mHTTP POST /api/auth/logout/ 200 [0.05, 10.123.202.21:50366][0m
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:44283]
+[mHTTP POST /api/auth/login/ 200 [0.31, 10.123.202.21:61373][0m
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:39978]
+WebSocket CONNECT /ws/notify/ [10.123.202.21:39978]
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.123.202.21:16225][0m
+[mHTTP GET /api/core/features/ 200 [0.07, 10.123.202.21:16226][0m
+[mHTTP GET /api/accounts/dashboard/ 200 [0.14, 10.123.202.21:16227][0m
+[mHTTP GET /api/accounts/dashboard/ 200 [0.07, 10.123.202.21:54727][0m
+[mHTTP POST /api/auth/logout/ 200 [0.08, 10.123.202.21:21295][0m
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:39978]
+Unauthorized: /api/auth/login/
+[31;1mHTTP POST /api/auth/login/ 401 [0.27, 10.123.202.21:37749][0m
+[mHTTP POST /api/auth/login/ 200 [0.33, 10.123.202.21:4098][0m
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:1681]
+WebSocket CONNECT /ws/notify/ [10.123.202.21:1681]
+[mHTTP GET /api/core/features/ 200 [0.06, 10.123.202.21:39675][0m
+[mHTTP GET /api/auth/profile/ 200 [0.08, 10.123.202.21:39674][0m
+[mHTTP GET /api/hr/dashboard/ 200 [0.12, 10.123.202.21:39676][0m
+[mHTTP GET /api/hr/dashboard/ 200 [0.08, 10.123.202.21:18090][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.04, 10.123.202.21:47761][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.02, 10.123.202.21:36194][0m
+[mHTTP POST /api/auth/logout/ 200 [0.04, 10.123.202.21:13079][0m
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:1681]
+[mHTTP POST /api/auth/login/ 200 [0.31, 10.123.202.21:5001][0m
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:53464]
+WebSocket CONNECT /ws/notify/ [10.123.202.21:53464]
+[mHTTP GET /api/core/features/ 200 [0.08, 10.123.202.21:63320][0m
+[mHTTP GET /api/auth/profile/ 200 [0.10, 10.123.202.21:24238][0m
+[mHTTP GET /api/accounts/dashboard/ 200 [0.13, 10.123.202.21:63321][0m
+[mHTTP GET /api/accounts/dashboard/ 200 [0.05, 10.123.202.21:47940][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-11 200 [0.06, 10.123.202.21:1312][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-11 200 [0.04, 10.123.202.21:42286][0m
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\accounts_module\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:41436]
+WebSocket CONNECT /ws/notify/ [10.123.202.21:41436]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\accounts_module\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:43123]
+WebSocket CONNECT /ws/notify/ [10.123.202.21:43123]
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:31623]
+WebSocket CONNECT /ws/notify/ [10.123.202.21:31623]
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:31623]
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:19691]
+WebSocket CONNECT /ws/notify/ [10.123.202.21:19691]
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:39329]
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:19691]
+WebSocket CONNECT /ws/notify/ [10.123.202.21:39329]
+[mHTTP GET /api/core/features/ 200 [0.08, 10.123.202.21:19693][0m
+[mHTTP GET /api/auth/profile/ 200 [0.10, 10.123.202.21:19692][0m
+[mHTTP GET /api/core/features/ 200 [0.05, 10.123.202.21:39330][0m
+[mHTTP GET /api/auth/profile/ 200 [0.07, 10.123.202.21:39332][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-11 200 [0.09, 10.123.202.21:39331][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-11 200 [0.06, 10.123.202.21:39333][0m
+[mHTTP POST /api/auth/logout/ 200 [0.04, 10.123.202.21:12643][0m
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:39329]
+[mHTTP POST /api/auth/login/ 200 [0.31, 10.123.202.21:53603][0m
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:30304]
+WebSocket CONNECT /ws/notify/ [10.123.202.21:30304]
+[mHTTP GET /api/auth/profile/ 200 [0.11, 10.123.202.21:57119][0m
+[mHTTP GET /api/core/features/ 200 [0.11, 10.123.202.21:57120][0m
+[mHTTP GET /api/hr/dashboard/ 200 [0.15, 10.123.202.21:42293][0m
+[mHTTP GET /api/hr/dashboard/ 200 [0.10, 10.123.202.21:42294][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.05, 10.123.202.21:61811][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.03, 10.123.202.21:31173][0m
+[mHTTP GET /api/hr/executive-members/?search= 200 [0.03, 10.123.202.21:19060][0m
+[mHTTP GET /api/hr/executive-members/?search= 200 [0.03, 10.123.202.21:8158][0m
+[mHTTP GET /api/hr/volunteers/?search= 200 [0.04, 10.123.202.21:38089][0m
+[mHTTP GET /api/hr/volunteers/?search= 200 [0.03, 10.123.202.21:45134][0m
+[mHTTP GET /api/hr/members/?search= 200 [0.04, 10.123.202.21:52523][0m
+[mHTTP GET /api/hr/members/?search= 200 [0.04, 10.123.202.21:9735][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.12, 10.123.202.21:60139][0m
+[mHTTP GET /api/hr/staff-vouchers/ 200 [0.20, 10.123.202.21:60140][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.10, 10.123.202.21:41400][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE 200 [0.33, 10.123.202.21:60138][0m
+[mHTTP GET /api/hr/staff-vouchers/ 200 [0.12, 10.123.202.21:32681][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE 200 [0.16, 10.123.202.21:51660][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.10, 10.123.202.21:2025][0m
+[mHTTP GET /api/hr/staff-vouchers/ 200 [0.15, 10.123.202.21:2026][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE&designation=STAFF 200 [0.16, 10.123.202.21:2027][0m
+[mHTTP POST /api/hr/officers/2544e859-04e0-4e8f-9a56-d3297c4d8a8c/reset-password/ 200 [0.17, 10.123.202.21:59894][0m
+[mHTTP POST /api/auth/login/ 200 [0.29, 10.123.202.98:40780][0m
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.98:40794]
+WebSocket CONNECT /ws/notify/ [10.123.202.98:40794]
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.04, 10.123.202.98:40806][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.06, 10.123.202.98:40780][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.03, 10.123.202.98:40780][0m
+[mHTTP GET /api/auth/profile/ 200 [0.30, 10.123.202.98:40806][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.22, 10.123.202.98:40808][0m
+[mHTTP GET /api/core/events/ 200 [1.40, 10.123.202.98:40780][0m
+[mHTTP POST /api/core/update-push-token/ 200 [0.04, 10.123.202.98:40780][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.04, 10.123.202.98:40780][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.04, 10.123.202.98:40780][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.123.202.98:40780][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.123.202.98:40780][0m
+[mHTTP POST /api/hr/attendance/my-attendance/ 200 [4.21, 10.123.202.98:40780][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.11, 10.123.202.21:1265][0m
+[mHTTP GET /api/hr/staff-vouchers/ 200 [0.17, 10.123.202.21:1266][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE&designation=STAFF 200 [0.20, 10.123.202.21:60868][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.13, 10.123.202.98:40806][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.15, 10.123.202.98:40780][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.15, 10.123.202.98:40808][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.03, 10.123.202.98:40780][0m
+[mHTTP GET /api/core/events/ 200 [0.04, 10.123.202.98:40780][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.05, 10.123.202.98:40806][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.06, 10.123.202.98:40780][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.04, 10.123.202.98:40780][0m
+[mHTTP GET /api/core/events/ 200 [0.03, 10.123.202.98:40780][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.05, 10.123.202.98:40780][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.06, 10.123.202.98:40806][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.06, 10.123.202.98:40780][0m
+[mHTTP GET /api/hr/staff-vouchers/17bf9936-922b-4627-a40b-7687bf44f4b8/ 200 [0.05, 10.123.202.98:40806][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.04, 10.123.202.98:40780][0m
+[mHTTP POST /api/accounts/income/ 201 [0.08, 10.123.202.98:40780][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.06, 10.123.202.98:40806][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.08, 10.123.202.98:40780][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.04, 10.123.202.98:40780][0m
+[mHTTP GET /api/core/events/ 200 [0.06, 10.123.202.98:40780][0m
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.98:54374]
+WebSocket CONNECT /ws/notify/ [10.123.202.98:54374]
+[mHTTP GET /api/accounts/income/?limit=100 200 [0.08, 10.123.202.98:40780][0m
+[mHTTP GET /api/accounts/income/?limit=100 200 [0.08, 10.123.202.98:40806][0m
+WhatsApp gateway not connected (attempt 1/3). Is 'node server.js' running?
+WebSocket DISCONNECT /ws/notify/ [10.123.202.98:54374]
+WhatsApp gateway not connected (attempt 2/3). Is 'node server.js' running?
+WhatsApp gateway not connected (attempt 3/3). Is 'node server.js' running?
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.05, 10.123.202.98:40780][0m
+[mHTTP POST /api/accounts/income/ 201 [0.06, 10.123.202.98:40780][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.06, 10.123.202.98:40806][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.07, 10.123.202.98:40780][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.04, 10.123.202.98:40780][0m
+[mHTTP GET /api/core/events/ 200 [0.03, 10.123.202.98:40780][0m
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.98:56446]
+WebSocket CONNECT /ws/notify/ [10.123.202.98:56446]
+[mHTTP GET /api/accounts/income/?limit=100 200 [0.04, 10.123.202.98:40780][0m
+[mHTTP GET /api/accounts/income/?limit=100 200 [0.03, 10.123.202.98:40780][0m
+WebSocket DISCONNECT /ws/notify/ [10.123.202.98:56446]
+WhatsApp gateway not connected (attempt 1/3). Is 'node server.js' running?
+WhatsApp gateway not connected (attempt 2/3). Is 'node server.js' running?
+WhatsApp gateway not connected (attempt 3/3). Is 'node server.js' running?
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.05, 10.123.202.98:40780][0m
+[mHTTP POST /api/accounts/income/ 201 [0.07, 10.123.202.98:40780][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.05, 10.123.202.98:40806][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.05, 10.123.202.98:40780][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.04, 10.123.202.98:40780][0m
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.98:35604]
+WebSocket CONNECT /ws/notify/ [10.123.202.98:35604]
+[mHTTP GET /api/core/events/ 200 [0.06, 10.123.202.98:40780][0m
+[mHTTP GET /api/accounts/income/?limit=100 200 [0.10, 10.123.202.98:40806][0m
+[mHTTP GET /api/accounts/income/?limit=100 200 [0.08, 10.123.202.98:40808][0m
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:30304]
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:24393]
+WebSocket CONNECT /ws/notify/ [10.123.202.21:24393]
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:24393]
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:34366]
+WebSocket CONNECT /ws/notify/ [10.123.202.21:34366]
+WhatsApp gateway not connected (attempt 1/3). Is 'node server.js' running?
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.123.202.21:24394][0m
+[mHTTP GET /api/core/features/ 200 [0.06, 10.123.202.21:24395][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.123.202.21:34368][0m
+[mHTTP GET /api/core/features/ 200 [0.06, 10.123.202.21:34369][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.09, 10.123.202.21:34371][0m
+[mHTTP GET /api/hr/staff-vouchers/ 200 [0.15, 10.123.202.21:34372][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE&designation=STAFF 200 [0.17, 10.123.202.21:34370][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.08, 10.123.202.21:62975][0m
+[mHTTP GET /api/hr/staff-vouchers/ 200 [0.11, 10.123.202.21:30727][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE&designation=STAFF 200 [0.12, 10.123.202.21:35636][0m
+[mHTTP POST /api/auth/logout/ 200 [0.04, 10.123.202.21:35988][0m
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:34366]
+WhatsApp gateway not connected (attempt 2/3). Is 'node server.js' running?
+WhatsApp gateway not connected (attempt 3/3). Is 'node server.js' running?
+[mHTTP POST /api/auth/login/ 200 [0.28, 10.123.202.21:1417][0m
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:44929]
+WebSocket CONNECT /ws/notify/ [10.123.202.21:44929]
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.123.202.21:63177][0m
+[mHTTP GET /api/core/features/ 200 [0.06, 10.123.202.21:63178][0m
+[mHTTP GET /api/accounts/dashboard/ 200 [0.11, 10.123.202.21:19246][0m
+[mHTTP GET /api/accounts/dashboard/ 200 [0.07, 10.123.202.21:8923][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-11 200 [0.04, 10.123.202.21:1434][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-11 200 [0.03, 10.123.202.21:50609][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-11 200 [0.04, 10.123.202.21:51841][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-11 200 [0.04, 10.123.202.21:20936][0m
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:44929]
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:3043]
+WebSocket CONNECT /ws/notify/ [10.123.202.21:3043]
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:3043]
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:55368]
+WebSocket CONNECT /ws/notify/ [10.123.202.21:55368]
+[mHTTP GET /api/core/features/ 200 [0.06, 10.123.202.21:3045][0m
+[mHTTP GET /api/auth/profile/ 200 [0.07, 10.123.202.21:3044][0m
+[mHTTP GET /api/core/features/ 200 [0.06, 10.123.202.21:55369][0m
+[mHTTP GET /api/auth/profile/ 200 [0.08, 10.123.202.21:55370][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-11 200 [0.08, 10.123.202.21:55371][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-11 200 [0.04, 10.123.202.21:55372][0m
+[mHTTP GET /api/accounts/dashboard/ 200 [0.06, 10.123.202.21:61280][0m
+[mHTTP GET /api/accounts/dashboard/ 200 [0.07, 10.123.202.21:6021][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-11 200 [0.04, 10.123.202.21:1459][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-11 200 [0.04, 10.123.202.21:62706][0m
+WebSocket DISCONNECT /ws/notify/ [10.123.202.98:35604]
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.05, 10.123.202.98:40780][0m
+[mHTTP POST /api/accounts/income/ 201 [0.07, 10.123.202.98:40780][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.06, 10.123.202.98:40780][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.07, 10.123.202.98:40806][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.04, 10.123.202.98:40780][0m
+[mHTTP GET /api/core/events/ 200 [0.03, 10.123.202.98:40780][0m
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.98:56640]
+WebSocket CONNECT /ws/notify/ [10.123.202.98:56640]
+[mHTTP GET /api/accounts/income/?limit=100 200 [0.07, 10.123.202.98:40780][0m
+[mHTTP GET /api/accounts/income/?limit=100 200 [0.07, 10.123.202.98:40806][0m
+WhatsApp gateway not connected (attempt 1/3). Is 'node server.js' running?
+WebSocket DISCONNECT /ws/notify/ [10.123.202.98:56640]
+WhatsApp gateway not connected (attempt 2/3). Is 'node server.js' running?
+WhatsApp gateway not connected (attempt 3/3). Is 'node server.js' running?
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.04, 10.123.202.98:40806][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.06, 10.123.202.98:40780][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.05, 10.123.202.98:40780][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.06, 10.123.202.98:40806][0m
+[mHTTP GET /api/core/events/ 200 [0.07, 10.123.202.98:40780][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.04, 10.123.202.98:40780][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.06, 10.123.202.98:40780][0m
+[mHTTP GET /api/hr/staff-vouchers/17bf9936-922b-4627-a40b-7687bf44f4b8/ 200 [0.05, 10.123.202.98:40806][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.06, 10.123.202.98:40780][0m
+[mHTTP POST /api/accounts/income/ 201 [0.07, 10.123.202.98:40780][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.05, 10.123.202.98:40806][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.06, 10.123.202.98:40780][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.03, 10.123.202.98:40780][0m
+[mHTTP GET /api/core/events/ 200 [0.04, 10.123.202.98:40780][0m
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.98:40970]
+WebSocket CONNECT /ws/notify/ [10.123.202.98:40970]
+[mHTTP GET /api/accounts/income/?limit=100 200 [0.07, 10.123.202.98:40806][0m
+[mHTTP GET /api/accounts/income/?limit=100 200 [0.08, 10.123.202.98:40780][0m
+WebSocket DISCONNECT /ws/notify/ [10.123.202.98:40794]
+WebSocket DISCONNECT /ws/notify/ [10.123.202.98:40970]
+[mHTTP POST /api/auth/logout/ 200 [0.03, 10.123.202.21:6301][0m
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:55368]
+[mHTTP POST /api/auth/login/ 200 [0.35, 10.123.202.21:60951][0m
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:63000]
+WebSocket CONNECT /ws/notify/ [10.123.202.21:63000]
+[mHTTP GET /api/core/features/ 200 [0.10, 10.123.202.21:35471][0m
+[mHTTP GET /api/auth/profile/ 200 [0.10, 10.123.202.21:35470][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.123.202.98:36270][0m
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.98:49172]
+WebSocket CONNECT /ws/notify/ [10.123.202.98:49172]
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.04, 10.123.202.98:49176][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.05, 10.123.202.98:49184][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.04, 10.123.202.98:49184][0m
+[mHTTP POST /api/core/update-push-token/ 200 [0.03, 10.123.202.98:49184][0m
+[mHTTP GET /api/core/events/ 200 [0.04, 10.123.202.98:49184][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.05, 10.123.202.98:49176][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.04, 10.123.202.98:49184][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.06, 10.123.202.98:49184][0m
+[mHTTP GET /api/hr/staff-vouchers/17bf9936-922b-4627-a40b-7687bf44f4b8/ 200 [0.06, 10.123.202.98:49176][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.05, 10.123.202.98:49184][0m
+[mHTTP POST /api/accounts/income/ 201 [0.09, 10.123.202.98:49184][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.05, 10.123.202.98:49184][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.03, 10.123.202.98:49176][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.04, 10.123.202.98:49184][0m
+[mHTTP GET /api/core/events/ 200 [0.03, 10.123.202.98:49184][0m
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.98:32818]
+WebSocket CONNECT /ws/notify/ [10.123.202.98:32818]
+[mHTTP GET /api/accounts/income/?limit=100 200 [0.04, 10.123.202.98:49184][0m
+[mHTTP GET /api/accounts/income/?limit=100 200 [0.06, 10.123.202.98:49184][0m
+WebSocket DISCONNECT /ws/notify/ [10.123.202.98:32818]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.04, 10.123.202.98:49184][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.02, 10.123.202.98:49184][0m
+WhatsApp gateway not connected (attempt 1/3). Is 'node server.js' running?
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.04, 10.123.202.98:49184][0m
+[mHTTP GET /api/core/events/ 200 [0.03, 10.123.202.98:49184][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.03, 10.123.202.98:49176][0m
+WhatsApp gateway not connected (attempt 2/3). Is 'node server.js' running?
+WhatsApp gateway not connected (attempt 3/3). Is 'node server.js' running?
+WebSocket DISCONNECT /ws/notify/ [10.123.202.98:49172]
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.123.202.98:34720][0m
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.98:60258]
+WebSocket CONNECT /ws/notify/ [10.123.202.98:60258]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.04, 10.123.202.98:34720][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.03, 10.123.202.98:60270][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.03, 10.123.202.98:34720][0m
+WebSocket DISCONNECT /ws/notify/ [10.123.202.98:60258]
+[mHTTP GET /api/core/events/ 200 [0.03, 10.123.202.98:34720][0m
+[mHTTP POST /api/auth/logout/ 200 [0.03, 10.123.202.21:37535][0m
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:63000]
+[mHTTP POST /api/auth/login/ 200 [0.26, 10.123.202.21:31487][0m
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:27829]
+WebSocket CONNECT /ws/notify/ [10.123.202.21:27829]
+[mHTTP GET /api/auth/profile/ 200 [0.11, 10.123.202.21:2396][0m
+[mHTTP GET /api/core/features/ 200 [0.11, 10.123.202.21:2397][0m
+[mHTTP GET /api/hr/dashboard/ 200 [0.13, 10.123.202.21:2398][0m
+[mHTTP GET /api/hr/dashboard/ 200 [0.09, 10.123.202.21:21544][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.04, 10.123.202.21:43017][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.03, 10.123.202.21:47593][0m
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.98:50302]
+WebSocket CONNECT /ws/notify/ [10.123.202.98:50302]
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.06, 10.123.202.98:50328][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.07, 10.123.202.98:50318][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.04, 10.123.202.98:50318][0m
+[mHTTP GET /api/core/events/ 200 [0.08, 10.123.202.98:50318][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.05, 10.123.202.98:50328][0m
+[mHTTP POST /api/core/update-push-token/ 200 [0.04, 10.123.202.98:50318][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.12, 10.123.202.21:14754][0m
+[mHTTP GET /api/hr/staff-vouchers/ 200 [0.17, 10.123.202.21:14755][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.06, 10.123.202.21:61907][0m
+[mHTTP GET /api/hr/staff-vouchers/ 200 [0.13, 10.123.202.21:43753][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE 200 [0.39, 10.123.202.21:14753][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE 200 [0.22, 10.123.202.21:14758][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.08, 10.123.202.21:65352][0m
+[mHTTP GET /api/hr/staff-vouchers/ 200 [0.14, 10.123.202.21:65353][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE&designation=STAFF 200 [0.17, 10.123.202.21:19607][0m
+[mHTTP POST /api/hr/officers/cb16f5af-3910-4b1b-8e1f-4d00a2803474/reset-password/ 200 [0.16, 10.123.202.21:55318][0m
+WebSocket DISCONNECT /ws/notify/ [10.123.202.98:50302]
+[mHTTP POST /api/auth/login/ 200 [0.31, 10.123.202.98:50318][0m
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.98:40594]
+WebSocket CONNECT /ws/notify/ [10.123.202.98:40594]
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.08, 10.123.202.98:50328][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.10, 10.123.202.98:50318][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.05, 10.123.202.98:50318][0m
+[mHTTP POST /api/core/update-push-token/ 200 [0.10, 10.123.202.98:50318][0m
+[mHTTP GET /api/core/events/ 200 [0.10, 10.123.202.98:50328][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.03, 10.123.202.98:50318][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.05, 10.123.202.98:50318][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.06, 10.123.202.98:50318][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.123.202.98:50318][0m
+[mHTTP POST /api/hr/attendance/my-attendance/ 200 [3.06, 10.123.202.98:50318][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.06, 10.123.202.21:57103][0m
+[mHTTP GET /api/hr/staff-vouchers/ 200 [0.24, 10.123.202.21:57104][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE&designation=STAFF 200 [0.28, 10.123.202.21:57102][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.19, 10.123.202.98:50328][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.19, 10.123.202.98:42156][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.21, 10.123.202.98:50318][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.09, 10.123.202.98:50318][0m
+[mHTTP GET /api/core/events/ 200 [0.03, 10.123.202.98:50318][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.04, 10.123.202.98:50328][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.05, 10.123.202.98:50318][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.05, 10.123.202.98:50318][0m
+[mHTTP GET /api/core/events/ 200 [0.03, 10.123.202.98:50318][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.04, 10.123.202.98:50328][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.06, 10.123.202.98:50318][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.10, 10.123.202.98:50318][0m
+[mHTTP GET /api/core/events/ 200 [0.05, 10.123.202.98:50318][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.05, 10.123.202.98:50328][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.04, 10.123.202.98:50318][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.07, 10.123.202.98:50328][0m
+[mHTTP GET /api/hr/staff-vouchers/4a0447c6-83e5-43d9-8725-310375b66226/ 200 [0.04, 10.123.202.98:42156][0m
+[mHTTP GET /api/hr/staff-vouchers/4a0447c6-83e5-43d9-8725-310375b66226/ 200 [0.03, 10.123.202.21:1814][0m
+[mHTTP GET /api/hr/staff-vouchers/4a0447c6-83e5-43d9-8725-310375b66226/ 200 [0.04, 10.123.202.21:30576][0m
+WebSocket DISCONNECT /ws/notify/ [10.123.202.98:40594]
+[mHTTP GET /api/hr/officers/designations/ 200 [0.07, 10.123.202.21:4384][0m
+[mHTTP GET /api/hr/staff-vouchers/ 200 [0.13, 10.123.202.21:61547][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE&designation=STAFF 200 [0.15, 10.123.202.21:44693][0m
+[mHTTP GET /api/hr/staff-vouchers/4a0447c6-83e5-43d9-8725-310375b66226/ 200 [0.05, 10.123.202.21:53189][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.06, 10.123.202.21:57941][0m
+[mHTTP GET /api/hr/staff-vouchers/ 200 [0.10, 10.123.202.21:57942][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE&designation=STAFF 200 [0.10, 10.123.202.21:57940][0m
+[mHTTP GET /api/hr/staff-vouchers/4a0447c6-83e5-43d9-8725-310375b66226/ 200 [0.04, 10.123.202.21:4071][0m
+[mHTTP GET /api/hr/staff-vouchers/4a0447c6-83e5-43d9-8725-310375b66226/ 200 [0.03, 10.123.202.21:32914][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.05, 10.123.202.21:27897][0m
+[mHTTP GET /api/hr/staff-vouchers/ 200 [0.09, 10.123.202.21:11206][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE&designation=STAFF 200 [0.10, 10.123.202.21:21322][0m
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:27829]
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:22933]
+WebSocket CONNECT /ws/notify/ [10.123.202.21:22933]
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:31285]
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:22933]
+WebSocket CONNECT /ws/notify/ [10.123.202.21:31285]
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.123.202.21:31284][0m
+[mHTTP GET /api/core/features/ 200 [0.05, 10.123.202.21:31286][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.123.202.21:31287][0m
+[mHTTP GET /api/core/features/ 200 [0.03, 10.123.202.21:31288][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.06, 10.123.202.21:39337][0m
+[mHTTP GET /api/hr/staff-vouchers/ 200 [0.12, 10.123.202.21:39338][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE&designation=STAFF 200 [0.13, 10.123.202.21:31289][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.06, 10.123.202.21:48756][0m
+[mHTTP GET /api/hr/staff-vouchers/ 200 [0.09, 10.123.202.21:26649][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE&designation=STAFF 200 [0.10, 10.123.202.21:37285][0m
+[mHTTP GET /api/hr/staff-vouchers/4a0447c6-83e5-43d9-8725-310375b66226/ 200 [0.03, 10.123.202.21:52254][0m
+[mHTTP GET /api/hr/staff-vouchers/4a0447c6-83e5-43d9-8725-310375b66226/ 200 [0.03, 10.123.202.21:9790][0m
+Bad Request: /api/hr/staff-vouchers/4a0447c6-83e5-43d9-8725-310375b66226/
+[31;1mHTTP PATCH /api/hr/staff-vouchers/4a0447c6-83e5-43d9-8725-310375b66226/ 400 [0.07, 10.123.202.21:33038][0m
+Bad Request: /api/hr/staff-vouchers/4a0447c6-83e5-43d9-8725-310375b66226/
+[31;1mHTTP PATCH /api/hr/staff-vouchers/4a0447c6-83e5-43d9-8725-310375b66226/ 400 [0.02, 10.123.202.21:17260][0m
+Bad Request: /api/hr/staff-vouchers/4a0447c6-83e5-43d9-8725-310375b66226/
+[31;1mHTTP PATCH /api/hr/staff-vouchers/4a0447c6-83e5-43d9-8725-310375b66226/ 400 [0.03, 10.123.202.21:63081][0m
+Bad Request: /api/hr/staff-vouchers/4a0447c6-83e5-43d9-8725-310375b66226/
+[31;1mHTTP PATCH /api/hr/staff-vouchers/4a0447c6-83e5-43d9-8725-310375b66226/ 400 [0.04, 10.123.202.21:50955][0m
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\hr_module\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:32423]
+WebSocket REJECT /ws/notify/ [10.123.202.21:32423]
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:32423]
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:60776]
+WebSocket REJECT /ws/notify/ [10.123.202.21:60776]
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:60776]
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:29616]
+WebSocket REJECT /ws/notify/ [10.123.202.21:29616]
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:29616]
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:35907]
+WebSocket REJECT /ws/notify/ [10.123.202.21:35907]
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:35907]
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:43936]
+WebSocket REJECT /ws/notify/ [10.123.202.21:43936]
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:43936]
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:52399]
+WebSocket REJECT /ws/notify/ [10.123.202.21:52399]
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:52399]
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:21535]
+WebSocket REJECT /ws/notify/ [10.123.202.21:21535]
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:21535]
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:16583]
+WebSocket REJECT /ws/notify/ [10.123.202.21:16583]
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:16583]
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:61287]
+WebSocket REJECT /ws/notify/ [10.123.202.21:61287]
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:61287]
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:61907]
+WebSocket REJECT /ws/notify/ [10.123.202.21:61907]
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:61907]
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:60980]
+WebSocket REJECT /ws/notify/ [10.123.202.21:60980]
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:60980]
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:52495]
+WebSocket REJECT /ws/notify/ [10.123.202.21:52495]
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:52495]
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:26585]
+WebSocket REJECT /ws/notify/ [10.123.202.21:26585]
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:26585]
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:14235]
+WebSocket REJECT /ws/notify/ [10.123.202.21:14235]
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:14235]
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:63739]
+WebSocket REJECT /ws/notify/ [10.123.202.21:63739]
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:63739]
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:64387]
+WebSocket REJECT /ws/notify/ [10.123.202.21:64387]
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:64387]
+Unauthorized: /api/auth/profile/
+Unauthorized: /api/core/features/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.07, 10.123.202.21:63740][0m
+[31;1mHTTP GET /api/core/features/ 401 [0.07, 10.123.202.21:63741][0m
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.06, 10.123.202.21:64388][0m
+Unauthorized: /api/core/features/
+[31;1mHTTP GET /api/core/features/ 401 [0.05, 10.123.202.21:64390][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.13, 10.123.202.21:64389][0m
+[mHTTP GET /api/core/features/ 200 [0.05, 10.123.202.21:46758][0m
+[mHTTP GET /api/auth/profile/ 200 [0.07, 10.123.202.21:46759][0m
+[mHTTP GET /api/core/features/ 200 [0.07, 10.123.202.21:1828][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.12, 10.123.202.21:23713][0m
+[mHTTP GET /api/auth/profile/ 200 [0.15, 10.123.202.21:23714][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE&designation=STAFF 200 [0.21, 10.123.202.21:22336][0m
+[mHTTP GET /api/hr/staff-vouchers/ 200 [0.21, 10.123.202.21:23715][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.10, 10.123.202.21:1244][0m
+[mHTTP GET /api/hr/staff-vouchers/ 200 [0.22, 10.123.202.21:21416][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE&designation=STAFF 200 [0.25, 10.123.202.21:1487][0m
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:24333]
+WebSocket CONNECT /ws/notify/ [10.123.202.21:24333]
+[mHTTP GET /api/hr/staff-vouchers/4a0447c6-83e5-43d9-8725-310375b66226/ 200 [0.03, 10.123.202.21:39313][0m
+[mHTTP GET /api/hr/staff-vouchers/4a0447c6-83e5-43d9-8725-310375b66226/ 200 [0.03, 10.123.202.21:2970][0m
+[mHTTP PATCH /api/hr/staff-vouchers/4a0447c6-83e5-43d9-8725-310375b66226/ 200 [0.05, 10.123.202.21:54718][0m
+[mHTTP PATCH /api/hr/staff-vouchers/4a0447c6-83e5-43d9-8725-310375b66226/ 200 [0.04, 10.123.202.21:39690][0m
+[mHTTP PATCH /api/hr/staff-vouchers/4a0447c6-83e5-43d9-8725-310375b66226/ 200 [0.04, 10.123.202.21:31544][0m
+[mHTTP PATCH /api/hr/staff-vouchers/4a0447c6-83e5-43d9-8725-310375b66226/ 200 [0.05, 10.123.202.21:60070][0m
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.02, 10.123.202.98:34180][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.03, 10.123.202.98:34180][0m
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.98:47334]
+WebSocket CONNECT /ws/notify/ [10.123.202.98:47334]
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.123.202.98:34180][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.05, 10.123.202.98:47344][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.07, 10.123.202.98:34180][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.05, 10.123.202.98:34180][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.05, 10.123.202.98:47344][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.07, 10.123.202.98:34180][0m
+[mHTTP GET /api/core/events/ 200 [0.66, 10.123.202.98:47358][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.06, 10.123.202.98:34180][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.08, 10.123.202.98:47358][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.09, 10.123.202.98:47344][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.09, 10.123.202.98:34180][0m
+[mHTTP GET /api/core/events/ 200 [0.06, 10.123.202.98:47344][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.06, 10.123.202.98:34180][0m
+[mHTTP GET /api/hr/staff-vouchers/4a0447c6-83e5-43d9-8725-310375b66226/ 200 [0.06, 10.123.202.98:47344][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.07, 10.123.202.98:34180][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.06, 10.123.202.98:47358][0m
+[mHTTP GET /api/core/events/ 200 [0.04, 10.123.202.98:34180][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.03, 10.123.202.98:34180][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.04, 10.123.202.98:34180][0m
+[mHTTP POST /api/accounts/income/ 201 [0.08, 10.123.202.98:34180][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.04, 10.123.202.98:34180][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.05, 10.123.202.98:47344][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.04, 10.123.202.98:34180][0m
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.98:45182]
+WebSocket CONNECT /ws/notify/ [10.123.202.98:45182]
+[mHTTP GET /api/core/events/ 200 [0.07, 10.123.202.98:34180][0m
+[mHTTP GET /api/accounts/income/?limit=100 200 [0.07, 10.123.202.98:47344][0m
+[mHTTP GET /api/accounts/income/?limit=100 200 [0.07, 10.123.202.98:47358][0m
+WhatsApp gateway not connected (attempt 1/3). Is 'node server.js' running?
+WhatsApp gateway not connected (attempt 2/3). Is 'node server.js' running?
+WhatsApp gateway not connected (attempt 3/3). Is 'node server.js' running?
+[mHTTP POST /api/auth/logout/ 200 [0.02, 10.123.202.21:49671][0m
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:24333]
+[mHTTP POST /api/auth/login/ 200 [0.22, 10.123.202.21:18983][0m
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:2395]
+WebSocket CONNECT /ws/notify/ [10.123.202.21:2395]
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.123.202.21:4174][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 10.123.202.21:4175][0m
+[mHTTP GET /api/accounts/dashboard/ 200 [0.06, 10.123.202.21:4176][0m
+[mHTTP GET /api/accounts/dashboard/ 200 [0.04, 10.123.202.21:4177][0m
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:2395]
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:48493]
+WebSocket CONNECT /ws/notify/ [10.123.202.21:48493]
+WebSocket DISCONNECT /ws/notify/ [10.123.202.21:48493]
+WebSocket HANDSHAKING /ws/notify/ [10.123.202.21:59977]
+[mHTTP GET /api/core/features/ 200 [0.05, 10.123.202.21:48496][0m
+WebSocket CONNECT /ws/notify/ [10.123.202.21:59977]
+[mHTTP GET /api/auth/profile/ 200 [0.07, 10.123.202.21:48495][0m
+[mHTTP GET /api/accounts/dashboard/ 200 [0.11, 10.123.202.21:48494][0m
+[mHTTP GET /api/core/features/ 200 [0.05, 10.123.202.21:59978][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.123.202.21:59979][0m
+[mHTTP GET /api/accounts/dashboard/ 200 [0.05, 10.123.202.21:59980][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-11 200 [0.03, 10.123.202.21:9638][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-11 200 [0.02, 10.123.202.21:45705][0m

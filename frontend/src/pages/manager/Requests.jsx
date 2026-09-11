@@ -227,7 +227,7 @@ export default function Requests() {
                 ) : requests.map(r => (
                   <tr key={r.id}>
                     <td className="td-mono" style={{ cursor: 'pointer' }}
-                      onClick={() => navigate(`/manager/requests/${r.id}`)}>
+                      onClick={() => navigate(`/slt/mgr/requests/${r.id}`)}>
                       {r.request_number}
                     </td>
                     <td>{r.purpose}</td>
@@ -245,7 +245,7 @@ export default function Requests() {
                     <td>
                       <div style={{ display: 'flex', gap: 4 }}>
                         <button className="btn btn-sm btn-secondary"
-                          onClick={() => navigate(`/manager/requests/${r.id}`)}>View</button>
+                          onClick={() => navigate(`/slt/mgr/requests/${r.id}`)}>View</button>
                         {canSubmit(r) && (
                           <button className="btn btn-sm btn-primary"
                             onClick={() => setActionModal({ req: r, action: 'submit' })}>Submit</button>

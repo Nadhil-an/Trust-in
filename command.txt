@@ -26,7 +26,7 @@ pm2 stop sree-trust-whatsapp-gateway
 
 == STEP 3 - Frontend (Web Dashboard) ==
 cd frontend
-npm run dev -- --port 5174
+
 
 == MOBILE SETUP (Run these in ORDER in a new terminal) ==
 
@@ -36,7 +36,7 @@ rmdir /s /q node_modules & del /f /q package-lock.json & npm install --legacy-pe
 
 STEP 2 - Start Expo (run every time):
 cd mobile
-set REACT_NATIVE_PACKAGER_HOSTNAME=10.57.111.21 && npx expo start -c
+set REACT_NATIVE_PACKAGER_HOSTNAME=10.123.202.21 && npx expo start -c
 
 =========================================================
   PRODUCTION NOTES

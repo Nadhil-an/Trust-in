@@ -712,7 +712,7 @@ class DaySheetView(APIView):
         ob_bank = float(current_bank)  # Bank OB approximated as current (for display)
 
         # ── Income entries for the day (these go on DEBIT side after OB)
-        incomes = Income.objects.filter(date=target_date).order_by('created_at')
+        incomes = Income.objects.filter(date=target_date, created_by__role='ACCOUNTANT').order_by('created_at')
         income_rows = []
         for inc in incomes:
             income_rows.append({
@@ -724,7 +724,7 @@ class DaySheetView(APIView):
             })
 
         # ── Expense entries for the day (CREDIT side)
-        expenses = Expense.objects.filter(date=target_date).order_by('created_at')
+        expenses = Expense.objects.filter(date=target_date, created_by__role='ACCOUNTANT').order_by('created_at')
         expense_rows = []
         for exp in expenses:
             expense_rows.append({

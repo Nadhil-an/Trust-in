@@ -1441,9 +1441,10 @@ class StaffVoucherView(APIView):
         if new_book_number is not None:
             try:
                 new_book_number = int(new_book_number)
-                existing = StaffVoucherBook.objects.filter(book_number=new_book_number).exclude(staff=user).first()
-                if existing:
-                    return Response({'error': f'Book Number {new_book_number} is already assigned to {existing.staff.full_name}.'}, status=400)
+                if new_book_number > 0:
+                    existing = StaffVoucherBook.objects.filter(book_number=new_book_number).exclude(staff=user).first()
+                    if existing:
+                        return Response({'error': f'Book Number {new_book_number} is already assigned to {existing.staff.full_name}.'}, status=400)
             except ValueError:
                 return Response({'error': 'Invalid book number.'}, status=400)
 
