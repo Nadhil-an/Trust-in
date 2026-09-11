@@ -101,14 +101,19 @@ function SummaryCard({ icon, label, value, sub, color, active, onClick }) {
 }
 
 // ── Mini stat tile inside expanded panel ─────────────────────────
-function MiniTile({ label, value, color = CLR.blue, icon }) {
+function MiniTile({ label, value, color = CLR.blue, icon, onClick, active }) {
   return (
-    <div style={{
-      background: 'white', borderRadius: 12, padding: '16px 18px',
-      border: '1px solid var(--gray-100)',
-      boxShadow: 'var(--shadow-sm)',
-      display: 'flex', alignItems: 'center', gap: 12, minWidth: 140,
-    }}>
+    <div
+      onClick={onClick}
+      style={{
+        background: active ? `${color}0F` : 'white', borderRadius: 12, padding: '16px 18px',
+        border: `1px solid ${active ? color : 'var(--gray-100)'}`,
+        boxShadow: active ? `0 4px 12px ${color}22` : 'var(--shadow-sm)',
+        display: 'flex', alignItems: 'center', gap: 12, minWidth: 140,
+        cursor: onClick ? 'pointer' : 'default',
+        transition: 'all 0.2s ease',
+      }}
+    >
       <div style={{
         width: 38, height: 38, borderRadius: 10,
         background: `${color}18`,
@@ -457,58 +462,54 @@ export default function ManagerDashboard() {
         <ExpandPanel>
           <PanelTitle>👥 Today's Attendance — {format(new Date(), 'dd MMMM yyyy')}</PanelTitle>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 24 }}>
-            <MiniTile icon="✅" label="Present"  value={attendance.present  || 0} color={CLR.green}  />
-            <MiniTile icon="❌" label="Absent"   value={attendance.absent   || 0} color={CLR.red}    />
-            <MiniTile icon="🕐" label="Late"     value={attendance.late     || 0} color={CLR.yellow} />
-            <MiniTile icon="🏖️" label="On Leave" value={attendance.on_leave || 0} color={CLR.blue}   />
+            <MiniTile icon="✅" label="Present"  value={attendance.present  || 0} color={CLR.green} />
+            <MiniTile icon="❌" label="Absent"   value={attendance.absent   || 0} color={CLR.red} />
             <MiniTile icon="👥" label="Total Staff" value={attendance.total_staff || 0} color={CLR.gray} />
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-            {/* Donut - attendance breakdown */}
-            <div style={{ background: 'white', borderRadius: 12, padding: '20px 16px', border: '1px solid var(--gray-100)' }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--gray-500)', marginBottom: 12 }}>ATTENDANCE BREAKDOWN</div>
-              {attendanceData.length === 0 ? (
-                <div style={{ textAlign: 'center', color: 'var(--gray-400)', padding: 40 }}>
-                  <div style={{ fontSize: 40, marginBottom: 8 }}>📭</div>
-                  <div>No attendance marked today</div>
-                </div>
-              ) : (
-                <ResponsiveContainer width="100%" height={220}>
-                  <PieChart>
-                    <Pie data={attendanceData} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={3}>
-                      {attendanceData.map((d, i) => <Cell key={i} fill={d.fill} />)}
-                    </Pie>
-                    <Tooltip content={<ChartTip />} />
-                    <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
-                  </PieChart>
-                </ResponsiveContainer>
-              )}
+            {/* PRESENT STAFF LIST */}
+            <div style={{ background: 'white', borderRadius: 12, padding: '20px', border: '1px solid var(--gray-100)' }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--gray-600)', marginBottom: 16 }}>
+                PRESENT STAFF
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {(!attendance.present_list || attendance.present_list.length === 0) ? (
+                  <div style={{ color: 'var(--gray-400)', fontSize: 13, fontStyle: 'italic' }}>No staff present</div>
+                ) : (
+                  attendance.present_list.map(emp => (
+                    <div key={emp.id} style={{ padding: '12px 16px', background: 'var(--gray-50)', borderRadius: 8, border: '1px solid var(--gray-100)', display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: CLR.green }} />
+                      <div>
+                        <div style={{ fontWeight: 600, color: 'var(--gray-800)', fontSize: 13 }}>{emp.name}</div>
+                        <div style={{ fontSize: 11, color: 'var(--gray-500)' }}>{emp.emp_id}</div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
 
-            {/* Attendance rate bar */}
-            <div style={{ background: 'white', borderRadius: 12, padding: '20px 18px', border: '1px solid var(--gray-100)', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 18 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--gray-500)', marginBottom: 4 }}>ATTENDANCE RATE</div>
-              {[
-                { label: 'Present',  value: attendance.present  || 0, color: CLR.green,  total: attTotal },
-                { label: 'Absent',   value: attendance.absent   || 0, color: CLR.red,    total: attTotal },
-                { label: 'Late',     value: attendance.late     || 0, color: CLR.yellow, total: attTotal },
-                { label: 'On Leave', value: attendance.on_leave || 0, color: CLR.blue,   total: attTotal },
-              ].map(row => (
-                <div key={row.label}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                    <span style={{ fontSize: 12, color: 'var(--gray-600)', fontWeight: 600 }}>{row.label}</span>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: row.color }}>{row.value} ({pct(row.value, row.total)}%)</span>
-                  </div>
-                  <div style={{ height: 7, borderRadius: 4, background: 'var(--gray-100)', overflow: 'hidden' }}>
-                    <div style={{
-                      height: '100%', width: `${pct(row.value, row.total)}%`,
-                      background: row.color, borderRadius: 4,
-                      transition: 'width 0.5s ease',
-                    }} />
-                  </div>
-                </div>
-              ))}
+            {/* ABSENT STAFF LIST */}
+            <div style={{ background: 'white', borderRadius: 12, padding: '20px', border: '1px solid var(--gray-100)' }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--gray-600)', marginBottom: 16 }}>
+                ABSENT STAFF
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {(!attendance.absent_list || attendance.absent_list.length === 0) ? (
+                  <div style={{ color: 'var(--gray-400)', fontSize: 13, fontStyle: 'italic' }}>No staff absent</div>
+                ) : (
+                  attendance.absent_list.map(emp => (
+                    <div key={emp.id} style={{ padding: '12px 16px', background: 'var(--gray-50)', borderRadius: 8, border: '1px solid var(--gray-100)', display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: CLR.red }} />
+                      <div>
+                        <div style={{ fontWeight: 600, color: 'var(--gray-800)', fontSize: 13 }}>{emp.name}</div>
+                        <div style={{ fontSize: 11, color: 'var(--gray-500)' }}>{emp.emp_id}</div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
         </ExpandPanel>

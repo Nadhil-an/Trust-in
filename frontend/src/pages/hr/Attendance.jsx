@@ -18,11 +18,50 @@ export default function AttendancePage() {
     setLoading(true)
     try {
       const [aRes, oRes] = await Promise.all([hrApi.attendance.list({date}), hrApi.officers.list({})])
-      setRecords(aRes.data.results || aRes.data)
-      setOfficers(oRes.data.results || oRes.data)
-      const bd = (oRes.data.results || oRes.data).map(o=>{
-        const existing = (aRes.data.results || aRes.data).find(a=>a.employee===o.id)
-        return { employee:o.id, name:o.full_name, status:existing?.status||"PRESENT", remarks:existing?.remarks||"" }
+      const attendanceData = aRes.data.results || aRes.data;
+      const officersData = (oRes.data.results || oRes.data).filter(o => 
+        o.status !== 'INACTIVE' && 
+        o.status !== 'TERMINATED' && 
+        (String(o.role).toUpperCase() === 'STAFF' || String(o.designation).toUpperCase() === 'STAFF')
+      );
+      setOfficers(officersData)
+      
+      const compositeRecords = officersData.map(o => {
+        const existing = attendanceData.find(a => a.employee === o.id || a.employee_name?.toLowerCase() === o.full_name?.toLowerCase());
+        if (existing) {
+          return { ...existing, status: existing.status || 'PRESENT', employee_name: o.full_name };
+        } else {
+          let isAbsent = false;
+          const [year, month, day] = date.split('-');
+          const selectedDate = new Date(year, month - 1, day);
+          const now = new Date();
+          const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          
+          if (selectedDate < today) {
+             isAbsent = true;
+          } else if (selectedDate.getTime() === today.getTime()) {
+             if (now.getHours() >= 17) { // 5 PM or later
+                isAbsent = true;
+             }
+          }
+
+          return {
+            id: `unmarked-${o.id}`,
+            employee: o.id,
+            employee_name: o.full_name,
+            date: date,
+            status: isAbsent ? 'ABSENT' : 'NOT MARKED',
+            check_in: null,
+            check_out: null,
+            remarks: '-',
+          }
+        }
+      });
+      setRecords(compositeRecords);
+
+      const bd = officersData.map(o=>{
+        const existing = compositeRecords.find(a=>a.employee===o.id)
+        return { employee:o.id, name:o.full_name, status: existing.status === 'NOT MARKED' ? 'ABSENT' : existing.status, remarks:existing?.remarks==="-" ? "" : (existing?.remarks||"") }
       })
       setBulkData(bd)
     } catch (_) { console.error(_); toast.error("Load failed: " + (_.message || "Unknown error")) } finally { setLoading(false) }

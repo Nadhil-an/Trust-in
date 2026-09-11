@@ -11,7 +11,7 @@ from core.permissions import (
     IsManager, IsManagerOrAccountant, IsAnyStaff,
     IsFAO, IsACO, IsGEO, IsMobileStaff, IsMobileUser,
 )
-from core.models import AuditLog, Role
+from core.models import AuditLog, Role, User
 from notify.service import push_to_role, push_request_update, push_dashboard_refresh
 from manager_module.models import (
     AssessmentRequest, RequestStatus, RequestStatusHistory,
@@ -50,7 +50,7 @@ class ManagerDashboardView(APIView):
 
         # Today's attendance
         today = date.today()
-        today_att = Attendance.objects.filter(date=today)
+        today_att = Attendance.objects.filter(date=today, employee__designation__iexact='STAFF')
 
         # Monthly request trend (last 6 months)
         monthly_trend = []
@@ -110,7 +110,9 @@ class ManagerDashboardView(APIView):
                 'late': today_att.filter(status='LATE').count(),
                 'on_leave': today_att.filter(status='LEAVE').count(),
                 'wfh': today_att.filter(status='WFH').count(),
-                'total_staff': Member.objects.filter(status='ACTIVE').count(),
+                'total_staff': User.objects.filter(role='STAFF', is_active=True).count(),
+                'present_list': [{'id': str(x.employee.id), 'name': x.employee.full_name, 'emp_id': x.employee.employee_id} for x in today_att.filter(status='PRESENT').select_related('employee')],
+                'absent_list': [{'id': str(x.employee.id), 'name': x.employee.full_name, 'emp_id': x.employee.employee_id} for x in today_att.filter(status='ABSENT').select_related('employee')],
             },
             'inventory': {
                 'total_items': CharityInventory.objects.filter(is_active=True).count(),
