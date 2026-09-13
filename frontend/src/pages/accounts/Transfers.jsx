@@ -81,10 +81,26 @@ export default function TransferList() {
                 <input className="form-control" type="date" required value={form.date} onChange={e=>setForm(f=>({...f,date:e.target.value}))} /></div>
               <div className="form-group"><label className="form-label required">Amount (₹)</label>
                 <input className="form-control" type="number" required value={form.amount} onChange={e=>setForm(f=>({...f,amount:e.target.value}))} /></div>
-              {["CASH_TO_BANK","BANK_TO_CASH"].includes(form.transfer_type) && form.transfer_type==="CASH_TO_BANK" && <>
+              {form.transfer_type === "CASH_TO_BANK" && <>
                 <div className="form-group"><label className="form-label">From Cash Account</label>
                   <select className="form-control" value={form.from_cash} onChange={e=>setForm(f=>({...f,from_cash:e.target.value}))}>
                     <option value="">Select</option>{cash.map(c=><option key={c.id} value={c.id}>{c.account_name}</option>)}</select></div>
+                <div className="form-group"><label className="form-label">To Bank Account</label>
+                  <select className="form-control" value={form.to_bank} onChange={e=>setForm(f=>({...f,to_bank:e.target.value}))}>
+                    <option value="">Select</option>{banks.map(b=><option key={b.id} value={b.id}>{b.bank_name}</option>)}</select></div>
+              </>}
+              {form.transfer_type === "BANK_TO_CASH" && <>
+                <div className="form-group"><label className="form-label">From Bank Account</label>
+                  <select className="form-control" value={form.from_bank} onChange={e=>setForm(f=>({...f,from_bank:e.target.value}))}>
+                    <option value="">Select</option>{banks.map(b=><option key={b.id} value={b.id}>{b.bank_name}</option>)}</select></div>
+                <div className="form-group"><label className="form-label">To Cash Account</label>
+                  <select className="form-control" value={form.to_cash} onChange={e=>setForm(f=>({...f,to_cash:e.target.value}))}>
+                    <option value="">Select</option>{cash.map(c=><option key={c.id} value={c.id}>{c.account_name}</option>)}</select></div>
+              </>}
+              {form.transfer_type === "BANK_TO_BANK" && <>
+                <div className="form-group"><label className="form-label">From Bank Account</label>
+                  <select className="form-control" value={form.from_bank} onChange={e=>setForm(f=>({...f,from_bank:e.target.value}))}>
+                    <option value="">Select</option>{banks.map(b=><option key={b.id} value={b.id}>{b.bank_name}</option>)}</select></div>
                 <div className="form-group"><label className="form-label">To Bank Account</label>
                   <select className="form-control" value={form.to_bank} onChange={e=>setForm(f=>({...f,to_bank:e.target.value}))}>
                     <option value="">Select</option>{banks.map(b=><option key={b.id} value={b.id}>{b.bank_name}</option>)}</select></div>

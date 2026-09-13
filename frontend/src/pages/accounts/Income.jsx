@@ -14,7 +14,7 @@ export default function IncomeList() {
   const [methodFilter, setMethodFilter] = useState("ALL")
   const [showModal, setShowModal] = useState(false)
   const [accounts, setAccounts] = useState([])
-  const [form, setForm] = useState({ source:"DONATION", date:format(new Date(),"yyyy-MM-dd"), amount:"", donor_name:"", phone:"", address:"", purpose:"", payment_method:"CASH", account_type:"CASH", reference_number:"", remarks:"" })
+  const [form, setForm] = useState({ source:"", date:format(new Date(),"yyyy-MM-dd"), amount:"", donor_name:"", phone:"", address:"", purpose:"", payment_method:"CASH", account_type:"CASH", reference_number:"", remarks:"" })
   const [saving, setSaving] = useState(false)
 
   const load = useCallback(async () => {
@@ -47,9 +47,7 @@ export default function IncomeList() {
     
     setSaving(true)
     try { 
-      const fd = new FormData(e.target);
-      if (fd.get('phone')) fd.append('donor_phone', fd.get('phone'));
-      await accountsApi.income.create(fd); 
+      await accountsApi.income.create(form); 
       toast.success("Income recorded."); 
       setShowModal(false); 
       load() 
@@ -107,7 +105,7 @@ export default function IncomeList() {
             <button className="btn btn-primary" form="income-form" type="submit" disabled={saving}>{saving?"Saving...":"Save"}</button></>}>
           <form id="income-form" onSubmit={handleSave}>
             <div className="form-grid-2">
-              {[["source","Income Source","select",["DONATION","GRANT","MEMBERSHIP_FEE","INTEREST","EVENT","SPONSORSHIP","OTHER"]],
+              {[["source","Income Source","text",null],
                 ["date","Date","date",null],["amount","Amount (₹)","number",null],["donor_name","Donor/Payer Name","text",null],
                 ["phone","Phone","text",null],["payment_method","Payment Method","select",["CASH","CHEQUE","DD","NEFT","RTGS","IMPS","UPI"]],
                 ["account_type","Account Type","select",["CASH","BANK"]],["reference_number","Reference Number","text",null]].map(([k,l,t,opts])=>(

@@ -13,7 +13,7 @@ export default function BankAccounts() {
   const [showTxnModal, setShowTxnModal] = useState(false)
   const [showAddBank, setShowAddBank] = useState(false)
   const [form, setForm] = useState({ bank_account:"", transaction_type:"DEPOSIT", date:format(new Date(),"yyyy-MM-dd"), description:"", amount:"", payment_method:"NEFT", reference_id:"" })
-  const [bankForm, setBankForm] = useState({ bank_name:"", account_number:"", account_holder:"", ifsc_code:"", branch:"", opening_balance:"0" })
+  const [bankForm, setBankForm] = useState({ bank_name:"", account_number:"", account_name:"", ifsc_code:"", branch:"", opening_balance:"0" })
   const [saving, setSaving] = useState(false)
 
   const load = useCallback(async () => {
@@ -49,15 +49,20 @@ export default function BankAccounts() {
   return (
     <div>
       <PageHeader title="Bank Accounts" subtitle="All bank accounts and transactions">
-        <button className="btn btn-secondary" onClick={() => setShowAddBank(true)}>+ Add Bank Account</button>
-        <button className="btn btn-primary" onClick={() => { setShowTxnModal(true) }}>+ Add Transaction</button>
+        <button className="btn btn-secondary" onClick={() => {
+          setBankForm({ bank_name:"", account_number:"", account_name:"", ifsc_code:"", branch:"", opening_balance:"0" });
+          setShowAddBank(true);
+        }}>+ Add Bank Account</button>
+        <button className="btn btn-primary" onClick={() => {
+          setForm({ bank_account:"", transaction_type:"DEPOSIT", date:format(new Date(),"yyyy-MM-dd"), description:"", amount:"", payment_method:"NEFT", reference_id:"" });
+          setShowTxnModal(true);
+        }}>+ Add Transaction</button>
       </PageHeader>
       <div className="stats-grid" style={{gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))"}}>
         {accounts.map(b=>(
           <div key={b.id} className={`stat-card ${selectedBank===b.id?"info":""}`} style={{cursor:"pointer"}} onClick={()=>setSelectedBank(selectedBank===b.id?null:b.id)}>
             <div className="stat-card-header"><div className="stat-card-label">{b.bank_name}</div><div className="stat-card-icon">🏦</div></div>
             <div className="stat-card-value">{formatINR(b.current_balance)}</div>
-            <div className="stat-card-sub">{b.account_number}</div>
           </div>
         ))}
       </div>
@@ -111,8 +116,8 @@ export default function BankAccounts() {
               <div className="form-group"><label className="form-label">Reference/UTR</label>
                 <input className="form-control" value={form.reference_id} onChange={e=>setForm(f=>({...f,reference_id:e.target.value}))} /></div>
             </div>
-            <div className="form-group"><label className="form-label required">Description</label>
-              <textarea className="form-control" required rows={2} value={form.description} onChange={e=>setForm(f=>({...f,description:e.target.value}))} /></div>
+            <div className="form-group"><label className="form-label">Description</label>
+              <textarea className="form-control" rows={2} value={form.description} onChange={e=>setForm(f=>({...f,description:e.target.value}))} /></div>
           </form>
         </Modal>
       )}
@@ -123,7 +128,7 @@ export default function BankAccounts() {
             <button className="btn btn-primary" form="add-bank-form" type="submit" disabled={saving}>{saving?"Saving...":"Add Bank"}</button></>}>
           <form id="add-bank-form" onSubmit={handleAddBank}>
             <div className="form-grid-2">
-              {[["bank_name","Bank Name",true],["account_number","Account Number",true],["account_holder","Account Holder",true],["ifsc_code","IFSC Code",false],["branch","Branch",false]].map(([k,l,r])=>(
+              {[["bank_name","Bank Name",true],["account_number","Account Number",true],["account_name","Account Holder",true],["ifsc_code","IFSC Code",false],["branch","Branch",false]].map(([k,l,r])=>(
                 <div className="form-group" key={k}><label className={`form-label${r?" required":""}`}>{l}</label>
                   <input className="form-control" required={r} value={bankForm[k]} onChange={e=>setBankForm(f=>({...f,[k]:e.target.value}))} /></div>
               ))}

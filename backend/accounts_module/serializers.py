@@ -12,10 +12,12 @@ class CashAccountSerializer(serializers.ModelSerializer):
 
 
 class CashTransactionSerializer(serializers.ModelSerializer):
+    account_name = serializers.CharField(write_only=True, required=False)
+
     class Meta:
         model = CashTransaction
         fields = '__all__'
-        read_only_fields = ['id', 'balance_after', 'created_at']
+        read_only_fields = ['id', 'balance_after', 'created_at', 'cash_account']
 
 
 class BankAccountSerializer(serializers.ModelSerializer):

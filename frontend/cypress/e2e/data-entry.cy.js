@@ -12,13 +12,14 @@ describe('Data Entry Forms Automation', () => {
     cy.contains('button', '+ Record Donation').click()
 
     // Ensure the modal is visible
-    cy.get('.modal-content', { timeout: 10000 }).should('be.visible')
+    cy.get('.modal', { timeout: 10000 }).should('be.visible')
 
     // Fill the form
+    cy.get('input[name="source"]').type('Direct Donation')
     cy.get('#donor_name_input').type('Test Donor ' + Date.now())
-    cy.get('input[placeholder="Donor\'s place or city..."]').type('Test City')
-    cy.get('input[placeholder="10-digit number"]').type('9999999999')
-    cy.get('input[placeholder="0.00"]').type('5000')
+    cy.get('#place_input').type('Kerala')
+    cy.get('#phone_input').type('9876543210')
+    cy.get('#amount_input').type('5000')
 
     // Select payment method (Assuming it's a select or similar custom component)
     // For now we assume CASH is default

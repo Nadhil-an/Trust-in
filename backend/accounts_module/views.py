@@ -155,16 +155,18 @@ class CashTransactionListCreateView(generics.ListCreateAPIView):
         return CashTransaction.objects.select_related('cash_account', 'created_by').all()
 
     def perform_create(self, serializer):
-        cash_account = serializer.validated_data['cash_account']
-        amount = serializer.validated_data['amount']
-        txn_type = serializer.validated_data['transaction_type']
+        account_name = serializer.validated_data.pop('account_name', 'Main Cash')
+        cash_account, _ = CashAccount.objects.get_or_create(account_name=account_name)
+        
+        amount = serializer.validated_data.get('amount', 0)
+        txn_type = serializer.validated_data.get('transaction_type', 'RECEIPT')
 
         if txn_type in ['RECEIPT', 'TRANSFER_IN', 'OPENING']:
             new_balance = cash_account.current_balance + amount
         else:
             new_balance = cash_account.current_balance - amount
 
-        txn = serializer.save(created_by=self.request.user, balance_after=new_balance)
+        txn = serializer.save(created_by=self.request.user, balance_after=new_balance, cash_account=cash_account)
         cash_account.current_balance = new_balance
         cash_account.save(update_fields=['current_balance'])
         push_dashboard_refresh(['MANAGER', 'ACCOUNTANT', 'CASHIER'])

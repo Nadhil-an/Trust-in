@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import { accountsApi } from "../../api"
 import { AmountDisplay, LoadingState, EmptyState, PageHeader, FilterBar, Modal, formatINR } from "../../components/shared"
 import { format } from "date-fns"
@@ -43,7 +43,10 @@ export default function CashBook() {
   return (
     <div>
       <PageHeader title="Cash Book" subtitle="All cash transactions">
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Add Transaction</button>
+        <button className="btn btn-primary" onClick={() => {
+          setForm({ cash_account:"", transaction_type:"RECEIPT", date:format(new Date(),"yyyy-MM-dd"), description:"", amount:"", reference_id:"", voucher_number:"" });
+          setShowModal(true);
+        }}>+ Add Transaction</button>
       </PageHeader>
       <div className="stats-grid" style={{gridTemplateColumns:"repeat(3,1fr)"}}>
         <div className="stat-card success"><div className="stat-card-header"><div className="stat-card-label">Total Receipts</div><div className="stat-card-icon">📥</div></div><div className="stat-card-value">{formatINR(totalReceipts)}</div></div>
@@ -86,21 +89,25 @@ export default function CashBook() {
               <div className="form-group"><label className="form-label required">Account</label>
                 <select className="form-control" required value={form.cash_account} onChange={e=>setForm(f=>({...f,cash_account:e.target.value}))}>
                   <option value="">Select Account</option>
-                  {accounts.map(a=><option key={a.id} value={a.id}>{a.account_name}</option>)}</select></div>
+                  {accounts.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}
+                </select>
+              </div>
               <div className="form-group"><label className="form-label required">Type</label>
-                <select className="form-control" value={form.transaction_type} onChange={e=>setForm(f=>({...f,transaction_type:e.target.value}))}>
-                  {["RECEIPT","PAYMENT","TRANSFER_IN","TRANSFER_OUT"].map(t=><option key={t}>{t}</option>)}</select></div>
-              <div className="form-group"><label className="form-label required">Date</label>
-                <input className="form-control" type="date" required value={form.date} onChange={e=>setForm(f=>({...f,date:e.target.value}))} /></div>
-              <div className="form-group"><label className="form-label required">Amount (₹)</label>
-                <input className="form-control" type="number" required min="0.01" step="0.01" value={form.amount} onChange={e=>setForm(f=>({...f,amount:e.target.value}))} /></div>
+                <select className="form-control" required value={form.transaction_type} onChange={e=>setForm(f=>({...f,transaction_type:e.target.value}))}>
+                  {["RECEIPT","PAYMENT","OPENING","TRANSFER_IN","TRANSFER_OUT","ADJUSTMENT"].map(t=><option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+              <div className="form-group"><label className="form-label">Date</label>
+                <input className="form-control" type="date" value={form.date} onChange={e=>setForm(f=>({...f,date:e.target.value}))} /></div>
+              <div className="form-group"><label className="form-label">Amount (₹)</label>
+                <input className="form-control" type="number" min="0.01" step="0.01" value={form.amount} onChange={e=>setForm(f=>({...f,amount:e.target.value}))} /></div>
               <div className="form-group"><label className="form-label">Reference/Voucher</label>
                 <input className="form-control" value={form.reference_id} onChange={e=>setForm(f=>({...f,reference_id:e.target.value}))} /></div>
               <div className="form-group"><label className="form-label">Voucher No</label>
                 <input className="form-control" value={form.voucher_number} onChange={e=>setForm(f=>({...f,voucher_number:e.target.value}))} /></div>
             </div>
-            <div className="form-group"><label className="form-label required">Description</label>
-              <textarea className="form-control" required rows={2} value={form.description} onChange={e=>setForm(f=>({...f,description:e.target.value}))} /></div>
+            <div className="form-group"><label className="form-label">Description</label>
+              <textarea className="form-control" rows={2} value={form.description} onChange={e=>setForm(f=>({...f,description:e.target.value}))} /></div>
           </form>
         </Modal>
       )}

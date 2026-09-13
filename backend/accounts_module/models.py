@@ -47,11 +47,11 @@ class CashTransaction(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     cash_account = models.ForeignKey(CashAccount, on_delete=models.PROTECT, related_name='transactions')
-    transaction_type = models.CharField(max_length=20, choices=TxnType.choices)
+    transaction_type = models.CharField(max_length=100, default='RECEIPT')
     date = models.DateField(default=date.today)
-    description = models.CharField(max_length=255)
+    description = models.CharField(max_length=255, blank=True)
     reference_id = models.CharField(max_length=50, blank=True, db_index=True)  # e.g. MR-2026-00125
-    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     balance_after = models.DecimalField(max_digits=12, decimal_places=2)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(default=timezone.now)
@@ -102,7 +102,7 @@ class BankTransaction(models.Model):
     bank_account = models.ForeignKey(BankAccount, on_delete=models.PROTECT, related_name='transactions')
     transaction_type = models.CharField(max_length=20, choices=TxnType.choices)
     date = models.DateField(default=date.today)
-    description = models.CharField(max_length=255)
+    description = models.CharField(max_length=255, blank=True)
     reference_id = models.CharField(max_length=50, blank=True, db_index=True)
     payment_method = models.CharField(max_length=20, choices=PaymentMethod.choices, default=PaymentMethod.NEFT)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
@@ -135,7 +135,7 @@ class Income(models.Model):
     date = models.DateField(default=date.today)
     donor_name = models.CharField(max_length=255, blank=True)
     donor_phone = EncryptedCharField(max_length=20, blank=True, null=True)  # Encrypted PII — donor contact
-    source = models.CharField(max_length=20, choices=IncomeSource.choices)
+    source = models.CharField(max_length=100)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     payment_method = models.CharField(max_length=20, choices=PaymentMethod.choices)
     purpose = models.CharField(max_length=255, blank=True)

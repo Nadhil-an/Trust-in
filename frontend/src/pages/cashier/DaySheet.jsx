@@ -200,8 +200,6 @@ export default function DaySheet() {
                   <tr><td>Cash In Hand (CASH)</td><td class="right">${formatAmt(closing.cashInHand)}</td></tr>
                   <tr><td>Bank Balance (BANK)</td><td class="right">${formatAmt(closing.bankBalance)}</td></tr>
                   <tr class="bold"><td>Total (By Hand & Bank)</td><td class="right">${formatAmt(totalHandBank)}</td></tr>
-                  <tr><td>Reading Calculation Total</td><td class="right">${formatAmt(sheetClosing)}</td></tr>
-                  <tr class="bold"><td>Difference</td><td class="right" style="color: ${closingDiff < 0 ? '#dc2626' : (closingDiff > 0 ? '#16a34a' : 'inherit')}">${(closingDiff < 0 ? '-' : '') + formatAmt(Math.abs(closingDiff))}</td></tr>
                 </tbody>
               </table>
             </div>
@@ -214,10 +212,10 @@ export default function DaySheet() {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr class="bold"><td>Reading / Sheet Closing Total</td><td class="right" style="color: #0369a1;">${formatAmt(sheetClosing)}</td></tr>
                   <tr><td>Total Debit</td><td class="right">${formatAmt(totalDebit)}</td></tr>
                   <tr><td>Total Credit</td><td class="right">${formatAmt(totalCredit)}</td></tr>
-                  <tr class="bold"><td>Net Difference</td><td class="right" style="color: ${diff < 0 ? '#dc2626' : (diff > 0 ? '#16a34a' : 'inherit')}">${(diff < 0 ? '-' : '+') + formatAmt(Math.abs(diff))}</td></tr>
+                  <tr class="bold"><td>Total Value</td><td class="right">${(totalValue < 0 ? '-' : '') + formatAmt(Math.abs(totalValue))}</td></tr>
+                  <tr class="bold"><td>Net Difference</td><td class="right" style="color: ${!hasAllClosingInputs ? '#6b7280' : (netDiff < 0 ? '#dc2626' : (netDiff > 0 ? '#16a34a' : 'inherit'))}">${!hasAllClosingInputs ? '—' : (netDiff > 0 ? '+' + formatAmt(netDiff) + ' (Profit)' : (netDiff < 0 ? '-' + formatAmt(Math.abs(netDiff)) + ' (Loss)' : '0'))}</td></tr>
                 </tbody>
               </table>
             </div>
@@ -284,8 +282,10 @@ export default function DaySheet() {
 
   const totalDebit = debits.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0)
   const totalCredit = credits.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0)
-  const diff = totalDebit - totalCredit
+  const totalValue = totalDebit - totalCredit
   const totalHandBank = (Number(closing.cashInHand) || 0) + (Number(closing.bankBalance) || 0)
+  const netDiff = totalHandBank - totalValue
+  const hasAllClosingInputs = closing.cashInHand !== '' && closing.cashInHand != null && closing.bankBalance !== '' && closing.bankBalance != null
   const sheetClosing = Number(closing.sheetClosing) || 0
   const closingDiff = totalHandBank - sheetClosing
 
@@ -311,8 +311,6 @@ export default function DaySheet() {
     rows.push(['Cash In Hand', closing.cashInHand, 'CASH'])
     rows.push(['Bank Balance', closing.bankBalance, 'BANK'])
     rows.push(['Total (By Hand & Bank)', totalHandBank])
-    rows.push(['Reading Calculation Total', closing.sheetClosing])
-    rows.push(['Difference', closingDiff])
 
     const csv = rows.map(r => r.join(',')).join('\n')
     const blob = new Blob([csv], { type: 'text/csv' })
@@ -358,8 +356,8 @@ export default function DaySheet() {
           <div className="stats-grid" style={{ marginBottom: 0 }}>
             <StatCard label="Total Debit" value={INR(totalDebit)} type="info" />
             <StatCard label="Total Credit" value={INR(totalCredit)} type="success" />
-            <StatCard label="Difference" value={(diff < 0 ? '-' : '') + INR(diff)} type={diff < 0 ? "danger" : ""} />
-            <StatCard label="Reading/Sheet Closing" value={INR(sheetClosing)} type="" />
+            <StatCard label="Total Value" value={(totalValue < 0 ? '-' : '') + INR(totalValue)} type="info" />
+            <StatCard label="Net Difference" value={!hasAllClosingInputs ? '—' : (netDiff > 0 ? `+${INR(netDiff)} (Profit)` : (netDiff < 0 ? `-${INR(Math.abs(netDiff))} (Loss)` : INR(0)))} type={!hasAllClosingInputs ? "" : (netDiff > 0 ? "success" : (netDiff < 0 ? "danger" : ""))} />
           </div>
 
           {/* ── Main Day Sheet table ── */}
@@ -604,18 +602,6 @@ export default function DaySheet() {
                       badge="BANK" badgeClass="badge-blue" 
                     />
                     <ClosingRow label="Total (By Hand & Bank)" value={INR(totalHandBank)} bold />
-                    <ClosingRow 
-                      label="Reading Calculation Total" 
-                      value={closing.sheetClosing}
-                      isEditable
-                      onValueChange={val => setClosing({ ...closing, sheetClosing: val })}
-                    />
-                    <ClosingRow
-                      label="Difference"
-                      value={(closingDiff < 0 ? '-' : '') + INR(closingDiff)}
-                      bold
-                      valueColor={closingDiff === 0 ? 'var(--success)' : 'var(--danger)'}
-                    />
                   </tbody>
                 </table>
               </div>
@@ -634,14 +620,14 @@ export default function DaySheet() {
               <div className="table-wrap">
                 <table>
                   <tbody>
-                    <ClosingRow label="Reading / Sheet Closing Total" value={INR(sheetClosing)} bold valueColor="var(--info)" />
                     <ClosingRow label="Total Debit" value={INR(totalDebit)} />
                     <ClosingRow label="Total Credit" value={INR(totalCredit)} />
+                    <ClosingRow label="Total Value" value={(totalValue < 0 ? '-' : '') + INR(totalValue)} bold />
                     <ClosingRow
                       label="Net Difference"
-                      value={(diff < 0 ? '-' : '+') + INR(diff)}
+                      value={!hasAllClosingInputs ? '—' : (netDiff > 0 ? `+${INR(netDiff)} (Profit)` : (netDiff < 0 ? `-${INR(Math.abs(netDiff))} (Loss)` : INR(0)))}
                       bold
-                      valueColor={diff === 0 ? 'var(--success)' : diff < 0 ? 'var(--danger)' : 'var(--gray-800)'}
+                      valueColor={!hasAllClosingInputs ? 'var(--gray-500)' : (netDiff === 0 ? 'var(--success)' : netDiff < 0 ? 'var(--danger)' : 'var(--success)')}
                     />
                   </tbody>
                 </table>
@@ -674,14 +660,20 @@ function ClosingRow({ label, value, bold, badge, badgeClass, valueColor, isEdita
           <input 
             type="number" 
             value={value} 
-            onChange={e => onValueChange(e.target.value)}
+            onChange={e => {
+              let val = e.target.value;
+              if (val.length > 1 && val.startsWith('0') && !val.startsWith('0.')) {
+                val = val.replace(/^0+/, '');
+              }
+              onValueChange(val);
+            }}
             onWheel={e => e.target.blur()}
             style={{ 
               width: '100%', maxWidth: '120px', textAlign: 'right', 
               padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--gray-300)',
               outline: 'none', fontSize: 14, fontWeight: 600, color: 'inherit'
             }}
-            onFocus={e => e.target.style.borderColor = 'var(--primary-400)'}
+            onFocus={e => { e.target.style.borderColor = 'var(--primary-400)'; e.target.select(); }}
             onBlur={e => e.target.style.borderColor = 'var(--gray-300)'}
           />
         ) : (
@@ -705,7 +697,13 @@ function TableInput({ id, value, onChange, type = "text", align = "left", placeh
       id={id}
       type={type}
       value={value}
-      onChange={e => onChange(e.target.value)}
+      onChange={e => {
+        let val = e.target.value;
+        if (type === 'number' && val.length > 1 && val.startsWith('0') && !val.startsWith('0.')) {
+          val = val.replace(/^0+/, '');
+        }
+        onChange(val);
+      }}
       onKeyDown={onKeyDown}
       onWheel={e => e.target.blur()}
       placeholder={placeholder}
@@ -727,7 +725,12 @@ function TableInput({ id, value, onChange, type = "text", align = "left", placeh
         transition: 'all 0.2s',
         cursor: readOnly ? 'default' : 'text'
       }}
-      onFocus={() => !readOnly && setFocused(true)}
+      onFocus={e => {
+        if (!readOnly) {
+          setFocused(true);
+          e.target.select();
+        }
+      }}
       onBlur={() => !readOnly && setFocused(false)}
     />
   )

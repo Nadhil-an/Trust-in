@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import { accountsApi } from "../../api"
 import { AmountDisplay, LoadingState, EmptyState, PageHeader, FilterBar, Modal } from "../../components/shared"
 import { format } from "date-fns"
@@ -13,14 +13,24 @@ export default function ChequeList() {
   const [form, setForm] = useState({ cheque_number:"", cheque_type:"ISSUED", date:format(new Date(),"yyyy-MM-dd"), amount:"", bank_account:"", payee_payer:"", purpose:"", status:"ISSUED" })
   const [saving, setSaving] = useState(false)
 
+  const [typeFilter, setTypeFilter] = useState("ALL")
+  const [statusFilter, setStatusFilter] = useState("ALL")
+  const [bankFilter, setBankFilter] = useState("ALL")
+
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const [cRes, bRes] = await Promise.all([accountsApi.cheques.list({search}), accountsApi.bank.accounts()])
+      const params = {}
+      if (search) params.search = search
+      if (typeFilter !== "ALL") params.cheque_type = typeFilter
+      if (statusFilter !== "ALL") params.status = statusFilter
+      if (bankFilter !== "ALL") params.bank_account = bankFilter
+
+      const [cRes, bRes] = await Promise.all([accountsApi.cheques.list(params), accountsApi.bank.accounts()])
       setItems(cRes.data.results || cRes.data)
       setBankAccounts(bRes.data.results || bRes.data)
     } catch (_) { toast.error("Load failed") } finally { setLoading(false) }
-  }, [search])
+  }, [search, typeFilter, statusFilter, bankFilter])
 
   useEffect(() => { load() }, [load])
 
@@ -48,7 +58,25 @@ export default function ChequeList() {
         <button className="btn btn-primary" onClick={()=>setShowModal(true)}>+ Add Cheque</button>
       </PageHeader>
       <div className="data-card">
-        <FilterBar search={search} onSearch={setSearch} />
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--gray-200)', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: 200 }}><FilterBar search={search} onSearch={setSearch} /></div>
+          <select className="form-control" style={{ width: 'auto' }} value={typeFilter} onChange={e=>setTypeFilter(e.target.value)}>
+            <option value="ALL">All Types</option>
+            <option value="ISSUED">Issued</option>
+            <option value="RECEIVED">Received</option>
+          </select>
+          <select className="form-control" style={{ width: 'auto' }} value={statusFilter} onChange={e=>setStatusFilter(e.target.value)}>
+            <option value="ALL">All Status</option>
+            <option value="ISSUED">Pending</option>
+            <option value="CLEARED">Cleared</option>
+            <option value="BOUNCED">Bounced</option>
+            <option value="CANCELLED">Cancelled</option>
+          </select>
+          <select className="form-control" style={{ width: 'auto', maxWidth: 200 }} value={bankFilter} onChange={e=>setBankFilter(e.target.value)}>
+            <option value="ALL">All Banks</option>
+            {bankAccounts.map(b=><option key={b.id} value={b.id}>{b.bank_name}</option>)}
+          </select>
+        </div>
         {loading ? <LoadingState /> : (
           <div className="table-wrap">
             <table>

@@ -5,8 +5,8 @@ Cypress.Commands.add('login', (role = 'ADMIN') => {
   // We assume the login page has email/password fields or a way to select a role in dev
   // If the backend has a test user seeder, we use that. 
   // Here we use a generic approach that you might need to adapt to your actual auth mechanism.
-  cy.get('input[type="text"], input[type="email"], input[name="username"]').first().type('testuser@example.com')
-  cy.get('input[type="password"]').first().type('password')
+  cy.get('input[type="text"], input[type="email"], input[name="username"]').first().type('SHANAVAS')
+  cy.get('input[type="password"]').first().type('SHANAVAS@1234')
   cy.get('button[type="submit"]').click()
   
   // Wait for redirect to happen
