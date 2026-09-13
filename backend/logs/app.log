@@ -206868,3 +206868,153 @@ WebSocket CONNECT /ws/notify/ [10.123.202.21:44008]
 [mHTTP GET /api/hr/attendance/?date=2026-09-11 200 [0.02, 10.123.202.21:56902][0m
 [mHTTP GET /api/hr/attendance/?date=2026-09-11 200 [0.04, 10.123.202.21:18986][0m
 [mHTTP GET /api/hr/officers/ 200 [0.07, 10.123.202.21:18987][0m
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\sreelakshmi_trust\settings.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+Unauthorized: /api/auth/login/
+[31;1mHTTP POST /api/auth/login/ 401 [0.34, 10.29.3.21:18034][0m
+[mHTTP POST /api/auth/login/ 200 [0.32, 10.29.3.21:64207][0m
+WebSocket HANDSHAKING /ws/notify/ [10.29.3.21:41750]
+WebSocket CONNECT /ws/notify/ [10.29.3.21:41750]
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.29.3.21:43006][0m
+[mHTTP GET /api/core/features/ 200 [0.06, 10.29.3.21:63011][0m
+[mHTTP GET /api/hr/dashboard/ 200 [0.11, 10.29.3.21:30448][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.04, 10.29.3.21:58601][0m
+[mHTTP GET /api/hr/dashboard/ 200 [0.09, 10.29.3.21:30449][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.03, 10.29.3.21:1533][0m
+[mHTTP POST /api/auth/logout/ 200 [0.03, 10.29.3.21:46217][0m
+WebSocket DISCONNECT /ws/notify/ [10.29.3.21:41750]
+Unauthorized: /api/auth/login/
+[31;1mHTTP POST /api/auth/login/ 401 [0.21, 10.29.3.21:38969][0m
+[mHTTP POST /api/auth/login/ 200 [0.30, 10.29.3.21:62704][0m
+WebSocket HANDSHAKING /ws/notify/ [10.29.3.21:23176]
+WebSocket CONNECT /ws/notify/ [10.29.3.21:23176]
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.29.3.21:23177][0m
+[mHTTP GET /api/core/features/ 200 [0.05, 10.29.3.21:23178][0m
+[mHTTP GET /api/manager/dashboard/ 200 [0.13, 10.29.3.21:22814][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.05, 10.29.3.21:37247][0m
+[mHTTP GET /api/manager/dashboard/ 200 [0.15, 10.29.3.21:58769][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.05, 10.29.3.21:41178][0m
+[mHTTP POST /api/auth/logout/ 200 [0.03, 10.29.3.21:43861][0m
+WebSocket DISCONNECT /ws/notify/ [10.29.3.21:23176]
+[mHTTP POST /api/auth/login/ 200 [0.25, 10.29.3.21:2518][0m
+WebSocket HANDSHAKING /ws/notify/ [10.29.3.21:53534]
+WebSocket CONNECT /ws/notify/ [10.29.3.21:53534]
+[mHTTP GET /api/core/features/ 200 [0.07, 10.29.3.21:53536][0m
+[mHTTP GET /api/auth/profile/ 200 [0.09, 10.29.3.21:53535][0m
+[mHTTP GET /api/accounts/dashboard/ 200 [0.10, 10.29.3.21:19211][0m
+[mHTTP GET /api/accounts/dashboard/ 200 [0.07, 10.29.3.21:22984][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-13 200 [0.08, 10.29.3.21:1113][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-13 200 [0.03, 10.29.3.21:18733][0m
+Bad Request: /api/accounts/expenses/
+[31;1mHTTP POST /api/accounts/expenses/ 400 [0.03, 10.29.3.21:13183][0m
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\accounts_module\models.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+[mHTTP GET /api/accounts/expenses/?date=2026-09-13 200 [0.04, 10.29.3.21:31023][0m
+WebSocket HANDSHAKING /ws/notify/ [10.29.3.21:50839]
+WebSocket CONNECT /ws/notify/ [10.29.3.21:50839]
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.29.3.21:1917]
+WebSocket CONNECT /ws/notify/ [10.29.3.21:1917]
+WebSocket DISCONNECT /ws/notify/ [10.29.3.21:1917]
+WebSocket HANDSHAKING /ws/notify/ [10.29.3.21:33532]
+WebSocket CONNECT /ws/notify/ [10.29.3.21:33532]
+WebSocket DISCONNECT /ws/notify/ [10.29.3.21:33532]
+WebSocket HANDSHAKING /ws/notify/ [10.29.3.21:39862]
+WebSocket CONNECT /ws/notify/ [10.29.3.21:39862]
+[mHTTP GET /api/core/features/ 200 [0.05, 10.29.3.21:33534][0m
+[mHTTP GET /api/auth/profile/ 200 [0.08, 10.29.3.21:33533][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 10.29.3.21:39863][0m
+[mHTTP GET /api/auth/profile/ 200 [0.11, 10.29.3.21:39865][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-13 200 [0.13, 10.29.3.21:39864][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-13 200 [0.03, 10.29.3.21:39866][0m
+Bad Request: /api/accounts/expenses/
+[31;1mHTTP POST /api/accounts/expenses/ 400 [0.03, 10.29.3.21:21134][0m
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\accounts_module\models.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.29.3.21:12350]
+WebSocket CONNECT /ws/notify/ [10.29.3.21:12350]
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.29.3.21:39053]
+WebSocket CONNECT /ws/notify/ [10.29.3.21:39053]
+WebSocket DISCONNECT /ws/notify/ [10.29.3.21:39053]
+WebSocket HANDSHAKING /ws/notify/ [10.29.3.21:37638]
+WebSocket HANDSHAKING /ws/notify/ [10.29.3.21:24371]
+WebSocket CONNECT /ws/notify/ [10.29.3.21:37638]
+WebSocket DISCONNECT /ws/notify/ [10.29.3.21:37638]
+WebSocket CONNECT /ws/notify/ [10.29.3.21:24371]
+[mHTTP GET /api/core/features/ 200 [0.09, 10.29.3.21:37640][0m
+[mHTTP GET /api/auth/profile/ 200 [0.12, 10.29.3.21:37639][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 10.29.3.21:24372][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.29.3.21:24374][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-13 200 [0.07, 10.29.3.21:24373][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-13 200 [0.02, 10.29.3.21:24375][0m
+[mHTTP POST /api/accounts/expenses/ 201 [0.08, 10.29.3.21:49872][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-13 200 [0.03, 10.29.3.21:4591][0m
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\accounts_module\serializers.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+[mHTTP GET /api/accounts/expenses/?date=2026-09-13 200 [0.04, 10.29.3.21:39186][0m
+WebSocket HANDSHAKING /ws/notify/ [10.29.3.21:62612]
+WebSocket CONNECT /ws/notify/ [10.29.3.21:62612]
+WebSocket DISCONNECT /ws/notify/ [10.29.3.21:62612]
+WebSocket HANDSHAKING /ws/notify/ [10.29.3.21:51702]
+WebSocket REJECT /ws/notify/ [10.29.3.21:51702]
+WebSocket DISCONNECT /ws/notify/ [10.29.3.21:51702]
+WebSocket HANDSHAKING /ws/notify/ [10.29.3.21:47983]
+WebSocket REJECT /ws/notify/ [10.29.3.21:47983]
+WebSocket DISCONNECT /ws/notify/ [10.29.3.21:47983]
+Unauthorized: /api/auth/profile/
+Unauthorized: /api/core/features/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.04, 10.29.3.21:51703][0m
+[31;1mHTTP GET /api/core/features/ 401 [0.04, 10.29.3.21:51704][0m
+Unauthorized: /api/core/features/
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/core/features/ 401 [0.03, 10.29.3.21:47985][0m
+[31;1mHTTP GET /api/auth/profile/ 401 [0.03, 10.29.3.21:47984][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.04, 10.29.3.21:47986][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 10.29.3.21:9620][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.29.3.21:9621][0m
+[mHTTP GET /api/core/features/ 200 [0.05, 10.29.3.21:56563][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.29.3.21:62957][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-13 200 [0.04, 10.29.3.21:46574][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-13 200 [0.03, 10.29.3.21:24257][0m
+WebSocket HANDSHAKING /ws/notify/ [10.29.3.21:20163]
+WebSocket CONNECT /ws/notify/ [10.29.3.21:20163]
+[mHTTP POST /api/accounts/expenses/ 201 [0.04, 10.29.3.21:46484][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-13 200 [0.03, 10.29.3.21:6691][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-13 200 [0.01, 10.29.3.21:62798][0m
+WebSocket DISCONNECT /ws/notify/ [10.29.3.21:20163]
+WebSocket HANDSHAKING /ws/notify/ [10.29.3.21:35886]
+WebSocket CONNECT /ws/notify/ [10.29.3.21:35886]
+WebSocket DISCONNECT /ws/notify/ [10.29.3.21:35886]
+WebSocket HANDSHAKING /ws/notify/ [10.29.3.21:61151]
+WebSocket CONNECT /ws/notify/ [10.29.3.21:61151]
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.29.3.21:35887][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 10.29.3.21:35888][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.29.3.21:61152][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 10.29.3.21:61153][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-13 200 [0.05, 10.29.3.21:61154][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-13 200 [0.03, 10.29.3.21:61155][0m
+[mHTTP POST /api/accounts/expenses/ 201 [0.04, 10.29.3.21:5767][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-13 200 [0.06, 10.29.3.21:13186][0m

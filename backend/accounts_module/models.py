@@ -190,10 +190,10 @@ class Expense(models.Model):
     expense_id = models.CharField(max_length=20, unique=True, db_index=True)
     date = models.DateField(default=date.today)
     payee = models.CharField(max_length=255)
-    category = models.CharField(max_length=20, choices=ExpenseCategory.choices)
+    category = models.CharField(max_length=100)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     payment_method = models.CharField(max_length=20, choices=PaymentMethod.choices)
-    purpose = models.CharField(max_length=255)
+    purpose = models.CharField(max_length=255, blank=True)
     account_type = models.CharField(max_length=10, choices=[('CASH', 'Cash'), ('BANK', 'Bank')], default='CASH')
     cash_account = models.ForeignKey(CashAccount, on_delete=models.SET_NULL, null=True, blank=True)
     bank_account = models.ForeignKey(BankAccount, on_delete=models.SET_NULL, null=True, blank=True)
@@ -212,14 +212,6 @@ class Expense(models.Model):
         ordering = ['-date']
 
     def save(self, *args, **kwargs):
-        if not self.voucher_number:
-            year = timezone.now().year
-            count = Expense.objects.filter(date__year=year).count() + 1
-            candidate = f"VCH-{year}-{count:05d}"
-            while Expense.objects.filter(voucher_number=candidate).exists():
-                count += 1
-                candidate = f"VCH-{year}-{count:05d}"
-            self.voucher_number = candidate
         if not self.expense_id:
             year = timezone.now().year
             count = Expense.objects.filter(date__year=year).count() + 1

@@ -53,7 +53,7 @@ class ExpenseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Expense
         fields = '__all__'
-        read_only_fields = ['id', 'expense_id', 'created_by', 'created_at']
+        read_only_fields = ['id', 'created_by', 'created_at']
 
 
 class ChequeSerializer(serializers.ModelSerializer):

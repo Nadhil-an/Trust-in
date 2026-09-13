@@ -13,8 +13,23 @@ export default function ExpenseList() {
   const [dateFilter, setDateFilter] = useState(format(new Date(), "yyyy-MM-dd"))
   const [methodFilter, setMethodFilter] = useState("ALL")
   const [showModal, setShowModal] = useState(false)
-  const [form, setForm] = useState({ category:"OTHER", date:format(new Date(),"yyyy-MM-dd"), amount:"", payee:"", purpose:"", payment_method:"CASH", account_type:"CASH", bill_number:"", remarks:"" })
+  const [form, setForm] = useState({ category:"", date:format(new Date(),"yyyy-MM-dd"), amount:"", payee:"", purpose:"", payment_method:"CASH", account_type:"CASH", expense_id:"", remarks:"" })
   const [saving, setSaving] = useState(false)
+
+  const handleAddExpense = () => {
+    let nextId = 1;
+    if (items && items.length > 0) {
+      const ids = items.map(i => {
+        const match = String(i.expense_id).match(/(\d+)$/);
+        return match ? parseInt(match[1], 10) : 0;
+      });
+      const maxId = Math.max(0, ...ids);
+      nextId = maxId + 1;
+    }
+    const nextIdStr = nextId.toString().padStart(2, '0');
+    setForm({ category:"", date:format(new Date(),"yyyy-MM-dd"), amount:"", payee:"", purpose:"", payment_method:"CASH", account_type:"CASH", expense_id: nextIdStr, remarks:"" });
+    setShowModal(true);
+  }
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -53,7 +68,7 @@ export default function ExpenseList() {
   return (
     <div>
       <PageHeader title="Expense Records" subtitle="All expense entries">
-        <button className="btn btn-primary" onClick={()=>setShowModal(true)}>+ Add Expense</button>
+        <button className="btn btn-primary" onClick={handleAddExpense}>+ Add Expense</button>
       </PageHeader>
       <div className="data-card" style={{ display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 150px)' }}>
         <div style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--gray-200)', flexWrap: 'wrap' }}>
@@ -98,13 +113,12 @@ export default function ExpenseList() {
             <button className="btn btn-primary" form="expense-form" type="submit" disabled={saving}>{saving?"Saving...":"Save"}</button></>}>
           <form id="expense-form" onSubmit={handleSave}>
             <div className="form-grid-2">
-              {[["date","Date","date"],["payee","Payee","text"],["amount","Amount (₹)","number"],["bill_number","Bill Number","text"]].map(([k,l,t])=>(
-                <div className="form-group" key={k}><label className={`form-label${["date","payee","amount"].includes(k)?" required":""}`}>{l}</label>
-                  <input className="form-control" type={t} value={form[k]} required={["date","payee","amount"].includes(k)} onChange={e=>setForm(f=>({...f,[k]:e.target.value}))} /></div>
+              {[["date","Date","date"],["payee","Payee","text"],["amount","Amount (₹)","number"],["expense_id","Bill Number","text"]].map(([k,l,t])=>(
+                <div className="form-group" key={k}><label className={`form-label${["date","payee","amount","expense_id"].includes(k)?" required":""}`}>{l}</label>
+                  <input className="form-control" type={t} value={form[k]} required={["date","payee","amount","expense_id"].includes(k)} onChange={e=>setForm(f=>({...f,[k]:e.target.value}))} /></div>
               ))}
               <div className="form-group"><label className="form-label required">Category</label>
-                <select className="form-control" value={form.category} onChange={e=>setForm(f=>({...f,category:e.target.value}))}>
-                  {["SALARY","MAINTENANCE","UTILITIES","TRANSPORT","OFFICE","CHARITY","EDUCATION","MEDICAL","PURCHASE","OTHER"].map(c=><option key={c}>{c}</option>)}</select></div>
+                <input className="form-control" type="text" value={form.category} required onChange={e=>setForm(f=>({...f,category:e.target.value}))} placeholder="e.g. Office, Travel" /></div>
               <div className="form-group"><label className="form-label">Payment Method</label>
                 <PaymentMethodSelector value={form.payment_method} onChange={v=>setForm(f=>({...f,payment_method:v}))} options={["CASH","CHEQUE","NEFT","UPI","OTHER"]} /></div>
             </div>

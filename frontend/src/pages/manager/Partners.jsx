@@ -35,7 +35,9 @@ export default function Partners() {
 
   return (
     <div>
-      <PageHeader title="Partners" subtitle="Clubs, Groups, Associations and Local Teams" />
+      <PageHeader title="Partners" subtitle="Clubs, Groups, Associations and Local Teams">
+        <button className="btn btn-primary" onClick={() => { setSelected(null); setShowModal(true) }}>+ Add Partner</button>
+      </PageHeader>
       <div className="data-card">
         <FilterBar search={search} onSearch={setSearch} />
         {loading ? <LoadingState /> : (
