@@ -22,6 +22,7 @@ export const MASTER_NAV_CONFIG = [
 
   // ── PEOPLE & RELATIONS
   { key: 'membership_entry', label: 'Membership Entry', icon: '🪪', path: '/slt/entry/membership', category: 'PEOPLE & RELATIONS' },
+  { label: 'Assessment Entry', icon: '📋', path: '/slt/entry/assessment', category: 'PEOPLE & RELATIONS', roles: ['DATA_ENTRY', 'MANAGER', 'ADMIN'] },
   { key: 'partners_entry', label: 'Partners Entry', icon: '🤝', path: '/slt/entry/partners', category: 'PEOPLE & RELATIONS' },
   { key: 'events_entry', label: 'Events & News', icon: '📢', path: '/slt/entry/events', category: 'PEOPLE & RELATIONS' },
 

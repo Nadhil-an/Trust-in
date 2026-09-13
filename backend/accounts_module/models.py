@@ -202,6 +202,8 @@ class Expense(models.Model):
     status = models.CharField(max_length=20, default='COMPLETED', choices=[
         ('PENDING', 'Pending'), ('COMPLETED', 'Completed'), ('CANCELLED', 'Cancelled')
     ])
+    reference_number = models.CharField(max_length=100, blank=True)
+    remarks = models.TextField(blank=True)
     document = models.FileField(upload_to='expenses/', null=True, blank=True, validators=[validate_document_file])
     approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_expenses')
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_expenses')

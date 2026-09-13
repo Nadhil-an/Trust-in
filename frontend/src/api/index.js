@@ -107,6 +107,8 @@ export const managerApi = {
   inventoryTransactions: {
     list: (params) => api.get('/manager/inventory-transactions/', { params }),
     create: (data) => api.post('/manager/inventory-transactions/', data),
+    update: (id, data) => api.patch(`/manager/inventory-transactions/${id}/`, data),
+    delete: (id) => api.delete(`/manager/inventory-transactions/${id}/`),
   },
   minutes: {
     list: (params) => api.get('/manager/minutes/', { params }),

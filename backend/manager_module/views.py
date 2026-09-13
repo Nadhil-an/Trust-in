@@ -196,11 +196,51 @@ class AssessmentRequestListCreateView(generics.ListCreateAPIView):
         if self.request.method == 'GET':
             return AssessmentRequestListSerializer
         return AssessmentRequestSerializer
+        
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        
+        # Calculate all-time pending count (ignoring date filter)
+        base_qs = AssessmentRequest.objects.all()
+        req_role = request.query_params.get('requested_by_role')
+        if req_role:
+            base_qs = base_qs.filter(requested_by__role=req_role.upper())
+            
+        user = request.user
+        role = getattr(user, 'role', None)
+        if role in [Role.STAFF, Role.MEMBER]:
+            base_qs = base_qs.filter(requested_by=user)
+            
+        pending_count = base_qs.exclude(
+            status__in=[RequestStatus.APPROVED, RequestStatus.REJECTED, 
+                        RequestStatus.DISBURSED, RequestStatus.COMPLETED, 
+                        RequestStatus.CANCELLED]
+        ).count()
+        
+        if isinstance(response.data, dict) and 'results' in response.data:
+            response.data['all_time_pending'] = pending_count
+        elif isinstance(response.data, list):
+            # If not paginated, wrap it
+            response.data = {
+                'results': response.data,
+                'all_time_pending': pending_count
+            }
+            
+        return response
 
     def get_queryset(self):
         qs = AssessmentRequest.objects.select_related(
             'requested_by', 'reviewed_by', 'disbursed_by'
         )
+        
+        req_role = self.request.query_params.get('requested_by_role')
+        if req_role:
+            qs = qs.filter(requested_by__role=req_role.upper())
+            
+        req_date = self.request.query_params.get('date')
+        if req_date:
+            qs = qs.filter(created_at__date=req_date)
+
         # Mobile role filtering: each role sees only their cases
         user = self.request.user
         role = getattr(user, 'role', None)
@@ -833,7 +873,7 @@ class CharityInventoryDetailView(generics.RetrieveUpdateDestroyAPIView):
 class InventoryTransactionListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = InventoryTransactionSerializer
-    filterset_fields = ['transaction_type']
+    filterset_fields = ['transaction_type', 'item']
     search_fields = ['transaction_id', 'reference_number', 'item__item_name']
     ordering_fields = ['-created_at']
 
@@ -842,6 +882,45 @@ class InventoryTransactionListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
+
+class InventoryTransactionDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = InventoryTransactionSerializer
+    queryset = InventoryTransaction.objects.all()
+
+    def perform_update(self, serializer):
+        old_instance = self.get_object()
+        old_qty = old_instance.quantity
+        old_type = old_instance.transaction_type
+        old_item = old_instance.item
+
+        updated_instance = serializer.save()
+
+        # Revert the old effect
+        if old_type == 'INWARD':
+            old_item.quantity_available -= old_qty
+        elif old_type == 'OUTWARD':
+            old_item.quantity_available += old_qty
+        old_item.save(update_fields=['quantity_available'])
+
+        # Apply new effect
+        new_item = updated_instance.item
+        if updated_instance.transaction_type == 'INWARD':
+            new_item.quantity_available += updated_instance.quantity
+        elif updated_instance.transaction_type == 'OUTWARD':
+            new_item.quantity_available -= updated_instance.quantity
+        new_item.save(update_fields=['quantity_available'])
+
+    def perform_destroy(self, instance):
+        old_qty = instance.quantity
+        old_type = instance.transaction_type
+        old_item = instance.item
+        if old_type == 'INWARD':
+            old_item.quantity_available -= old_qty
+        elif old_type == 'OUTWARD':
+            old_item.quantity_available += old_qty
+        old_item.save(update_fields=['quantity_available'])
+        instance.delete()
 
 
 # ── Minutes Registry ───────────────────────────────────────────────

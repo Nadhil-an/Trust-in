@@ -213,6 +213,7 @@ export default function App() {
           <Route path="slt/entry/promoters-registry" element={<ProtectedRoute featureKey="promoters_registry"><PromotorRegistry /></ProtectedRoute>} />
           <Route path="slt/entry/donation"           element={<ProtectedRoute featureKey="donation_entry"><DonationEntry /></ProtectedRoute>} />
           <Route path="slt/entry/membership"         element={<ProtectedRoute featureKey="membership_entry"><MembershipEntry /></ProtectedRoute>} />
+          <Route path="slt/entry/assessment"         element={<ProtectedRoute roles={['DATA_ENTRY', 'MANAGER', 'ADMIN']}><Requests /></ProtectedRoute>} />
           <Route path="slt/entry/partners"           element={<ProtectedRoute featureKey="partners_entry"><PartnersEntry /></ProtectedRoute>} />
           <Route path="slt/entry/material-inward"    element={<ProtectedRoute featureKey="material_inward"><MaterialInward /></ProtectedRoute>} />
           <Route path="slt/entry/material-outward"   element={<ProtectedRoute featureKey="material_outward"><MaterialOutward /></ProtectedRoute>} />

@@ -23,6 +23,7 @@ export default function InwardEntry() {
   const [items, setItems]     = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch]   = useState('')
+  const [dateFilter, setDateFilter] = useState(format(new Date(), 'yyyy-MM-dd'))
   const [showModal, setShowModal] = useState(false)
   const [form, setForm]       = useState(EMPTY_FORM)
   const [saving, setSaving]   = useState(false)
@@ -30,11 +31,11 @@ export default function InwardEntry() {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const iRes = await accountsApi.income.list({ search, source: 'INWARD' })
+      const iRes = await accountsApi.income.list({ search, source: 'INWARD', date: dateFilter })
       setItems(iRes.data.results || iRes.data)
     } catch { toast.error('Failed to load inward entries') }
     finally { setLoading(false) }
-  }, [search])
+  }, [search, dateFilter])
 
   useEffect(() => { load() }, [load])
 
@@ -60,7 +61,15 @@ export default function InwardEntry() {
       setForm(EMPTY_FORM)
       load()
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Save failed')
+      const data = err.response?.data;
+      let msg = 'Save failed.';
+      if (data) {
+        if (data.detail) msg = data.detail;
+        else if (typeof data === 'object') {
+          msg = Object.values(data).flat().join(' | ');
+        }
+      }
+      toast.error(msg);
     } finally { setSaving(false) }
   }
 
@@ -85,7 +94,15 @@ export default function InwardEntry() {
       </PageHeader>
 
       <div className="data-card">
-        <FilterBar search={search} onSearch={setSearch} />
+        <FilterBar search={search} onSearch={setSearch}>
+          <input 
+            type="date" 
+            className="form-control" 
+            style={{ width: 140 }} 
+            value={dateFilter} 
+            onChange={e => setDateFilter(e.target.value)} 
+          />
+        </FilterBar>
         {loading ? <LoadingState /> : (
           <div className="table-wrap">
             <table>

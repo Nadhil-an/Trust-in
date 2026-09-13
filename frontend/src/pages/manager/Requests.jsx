@@ -9,7 +9,7 @@ import { isValidPhone, isPositiveNumber } from '../../utils/validators'
 
 const CATEGORIES = ['MEDICAL','EDUCATION','FOOD','CHARITY','TRANSPORT','OFFICE','UTILITIES','MAINTENANCE','PURCHASE','OTHER']
 const PRIORITIES = ['LOW','NORMAL','HIGH','URGENT']
-const STATUSES = ['DRAFT','SUBMITTED','UNDER_REVIEW','ON_HOLD','APPROVED','REJECTED','PENDING_DISBURSEMENT','DISBURSED','COMPLETED','CANCELLED']
+const STATUSES = ['SUBMITTED','APPROVED','REJECTED']
 
 function RequestForm({ onClose, onSaved, initial = null }) {
   const [form, setForm] = useState(initial || {
@@ -135,6 +135,9 @@ export default function Requests() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [roleFilter, setRoleFilter] = useState('')
+  const [dateFilter, setDateFilter] = useState(format(new Date(), 'yyyy-MM-dd'))
+  const [totalPendingCount, setTotalPendingCount] = useState(0)
   const [showModal, setShowModal] = useState(false)
   const [actionModal, setActionModal] = useState(null) // { req, action }
   const [actionRemarks, setActionRemarks] = useState('')
@@ -145,11 +148,12 @@ export default function Requests() {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await managerApi.requests.list({ search, status: statusFilter })
+      const res = await managerApi.requests.list({ search, status: statusFilter, requested_by_role: roleFilter, date: dateFilter })
       setRequests(res.data.results || res.data)
+      setTotalPendingCount(res.data.all_time_pending || 0)
     } catch (_) { toast.error('Failed to load requests') }
     finally { setLoading(false) }
-  }, [search, statusFilter])
+  }, [search, statusFilter, roleFilter, dateFilter])
 
   useEffect(() => { load() }, [load])
 
@@ -190,15 +194,27 @@ export default function Requests() {
   return (
     <div>
       <PageHeader title="Assessment Requests" subtitle="Manage money and assistance requests">
-        {['MANAGER','ADMIN'].includes(user?.role) && (
-          <button className="btn btn-primary" id="create-request-btn" onClick={() => setShowModal(true)}>
-            + New Request
-          </button>
-        )}
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          <span className="badge badge-yellow" style={{ fontSize: 13, padding: '6px 14px' }}>
+            Total Pending: {totalPendingCount}
+          </span>
+          {['MANAGER','ADMIN','DATA_ENTRY'].includes(user?.role) && (
+            <button className="btn btn-primary" id="create-request-btn" onClick={() => setShowModal(true)}>
+              + New Request
+            </button>
+          )}
+        </div>
       </PageHeader>
 
       <div className="data-card">
         <FilterBar search={search} onSearch={setSearch}>
+          <input type="date" className="form-control" style={{ width: 140 }} 
+            value={dateFilter} onChange={e => setDateFilter(e.target.value)} />
+          <select className="filter-select" value={roleFilter}
+            onChange={e => setRoleFilter(e.target.value)}>
+            <option value="">All Applications</option>
+            <option value="STAFF">Staff Submitted</option>
+          </select>
           <select className="filter-select" value={statusFilter}
             onChange={e => setStatusFilter(e.target.value)}>
             <option value="">All Status</option>

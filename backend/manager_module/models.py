@@ -346,7 +346,7 @@ class CharityInventory(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     item_code = models.CharField(max_length=20, unique=True, db_index=True)
     item_name = models.CharField(max_length=255)
-    category = models.CharField(max_length=20, choices=InventoryCategory.choices)
+    category = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     unit = models.CharField(max_length=50, default='unit')  # e.g. kg, pcs, box
     quantity_available = models.PositiveIntegerField(default=0)
@@ -380,6 +380,7 @@ class InventoryTransaction(models.Model):
     transaction_type = models.CharField(max_length=10, choices=[('INWARD', 'Inward'), ('OUTWARD', 'Outward')])
     quantity = models.PositiveIntegerField()
     reference_number = models.CharField(max_length=100, blank=True)
+    dispatched_to = models.CharField(max_length=255, blank=True)
     remarks = models.TextField(blank=True)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(default=timezone.now)
