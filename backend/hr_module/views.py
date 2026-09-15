@@ -533,7 +533,12 @@ class ExecutiveOfficerListCreateView(generics.ListCreateAPIView):
                 qs = qs.filter(status='ACTIVE')
         designation = self.request.query_params.get('designation')
         if designation:
-            qs = qs.filter(designation__iexact=designation)
+            from django.db.models import Q
+            qs = qs.filter(
+                Q(designation__iexact=designation) | 
+                Q(designation__iexact=designation.replace('_', ' ')) |
+                Q(designation__iexact=designation.replace(' ', '_'))
+            )
         return qs
 
     def perform_create(self, serializer):
@@ -682,7 +687,13 @@ class DesignationListView(APIView):
 
     def get(self, request):
         designations = ExecutiveOfficer.objects.exclude(designation__isnull=True).exclude(designation='').values_list('designation', flat=True).distinct()
-        return Response([d for d in designations])
+        
+        # Standardize format for frontend: uppercase and spaces to underscores
+        cleaned_designations = set()
+        for d in designations:
+            cleaned_designations.add(str(d).upper().replace(' ', '_'))
+            
+        return Response(list(cleaned_designations))
 
 
 class OfficerPayrollDataView(APIView):

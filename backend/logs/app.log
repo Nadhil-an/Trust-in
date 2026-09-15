@@ -209042,3 +209042,47 @@ Watching for file changes with StatReloader
 HTTP/2 support not enabled (install the http2 and tls Twisted extras)
 Configuring endpoint tcp:port=8000:interface=0.0.0.0
 Listening on TCP address 0.0.0.0:8000
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\hr_module\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+[mHTTP POST /api/auth/login/ 200 [0.36, 10.29.3.21:35519][0m
+WebSocket HANDSHAKING /ws/notify/ [10.29.3.21:11144]
+WebSocket CONNECT /ws/notify/ [10.29.3.21:11144]
+[mHTTP GET /api/core/features/ 200 [0.04, 10.29.3.21:11145][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.29.3.21:11146][0m
+[mHTTP GET /api/manager/partners/?date=2026-09-16 200 [0.17, 10.29.3.21:5857][0m
+[mHTTP GET /api/manager/requests/?date=2026-09-16 200 [0.17, 10.29.3.21:5856][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-16&source=INWARD 200 [0.24, 10.29.3.21:5858][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-16&source=MEMBERSHIP 200 [0.25, 10.29.3.21:9043][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-16&category=OUTWARD 200 [0.24, 10.29.3.21:5859][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-16&source=DONATION 200 [0.26, 10.29.3.21:47356][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-16&category=PURCHASE 200 [0.11, 10.29.3.21:10629][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-16&source=INWARD 200 [0.09, 10.29.3.21:48964][0m
+[mHTTP GET /api/manager/partners/?date=2026-09-16 200 [0.12, 10.29.3.21:15713][0m
+[mHTTP GET /api/manager/requests/?date=2026-09-16 200 [0.13, 10.29.3.21:48963][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-16&category=OUTWARD 200 [0.12, 10.29.3.21:60196][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-16&source=MEMBERSHIP 200 [0.10, 10.29.3.21:39553][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-16&source=DONATION 200 [0.07, 10.29.3.21:19426][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-16&category=PURCHASE 200 [0.07, 10.29.3.21:28739][0m
+[mHTTP GET /api/core/events/?date=2026-09-16 200 [1.47, 10.29.3.21:10630][0m
+[mHTTP GET /api/core/events/?date=2026-09-16 200 [0.02, 10.29.3.21:23534][0m
+[mHTTP GET /api/accounts/expenses/?search=&category=PURCHASE 200 [0.02, 10.29.3.21:30812][0m
+[mHTTP GET /api/accounts/expenses/?search=&category=PURCHASE 200 [0.02, 10.29.3.21:35385][0m
+[mHTTP GET /api/accounts/income/?search=&source=DONATION&date= 200 [0.08, 10.29.3.21:51432][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.10, 10.29.3.21:51433][0m
+[mHTTP GET /api/accounts/income/?search=&source=DONATION&date= 200 [0.04, 10.29.3.21:47556][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.07, 10.29.3.21:63810][0m
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\hr_module\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.29.3.21:31383]
+WebSocket CONNECT /ws/notify/ [10.29.3.21:31383]
+WebSocket DISCONNECT /ws/notify/ [10.29.3.21:31383]
