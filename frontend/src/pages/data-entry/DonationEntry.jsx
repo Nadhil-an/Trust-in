@@ -55,7 +55,9 @@ export default function DonationEntry() {
 
   useEffect(() => {
     coreApi.users.list({ role: 'STAFF' }).then(res => {
-      setUsers(res.data.results || res.data || [])
+      let data = res.data.results || res.data || []
+      data = data.filter(u => u.full_name?.toLowerCase() !== 'hr' && u.username?.toLowerCase() !== 'hr')
+      setUsers(data)
     }).catch(err => console.error(err))
   }, [])
 
@@ -262,8 +264,10 @@ export default function DonationEntry() {
               <div className="form-group">
                 <label className="form-label">Staff Member</label>
                 <select className="form-control" value={form.staff_id} onChange={e => handleStaffChange(e.target.value)}>
-                  <option value="">Select Staff...</option>
-                  {users.map(u => <option key={u.id} value={u.id}>{u.full_name}</option>)}
+                  <option value="">Office Entry (Direct)</option>
+                  <optgroup label="Field Staff">
+                    {users.map(u => <option key={u.id} value={u.id}>{u.full_name}</option>)}
+                  </optgroup>
                 </select>
               </div>
               <div className="form-group">
