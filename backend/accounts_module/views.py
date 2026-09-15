@@ -57,9 +57,9 @@ class AccountsDashboardView(APIView):
                 from datetime import datetime
                 today = datetime.strptime(date_str, '%Y-%m-%d').date()
             except ValueError:
-                today = timezone.now().date()
+                today = timezone.localtime(timezone.now()).date()
         else:
-            today = timezone.now().date()
+            today = timezone.localtime(timezone.now()).date()
             
         month_start = today.replace(day=1)
 

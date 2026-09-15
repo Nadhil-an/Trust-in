@@ -102,11 +102,13 @@ export default function AccountsDashboard() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [active, setActive] = useState(null)
+  const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'))
   const navigate = useNavigate()
 
   const load = async () => {
+    setLoading(true)
     try {
-      const res = await accountsApi.dashboard()
+      const res = await accountsApi.dashboard({ date: selectedDate })
       setData(res.data)
     } catch {
       toast.error('Failed to load dashboard')
@@ -120,7 +122,7 @@ export default function AccountsDashboard() {
     const h = () => load()
     window.addEventListener('dashboard-refresh', h)
     return () => window.removeEventListener('dashboard-refresh', h)
-  }, [])
+  }, [selectedDate])
 
   if (loading) return <LoadingState />
   const acc = data || {}
@@ -141,7 +143,19 @@ export default function AccountsDashboard() {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24 }}>
         <div>
           <h2 style={{ fontSize: 22, fontWeight: 800, color: '#111827', margin: 0 }}>Accounts Dashboard</h2>
-          <p style={{ fontSize: 13, color: '#9ca3af', margin: '3px 0 0' }}>Good {greeting} — {format(new Date(), 'EEEE, dd MMMM yyyy')}</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '6px 0 0' }}>
+            <p style={{ fontSize: 13, color: '#9ca3af', margin: 0 }}>Good {greeting} — </p>
+            <input 
+              type="date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              style={{
+                fontSize: 13, padding: '4px 10px', borderRadius: 8,
+                border: '1px solid #d1d5db', color: '#4B5563', background: '#F3F4F6',
+                fontWeight: 600, outline: 'none', cursor: 'pointer'
+              }}
+            />
+          </div>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
           <button onClick={() => navigate('/slt/disburse/day-sheet')}
