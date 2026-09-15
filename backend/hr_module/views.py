@@ -823,15 +823,19 @@ class BulkAttendanceView(APIView):
         for rec in records:
             emp_id = rec.get('employee')
             date = rec.get('date', timezone.now().date())
+            defaults_to_update = {
+                'status': rec.get('status', 'PRESENT'),
+                'remarks': rec.get('remarks', ''),
+                'marked_by': request.user,
+            }
+            if 'check_in' in rec:
+                defaults_to_update['check_in'] = rec['check_in']
+            if 'check_out' in rec:
+                defaults_to_update['check_out'] = rec['check_out']
+
             att, was_created = Attendance.objects.update_or_create(
                 employee_id=emp_id, date=date,
-                defaults={
-                    'status': rec.get('status', 'PRESENT'),
-                    'check_in': rec.get('check_in'),
-                    'check_out': rec.get('check_out'),
-                    'remarks': rec.get('remarks', ''),
-                    'marked_by': request.user,
-                }
+                defaults=defaults_to_update
             )
             if was_created:
                 created += 1

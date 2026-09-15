@@ -209033,3 +209033,12 @@ WebSocket CONNECT /ws/notify/ [10.29.3.21:40277]
 [mHTTP GET /api/manager/inventory-transactions/?search=&transaction_type=OUTWARD 200 [0.06, 10.29.3.21:16630][0m
 [mHTTP GET /api/manager/inventory-transactions/?search=&transaction_type=OUTWARD 200 [0.06, 10.29.3.21:61610][0m
 [mHTTP GET /api/manager/inventory/?is_active=true 200 [0.07, 10.29.3.21:61611][0m
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\hr_module\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
