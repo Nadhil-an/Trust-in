@@ -608,7 +608,8 @@ export default function Officers() {
                             setShowVoucherModal(true);
                           }}>
                             {(() => {
-                              const vb = voucherList.find(v => v.staff_id === (o.user_id || o.id) || v.staff_uid === o.employee_id || v.staff_name === o.full_name);
+                              const n = s => (s||'').trim().toLowerCase();
+                              const vb = voucherList.find(v => v.staff_id === (o.user_id || o.id) || (v.staff_uid && v.staff_uid === o.employee_id) || n(v.staff_name) === n(o.full_name));
                               if (vb && vb.book_number > 0) {
                                 return (
                                   <>

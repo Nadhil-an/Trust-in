@@ -1402,9 +1402,25 @@ class StaffVoucherView(APIView):
         # 2. Try treating it as an ExecutiveOfficer ID
         try:
             officer = ExecutiveOfficer.objects.get(pk=staff_id)
-            user = User.objects.filter(Q(email__iexact=officer.email) | Q(full_name__iexact=officer.full_name), role=Role.STAFF).first()
-            if user:
-                return user
+            
+            q = Q()
+            if officer.email and officer.email.strip():
+                q |= Q(email__iexact=officer.email.strip())
+            if officer.phone and officer.phone.strip():
+                q |= Q(phone__iexact=officer.phone.strip())
+            if officer.full_name:
+                cleaned_name = officer.full_name.strip()
+                q |= Q(full_name__iexact=cleaned_name)
+                q |= Q(username__iexact=cleaned_name)
+                q |= Q(full_name__iexact=cleaned_name + ' ')  # Catch trailing space in DB
+            if officer.employee_id:
+                q |= Q(username__iexact=officer.employee_id)
+                q |= Q(staff_uid=officer.employee_id)
+
+            if q:
+                user = User.objects.filter(q, role=Role.STAFF).first()
+                if user:
+                    return user
         except ExecutiveOfficer.DoesNotExist:
             pass
 
@@ -1417,7 +1433,7 @@ class StaffVoucherView(APIView):
         if staff_id:
             user = self._get_staff_user(staff_id)
             if not user:
-                return Response({'error': 'Staff user account not found. Please ensure the employee has an active user account.'}, status=404)
+                return Response({'error': 'Staff user account not found. Please ensure the employee has an active user account with STAFF role.'}, status=404)
             vb, _ = StaffVoucherBook.objects.get_or_create(staff=user)
             return Response(self._serialize(vb, request))
 
@@ -1434,7 +1450,16 @@ class StaffVoucherView(APIView):
 
         user = self._get_staff_user(staff_id)
         if not user:
-            return Response({'error': 'Staff user account not found.'}, status=404)
+            from hr_module.models import ExecutiveOfficer
+            from core.models import User
+            try:
+                officer = ExecutiveOfficer.objects.get(pk=staff_id)
+                any_user = User.objects.filter(full_name__iexact=officer.full_name.strip()).first()
+                if any_user and any_user.role != 'STAFF':
+                    return Response({'error': f'User account exists but has role "{any_user.role}". Voucher books can only be assigned to STAFF.'}, status=400)
+            except:
+                pass
+            return Response({'error': 'Staff user account not found. Please create a login account for this employee with STAFF role.'}, status=404)
 
         # Check uniqueness of book_number before assigning
         new_book_number = request.data.get('book_number')
