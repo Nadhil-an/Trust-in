@@ -209788,3 +209788,76 @@ WebSocket CONNECT /ws/notify/ [192.168.11.84:1682]
 [mHTTP GET /api/accounts/expenses/?date=2026-09-17&category=OUTWARD 200 [0.08, 192.168.11.84:1258][0m
 [mHTTP GET /api/core/events/?date=2026-09-17 200 [0.07, 192.168.11.84:14744][0m
 [mHTTP GET /api/manager/partners/?date=2026-09-17 200 [0.08, 192.168.11.84:9690][0m
+WebSocket DISCONNECT /ws/notify/ [192.168.11.84:1682]
+WebSocket HANDSHAKING /ws/notify/ [192.168.11.84:23438]
+WebSocket REJECT /ws/notify/ [192.168.11.84:23438]
+WebSocket DISCONNECT /ws/notify/ [192.168.11.84:23438]
+WebSocket HANDSHAKING /ws/notify/ [192.168.11.84:7801]
+WebSocket REJECT /ws/notify/ [192.168.11.84:7801]
+WebSocket DISCONNECT /ws/notify/ [192.168.11.84:7801]
+Unauthorized: /api/accounts/income/
+Unauthorized: /api/accounts/income/
+Unauthorized: /api/accounts/income/
+Unauthorized: /api/manager/requests/
+Unauthorized: /api/manager/partners/
+Unauthorized: /api/accounts/expenses/
+[31;1mHTTP GET /api/accounts/income/?date=2026-09-17&source=DONATION 401 [0.06, 192.168.11.84:23439][0m
+[31;1mHTTP GET /api/accounts/income/?date=2026-09-17&source=MEMBERSHIP 401 [0.05, 192.168.11.84:23440][0m
+[31;1mHTTP GET /api/accounts/income/?date=2026-09-17&source=INWARD 401 [0.05, 192.168.11.84:23443][0m
+[31;1mHTTP GET /api/manager/requests/?date=2026-09-17 401 [0.06, 192.168.11.84:23441][0m
+[31;1mHTTP GET /api/manager/partners/?date=2026-09-17 401 [0.05, 192.168.11.84:23442][0m
+[31;1mHTTP GET /api/accounts/expenses/?date=2026-09-17&category=OUTWARD 401 [0.06, 192.168.11.84:23444][0m
+Unauthorized: /api/accounts/expenses/
+Unauthorized: /api/core/events/
+[31;1mHTTP GET /api/accounts/expenses/?date=2026-09-17&category=PURCHASE 401 [0.02, 192.168.11.84:27199][0m
+[31;1mHTTP GET /api/core/events/?date=2026-09-17 401 [0.02, 192.168.11.84:27200][0m
+Unauthorized: /api/auth/profile/
+Unauthorized: /api/core/features/
+Unauthorized: /api/accounts/income/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.02, 192.168.11.84:16433][0m
+Unauthorized: /api/accounts/income/
+[31;1mHTTP GET /api/core/features/ 401 [0.02, 192.168.11.84:16434][0m
+[31;1mHTTP GET /api/accounts/income/?date=2026-09-17&source=MEMBERSHIP 401 [0.02, 192.168.11.84:16436][0m
+[31;1mHTTP GET /api/accounts/income/?date=2026-09-17&source=DONATION 401 [0.02, 192.168.11.84:16435][0m
+Unauthorized: /api/accounts/expenses/
+Unauthorized: /api/accounts/income/
+[31;1mHTTP GET /api/accounts/expenses/?date=2026-09-17&category=OUTWARD 401 [0.07, 192.168.11.84:46130][0m
+Unauthorized: /api/manager/partners/
+[31;1mHTTP GET /api/accounts/income/?date=2026-09-17&source=INWARD 401 [0.08, 192.168.11.84:3843][0m
+[31;1mHTTP GET /api/manager/partners/?date=2026-09-17 401 [0.09, 192.168.11.84:3844][0m
+Unauthorized: /api/manager/requests/
+Unauthorized: /api/accounts/expenses/
+[31;1mHTTP GET /api/manager/requests/?date=2026-09-17 401 [0.08, 192.168.11.84:43520][0m
+[31;1mHTTP GET /api/accounts/expenses/?date=2026-09-17&category=PURCHASE 401 [0.08, 192.168.11.84:43522][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.09, 192.168.11.84:43521][0m
+Unauthorized: /api/auth/profile/
+Unauthorized: /api/core/features/
+Unauthorized: /api/core/events/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.03, 192.168.11.84:59831][0m
+[31;1mHTTP GET /api/core/features/ 401 [0.03, 192.168.11.84:59832][0m
+[31;1mHTTP GET /api/core/events/?date=2026-09-17 401 [0.04, 192.168.11.84:48286][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-17&source=MEMBERSHIP 200 [0.04, 192.168.11.84:13089][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-17&source=DONATION 200 [0.04, 192.168.11.84:13088][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-17&source=INWARD 200 [0.04, 192.168.11.84:13090][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-17&category=OUTWARD 200 [0.05, 192.168.11.84:37706][0m
+[mHTTP GET /api/manager/partners/?date=2026-09-17 200 [0.05, 192.168.11.84:57191][0m
+[mHTTP GET /api/manager/requests/?date=2026-09-17 200 [0.05, 192.168.11.84:51663][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 192.168.11.84:48885][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-17&category=PURCHASE 200 [0.06, 192.168.11.84:52317][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.06, 192.168.11.84:48886][0m
+[mHTTP GET /api/core/events/?date=2026-09-17 200 [0.04, 192.168.11.84:8083][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 192.168.11.84:8084][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-17&source=MEMBERSHIP 200 [0.05, 192.168.11.84:22613][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-17&source=INWARD 200 [0.04, 192.168.11.84:16419][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-17&category=OUTWARD 200 [0.04, 192.168.11.84:52884][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-17&source=DONATION 200 [0.04, 192.168.11.84:16420][0m
+[mHTTP GET /api/manager/partners/?date=2026-09-17 200 [0.04, 192.168.11.84:1908][0m
+[mHTTP GET /api/manager/requests/?date=2026-09-17 200 [0.04, 192.168.11.84:41277][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-17&category=PURCHASE 200 [0.05, 192.168.11.84:29639][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 192.168.11.84:49031][0m
+[mHTTP GET /api/core/events/?date=2026-09-17 200 [0.04, 192.168.11.84:32590][0m
+[mHTTP GET /api/core/features/ 200 [0.03, 192.168.11.84:32591][0m
+WebSocket HANDSHAKING /ws/notify/ [192.168.11.84:24602]
+WebSocket CONNECT /ws/notify/ [192.168.11.84:24602]
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.02, 192.168.11.84:12065][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.02, 192.168.11.84:51202][0m
