@@ -216,7 +216,7 @@ class BankTransactionListCreateView(generics.ListCreateAPIView):
 class IncomeListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAnyStaff]
     serializer_class = IncomeSerializer
-    filterset_fields = ['source', 'payment_method', 'account_type', 'date', 'created_by']
+    filterset_fields = ['source', 'payment_method', 'account_type', 'date', 'created_by', 'bill_book_no', 'reference_number']
     search_fields = ['receipt_number', 'donor_name', 'purpose', 'reference_number']
     ordering_fields = ['date', 'amount']
     parser_classes = [MultiPartParser, FormParser, JSONParser]
