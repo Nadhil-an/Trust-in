@@ -195,7 +195,7 @@ export default function AccountsDashboard() {
           icon="💝" label="Today's Donations" color={C.yellow} active={false}
           value={formatINR(acc.today_donations_total)}
           sub={`Cash ${formatINR(acc.today_donations_cash)} · Bank ${formatINR(acc.today_donations_bank)}`}
-          onClick={() => navigate('/accounts/donations')}
+          onClick={() => navigate('/slt/finance/donations')}
         />
         <SummaryCard
           icon="📥" label="This Month — Income" color={C.green} active={active === 'income'}

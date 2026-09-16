@@ -25,7 +25,7 @@ export default function DonationEntry() {
   const [items, setItems]     = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch]   = useState('')
-  const [filterDate, setFilterDate] = useState('')
+  const [filterDate, setFilterDate] = useState(format(new Date(), 'yyyy-MM-dd'))
   const [filterStaff, setFilterStaff] = useState('')
   const [users, setUsers] = useState([])
   const [showModal, setShowModal] = useState(false)
@@ -222,7 +222,8 @@ export default function DonationEntry() {
 
           {/* Voucher ID Banner */}
           <div style={{
-            background: 'linear-gradient(90deg, #4F46E5, #7C3AED)',
+            background: '#f8fafc',
+            border: '1px solid #e2e8f0',
             borderRadius: 12, padding: '12px 20px',
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             marginBottom: 20,
@@ -230,9 +231,9 @@ export default function DonationEntry() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <span style={{ fontSize: 22 }}>🎫</span>
               <div>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>Voucher ID</div>
+                <div style={{ fontSize: 11, color: '#475569', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>Voucher ID</div>
                 {voucherLoading ? (
-                  <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)' }}>Loading...</div>
+                  <div style={{ fontSize: 13, color: '#64748b' }}>Loading...</div>
                 ) : (
                   <input
                     type="number"
@@ -240,7 +241,7 @@ export default function DonationEntry() {
                     value={form.voucher_id}
                     onChange={e => setF('voucher_id', e.target.value)}
                     style={{
-                      fontSize: 26, fontWeight: 900, color: 'white', background: 'transparent',
+                      fontSize: 24, fontWeight: 800, color: '#0f172a', background: 'transparent',
                       border: 'none', outline: 'none', width: 120, padding: 0,
                     }}
                     placeholder="—"
@@ -249,9 +250,9 @@ export default function DonationEntry() {
               </div>
             </div>
             {form.staff_id && (
-              <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', textAlign: 'right' }}>
+              <div style={{ fontSize: 12, color: '#64748b', textAlign: 'right' }}>
                 <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>Staff Member</div>
-                <div style={{ fontWeight: 700, color: 'white' }}>
+                <div style={{ fontWeight: 700, color: '#0f172a' }}>
                   {users.find(u => u.id === form.staff_id)?.full_name || '—'}
                 </div>
               </div>
