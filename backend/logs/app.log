@@ -209724,3 +209724,140 @@ WebSocket CONNECT /ws/notify/ [10.29.3.21:42825]
 Cannot reach WhatsApp gateway at http://localhost:3001/send-message (attempt 1/3). Is 'node server.js' running?
 Cannot reach WhatsApp gateway at http://localhost:3001/send-message (attempt 2/3). Is 'node server.js' running?
 Cannot reach WhatsApp gateway at http://localhost:3001/send-message (attempt 3/3). Is 'node server.js' running?
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\sreelakshmi_trust\settings.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+[mHTTP POST /api/auth/login/ 200 [0.47, 192.168.11.84:23127][0m
+WebSocket HANDSHAKING /ws/notify/ [192.168.11.84:14064]
+WebSocket CONNECT /ws/notify/ [192.168.11.84:14064]
+[mHTTP GET /api/auth/profile/ 200 [0.04, 192.168.11.84:14065][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 192.168.11.84:14066][0m
+[mHTTP GET /api/manager/partners/?date=2026-09-17 200 [0.19, 192.168.11.84:20689][0m
+[mHTTP GET /api/manager/requests/?date=2026-09-17 200 [0.23, 192.168.11.84:20688][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-17&source=MEMBERSHIP 200 [0.28, 192.168.11.84:37911][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-17&source=DONATION 200 [0.28, 192.168.11.84:14067][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-17&category=OUTWARD 200 [0.18, 192.168.11.84:20691][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-17&source=INWARD 200 [0.19, 192.168.11.84:20690][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-17&category=PURCHASE 200 [0.12, 192.168.11.84:63353][0m
+[mHTTP GET /api/manager/partners/?date=2026-09-17 200 [0.11, 192.168.11.84:22725][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-17&source=MEMBERSHIP 200 [0.11, 192.168.11.84:50157][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-17&source=DONATION 200 [0.13, 192.168.11.84:26380][0m
+[mHTTP GET /api/manager/requests/?date=2026-09-17 200 [0.14, 192.168.11.84:22726][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-17&category=OUTWARD 200 [0.11, 192.168.11.84:23206][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-17&source=INWARD 200 [0.07, 192.168.11.84:45028][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-17&category=PURCHASE 200 [0.07, 192.168.11.84:10754][0m
+[mHTTP GET /api/core/events/?date=2026-09-17 200 [1.22, 192.168.11.84:18502][0m
+[mHTTP GET /api/core/events/?date=2026-09-17 200 [0.04, 192.168.11.84:28413][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.06, 192.168.11.84:64666][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.05, 192.168.11.84:43580][0m
+WebSocket DISCONNECT /ws/notify/ [192.168.11.84:14064]
+WebSocket HANDSHAKING /ws/notify/ [192.168.11.84:63425]
+WebSocket CONNECT /ws/notify/ [192.168.11.84:63425]
+WebSocket DISCONNECT /ws/notify/ [192.168.11.84:63425]
+WebSocket HANDSHAKING /ws/notify/ [192.168.11.84:1682]
+[mHTTP GET /api/core/features/ 200 [0.04, 192.168.11.84:63427][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 192.168.11.84:63426][0m
+WebSocket CONNECT /ws/notify/ [192.168.11.84:1682]
+[mHTTP GET /api/core/features/ 200 [0.05, 192.168.11.84:1683][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 192.168.11.84:1684][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.06, 192.168.11.84:1685][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.05, 192.168.11.84:1686][0m
+[mHTTP GET /api/manager/requests/?date=2026-09-17 200 [0.11, 192.168.11.84:1407][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-17&source=MEMBERSHIP 200 [0.11, 192.168.11.84:44152][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-17&source=INWARD 200 [0.12, 192.168.11.84:1409][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-17&category=OUTWARD 200 [0.12, 192.168.11.84:1410][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-17&source=DONATION 200 [0.14, 192.168.11.84:12356][0m
+[mHTTP GET /api/manager/partners/?date=2026-09-17 200 [0.15, 192.168.11.84:1408][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-17&category=PURCHASE 200 [0.16, 192.168.11.84:48969][0m
+[mHTTP GET /api/core/events/?date=2026-09-17 200 [0.17, 192.168.11.84:35514][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-17&source=MEMBERSHIP 200 [0.15, 192.168.11.84:12328][0m
+[mHTTP GET /api/manager/requests/?date=2026-09-17 200 [0.16, 192.168.11.84:65159][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-17&source=INWARD 200 [0.16, 192.168.11.84:12329][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-17&source=DONATION 200 [0.13, 192.168.11.84:1348][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-17&category=PURCHASE 200 [0.07, 192.168.11.84:9691][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-17&category=OUTWARD 200 [0.08, 192.168.11.84:1258][0m
+[mHTTP GET /api/core/events/?date=2026-09-17 200 [0.07, 192.168.11.84:14744][0m
+[mHTTP GET /api/manager/partners/?date=2026-09-17 200 [0.08, 192.168.11.84:9690][0m
+WebSocket DISCONNECT /ws/notify/ [192.168.11.84:1682]
+WebSocket HANDSHAKING /ws/notify/ [192.168.11.84:23438]
+WebSocket REJECT /ws/notify/ [192.168.11.84:23438]
+WebSocket DISCONNECT /ws/notify/ [192.168.11.84:23438]
+WebSocket HANDSHAKING /ws/notify/ [192.168.11.84:7801]
+WebSocket REJECT /ws/notify/ [192.168.11.84:7801]
+WebSocket DISCONNECT /ws/notify/ [192.168.11.84:7801]
+Unauthorized: /api/accounts/income/
+Unauthorized: /api/accounts/income/
+Unauthorized: /api/accounts/income/
+Unauthorized: /api/manager/requests/
+Unauthorized: /api/manager/partners/
+Unauthorized: /api/accounts/expenses/
+[31;1mHTTP GET /api/accounts/income/?date=2026-09-17&source=DONATION 401 [0.06, 192.168.11.84:23439][0m
+[31;1mHTTP GET /api/accounts/income/?date=2026-09-17&source=MEMBERSHIP 401 [0.05, 192.168.11.84:23440][0m
+[31;1mHTTP GET /api/accounts/income/?date=2026-09-17&source=INWARD 401 [0.05, 192.168.11.84:23443][0m
+[31;1mHTTP GET /api/manager/requests/?date=2026-09-17 401 [0.06, 192.168.11.84:23441][0m
+[31;1mHTTP GET /api/manager/partners/?date=2026-09-17 401 [0.05, 192.168.11.84:23442][0m
+[31;1mHTTP GET /api/accounts/expenses/?date=2026-09-17&category=OUTWARD 401 [0.06, 192.168.11.84:23444][0m
+Unauthorized: /api/accounts/expenses/
+Unauthorized: /api/core/events/
+[31;1mHTTP GET /api/accounts/expenses/?date=2026-09-17&category=PURCHASE 401 [0.02, 192.168.11.84:27199][0m
+[31;1mHTTP GET /api/core/events/?date=2026-09-17 401 [0.02, 192.168.11.84:27200][0m
+Unauthorized: /api/auth/profile/
+Unauthorized: /api/core/features/
+Unauthorized: /api/accounts/income/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.02, 192.168.11.84:16433][0m
+Unauthorized: /api/accounts/income/
+[31;1mHTTP GET /api/core/features/ 401 [0.02, 192.168.11.84:16434][0m
+[31;1mHTTP GET /api/accounts/income/?date=2026-09-17&source=MEMBERSHIP 401 [0.02, 192.168.11.84:16436][0m
+[31;1mHTTP GET /api/accounts/income/?date=2026-09-17&source=DONATION 401 [0.02, 192.168.11.84:16435][0m
+Unauthorized: /api/accounts/expenses/
+Unauthorized: /api/accounts/income/
+[31;1mHTTP GET /api/accounts/expenses/?date=2026-09-17&category=OUTWARD 401 [0.07, 192.168.11.84:46130][0m
+Unauthorized: /api/manager/partners/
+[31;1mHTTP GET /api/accounts/income/?date=2026-09-17&source=INWARD 401 [0.08, 192.168.11.84:3843][0m
+[31;1mHTTP GET /api/manager/partners/?date=2026-09-17 401 [0.09, 192.168.11.84:3844][0m
+Unauthorized: /api/manager/requests/
+Unauthorized: /api/accounts/expenses/
+[31;1mHTTP GET /api/manager/requests/?date=2026-09-17 401 [0.08, 192.168.11.84:43520][0m
+[31;1mHTTP GET /api/accounts/expenses/?date=2026-09-17&category=PURCHASE 401 [0.08, 192.168.11.84:43522][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.09, 192.168.11.84:43521][0m
+Unauthorized: /api/auth/profile/
+Unauthorized: /api/core/features/
+Unauthorized: /api/core/events/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.03, 192.168.11.84:59831][0m
+[31;1mHTTP GET /api/core/features/ 401 [0.03, 192.168.11.84:59832][0m
+[31;1mHTTP GET /api/core/events/?date=2026-09-17 401 [0.04, 192.168.11.84:48286][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-17&source=MEMBERSHIP 200 [0.04, 192.168.11.84:13089][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-17&source=DONATION 200 [0.04, 192.168.11.84:13088][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-17&source=INWARD 200 [0.04, 192.168.11.84:13090][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-17&category=OUTWARD 200 [0.05, 192.168.11.84:37706][0m
+[mHTTP GET /api/manager/partners/?date=2026-09-17 200 [0.05, 192.168.11.84:57191][0m
+[mHTTP GET /api/manager/requests/?date=2026-09-17 200 [0.05, 192.168.11.84:51663][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 192.168.11.84:48885][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-17&category=PURCHASE 200 [0.06, 192.168.11.84:52317][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.06, 192.168.11.84:48886][0m
+[mHTTP GET /api/core/events/?date=2026-09-17 200 [0.04, 192.168.11.84:8083][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 192.168.11.84:8084][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-17&source=MEMBERSHIP 200 [0.05, 192.168.11.84:22613][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-17&source=INWARD 200 [0.04, 192.168.11.84:16419][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-17&category=OUTWARD 200 [0.04, 192.168.11.84:52884][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-17&source=DONATION 200 [0.04, 192.168.11.84:16420][0m
+[mHTTP GET /api/manager/partners/?date=2026-09-17 200 [0.04, 192.168.11.84:1908][0m
+[mHTTP GET /api/manager/requests/?date=2026-09-17 200 [0.04, 192.168.11.84:41277][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-17&category=PURCHASE 200 [0.05, 192.168.11.84:29639][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 192.168.11.84:49031][0m
+[mHTTP GET /api/core/events/?date=2026-09-17 200 [0.04, 192.168.11.84:32590][0m
+[mHTTP GET /api/core/features/ 200 [0.03, 192.168.11.84:32591][0m
+WebSocket HANDSHAKING /ws/notify/ [192.168.11.84:24602]
+WebSocket CONNECT /ws/notify/ [192.168.11.84:24602]
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.02, 192.168.11.84:12065][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.02, 192.168.11.84:51202][0m
