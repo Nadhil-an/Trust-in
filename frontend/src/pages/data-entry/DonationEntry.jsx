@@ -82,6 +82,7 @@ export default function DonationEntry() {
     if (!form.amount || parseFloat(form.amount) <= 0) return toast.error('Enter a valid amount')
     if (form.phone && form.phone.length !== 10) return toast.error('Enter a valid 10-digit phone number')
     if (form.staff_id && !form.donor_name) return toast.error('Enter a donor name')
+    if (!form.staff_id && !form.voucher_id) return toast.error('Please assign a voucher ID for this office donation')
     setSaving(true)
     try {
       const fd = new FormData()
