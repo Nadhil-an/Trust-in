@@ -13,6 +13,12 @@ const ENTRIES = [
     color: '#EC4899', bg: '#FDF2F8', border: '#FBCFE8',
   },
   {
+    icon: '📖', label: 'Donation Registry',
+    desc: 'Fast bulk-entry system for ledger data',
+    path: '/slt/entry/donation-registry',
+    color: '#8B5CF6', bg: '#F5F3FF', border: '#DDD6FE',
+  },
+  {
     icon: '🪪', label: 'Membership Entry',
     desc: 'Record membership fee payments',
     path: '/slt/entry/membership',

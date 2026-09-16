@@ -56,6 +56,7 @@ import PromotorRegistry from './pages/data-entry/PromotorRegistry'
 import OutwardEntry from './pages/data-entry/OutwardEntry'
 import PurchaseEntry from './pages/data-entry/PurchaseEntry'
 import DonationEntry from './pages/data-entry/DonationEntry'
+import DonationRegistry from './pages/data-entry/DonationRegistry'
 import MembershipEntry from './pages/data-entry/MembershipEntry'
 import PartnersEntry from './pages/data-entry/PartnersEntry'
 import MaterialInward from './pages/data-entry/MaterialInward'
@@ -212,6 +213,7 @@ export default function App() {
           <Route path="slt/entry/verification" element={<ProtectedRoute featureKey="promoters_verification"><VerificationDashboard /></ProtectedRoute>} />
           <Route path="slt/entry/promoters-registry" element={<ProtectedRoute featureKey="promoters_registry"><PromotorRegistry /></ProtectedRoute>} />
           <Route path="slt/entry/donation"           element={<ProtectedRoute featureKey="donation_entry"><DonationEntry /></ProtectedRoute>} />
+          <Route path="slt/entry/donation-registry"  element={<ProtectedRoute featureKey="donation_registry"><DonationRegistry /></ProtectedRoute>} />
           <Route path="slt/entry/membership"         element={<ProtectedRoute featureKey="membership_entry"><MembershipEntry /></ProtectedRoute>} />
           <Route path="slt/entry/assessment"         element={<ProtectedRoute roles={['DATA_ENTRY', 'MANAGER', 'ADMIN']}><Requests /></ProtectedRoute>} />
           <Route path="slt/entry/partners"           element={<ProtectedRoute featureKey="partners_entry"><PartnersEntry /></ProtectedRoute>} />

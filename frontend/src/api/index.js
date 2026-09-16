@@ -160,6 +160,8 @@ export const accountsApi = {
     list: (params) => api.get('/accounts/expenses/', { params }),
     create: (data) => api.post('/accounts/expenses/', data),
     get: (id) => api.get(`/accounts/expenses/${id}/`),
+    update: (id, data) => api.patch(`/accounts/expenses/${id}/`, data),
+    delete: (id) => api.delete(`/accounts/expenses/${id}/`),
   },
   cheques: {
     list: (params) => api.get('/accounts/cheques/', { params }),

@@ -459,6 +459,34 @@ class ExpenseDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Expense.objects.all()
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
+    def perform_update(self, serializer):
+        old_status = self.get_object().status
+        expense = serializer.save()
+        
+        if old_status != 'CANCELLED' and expense.status == 'CANCELLED':
+            Transaction.objects.filter(reference_id=expense.expense_id, transaction_type='EXPENSE').delete()
+            
+        elif old_status == 'CANCELLED' and expense.status == 'COMPLETED':
+            Transaction.objects.create(
+                date=expense.date, transaction_type='EXPENSE', category=expense.category,
+                description=f"Expense: {expense.payee} — {expense.purpose}",
+                account_type=expense.account_type, debit=expense.amount,
+                payment_method=expense.payment_method, reference_id=expense.expense_id,
+                created_by=self.request.user
+            )
+            
+        elif expense.status == 'COMPLETED':
+            Transaction.objects.filter(reference_id=expense.expense_id, transaction_type='EXPENSE').update(
+                date=expense.date, category=expense.category,
+                description=f"Expense: {expense.payee} — {expense.purpose}",
+                account_type=expense.account_type, debit=expense.amount,
+                payment_method=expense.payment_method
+            )
+
+    def perform_destroy(self, instance):
+        Transaction.objects.filter(reference_id=instance.expense_id, transaction_type='EXPENSE').delete()
+        instance.delete()
+
 
 # ── Cheques ───────────────────────────────────────────────────────
 

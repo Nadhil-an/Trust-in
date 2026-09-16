@@ -15,6 +15,8 @@ export default function ExpenseList() {
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState({ category:"", date:format(new Date(),"yyyy-MM-dd"), amount:"", payee:"", purpose:"", payment_method:"CASH", account_type:"CASH", expense_id:"", remarks:"" })
   const [saving, setSaving] = useState(false)
+  const [editId, setEditId] = useState(null)
+  const [processingId, setProcessingId] = useState(null)
 
   const handleAddExpense = () => {
     let nextId = 1;
@@ -28,7 +30,14 @@ export default function ExpenseList() {
     }
     const nextIdStr = nextId.toString().padStart(2, '0');
     setForm({ category:"", date:format(new Date(),"yyyy-MM-dd"), amount:"", payee:"", purpose:"", payment_method:"CASH", account_type:"CASH", expense_id: nextIdStr, remarks:"" });
+    setEditId(null);
     setShowModal(true);
+  }
+
+  const handleEdit = (expense) => {
+    setForm({ ...expense })
+    setEditId(expense.id)
+    setShowModal(true)
   }
 
   const load = useCallback(async () => {
@@ -59,11 +68,52 @@ export default function ExpenseList() {
     if (!isPositiveNumber(form.amount)) return toast.error("Amount must be a positive number");
     
     setSaving(true)
-    try { await accountsApi.expenses.create(form); toast.success("Expense recorded."); setShowModal(false); load() }
+    try { 
+      if (editId) {
+        await accountsApi.expenses.update(editId, form)
+        toast.success("Expense updated.")
+      } else {
+        await accountsApi.expenses.create(form)
+        toast.success("Expense recorded.")
+      }
+      setShowModal(false); 
+      load() 
+    }
     catch (err) { toast.error(err.response?.data?.detail || "Save failed") } finally { setSaving(false) }
   }
 
-  const total = items.reduce((s,i)=>s+parseFloat(i.amount||0),0)
+  const handleSoftDelete = async (expense) => {
+    setProcessingId(expense.id)
+    try {
+      await accountsApi.expenses.update(expense.id, { status: 'CANCELLED' })
+      toast.success("Expense cancelled (soft deleted)")
+      load()
+    } catch (err) { toast.error("Failed to cancel expense") }
+    finally { setProcessingId(null) }
+  }
+
+  const handleRestore = async (expense) => {
+    setProcessingId(expense.id)
+    try {
+      await accountsApi.expenses.update(expense.id, { status: 'COMPLETED' })
+      toast.success("Expense restored")
+      load()
+    } catch (err) { toast.error("Failed to restore expense") }
+    finally { setProcessingId(null) }
+  }
+
+  const handleHardDelete = async (expense) => {
+    if (!window.confirm("Are you sure you want to permanently delete this expense? This cannot be undone.")) return;
+    setProcessingId(expense.id)
+    try {
+      await accountsApi.expenses.delete(expense.id)
+      toast.success("Expense permanently deleted")
+      load()
+    } catch (err) { toast.error("Failed to delete expense") }
+    finally { setProcessingId(null) }
+  }
+
+  const total = items.filter(i => i.status !== 'CANCELLED').reduce((s,i)=>s+parseFloat(i.amount||0),0)
 
   return (
     <div>
@@ -84,18 +134,31 @@ export default function ExpenseList() {
         {loading ? <LoadingState /> : (
           <div className="table-wrap">
             <table>
-              <thead><tr><th>Expense ID</th><th>Date</th><th>Payee</th><th>Category</th><th>Amount</th><th>Method</th><th>Status</th></tr></thead>
+              <thead><tr><th>Expense ID</th><th>Date</th><th>Payee</th><th>Category</th><th>Amount</th><th>Method</th><th>Status</th><th>Actions</th></tr></thead>
               <tbody>
-                {items.length===0 ? <tr><td colSpan={7}><EmptyState icon="📤" title="No expense records" /></td></tr>
+                {items.length===0 ? <tr><td colSpan={8}><EmptyState icon="📤" title="No expense records" /></td></tr>
                   : items.map(e=>(
-                  <tr key={e.id}>
-                    <td className="td-mono">{e.expense_id}</td>
-                    <td>{e.date ? format(new Date(e.date),"dd MMM yyyy") : "-"}</td>
-                    <td>{e.payee}</td>
-                    <td><span className="badge badge-blue">{e.category}</span></td>
-                    <td><AmountDisplay amount={e.amount} type="debit" /></td>
-                    <td><span className="badge badge-gray">{e.payment_method}</span></td>
-                    <td><span className={`badge ${e.status==="COMPLETED"?"badge-green":e.status==="PENDING"?"badge-yellow":"badge-gray"}`}>{e.status}</span></td>
+                  <tr key={e.id} style={{ background: e.status === 'CANCELLED' ? '#f8fafc' : 'inherit', transition: 'all 0.3s ease' }}>
+                    <td className="td-mono" style={e.status === 'CANCELLED' ? { opacity: 0.4, filter: 'grayscale(100%)' } : {}}>{e.expense_id}</td>
+                    <td style={e.status === 'CANCELLED' ? { opacity: 0.4, filter: 'grayscale(100%)' } : {}}>{e.date ? format(new Date(e.date),"dd MMM yyyy") : "-"}</td>
+                    <td style={e.status === 'CANCELLED' ? { opacity: 0.4, filter: 'grayscale(100%)' } : {}}>{e.payee}</td>
+                    <td style={e.status === 'CANCELLED' ? { opacity: 0.4, filter: 'grayscale(100%)' } : {}}><span className="badge badge-blue">{e.category}</span></td>
+                    <td style={e.status === 'CANCELLED' ? { opacity: 0.4, filter: 'grayscale(100%)' } : {}}><AmountDisplay amount={e.amount} type="debit" /></td>
+                    <td style={e.status === 'CANCELLED' ? { opacity: 0.4, filter: 'grayscale(100%)' } : {}}><span className="badge badge-gray">{e.payment_method}</span></td>
+                    <td style={e.status === 'CANCELLED' ? { opacity: 0.4, filter: 'grayscale(100%)' } : {}}><span className={`badge ${e.status==="COMPLETED"?"badge-green":e.status==="PENDING"?"badge-yellow":"badge-gray"}`}>{e.status}</span></td>
+                    <td>
+                      {e.status !== 'CANCELLED' ? (
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          <button className="btn btn-sm" style={{ background: '#f1f5f9', color: '#64748b', padding: '4px 8px' }} onClick={() => handleEdit(e)} title="Edit">✏️</button>
+                          <button className="btn btn-sm" style={{ background: '#fef2f2', color: '#ef4444', padding: '4px 8px' }} onClick={() => handleSoftDelete(e)} disabled={processingId === e.id} title="Delete">🗑️</button>
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          <button className="btn btn-sm" style={{ background: '#ecfdf5', color: '#10b981', padding: '4px 8px', border: '1px solid #10b981' }} onClick={() => handleRestore(e)} disabled={processingId === e.id} title="Restore">♻️</button>
+                          <button className="btn btn-sm" style={{ background: '#fef2f2', color: '#ef4444', padding: '4px 8px', border: '1px solid #ef4444' }} onClick={() => handleHardDelete(e)} disabled={processingId === e.id} title="Delete Permanently">❌</button>
+                        </div>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -108,7 +171,7 @@ export default function ExpenseList() {
         </div>
       </div>
       {showModal && (
-        <Modal isOpen={true} onClose={()=>setShowModal(false)} title="Add Expense Record" size="modal-lg"
+        <Modal isOpen={true} onClose={()=>setShowModal(false)} title={editId ? "Edit Expense Record" : "Add Expense Record"} size="modal-lg"
           footer={<><button className="btn btn-secondary" onClick={()=>setShowModal(false)}>Cancel</button>
             <button className="btn btn-primary" form="expense-form" type="submit" disabled={saving}>{saving?"Saving...":"Save"}</button></>}>
           <form id="expense-form" onSubmit={handleSave}>

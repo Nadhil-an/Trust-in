@@ -82,7 +82,7 @@ export default function DonationEntry() {
     if (!form.amount || parseFloat(form.amount) <= 0) return toast.error('Enter a valid amount')
     if (form.phone && form.phone.length !== 10) return toast.error('Enter a valid 10-digit phone number')
     if (form.staff_id && !form.donor_name) return toast.error('Enter a donor name')
-    if (!form.staff_id && !form.voucher_id) return toast.error('Please assign a voucher ID for this office donation')
+    if (!form.staff_id && !form.voucher_id) return toast.error('Please enter a voucher ID or select NULL')
     setSaving(true)
     try {
       const fd = new FormData()
@@ -235,17 +235,44 @@ export default function DonationEntry() {
                 {voucherLoading ? (
                   <div style={{ fontSize: 13, color: '#64748b' }}>Loading...</div>
                 ) : (
-                  <input
-                    type="number"
-                    min="1"
-                    value={form.voucher_id}
-                    onChange={e => setF('voucher_id', e.target.value)}
-                    style={{
-                      fontSize: 24, fontWeight: 800, color: '#0f172a', background: 'transparent',
-                      border: 'none', outline: 'none', width: 120, padding: 0,
-                    }}
-                    placeholder="—"
-                  />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <input
+                      type="text"
+                      value={form.voucher_id}
+                      onChange={e => setF('voucher_id', e.target.value)}
+                      style={{
+                        fontSize: 24, fontWeight: 800, color: form.voucher_id === 'NULL' ? '#94a3b8' : '#0f172a', background: 'transparent',
+                        border: 'none', outline: 'none', width: 120, padding: 0, textTransform: 'uppercase'
+                      }}
+                      placeholder="—"
+                    />
+                    {!form.staff_id && form.voucher_id !== 'NULL' && (
+                      <button
+                        type="button"
+                        onClick={() => setF('voucher_id', 'NULL')}
+                        style={{
+                          background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: 6,
+                          padding: '4px 10px', fontSize: 11, fontWeight: 700, color: '#64748b',
+                          cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap'
+                        }}
+                      >
+                        Set NULL
+                      </button>
+                    )}
+                    {!form.staff_id && form.voucher_id === 'NULL' && (
+                      <button
+                        type="button"
+                        onClick={() => setF('voucher_id', '')}
+                        style={{
+                          background: 'transparent', border: 'none', padding: '4px', fontSize: 16,
+                          cursor: 'pointer', color: '#ef4444'
+                        }}
+                        title="Clear NULL"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
