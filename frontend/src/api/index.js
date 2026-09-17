@@ -154,6 +154,7 @@ export const accountsApi = {
     list: (params) => api.get('/accounts/income/', { params }),
     create: (data) => api.post('/accounts/income/', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
     get: (id) => api.get(`/accounts/income/${id}/`),
+    update: (id, data) => api.patch(`/accounts/income/${id}/`, data),
     delete: (id) => api.delete(`/accounts/income/${id}/`),
   },
   expenses: {

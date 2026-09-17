@@ -158,7 +158,9 @@ export default function AppLayout() {
     toast.success('Logged out successfully.')
   }
 
-  const pageTitle = navItems.find(n => location.pathname.startsWith(n.path))?.label || 'Dashboard'
+  const pageTitle = [...navItems]
+    .sort((a, b) => b.path.length - a.path.length)
+    .find(n => location.pathname === n.path || location.pathname.startsWith(n.path + '/'))?.label || 'Dashboard'
 
   return (
     <div className="app-shell">

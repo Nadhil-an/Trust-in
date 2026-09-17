@@ -36,7 +36,7 @@ rmdir /s /q node_modules & del /f /q package-lock.json & npm install --legacy-pe
 
 STEP 2 - Start Expo (run every time):
 cd mobile
-set REACT_NATIVE_PACKAGER_HOSTNAME=10.29.3.21 && npx expo start -c
+set REACT_NATIVE_PACKAGER_HOSTNAME=10.196.205.21 && npx expo start -c
 
 =========================================================
   PRODUCTION NOTES
@@ -54,3 +54,8 @@ set REACT_NATIVE_PACKAGER_HOSTNAME=10.29.3.21 && npx expo start -c
 3. If WhatsApp disconnects and needs re-login:
    - Open browser: http://localhost:3001/qr
    - Scan QR with Trust phone
+
+
+
+
+pull it mege it into main and it pull thr code from the  main branch
