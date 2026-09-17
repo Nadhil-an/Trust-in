@@ -256,8 +256,18 @@ class IncomeListCreateView(generics.ListCreateAPIView):
         else:
             creator = self.request.user
 
-        # Auto-rollover if today's registry is already closed
-        effective_date = date.today()
+        # Use the submitted date if provided, otherwise use today's date
+        submitted_date_str = self.request.data.get('date')
+        if submitted_date_str:
+            try:
+                from datetime import datetime
+                effective_date = datetime.strptime(submitted_date_str, '%Y-%m-%d').date()
+            except (ValueError, TypeError):
+                effective_date = date.today()
+        else:
+            effective_date = date.today()
+
+        # Auto-rollover if that date's registry is already closed
         registry = PromoterRegistryEntry.objects.filter(promoter=creator, date=effective_date).first()
         if registry and registry.is_closed:
             effective_date = effective_date + timedelta(days=1)
