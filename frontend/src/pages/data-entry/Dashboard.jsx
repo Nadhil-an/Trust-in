@@ -53,6 +53,7 @@ const ENTRIES = [
     desc: 'Fast bulk-entry system for ledger data',
     path: '/slt/entry/donation-registry',
     color: '#8B5CF6', bg: '#F5F3FF', border: '#DDD6FE',
+    noStats: true,
   },
   {
     icon: '📅', label: 'Event Entry',
@@ -99,7 +100,7 @@ function EntryCard({ entry, onClick, stat }) {
       
       {/* Stat Block */}
       <div style={{ position: 'absolute', top: 24, right: 24, textAlign: 'right' }}>
-        {stat ? (
+        {entry.noStats ? null : stat ? (
           <>
             <div style={{ fontSize: 16, fontWeight: 800, color: '#111827' }}>
               {stat.hasAmount ? formatINR(stat.amount) : stat.count}

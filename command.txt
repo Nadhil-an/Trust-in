@@ -4,7 +4,7 @@
 
 == STEP 1 - Django Backend ==
 cd backend
-python manage.py runserver 0.0.0.0:8000
+
 
 == STEP 2 - WhatsApp Gateway (PM2 - Auto-restarts if crashed) ==
 (AUTO-STARTS ON PC LOGIN via Windows Startup folder)
