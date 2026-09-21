@@ -212931,3 +212931,12 @@ WebSocket CONNECT /ws/notify/ [10.196.205.21:34277]
 [mHTTP GET /api/accounts/income/?source=DONATION&date=2026-09-18 200 [0.03, 10.196.205.21:8196][0m
 [mHTTP GET /api/accounts/income/?source=DONATION&date=2026-09-17 200 [0.04, 10.196.205.21:54195][0m
 [mHTTP GET /api/accounts/income/?source=DONATION&date=2026-09-18 200 [0.04, 10.196.205.21:15593][0m
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\sreelakshmi_trust\settings.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
