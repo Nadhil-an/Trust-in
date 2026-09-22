@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
+import { Link } from 'react-router-dom'
 import { accountsApi, cashierApi } from '../../api'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
+import { Modal } from '../../components/shared'
+import PaymentMethodSelector from '../../components/PaymentMethodSelector'
+import { isValidPhone, isPositiveNumber } from '../../utils/validators'
 
 const INR = (n) =>
   '₹' + Math.abs(Number(n) || 0).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
@@ -47,16 +51,60 @@ export default function DaySheet() {
   const [credits, setCredits] = useState([])
   const [closing, setClosing] = useState({ cashInHand: '', bankBalance: '', sheetClosing: '' })
 
+  const [showExpenseModal, setShowExpenseModal] = useState(false)
+  const [expenseForm, setExpenseForm] = useState({ category:"", date:format(new Date(),"yyyy-MM-dd"), amount:"", payee:"", purpose:"", payment_method:"CASH", account_type:"CASH", expense_id:"", remarks:"" })
+  const [expenseSaving, setExpenseSaving] = useState(false)
 
-  const load = useCallback(async () => {
-    setLoading(true)
+  const [showIncomeModal, setShowIncomeModal] = useState(false)
+  const [incomeForm, setIncomeForm] = useState({ source:"", date:format(new Date(),"yyyy-MM-dd"), amount:"", donor_name:"", phone:"", address:"", purpose:"", payment_method:"CASH", account_type:"CASH", reference_number:"", remarks:"" })
+  const [incomeSaving, setIncomeSaving] = useState(false)
+
+  const handleOpenExpense = () => {
+    setExpenseForm({ category:"", date:date, amount:"", payee:"", purpose:"", payment_method:"CASH", account_type:"CASH", expense_id: "", remarks:"" })
+    setShowExpenseModal(true)
+  }
+
+  const handleSaveExpense = async (e) => {
+    e.preventDefault();
+    if (!isPositiveNumber(expenseForm.amount)) return toast.error("Amount must be a positive number");
+    setExpenseSaving(true)
+    try { 
+      await accountsApi.expenses.create(expenseForm)
+      toast.success("Expense recorded.")
+      setShowExpenseModal(false); 
+      load() 
+    }
+    catch (err) { toast.error(err.response?.data?.detail || "Save failed") } finally { setExpenseSaving(false) }
+  }
+
+  const handleOpenIncome = () => {
+    setIncomeForm({ source:"", date:date, amount:"", donor_name:"", phone:"", address:"", purpose:"", payment_method:"CASH", account_type:"CASH", reference_number:"", remarks:"" })
+    setShowIncomeModal(true)
+  }
+
+  const handleSaveIncome = async (e) => {
+    e.preventDefault();
+    if (incomeForm.phone && !isValidPhone(incomeForm.phone)) return toast.error("Enter a valid 10-digit phone number");
+    if (!isPositiveNumber(incomeForm.amount)) return toast.error("Amount must be a positive number");
+    setIncomeSaving(true)
+    try { 
+      await accountsApi.income.create(incomeForm); 
+      toast.success("Income recorded."); 
+      setShowIncomeModal(false); 
+      load() 
+    }
+    catch (err) { toast.error(err.response?.data?.detail || "Save failed") } finally { setIncomeSaving(false) }
+  }
+
+  const load = useCallback(async (isBackground = false) => {
+    if (!isBackground) setLoading(true)
     try {
       const res = await accountsApi.daySheet({ date })
       setData(res.data)
     } catch (e) {
       toast.error('Failed to load Day Sheet')
     } finally {
-      setLoading(false)
+      if (!isBackground) setLoading(false)
     }
   }, [date])
 
@@ -72,16 +120,6 @@ export default function DaySheet() {
     // Build debit rows — always from server data
     const dRows = savedDebits.map(r => ({ ...r, amount: r.amount != null ? r.amount : '' }))
     while (dRows.length < maxRows) dRows.push({ particular: '', amount: '', sc: 'CASH' })
-
-    // Enforce fixed labels for the first 6 system rows
-    if (dRows.length >= 6) {
-      if (!dRows[0].particular) dRows[0].particular = 'OB CASH'
-      if (!dRows[1].particular) dRows[1].particular = 'OB BANK'
-      if (!dRows[2].particular) dRows[2].particular = 'DONATION'
-      if (!dRows[3].particular) dRows[3].particular = 'BY CASH'
-      if (!dRows[4].particular) dRows[4].particular = 'BY BANK'
-      if (!dRows[5].particular) dRows[5].particular = 'TOTAL'
-    }
     setDebits(dRows)
 
     // Build credit rows — always from server data
@@ -229,7 +267,7 @@ export default function DaySheet() {
     }, 250)
   }
 
-  const handleSave = async () => {
+  const handleSave = async (isBackground = false) => {
     try {
       await cashierApi.cashClosing.create({
         date,
@@ -238,46 +276,11 @@ export default function DaySheet() {
         debit_rows: debits,
         credit_rows: credits
       })
-      toast.success("Closing balances saved successfully!")
-      load()
+      if (!isBackground) toast.success("Closing balances saved successfully!")
+      load(true)
     } catch (e) {
-      toast.error('Failed to save data')
+      if (!isBackground) toast.error('Failed to save data')
     }
-  }
-
-  const updateRow = (type, index, field, value) => {
-    if (type === 'debit') {
-      const newRows = [...debits]
-      newRows[index] = { ...newRows[index], [field]: value }
-      setDebits(newRows)
-    } else {
-      const newRows = [...credits]
-      newRows[index] = { ...newRows[index], [field]: value }
-      setCredits(newRows)
-    }
-  }
-
-  const handleEnter = (e, prefix, currentIndex) => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      for (let j = currentIndex + 1; j < debits.length; j++) {
-        const el = document.getElementById(`${prefix}-${j}`)
-        if (el) {
-          el.focus()
-          break
-        }
-      }
-    }
-  }
-
-  const addRow = () => {
-    setDebits([...debits, { particular: '', amount: '', sc: 'CASH' }])
-    setCredits([...credits, { particular: '', amount: '', sc: 'CASH' }])
-  }
-
-  const removeRow = (index) => {
-    setDebits(debits.filter((_, i) => i !== index))
-    setCredits(credits.filter((_, i) => i !== index))
   }
 
   const totalCreditSum = debits.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0)
@@ -338,6 +341,8 @@ export default function DaySheet() {
               style={{ border: 'none', outline: 'none', fontSize: 13, fontWeight: 600, color: 'var(--gray-800)', background: 'transparent' }}
             />
           </div>
+          <button onClick={handleOpenIncome} className="btn btn-secondary" style={{ color: 'var(--success)', fontWeight: 600 }}>+ Add Income</button>
+          <button onClick={handleOpenExpense} className="btn btn-secondary" style={{ color: 'var(--danger)', fontWeight: 600 }}>+ Add Expense</button>
           <button onClick={load} className="btn btn-secondary">↺ Refresh</button>
           <button onClick={handlePrint} className="btn btn-secondary">🖨 Print</button>
           <button onClick={handleExport} className="btn btn-secondary">⬇ Export Excel</button>
@@ -396,74 +401,55 @@ export default function DaySheet() {
                   <div style={{ display: 'grid', gridTemplateColumns: '50px 1fr 130px 90px', borderRight: '1px solid var(--gray-200)' }}>
                     <div style={{ ...SH.td, color: 'var(--gray-400)' }}></div>
                     <div style={{ ...SH.tdL }}>
-                      {d.particular === 'DONATION' || d.particular === 'TOTAL' ? (
-                        <TableInput
-                          value={d.particular}
-                          highlighted
-                          readOnly
-                          align={d.particular === 'TOTAL' ? 'right' : 'left'}
-                          onChange={() => { }}
-                        />
-                      ) : (
-                        <TableInput
-                          id={`debit-particular-${i}`}
-                          value={d.particular}
-                          onChange={val => updateRow('debit', i, 'particular', val)}
-                          onKeyDown={e => handleEnter(e, 'debit-particular', i)}
-                          placeholder="Particular"
-                        />
-                      )}
+                      <TableInput
+                        value={d.particular}
+                        onChange={(val) => {
+                          const newDebits = [...debits]
+                          newDebits[i].particular = val
+                          setDebits(newDebits)
+                        }}
+                        onBlur={() => handleSave(true)}
+                        placeholder=""
+                      />
                     </div>
                     <div style={{ ...SH.tdR }}>
-                      {d.particular === 'TOTAL' ? (
-                        <TableInput
-                          value={((Number(debits[3]?.amount) || 0) + (Number(debits[4]?.amount) || 0)).toString()}
-                          align="right"
-                          highlighted
-                          readOnly
-                          onChange={() => { }}
-                        />
-                      ) : d.particular !== 'DONATION' && (
-                        <TableInput
-                          id={`debit-amount-${i}`}
-                          type="number" align="right"
-                          value={d.amount}
-                          onChange={val => updateRow('debit', i, 'amount', val)}
-                          onKeyDown={e => handleEnter(e, 'debit-amount', i)}
-                          placeholder="0"
-                        />
-                      )}
+                      <TableInput
+                        type="number" align="right"
+                        value={d.amount}
+                        onChange={(val) => {
+                          const newDebits = [...debits]
+                          newDebits[i].amount = val
+                          setDebits(newDebits)
+                        }}
+                        onBlur={() => handleSave(true)}
+                        placeholder=""
+                      />
                     </div>
                     <div style={{ ...SH.td, padding: '4px' }}>
                       <div style={{ display: 'flex', width: '100%', gap: '4px', alignItems: 'center', justifyContent: 'flex-end' }}>
-                        {d.particular !== 'DONATION' && d.particular !== 'TOTAL' && (
+                        <div style={{ position: 'relative', width: '100%' }}>
                           <select
-                            value={d.sc}
-                            onChange={e => updateRow('debit', i, 'sc', e.target.value)}
+                            value={d.sc || 'CASH'}
+                            onChange={(e) => {
+                              const newDebits = [...debits]
+                              newDebits[i].sc = e.target.value
+                              setDebits(newDebits)
+                            }}
+                            onBlur={() => handleSave(true)}
                             style={{
                               background: d.sc === 'BANK' ? 'var(--primary-100)' : 'var(--success-light)',
                               color: d.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)',
-                              border: 'none', borderRadius: '12px', padding: '4px', fontSize: 10, fontWeight: 700,
-                              outline: 'none', cursor: 'pointer', flex: 1, textAlign: 'center'
+                              border: 'none', borderRadius: '12px', padding: '4px 16px 4px 8px', fontSize: 10, fontWeight: 700,
+                              outline: 'none', cursor: 'pointer', textAlign: 'center', appearance: 'none', width: '100%'
                             }}
                           >
                             <option value="CASH">CASH</option>
                             <option value="BANK">BANK</option>
                           </select>
-                        )}
-                        {i >= 6 && (
-                          <button
-                            onClick={() => removeRow(i)}
-                            title="Delete row"
-                            style={{
-                              background: 'var(--danger-light)', color: 'var(--danger)', border: 'none', borderRadius: '4px',
-                              width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              cursor: 'pointer', fontSize: '14px', padding: 0, flexShrink: 0
-                            }}
-                          >
-                            ×
-                          </button>
-                        )}
+                          <div style={{ position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', fontSize: '8px', color: d.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)' }}>
+                            ▼
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -471,96 +457,61 @@ export default function DaySheet() {
                   <div style={{ display: 'grid', gridTemplateColumns: '50px 1fr 130px 90px' }}>
                     <div style={{ ...SH.td, color: 'var(--gray-400)' }}></div>
                     <div style={{ ...SH.tdL }}>
-                      {c.particular === 'DONATION' || c.particular === 'TOTAL' ? (
-                        <TableInput
-                          value={c.particular}
-                          highlighted
-                          readOnly
-                          align={c.particular === 'TOTAL' ? 'right' : 'left'}
-                          onChange={() => { }}
-                        />
-                      ) : (
-                        <TableInput
-                          id={`credit-particular-${i}`}
-                          value={c.particular}
-                          onChange={val => updateRow('credit', i, 'particular', val)}
-                          onKeyDown={e => handleEnter(e, 'credit-particular', i)}
-                          placeholder="Particular"
-                        />
-                      )}
+                      <TableInput
+                        value={c.particular}
+                        onChange={(val) => {
+                          const newCredits = [...credits]
+                          newCredits[i].particular = val
+                          setCredits(newCredits)
+                        }}
+                        onBlur={() => handleSave(true)}
+                        placeholder=""
+                      />
                     </div>
                     <div style={{ ...SH.tdR }}>
-                      {c.particular === 'TOTAL' ? (
-                        <TableInput
-                          value={((Number(credits[3]?.amount) || 0) + (Number(credits[4]?.amount) || 0)).toString()}
-                          align="right"
-                          highlighted
-                          readOnly
-                          onChange={() => { }}
-                        />
-                      ) : c.particular !== 'DONATION' && (
-                        <TableInput
-                          id={`credit-amount-${i}`}
-                          type="number" align="right"
-                          value={c.amount}
-                          onChange={val => updateRow('credit', i, 'amount', val)}
-                          onKeyDown={e => handleEnter(e, 'credit-amount', i)}
-                          placeholder="0"
-                        />
-                      )}
+                      <TableInput
+                        type="number" align="right"
+                        value={c.amount}
+                        onChange={(val) => {
+                          const newCredits = [...credits]
+                          newCredits[i].amount = val
+                          setCredits(newCredits)
+                        }}
+                        onBlur={() => handleSave(true)}
+                        placeholder=""
+                      />
                     </div>
                     <div style={{ ...SH.td, padding: '4px' }}>
                       <div style={{ display: 'flex', width: '100%', gap: '4px', alignItems: 'center', justifyContent: 'flex-end' }}>
-                        {c.particular !== 'DONATION' && c.particular !== 'TOTAL' && (
+                        <div style={{ position: 'relative', width: '100%' }}>
                           <select
-                            value={c.sc}
-                            onChange={e => updateRow('credit', i, 'sc', e.target.value)}
+                            value={c.sc || 'CASH'}
+                            onChange={(e) => {
+                              const newCredits = [...credits]
+                              newCredits[i].sc = e.target.value
+                              setCredits(newCredits)
+                            }}
+                            onBlur={() => handleSave(true)}
                             style={{
                               background: c.sc === 'BANK' ? 'var(--primary-100)' : 'var(--success-light)',
                               color: c.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)',
-                              border: 'none', borderRadius: '12px', padding: '4px', fontSize: 10, fontWeight: 700,
-                              outline: 'none', cursor: 'pointer', flex: 1, textAlign: 'center'
+                              border: 'none', borderRadius: '12px', padding: '4px 16px 4px 8px', fontSize: 10, fontWeight: 700,
+                              outline: 'none', cursor: 'pointer', textAlign: 'center', appearance: 'none', width: '100%'
                             }}
                           >
                             <option value="CASH">CASH</option>
                             <option value="BANK">BANK</option>
                           </select>
-                        )}
-                        {i >= 6 && (
-                          <button
-                            onClick={() => removeRow(i)}
-                            title="Delete row"
-                            style={{
-                              background: 'var(--danger-light)', color: 'var(--danger)', border: 'none', borderRadius: '4px',
-                              width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              cursor: 'pointer', fontSize: '14px', padding: 0, flexShrink: 0
-                            }}
-                          >
-                            ×
-                          </button>
-                        )}
+                          <div style={{ position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', fontSize: '8px', color: c.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)' }}>
+                            ▼
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               )
             })}
-
-            {/* Add Row Button */}
-            <div style={{ padding: '12px', display: 'flex', justifyContent: 'center', background: 'var(--white)', borderTop: '1px solid var(--gray-200)' }}>
-              <button
-                onClick={addRow}
-                style={{
-                  background: 'var(--primary-50)', color: 'var(--primary-700)', border: '1px dashed var(--primary-300)',
-                  padding: '8px 16px', borderRadius: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s'
-                }}
-                onMouseEnter={e => e.currentTarget.style.background = 'var(--primary-100)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'var(--primary-50)'}
-              >
-                <span style={{ fontSize: '16px' }}>+</span> Add Row
-              </button>
-            </div>
 
             {/* Total row */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', background: 'var(--gray-100)', borderTop: '1px solid var(--gray-200)' }}>
@@ -636,6 +587,64 @@ export default function DaySheet() {
           </div>
         </>
       )}
+
+      {showExpenseModal && (
+        <Modal isOpen={true} onClose={()=>setShowExpenseModal(false)} title="Add Expense Record" size="modal-lg"
+          footer={<><button className="btn btn-secondary" onClick={()=>setShowExpenseModal(false)}>Cancel</button>
+            <button className="btn btn-primary" form="ds-expense-form" type="submit" disabled={expenseSaving}>{expenseSaving?"Saving...":"Save"}</button></>}>
+          <form id="ds-expense-form" onSubmit={handleSaveExpense}>
+            <div className="form-grid-2">
+              {[["date","Date","date"],["payee","Payee","text"],["amount","Amount (₹)","number"],["expense_id","Bill Number","text"]].map(([k,l,t])=>(
+                <div className="form-group" key={k}><label className={`form-label${["date","payee","amount","expense_id"].includes(k)?" required":""}`}>{l}</label>
+                  <input className="form-control" type={t} value={expenseForm[k]} required={["date","payee","amount"].includes(k)} onChange={e=>setExpenseForm(f=>({...f,[k]:e.target.value}))} /></div>
+              ))}
+              <div className="form-group"><label className="form-label">Category</label>
+                <input className="form-control" type="text" value={expenseForm.category} onChange={e=>setExpenseForm(f=>({...f,category:e.target.value}))} placeholder="e.g. Office, Travel" /></div>
+              <div className="form-group"><label className="form-label">Payment Method</label>
+                <PaymentMethodSelector value={expenseForm.payment_method} onChange={v=>setExpenseForm(f=>({...f,payment_method:v,account_type:v==="CASH"?"CASH":"BANK"}))} options={["CASH","CHEQUE","NEFT","UPI","OTHER"]} /></div>
+            </div>
+            <div className="form-group"><label className="form-label">Purpose</label>
+              <textarea className="form-control" rows={2} value={expenseForm.purpose} onChange={e=>setExpenseForm(f=>({...f,purpose:e.target.value}))} /></div>
+          </form>
+        </Modal>
+      )}
+
+      {showIncomeModal && (
+        <Modal isOpen={true} onClose={()=>setShowIncomeModal(false)} title="Add Income Record" size="modal-lg"
+          footer={<><button className="btn btn-secondary" onClick={()=>setShowIncomeModal(false)}>Cancel</button>
+            <button className="btn btn-primary" form="ds-income-form" type="submit" disabled={incomeSaving}>{incomeSaving?"Saving...":"Save"}</button></>}>
+          <form id="ds-income-form" onSubmit={handleSaveIncome}>
+            <div className="form-grid-2">
+              {[["source","Income Source","text",null],
+                ["date","Date","date",null],["amount","Amount (₹)","number",null],["donor_name","Donor/Payer Name","text",null],
+                ["phone","Phone","text",null],["payment_method","Payment Method","select",["CASH","CHEQUE","DD","NEFT","RTGS","IMPS","UPI"]],
+                ["account_type","Account Type","select",["CASH","BANK"]],["reference_number","Reference Number","text",null]].map(([k,l,t,opts])=>(
+                <div className="form-group" key={k}>
+                  <label className={`form-label ${["date","amount"].includes(k)?"required":""}`}>{l}</label>
+                  {k === "payment_method" ? (
+                    <PaymentMethodSelector 
+                      value={incomeForm[k]} 
+                      onChange={v=>setIncomeForm(f=>({...f,[k]:v,account_type:v==="CASH"?"CASH":"BANK"}))} 
+                      options={opts} 
+                    />
+                  ) : t==="select" ? (
+                    <select className="form-control" name={k} value={incomeForm[k]} onChange={e=>setIncomeForm(f=>({...f,[k]:e.target.value}))}>
+                      {opts.map(o=><option key={o}>{o}</option>)}
+                    </select>
+                  ) : (
+                    <input className="form-control" type={t} name={k} value={incomeForm[k]} onChange={e=>setIncomeForm(f=>({...f,[k]: k === 'phone' ? e.target.value.replace(/\D/g, '').slice(0, 10) : e.target.value}))} required={["date","amount"].includes(k)} />
+                  )}
+                </div>
+              ))}
+              <div className="form-group"><label className="form-label">Address</label>
+                <textarea className="form-control" name="address" rows={2} value={incomeForm.address} onChange={e=>setIncomeForm(f=>({...f,address:e.target.value}))} /></div>
+            </div>
+            <div className="form-group"><label className="form-label">Purpose</label>
+              <textarea className="form-control" name="purpose" rows={2} value={incomeForm.purpose} onChange={e=>setIncomeForm(f=>({...f,purpose:e.target.value}))} /></div>
+          </form>
+        </Modal>
+      )}
+
     </div>
   )
 }
@@ -690,7 +699,7 @@ function ClosingRow({ label, value, bold, badge, badgeClass, valueColor, isEdita
   )
 }
 
-function TableInput({ id, value, onChange, type = "text", align = "left", placeholder = "", highlighted = false, onKeyDown, readOnly = false }) {
+function TableInput({ id, value, onChange, type = "text", align = "left", placeholder = "", highlighted = false, onKeyDown, readOnly = false, onBlur }) {
   const [focused, setFocused] = useState(false)
   return (
     <input
@@ -731,7 +740,12 @@ function TableInput({ id, value, onChange, type = "text", align = "left", placeh
           e.target.select();
         }
       }}
-      onBlur={() => !readOnly && setFocused(false)}
+      onBlur={(e) => {
+        if (!readOnly) {
+          setFocused(false);
+          if (onBlur) onBlur(e);
+        }
+      }}
     />
   )
 }

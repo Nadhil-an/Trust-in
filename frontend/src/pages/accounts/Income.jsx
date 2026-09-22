@@ -114,7 +114,7 @@ export default function IncomeList() {
                   {k === "payment_method" ? (
                     <PaymentMethodSelector 
                       value={form[k]} 
-                      onChange={v=>setForm(f=>({...f,[k]:v}))} 
+                      onChange={v=>setForm(f=>({...f,[k]:v,account_type:v==="CASH"?"CASH":"BANK"}))} 
                       options={opts} 
                     />
                   ) : t==="select" ? (

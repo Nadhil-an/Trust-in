@@ -41,6 +41,7 @@ export const MASTER_NAV_CONFIG = [
   { key: 'bank_ledger', label: 'Bank', icon: '🏦', path: '/slt/finance/bank-ledger', category: 'LEDGERS' },
   { key: 'income_view', label: 'Income', icon: '📥', path: '/slt/finance/income', category: 'LEDGERS' },
   { key: 'expenses_view', label: 'Expenses', icon: '📤', path: '/slt/finance/expenditure', category: 'LEDGERS' },
+  { key: 'cash_closing', label: 'Day Book', icon: '📖', path: '/slt/disburse/day-sheet', category: 'LEDGERS' },
   
   // ── FINANCE TRANSACTIONS
   { key: 'cheques', label: 'Cheques', icon: '🧾', path: '/slt/finance/cheques', category: 'TRANSACTIONS' },
@@ -52,7 +53,6 @@ export const MASTER_NAV_CONFIG = [
   { key: 'money_requests', label: 'Money Requests', icon: '💰', path: '/slt/finance/fund-requests', category: 'PAYOUTS & CLOSING' },
   { key: 'salary_review', label: 'Pending Salaries', icon: '🧑‍💼', path: '/slt/finance/salary-review', category: 'PAYOUTS & CLOSING' },
   { key: 'payouts', label: 'Payouts', icon: '💸', path: '/slt/disburse/payouts', category: 'PAYOUTS & CLOSING' },
-  { key: 'cash_closing', label: 'Day Book', icon: '📖', path: '/slt/disburse/day-sheet', category: 'PAYOUTS & CLOSING' },
 
   // ── HR: TIME & PAYROLL
   { key: 'hr_attendance', label: 'Attendance', icon: '✅', path: '/slt/hr/attendance', category: 'TIME & PAYROLL' },

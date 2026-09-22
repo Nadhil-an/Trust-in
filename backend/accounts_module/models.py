@@ -190,7 +190,7 @@ class Expense(models.Model):
     expense_id = models.CharField(max_length=20, unique=True, db_index=True)
     date = models.DateField(default=date.today)
     payee = models.CharField(max_length=255)
-    category = models.CharField(max_length=100)
+    category = models.CharField(max_length=100, blank=True)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     payment_method = models.CharField(max_length=20, choices=PaymentMethod.choices)
     purpose = models.CharField(max_length=255, blank=True)
@@ -217,7 +217,11 @@ class Expense(models.Model):
         if not self.expense_id:
             year = timezone.now().year
             count = Expense.objects.filter(date__year=year).count() + 1
-            self.expense_id = f"EXP-{year}-{count:05d}"
+            candidate = f"EXP-{year}-{count:05d}"
+            while Expense.objects.filter(expense_id=candidate).exists():
+                count += 1
+                candidate = f"EXP-{year}-{count:05d}"
+            self.expense_id = candidate
         super().save(*args, **kwargs)
 
 

@@ -34,7 +34,11 @@ class Disbursement(models.Model):
         if not self.disbursement_id:
             year = timezone.now().year
             count = Disbursement.objects.filter(date__year=year).count() + 1
-            self.disbursement_id = f"DSB-{year}-{count:05d}"
+            candidate = f"DSB-{year}-{count:05d}"
+            while Disbursement.objects.filter(disbursement_id=candidate).exists():
+                count += 1
+                candidate = f"DSB-{year}-{count:05d}"
+            self.disbursement_id = candidate
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -86,5 +90,9 @@ class CashHandover(models.Model):
     def save(self, *args, **kwargs):
         if not self.handover_id:
             count = CashHandover.objects.count() + 1
-            self.handover_id = f"HND-{count:04d}"
+            candidate = f"HND-{count:04d}"
+            while CashHandover.objects.filter(handover_id=candidate).exists():
+                count += 1
+                candidate = f"HND-{count:04d}"
+            self.handover_id = candidate
         super().save(*args, **kwargs)

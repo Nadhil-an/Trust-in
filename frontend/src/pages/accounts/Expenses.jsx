@@ -180,10 +180,10 @@ export default function ExpenseList() {
                 <div className="form-group" key={k}><label className={`form-label${["date","payee","amount","expense_id"].includes(k)?" required":""}`}>{l}</label>
                   <input className="form-control" type={t} value={form[k]} required={["date","payee","amount","expense_id"].includes(k)} onChange={e=>setForm(f=>({...f,[k]:e.target.value}))} /></div>
               ))}
-              <div className="form-group"><label className="form-label required">Category</label>
-                <input className="form-control" type="text" value={form.category} required onChange={e=>setForm(f=>({...f,category:e.target.value}))} placeholder="e.g. Office, Travel" /></div>
+              <div className="form-group"><label className="form-label">Category</label>
+                <input className="form-control" type="text" value={form.category} onChange={e=>setForm(f=>({...f,category:e.target.value}))} placeholder="e.g. Office, Travel" /></div>
               <div className="form-group"><label className="form-label">Payment Method</label>
-                <PaymentMethodSelector value={form.payment_method} onChange={v=>setForm(f=>({...f,payment_method:v}))} options={["CASH","CHEQUE","NEFT","UPI","OTHER"]} /></div>
+                <PaymentMethodSelector value={form.payment_method} onChange={v=>setForm(f=>({...f,payment_method:v,account_type:v==="CASH"?"CASH":"BANK"}))} options={["CASH","CHEQUE","NEFT","UPI","OTHER"]} /></div>
             </div>
             <div className="form-group"><label className="form-label">Purpose</label>
               <textarea className="form-control" rows={2} value={form.purpose} onChange={e=>setForm(f=>({...f,purpose:e.target.value}))} /></div>

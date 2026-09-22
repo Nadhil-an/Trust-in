@@ -252,6 +252,79 @@ class CashClosingListCreateView(generics.ListCreateAPIView):
                 return Response(serializer.data)
         return super().create(request, *args, **kwargs)
 
+    def _sync_ledgers(self, date, debit_rows, credit_rows):
+        from accounts_module.models import Income, Expense
+        
+        # 1. Sync Incomes (debit_rows)
+        submitted_income_ids = []
+        for r in debit_rows:
+            if r.get('particular') in ['OB CASH', 'OB BANK']:
+                continue
+            amt = float(r.get('amount') or 0)
+            if not r.get('particular') or amt <= 0: continue
+            
+            if r.get('id'):
+                try:
+                    inc = Income.objects.get(id=r['id'])
+                    inc.source = r['particular']
+                    inc.donor_name = r['particular']
+                    inc.amount = amt
+                    inc.account_type = r.get('sc', 'CASH')
+                    inc.payment_method = 'CASH' if r.get('sc', 'CASH') == 'CASH' else 'UPI'
+                    inc.save(update_fields=['source', 'donor_name', 'amount', 'account_type', 'payment_method'])
+                    submitted_income_ids.append(str(inc.id))
+                except (Income.DoesNotExist, Exception):
+                    pass
+            else:
+                inc = Income.objects.create(
+                    date=date,
+                    source=r['particular'],
+                    donor_name=r['particular'],
+                    amount=amt,
+                    account_type=r.get('sc', 'CASH'),
+                    payment_method='CASH' if r.get('sc', 'CASH') == 'CASH' else 'UPI',
+                    created_by=self.request.user
+                )
+                r['id'] = str(inc.id)
+                submitted_income_ids.append(str(inc.id))
+
+        # 2. Sync Expenses (credit_rows)
+        submitted_expense_ids = []
+        for r in credit_rows:
+            amt = float(r.get('amount') or 0)
+            if not r.get('particular') or amt <= 0: continue
+            
+            if r.get('id'):
+                try:
+                    exp = Expense.objects.get(id=r['id'])
+                    exp.payee = r['particular']
+                    exp.purpose = r['particular']
+                    exp.amount = amt
+                    exp.account_type = r.get('sc', 'CASH')
+                    exp.payment_method = 'CASH' if r.get('sc', 'CASH') == 'CASH' else 'UPI'
+                    exp.save(update_fields=['payee', 'purpose', 'amount', 'account_type', 'payment_method'])
+                    submitted_expense_ids.append(str(exp.id))
+                except (Expense.DoesNotExist, Exception):
+                    pass
+            else:
+                exp = Expense.objects.create(
+                    date=date,
+                    payee=r['particular'],
+                    purpose=r['particular'],
+                    category='DayBook Entry',
+                    amount=amt,
+                    account_type=r.get('sc', 'CASH'),
+                    payment_method='CASH' if r.get('sc', 'CASH') == 'CASH' else 'UPI',
+                    created_by=self.request.user,
+                    status='COMPLETED'
+                )
+                r['id'] = str(exp.id)
+                submitted_expense_ids.append(str(exp.id))
+
+        # 3. Handle Deletes - anything not in the submitted IDs for this date gets deleted
+        Income.objects.filter(date=date, created_by__role='ACCOUNTANT').exclude(id__in=submitted_income_ids).delete()
+        Expense.objects.filter(date=date, created_by__role='ACCOUNTANT').exclude(id__in=submitted_expense_ids).delete()
+
     def perform_update(self, serializer):
         from accounts_module.models import BankAccount, CashAccount
         system_bal = sum(a.current_balance for a in CashAccount.objects.filter(is_active=True))
@@ -263,12 +336,20 @@ class CashClosingListCreateView(generics.ListCreateAPIView):
         diff = float(system_bal) - float(physical)
         bank_diff = float(system_bank_bal) - float(physical_bank)
         
+        # Sync ledgers before saving to update any missing IDs in the JSON
+        date = serializer.validated_data.get('date', serializer.instance.date)
+        debit_rows = serializer.validated_data.get('debit_rows', serializer.instance.debit_rows)
+        credit_rows = serializer.validated_data.get('credit_rows', serializer.instance.credit_rows)
+        self._sync_ledgers(date, debit_rows, credit_rows)
+        
         serializer.save(
             closed_by=self.request.user,
             system_balance=system_bal,
             difference=diff,
             system_bank_balance=system_bank_bal,
-            bank_difference=bank_diff
+            bank_difference=bank_diff,
+            debit_rows=debit_rows,
+            credit_rows=credit_rows
         )
 
     def perform_create(self, serializer):
@@ -282,12 +363,20 @@ class CashClosingListCreateView(generics.ListCreateAPIView):
         diff = float(system_bal) - float(physical)
         bank_diff = float(system_bank_bal) - float(physical_bank)
         
+        # Sync ledgers before saving to update any missing IDs in the JSON
+        date = serializer.validated_data.get('date')
+        debit_rows = serializer.validated_data.get('debit_rows', [])
+        credit_rows = serializer.validated_data.get('credit_rows', [])
+        self._sync_ledgers(date, debit_rows, credit_rows)
+        
         serializer.save(
             closed_by=self.request.user,
             system_balance=system_bal,
             difference=diff,
             system_bank_balance=system_bank_bal,
-            bank_difference=bank_diff
+            bank_difference=bank_diff,
+            debit_rows=debit_rows,
+            credit_rows=credit_rows
         )
 
 

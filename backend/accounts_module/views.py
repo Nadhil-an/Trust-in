@@ -731,25 +731,30 @@ class DaySheetView(APIView):
         except ValueError:
             target_date = timezone.now().date()
 
-        # ── Opening Balances (previous day closing balances via CashTransaction OPENING)
-        # We use current balances minus today's activity to infer OB
-        cash_accounts = list(CashAccount.objects.filter(is_active=True))
-        bank_accounts = list(BankAccount.objects.filter(is_active=True))
+        # ── Opening Balances (previous day closing balances via CashClosing)
+        from cashier_module.models import CashClosing
+        
+        previous_closing = CashClosing.objects.filter(date__lt=target_date).order_by('-date').first()
+        if previous_closing:
+            ob_cash = float(previous_closing.physical_cash or 0)
+            ob_bank = float(previous_closing.physical_bank or 0)
+        else:
+            # Fallback if no previous closing exists
+            cash_accounts = list(CashAccount.objects.filter(is_active=True))
+            bank_accounts = list(BankAccount.objects.filter(is_active=True))
 
-        # Cash receipts and payments today
-        today_cash_receipts = CashTransaction.objects.filter(
-            date=target_date, transaction_type__in=['RECEIPT', 'TRANSFER_IN', 'OPENING']
-        ).aggregate(t=Sum('amount'))['t'] or 0
-        today_cash_payments = CashTransaction.objects.filter(
-            date=target_date, transaction_type__in=['PAYMENT', 'TRANSFER_OUT', 'ADJUSTMENT']
-        ).aggregate(t=Sum('amount'))['t'] or 0
+            today_cash_receipts = CashTransaction.objects.filter(
+                date=target_date, transaction_type__in=['RECEIPT', 'TRANSFER_IN', 'OPENING']
+            ).aggregate(t=Sum('amount'))['t'] or 0
+            today_cash_payments = CashTransaction.objects.filter(
+                date=target_date, transaction_type__in=['PAYMENT', 'TRANSFER_OUT', 'ADJUSTMENT']
+            ).aggregate(t=Sum('amount'))['t'] or 0
 
-        current_cash = sum(a.current_balance for a in cash_accounts)
-        current_bank = sum(b.current_balance for b in bank_accounts)
+            current_cash = sum(a.current_balance for a in cash_accounts)
+            current_bank = sum(b.current_balance for b in bank_accounts)
 
-        # Opening balance = current balance - today's net movement
-        ob_cash = float(current_cash) - float(today_cash_receipts) + float(today_cash_payments)
-        ob_bank = float(current_bank)  # Bank OB approximated as current (for display)
+            ob_cash = float(current_cash) - float(today_cash_receipts) + float(today_cash_payments)
+            ob_bank = float(current_bank)
 
         # ── Income entries for the day (these go on DEBIT side after OB)
         incomes = Income.objects.filter(date=target_date, created_by__role='ACCOUNTANT').order_by('created_at')
@@ -788,10 +793,15 @@ class DaySheetView(APIView):
         closing = CashClosing.objects.filter(date=target_date).first()
 
         if closing:
-            if closing.debit_rows:
-                debit_rows = closing.debit_rows
-            if closing.credit_rows:
-                credit_rows = closing.credit_rows
+            # Preserve incomplete drafts (rows saved by auto-save but missing info for ledgers)
+            for r in closing.debit_rows:
+                if not r.get('id') and r.get('particular') not in ['OB CASH', 'OB BANK']:
+                    if r.get('particular') or r.get('amount'):
+                        debit_rows.append(r)
+            for r in closing.credit_rows:
+                if not r.get('id'):
+                    if r.get('particular') or r.get('amount'):
+                        credit_rows.append(r)
 
         total_debit = sum(float(r.get('amount') or 0) for r in debit_rows)
         total_credit = sum(float(r.get('amount') or 0) for r in credit_rows)

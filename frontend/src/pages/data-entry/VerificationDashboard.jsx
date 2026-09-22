@@ -383,7 +383,7 @@ export default function VerificationDashboard() {
           <div style={{ background: 'white', borderRadius: 12, width: '90%', maxWidth: 700, padding: 24, maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
               <h2 style={{ margin: 0, fontSize: 18, color: '#1F2937' }}>
-                {modalType === 'CASH' ? '💵 Cash' : '📱 Online'} Transactions - {modalStaff?.staff_name}
+                {modalType === 'CASH' ? '💵 Cash' : '📱 Online'} Transactions - <span style={{ textTransform: 'capitalize' }}>{modalStaff?.staff_name}</span> (₹{transactions.reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })})
               </h2>
               <button onClick={() => setModalOpen(false)} style={{ background: 'none', border: 'none', fontSize: 24, cursor: 'pointer', color: '#6B7280' }}>&times;</button>
             </div>
