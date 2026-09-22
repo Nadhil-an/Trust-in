@@ -55,7 +55,7 @@ const StaffDonationsListScreen = ({ navigation, route }) => {
     try {
       const dateStr = selectedDate.getFullYear() + '-' + String(selectedDate.getMonth() + 1).padStart(2, '0') + '-' + String(selectedDate.getDate()).padStart(2, '0');
       const [res, statsRes] = await Promise.all([
-        donationApi.list({ date: dateStr, page_size: 5000 }),
+        donationApi.list({ page_size: 5000 }),
         staffApi.todayStats(dateStr)
       ]);
       setDonations(res.data.results || res.data);
