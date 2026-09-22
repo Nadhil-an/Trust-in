@@ -80,7 +80,7 @@ api.interceptors.response.use((response) => response, async (error) => {
 
 // ── Staff ────────────────────────────────────────────────────────────────
 export const staffApi = {
-  todayStats:     () => api.get('/hr/staff-dashboard/'),
+  todayStats:     (date) => api.get('/hr/staff-dashboard/', { params: { date } }),
   birthdayAlerts: () => api.get('/hr/birthday-alerts/'),
   leaderboard:    (p) => api.get('/hr/leaderboard/', { params: p }),
   vouchers: {

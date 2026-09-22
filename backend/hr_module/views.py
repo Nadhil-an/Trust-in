@@ -110,9 +110,17 @@ class StaffDashboardView(APIView):
 
     def get(self, request):
         user = request.user
-        today = timezone.localtime(timezone.now()).date()
+        date_str = request.query_params.get('date')
+        if date_str:
+            from datetime import datetime
+            try:
+                today = datetime.strptime(date_str, '%Y-%m-%d').date()
+            except ValueError:
+                today = timezone.localtime(timezone.now()).date()
+        else:
+            today = timezone.localtime(timezone.now()).date()
         
-        # Members added today by this user
+        # Members added on the selected date by this user
         members_today = Member.objects.filter(created_by=user, created_at__date=today).count()
         
         # Donations collected today by this user — filter by CREATION time, not assigned date

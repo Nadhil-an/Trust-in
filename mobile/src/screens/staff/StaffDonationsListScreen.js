@@ -2,8 +2,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, SectionList, TouchableOpacity,
-  Modal, RefreshControl, TextInput, ActivityIndicator, ScrollView, Image
+  Modal, RefreshControl, TextInput, ActivityIndicator, ScrollView, Image, Platform
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
 import { donationApi, staffApi } from '../../api';
@@ -22,6 +23,8 @@ const StaffDonationsListScreen = ({ navigation, route }) => {
   const [activeFilter, setActiveFilter] = useState('ALL');
   const [donationDetails, setDonationDetails] = useState(null);
   const [stats, setStats] = useState({});
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   // Get today's ISO date string
   const getTodayIso = () => {
@@ -50,9 +53,10 @@ const StaffDonationsListScreen = ({ navigation, route }) => {
   const fetchDonations = async (showLoading = true) => {
     if (showLoading) setLoading(true);
     try {
+      const dateStr = selectedDate.getFullYear() + '-' + String(selectedDate.getMonth() + 1).padStart(2, '0') + '-' + String(selectedDate.getDate()).padStart(2, '0');
       const [res, statsRes] = await Promise.all([
-        donationApi.list({ limit: 5000 }),
-        staffApi.todayStats()
+        donationApi.list({ date: dateStr, limit: 5000 }),
+        staffApi.todayStats(dateStr)
       ]);
       setDonations(res.data.results || res.data);
       if (statsRes.data) setStats(statsRes.data);
@@ -63,6 +67,10 @@ const StaffDonationsListScreen = ({ navigation, route }) => {
       setRefreshing(false);
     }
   };
+
+  useEffect(() => {
+    fetchDonations(true);
+  }, [selectedDate]);
 
   useNotificationSocket((data) => {
     if (data.type === 'DASHBOARD_REFRESH') {
@@ -268,7 +276,26 @@ const StaffDonationsListScreen = ({ navigation, route }) => {
 
       {/* Today's Summary */}
       <View style={styles.summaryContainer}>
-        <Text style={styles.summaryTitle}>{t('staff.today_total') || "Today's Collection Summary"}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+          <Text style={[styles.summaryTitle, { marginBottom: 0 }]}>
+            Summary ({selectedDate.toLocaleDateString()})
+          </Text>
+          <TouchableOpacity onPress={() => setShowDatePicker(true)} style={{ padding: 4 }}>
+            <Ionicons name="calendar-outline" size={24} color={Colors.primary} />
+          </TouchableOpacity>
+        </View>
+
+        {showDatePicker && (
+          <DateTimePicker
+            value={selectedDate}
+            mode="date"
+            display="default"
+            onChange={(event, date) => {
+              setShowDatePicker(Platform.OS === 'ios');
+              if (date) setSelectedDate(date);
+            }}
+          />
+        )}
         <View style={styles.summaryCards}>
           <View style={[styles.summaryCard, { backgroundColor: '#EFF6FF' }]}>
             <Text style={styles.summaryLabel}>{t('common.total')}</Text>
