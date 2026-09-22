@@ -27,6 +27,9 @@ export default function MembershipEntry() {
   const [items, setItems]     = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch]   = useState('')
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
   const [showModal, setShowModal] = useState(false)
   const [form, setForm]       = useState(EMPTY_FORM)
   const [saving, setSaving]   = useState(false)
@@ -36,11 +39,20 @@ export default function MembershipEntry() {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await accountsApi.income.list({ search, source: 'MEMBERSHIP' })
+      const res = await accountsApi.income.list({ search, source: 'MEMBERSHIP', page })
       setItems(res.data.results || res.data)
+      if (res.data.count) {
+        setTotalCount(res.data.count)
+        setTotalPages(Math.ceil(res.data.count / 20))
+      } else {
+        setTotalCount((res.data.results || res.data).length)
+        setTotalPages(1)
+      }
     } catch { toast.error('Failed to load membership entries') }
     finally { setLoading(false) }
-  }, [search])
+  }, [search, page])
+
+  useEffect(() => { setPage(1) }, [search])
 
   useEffect(() => { load() }, [load])
 
@@ -125,14 +137,21 @@ export default function MembershipEntry() {
         <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Record Fee</button>
       </PageHeader>
 
-      <div className="data-card">
-        <FilterBar search={search} onSearch={setSearch} />
+      <div className="data-card" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 160px)', padding: 0, overflow: 'hidden' }}>
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid #e2e8f0', background: 'white', zIndex: 10 }}>
+          <FilterBar search={search} onSearch={setSearch} />
+        </div>
         {loading ? <LoadingState /> : (
-          <div className="table-wrap">
-            <table>
-              <thead><tr>
-                <th>Date</th><th>Member Name</th><th>Phone</th>
-                <th>Membership Type</th><th>Payment</th><th>Voucher No.</th><th>Amount</th>
+          <div className="table-wrap" style={{ flex: 1, overflowY: 'auto', margin: 0, border: 'none', borderRadius: 0 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead style={{ position: 'sticky', top: 0, zIndex: 5, background: '#f8fafc', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}><tr>
+                <th style={{ background: '#f8fafc' }}>Date</th>
+                <th style={{ background: '#f8fafc' }}>Member Name</th>
+                <th style={{ background: '#f8fafc' }}>Phone</th>
+                <th style={{ background: '#f8fafc' }}>Membership Type</th>
+                <th style={{ background: '#f8fafc' }}>Payment</th>
+                <th style={{ background: '#f8fafc' }}>Voucher No.</th>
+                <th style={{ background: '#f8fafc' }}>Amount</th>
               </tr></thead>
               <tbody>
                 {items.length === 0
@@ -150,6 +169,54 @@ export default function MembershipEntry() {
                   ))}
               </tbody>
             </table>
+          </div>
+        )}
+        
+        {/* Pagination Footer */}
+        {!loading && totalPages > 1 && (
+          <div style={{ padding: '12px 20px', borderTop: '1px solid #e2e8f0', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 10 }}>
+            <div style={{ fontSize: 13, color: '#64748b' }}>
+              Showing <span style={{ fontWeight: 600, color: '#0f172a' }}>{(page - 1) * 20 + 1}</span> to <span style={{ fontWeight: 600, color: '#0f172a' }}>{Math.min(page * 20, totalCount)}</span> of <span style={{ fontWeight: 600, color: '#0f172a' }}>{totalCount}</span> entries
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button 
+                className="btn btn-secondary btn-sm" 
+                disabled={page === 1} 
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+              >
+                Previous
+              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let p = i + 1;
+                  if (totalPages > 5) {
+                    if (page > 3) p = page - 2 + i;
+                    if (p > totalPages) p = totalPages - 4 + i;
+                  }
+                  return (
+                    <button
+                      key={p}
+                      onClick={() => setPage(p)}
+                      style={{
+                        width: 28, height: 28, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 13, fontWeight: 600, cursor: 'pointer', border: 'none',
+                        background: page === p ? '#4f46e5' : 'transparent',
+                        color: page === p ? 'white' : '#475569'
+                      }}
+                    >
+                      {p}
+                    </button>
+                  )
+                })}
+              </div>
+              <button 
+                className="btn btn-secondary btn-sm" 
+                disabled={page === totalPages} 
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              >
+                Next
+              </button>
+            </div>
           </div>
         )}
       </div>
