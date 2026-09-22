@@ -219923,3 +219923,370 @@ WebSocket HANDSHAKING /ws/notify/ [10.58.250.21:4335]
 WebSocket CONNECT /ws/notify/ [10.58.250.21:4335]
 [mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-22&verification_status=UNVERIFIED 200 [0.12, 10.58.250.21:56860][0m
 [mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-22&verification_status=UNVERIFIED 200 [0.01, 10.58.250.21:22813][0m
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.58.250.111:49202]
+WebSocket REJECT /ws/notify/ [10.58.250.111:49202]
+WebSocket DISCONNECT /ws/notify/ [10.58.250.111:49202]
+WebSocket HANDSHAKING /ws/notify/ [10.58.250.111:49632]
+WebSocket REJECT /ws/notify/ [10.58.250.111:49632]
+WebSocket DISCONNECT /ws/notify/ [10.58.250.111:49632]
+WebSocket HANDSHAKING /ws/notify/ [10.58.250.111:56568]
+WebSocket REJECT /ws/notify/ [10.58.250.111:56568]
+WebSocket DISCONNECT /ws/notify/ [10.58.250.111:56568]
+WebSocket HANDSHAKING /ws/notify/ [10.58.250.111:40094]
+WebSocket REJECT /ws/notify/ [10.58.250.111:40094]
+WebSocket DISCONNECT /ws/notify/ [10.58.250.111:40094]
+Unauthorized: /api/hr/staff-dashboard/
+Unauthorized: /api/core/notifications/unread_count/
+[31;1mHTTP GET /api/hr/staff-dashboard/ 401 [0.02, 10.58.250.111:40100][0m
+[31;1mHTTP GET /api/core/notifications/unread_count/ 401 [0.02, 10.58.250.111:40110][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.02, 10.58.250.111:40100][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.01, 10.58.250.111:40110][0m
+WebSocket HANDSHAKING /ws/notify/ [10.58.250.111:40126]
+WebSocket CONNECT /ws/notify/ [10.58.250.111:40126]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.03, 10.58.250.111:40100][0m
+WebSocket DISCONNECT /ws/notify/ [10.58.250.111:40126]
+WebSocket HANDSHAKING /ws/notify/ [10.58.250.111:40128]
+WebSocket CONNECT /ws/notify/ [10.58.250.111:40128]
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.58.250.111:40100][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.58.250.111:40100][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.58.250.111:40110][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.58.250.111:40100][0m
+[mHTTP GET /api/core/events/ 200 [0.20, 10.58.250.111:40100][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.02, 10.58.250.111:40100][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.58.250.111:40110][0m
+[mHTTP POST /api/core/update-push-token/ 200 [0.02, 10.58.250.111:40100][0m
+[mHTTP GET /api/core/events/ 200 [0.02, 10.58.250.111:40100][0m
+WebSocket DISCONNECT /ws/notify/ [10.58.250.111:40128]
+WebSocket HANDSHAKING /ws/notify/ [10.58.250.111:37928]
+WebSocket CONNECT /ws/notify/ [10.58.250.111:37928]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.01, 10.58.250.111:37932][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.58.250.111:37934][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.58.250.111:37932][0m
+[mHTTP GET /api/core/events/ 200 [0.01, 10.58.250.111:37932][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.02, 10.58.250.111:37932][0m
+[mHTTP POST /api/core/update-push-token/ 200 [0.02, 10.58.250.111:37932][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.02, 10.58.250.111:37932][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.02, 10.58.250.111:37932][0m
+[mHTTP GET /api/auth/profile/ 200 [0.02, 10.58.250.111:37932][0m
+[mHTTP POST /api/hr/attendance/my-attendance/ 200 [3.90, 10.58.250.111:37932][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.03, 10.58.250.111:37934][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.03, 10.58.250.111:56026][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.04, 10.58.250.111:37932][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.58.250.111:37932][0m
+[mHTTP GET /api/core/events/ 200 [0.02, 10.58.250.111:37932][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.58.250.111:37932][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.58.250.111:37934][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.58.250.111:37932][0m
+[mHTTP GET /api/core/events/ 200 [0.02, 10.58.250.111:37932][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.03, 10.58.250.111:37932][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.01, 10.58.250.111:37934][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.02, 10.58.250.111:37932][0m
+[mHTTP GET /api/hr/staff-vouchers/17bf9936-922b-4627-a40b-7687bf44f4b8/ 200 [0.01, 10.58.250.111:37934][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.02, 10.58.250.111:37932][0m
+[mHTTP POST /api/accounts/income/ 201 [0.04, 10.58.250.111:37932][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.02, 10.58.250.111:37932][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.03, 10.58.250.111:37934][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.58.250.111:37932][0m
+[mHTTP GET /api/core/events/ 200 [0.02, 10.58.250.111:37932][0m
+WebSocket HANDSHAKING /ws/notify/ [10.58.250.111:39062]
+WebSocket CONNECT /ws/notify/ [10.58.250.111:39062]
+[mHTTP GET /api/accounts/income/?date=2026-09-23&limit=5000 200 [0.03, 10.58.250.111:37932][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&limit=5000 200 [0.02, 10.58.250.111:56026][0m
+[mHTTP GET /api/hr/staff-dashboard/?date=2026-09-23 200 [0.03, 10.58.250.111:37934][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&limit=5000 200 [0.02, 10.58.250.111:39082][0m
+[mHTTP GET /api/hr/staff-dashboard/?date=2026-09-23 200 [0.03, 10.58.250.111:39072][0m
+[mHTTP GET /api/hr/staff-dashboard/?date=2026-09-23 200 [0.02, 10.58.250.111:37932][0m
+WebSocket DISCONNECT /ws/notify/ [10.58.250.111:39062]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.58.250.111:37932][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.58.250.111:37934][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.58.250.111:37932][0m
+[mHTTP GET /api/core/events/ 200 [0.02, 10.58.250.111:37932][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.02, 10.58.250.111:37932][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.02, 10.58.250.111:37932][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.03, 10.58.250.111:37932][0m
+[mHTTP GET /api/hr/staff-vouchers/17bf9936-922b-4627-a40b-7687bf44f4b8/ 200 [0.02, 10.58.250.111:37934][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.03, 10.58.250.111:37932][0m
+[mHTTP POST /api/accounts/income/ 201 [0.03, 10.58.250.111:37932][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.03, 10.58.250.111:37934][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.03, 10.58.250.111:37932][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.58.250.111:37932][0m
+[mHTTP GET /api/core/events/ 200 [0.02, 10.58.250.111:37932][0m
+WebSocket HANDSHAKING /ws/notify/ [10.58.250.111:52212]
+WebSocket CONNECT /ws/notify/ [10.58.250.111:52212]
+[mHTTP GET /api/accounts/income/?date=2026-09-23&limit=5000 200 [0.01, 10.58.250.111:37932][0m
+[mHTTP GET /api/hr/staff-dashboard/?date=2026-09-23 200 [0.01, 10.58.250.111:37932][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&limit=5000 200 [0.01, 10.58.250.111:37934][0m
+[mHTTP GET /api/hr/staff-dashboard/?date=2026-09-23 200 [0.02, 10.58.250.111:37932][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&limit=5000 200 [0.01, 10.58.250.111:56026][0m
+[mHTTP GET /api/hr/staff-dashboard/?date=2026-09-23 200 [0.02, 10.58.250.111:37932][0m
+[mHTTP POST /api/auth/login/ 200 [0.18, 10.58.250.21:63009][0m
+WebSocket HANDSHAKING /ws/notify/ [10.58.250.21:9047]
+WebSocket CONNECT /ws/notify/ [10.58.250.21:9047]
+[mHTTP GET /api/core/features/ 200 [0.05, 10.58.250.21:58073][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.58.250.21:11101][0m
+[mHTTP GET /api/manager/requests/?date=2026-09-23 200 [0.07, 10.58.250.21:24539][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&source=DONATION 200 [0.07, 10.58.250.21:24537][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&source=MEMBERSHIP 200 [0.07, 10.58.250.21:24538][0m
+[mHTTP GET /api/manager/partners/?date=2026-09-23 200 [0.07, 10.58.250.21:53874][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-23&category=OUTWARD 200 [0.07, 10.58.250.21:1546][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&source=INWARD 200 [0.07, 10.58.250.21:43942][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-23&category=PURCHASE 200 [0.07, 10.58.250.21:34978][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&source=DONATION 200 [0.08, 10.58.250.21:26664][0m
+[mHTTP GET /api/core/events/?date=2026-09-23 200 [0.08, 10.58.250.21:14676][0m
+[mHTTP GET /api/manager/requests/?date=2026-09-23 200 [0.08, 10.58.250.21:14677][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&source=MEMBERSHIP 200 [0.09, 10.58.250.21:49670][0m
+[mHTTP GET /api/manager/partners/?date=2026-09-23 200 [0.09, 10.58.250.21:49671][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&source=INWARD 200 [0.06, 10.58.250.21:54806][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-23&category=OUTWARD 200 [0.05, 10.58.250.21:6171][0m
+[mHTTP GET /api/core/events/?date=2026-09-23 200 [0.05, 10.58.250.21:56142][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-23&category=PURCHASE 200 [0.05, 10.58.250.21:56141][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-23&verification_status=UNVERIFIED 200 [0.02, 10.58.250.21:25586][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-23&verification_status=UNVERIFIED 200 [0.02, 10.58.250.21:12140][0m
+[mHTTP GET /api/hr/promoter-registry/transactions/?staff_id=17bf9936-922b-4627-a40b-7687bf44f4b8&date=2026-09-23 200 [0.01, 10.58.250.21:11694][0m
+[mHTTP DELETE /api/accounts/income/1fac8222-3f2a-4079-8a9a-bdfb4f9c56ff/ 204 [0.02, 10.58.250.21:1625][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-23&verification_status=UNVERIFIED 200 [0.02, 10.58.250.21:6148][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.58.250.111:37932][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.58.250.111:37934][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&limit=5000 200 [0.06, 10.58.250.111:37932][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.06, 10.58.250.111:56026][0m
+[mHTTP GET /api/hr/staff-dashboard/?date=2026-09-23 200 [0.06, 10.58.250.111:37934][0m
+[mHTTP GET /api/core/events/ 200 [0.02, 10.58.250.111:37932][0m
+WebSocket DISCONNECT /ws/notify/ [10.58.250.111:52212]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.01, 10.58.250.111:37932][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.58.250.111:37934][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.58.250.111:37932][0m
+[mHTTP GET /api/core/events/ 200 [0.01, 10.58.250.111:37932][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.02, 10.58.250.111:37932][0m
+WebSocket DISCONNECT /ws/notify/ [10.58.250.111:37928]
+[mHTTP GET /api/hr/promoter-registry/transactions/?staff_id=17bf9936-922b-4627-a40b-7687bf44f4b8&date=2026-09-23 200 [0.02, 10.58.250.21:47587][0m
+[mHTTP DELETE /api/accounts/income/b01198a0-d38d-4121-8dfa-77a8106fd14a/ 204 [0.02, 10.58.250.21:49360][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-23&verification_status=UNVERIFIED 200 [0.02, 10.58.250.21:16527][0m
+[mHTTP GET /api/auth/profile/ 200 [0.02, 10.58.250.111:59080][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.58.250.111:59080][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.58.250.111:59080][0m
+[mHTTP GET /api/core/events/ 200 [0.02, 10.58.250.111:59080][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.58.250.111:59080][0m
+WebSocket HANDSHAKING /ws/notify/ [10.58.250.111:59096]
+WebSocket CONNECT /ws/notify/ [10.58.250.111:59096]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.03, 10.58.250.111:59080][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.02, 10.58.250.111:59108][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.03, 10.58.250.111:59080][0m
+[mHTTP GET /api/core/events/ 200 [0.02, 10.58.250.111:59080][0m
+[mHTTP GET /api/hr/leaderboard/?date=2026-09-23 200 [0.02, 10.58.250.111:59080][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.03, 10.58.250.111:59080][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.02, 10.58.250.111:59108][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.58.250.111:59080][0m
+[mHTTP GET /api/core/events/ 200 [0.02, 10.58.250.111:59080][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.01, 10.58.250.111:59080][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.03, 10.58.250.111:59080][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.04, 10.58.250.111:59080][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.03, 10.58.250.111:59108][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.03, 10.58.250.111:59080][0m
+[mHTTP GET /api/core/events/ 200 [0.03, 10.58.250.111:59080][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.02, 10.58.250.111:59080][0m
+WebSocket DISCONNECT /ws/notify/ [10.58.250.111:59096]
+[mHTTP GET /api/accounts/expenses/?date=2026-09-23&category=OUTWARD 200 [0.07, 10.58.250.21:65063][0m
+[mHTTP GET /api/manager/partners/?date=2026-09-23 200 [0.07, 10.58.250.21:36245][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&source=INWARD 200 [0.07, 10.58.250.21:36246][0m
+[mHTTP GET /api/manager/requests/?date=2026-09-23 200 [0.08, 10.58.250.21:36880][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&source=MEMBERSHIP 200 [0.08, 10.58.250.21:36879][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&source=DONATION 200 [0.08, 10.58.250.21:36878][0m
+[mHTTP GET /api/core/events/?date=2026-09-23 200 [0.05, 10.58.250.21:8102][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-23&category=PURCHASE 200 [0.06, 10.58.250.21:8101][0m
+[mHTTP GET /api/manager/partners/?date=2026-09-23 200 [0.06, 10.58.250.21:51498][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-23&category=OUTWARD 200 [0.06, 10.58.250.21:51497][0m
+[mHTTP GET /api/manager/requests/?date=2026-09-23 200 [0.06, 10.58.250.21:9487][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&source=INWARD 200 [0.07, 10.58.250.21:9486][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&source=MEMBERSHIP 200 [0.04, 10.58.250.21:60078][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&source=DONATION 200 [0.05, 10.58.250.21:42634][0m
+[mHTTP GET /api/core/events/?date=2026-09-23 200 [0.04, 10.58.250.21:23375][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-23&category=PURCHASE 200 [0.04, 10.58.250.21:64009][0m
+[mHTTP GET /api/accounts/income/?search=&source=DONATION&date=2026-09-23 200 [0.02, 10.58.250.21:56578][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.04, 10.58.250.21:56579][0m
+[mHTTP GET /api/accounts/income/?search=&source=DONATION&date=2026-09-23 200 [0.02, 10.58.250.21:29221][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.03, 10.58.250.21:44262][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-23&category=OUTWARD 200 [0.04, 10.58.250.21:29971][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&source=MEMBERSHIP 200 [0.06, 10.58.250.21:29967][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&source=DONATION 200 [0.06, 10.58.250.21:29966][0m
+[mHTTP GET /api/manager/requests/?date=2026-09-23 200 [0.06, 10.58.250.21:29968][0m
+[mHTTP GET /api/manager/partners/?date=2026-09-23 200 [0.06, 10.58.250.21:29969][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&source=INWARD 200 [0.07, 10.58.250.21:29970][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-23&category=PURCHASE 200 [0.06, 10.58.250.21:22418][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&source=MEMBERSHIP 200 [0.08, 10.58.250.21:46624][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-23&category=OUTWARD 200 [0.08, 10.58.250.21:48989][0m
+[mHTTP GET /api/core/events/?date=2026-09-23 200 [0.09, 10.58.250.21:13223][0m
+[mHTTP GET /api/manager/requests/?date=2026-09-23 200 [0.09, 10.58.250.21:4585][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&source=DONATION 200 [0.09, 10.58.250.21:26627][0m
+[mHTTP GET /api/manager/partners/?date=2026-09-23 200 [0.04, 10.58.250.21:30006][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&source=INWARD 200 [0.03, 10.58.250.21:5511][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-23&category=PURCHASE 200 [0.03, 10.58.250.21:5512][0m
+[mHTTP GET /api/core/events/?date=2026-09-23 200 [0.03, 10.58.250.21:31830][0m
+[mHTTP GET /api/accounts/income/?search=&source=DONATION&date=2026-09-23 200 [0.02, 10.58.250.21:32669][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.04, 10.58.250.21:32670][0m
+[mHTTP GET /api/accounts/income/?search=&source=DONATION&date=2026-09-23 200 [0.02, 10.58.250.21:10526][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.03, 10.58.250.21:59503][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-23&category=OUTWARD 200 [0.05, 10.58.250.21:3264][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&source=INWARD 200 [0.06, 10.58.250.21:3263][0m
+[mHTTP GET /api/manager/partners/?date=2026-09-23 200 [0.07, 10.58.250.21:31562][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&source=MEMBERSHIP 200 [0.08, 10.58.250.21:19714][0m
+[mHTTP GET /api/manager/requests/?date=2026-09-23 200 [0.08, 10.58.250.21:31561][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&source=DONATION 200 [0.08, 10.58.250.21:19713][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-23&category=PURCHASE 200 [0.04, 10.58.250.21:24383][0m
+[mHTTP GET /api/core/events/?date=2026-09-23 200 [0.06, 10.58.250.21:28682][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-23&category=OUTWARD 200 [0.06, 10.58.250.21:65240][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&source=INWARD 200 [0.05, 10.58.250.21:39182][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&source=MEMBERSHIP 200 [0.05, 10.58.250.21:56850][0m
+[mHTTP GET /api/manager/partners/?date=2026-09-23 200 [0.06, 10.58.250.21:56849][0m
+[mHTTP GET /api/manager/requests/?date=2026-09-23 200 [0.03, 10.58.250.21:6873][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&source=DONATION 200 [0.03, 10.58.250.21:43115][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-23&category=PURCHASE 200 [0.03, 10.58.250.21:30612][0m
+[mHTTP GET /api/core/events/?date=2026-09-23 200 [0.04, 10.58.250.21:30613][0m
+[mHTTP GET /api/accounts/income/?search=&source=DONATION&date=2026-09-23 200 [0.03, 10.58.250.21:51534][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.05, 10.58.250.21:51535][0m
+[mHTTP GET /api/accounts/income/?search=&source=DONATION&date=2026-09-23 200 [0.04, 10.58.250.21:47998][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.06, 10.58.250.21:64913][0m
+[mHTTP GET /api/auth/profile/ 200 [0.02, 10.58.250.111:46240][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.58.250.111:46240][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.04, 10.58.250.111:46250][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.58.250.111:46240][0m
+WebSocket HANDSHAKING /ws/notify/ [10.58.250.111:46252]
+WebSocket CONNECT /ws/notify/ [10.58.250.111:46252]
+[mHTTP GET /api/hr/staff-vouchers/17bf9936-922b-4627-a40b-7687bf44f4b8/ 200 [0.06, 10.58.250.111:46250][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.08, 10.58.250.111:46240][0m
+[mHTTP GET /api/core/events/ 200 [0.06, 10.58.250.111:46254][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.04, 10.58.250.111:46240][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.03, 10.58.250.111:46250][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.02, 10.58.250.111:46240][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.58.250.111:46240][0m
+[mHTTP GET /api/core/events/ 200 [0.02, 10.58.250.111:46240][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.03, 10.58.250.111:46240][0m
+[mHTTP POST /api/accounts/income/ 201 [0.04, 10.58.250.111:46240][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.05, 10.58.250.111:46250][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.06, 10.58.250.111:46240][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.58.250.111:46240][0m
+[mHTTP GET /api/core/events/ 200 [0.02, 10.58.250.111:46240][0m
+WebSocket HANDSHAKING /ws/notify/ [10.58.250.111:60498]
+WebSocket CONNECT /ws/notify/ [10.58.250.111:60498]
+[mHTTP GET /api/accounts/income/?date=2026-09-23&limit=5000 200 [0.04, 10.58.250.111:46240][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&limit=5000 200 [0.04, 10.58.250.111:46254][0m
+[mHTTP GET /api/hr/staff-dashboard/?date=2026-09-23 200 [0.07, 10.58.250.111:46250][0m
+[mHTTP GET /api/hr/staff-dashboard/?date=2026-09-23 200 [0.05, 10.58.250.111:46240][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&limit=5000 200 [0.05, 10.58.250.111:46254][0m
+[mHTTP GET /api/hr/staff-dashboard/?date=2026-09-23 200 [0.04, 10.58.250.111:60502][0m
+[mHTTP GET /api/auth/profile/ 200 [0.02, 10.58.250.111:46240][0m
+WebSocket DISCONNECT /ws/notify/ [10.58.250.21:9047]
+WebSocket HANDSHAKING /ws/notify/ [10.58.250.21:41092]
+WebSocket CONNECT /ws/notify/ [10.58.250.21:41092]
+WebSocket DISCONNECT /ws/notify/ [10.58.250.21:41092]
+WebSocket HANDSHAKING /ws/notify/ [10.58.250.21:54576]
+WebSocket CONNECT /ws/notify/ [10.58.250.21:54576]
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.58.250.21:41093][0m
+[mHTTP GET /api/core/features/ 200 [0.03, 10.58.250.21:41094][0m
+[mHTTP GET /api/core/features/ 200 [0.03, 10.58.250.21:54578][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.58.250.21:54577][0m
+[mHTTP GET /api/accounts/income/?search=&source=DONATION&date=2026-09-23 200 [0.05, 10.58.250.21:54579][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.07, 10.58.250.21:54580][0m
+[mHTTP GET /api/accounts/income/?search=&source=DONATION&date=2026-09-23 200 [0.03, 10.58.250.21:22485][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.06, 10.58.250.21:58578][0m
+WebSocket DISCONNECT /ws/notify/ [10.58.250.111:60498]
+WebSocket DISCONNECT /ws/notify/ [10.58.250.111:46252]
+[mHTTP GET /api/auth/profile/ 200 [0.01, 10.58.250.111:49586][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&limit=5000 200 [0.03, 10.58.250.111:49586][0m
+[mHTTP GET /api/hr/staff-dashboard/?date=2026-09-23 200 [0.04, 10.58.250.111:49594][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.03, 10.58.250.111:49586][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.02, 10.58.250.111:49594][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.58.250.111:49586][0m
+WebSocket HANDSHAKING /ws/notify/ [10.58.250.111:49606]
+WebSocket CONNECT /ws/notify/ [10.58.250.111:49606]
+[mHTTP GET /api/core/events/ 200 [0.02, 10.58.250.111:49586][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.58.250.111:49586][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.58.250.111:49586][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.02, 10.58.250.111:49594][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.58.250.111:49586][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.58.250.111:49586][0m
+[mHTTP GET /api/core/events/ 200 [0.03, 10.58.250.111:49586][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.03, 10.58.250.111:49586][0m
+[mHTTP GET /api/core/events/ 200 [0.02, 10.58.250.111:49586][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.58.250.111:49586][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.04, 10.58.250.111:49586][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.03, 10.58.250.111:49586][0m
+[mHTTP GET /api/hr/staff-vouchers/17bf9936-922b-4627-a40b-7687bf44f4b8/ 200 [0.02, 10.58.250.111:49594][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.03, 10.58.250.111:49586][0m
+[mHTTP POST /api/accounts/income/ 201 [0.05, 10.58.250.111:49586][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.03, 10.58.250.111:49594][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.03, 10.58.250.111:49586][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.04, 10.58.250.111:49586][0m
+[mHTTP GET /api/core/events/ 200 [0.02, 10.58.250.111:49586][0m
+WebSocket HANDSHAKING /ws/notify/ [10.58.250.111:48868]
+WebSocket CONNECT /ws/notify/ [10.58.250.111:48868]
+[mHTTP GET /api/accounts/income/?date=2026-09-23&limit=5000 200 [0.03, 10.58.250.111:49586][0m
+[mHTTP GET /api/hr/staff-dashboard/?date=2026-09-23 200 [0.05, 10.58.250.111:49594][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&limit=5000 200 [0.04, 10.58.250.111:48878][0m
+[mHTTP GET /api/hr/staff-dashboard/?date=2026-09-23 200 [0.06, 10.58.250.111:49586][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&limit=5000 200 [0.05, 10.58.250.111:48884][0m
+[mHTTP GET /api/hr/staff-dashboard/?date=2026-09-23 200 [0.06, 10.58.250.111:48886][0m
+WebSocket DISCONNECT /ws/notify/ [10.58.250.21:54576]
+WebSocket HANDSHAKING /ws/notify/ [10.58.250.21:40795]
+WebSocket CONNECT /ws/notify/ [10.58.250.21:40795]
+WebSocket DISCONNECT /ws/notify/ [10.58.250.21:40795]
+WebSocket HANDSHAKING /ws/notify/ [10.58.250.21:24456]
+WebSocket CONNECT /ws/notify/ [10.58.250.21:24456]
+[mHTTP GET /api/core/features/ 200 [0.04, 10.58.250.21:40797][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.58.250.21:40796][0m
+[mHTTP GET /api/core/features/ 200 [0.01, 10.58.250.21:24457][0m
+[mHTTP GET /api/auth/profile/ 200 [0.02, 10.58.250.21:24458][0m
+[mHTTP GET /api/accounts/income/?search=&source=DONATION&date=2026-09-23 200 [0.03, 10.58.250.21:24459][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.05, 10.58.250.21:24460][0m
+[mHTTP GET /api/accounts/income/?search=&source=DONATION&date=2026-09-23 200 [0.02, 10.58.250.21:61301][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.05, 10.58.250.21:50265][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-23&verification_status=VERIFIED 200 [0.02, 10.58.250.21:23268][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-23&verification_status=VERIFIED 200 [0.02, 10.58.250.21:23269][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-23&verification_status=UNVERIFIED 200 [0.01, 10.58.250.21:39032][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-23&verification_status=UNVERIFIED 200 [0.02, 10.58.250.21:21148][0m
+[mHTTP GET /api/hr/promoter-registry/transactions/?staff_id=17bf9936-922b-4627-a40b-7687bf44f4b8&date=2026-09-23 200 [0.01, 10.58.250.21:40987][0m
+[mHTTP DELETE /api/accounts/income/3f715e3d-1635-403b-b3fb-aa331bb9b464/ 204 [0.02, 10.58.250.21:1325][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-23&verification_status=UNVERIFIED 200 [0.01, 10.58.250.21:6356][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.58.250.111:49586][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.06, 10.58.250.111:49594][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&limit=5000 200 [0.07, 10.58.250.111:48878][0m
+[mHTTP GET /api/hr/staff-dashboard/?date=2026-09-23 200 [0.07, 10.58.250.111:48884][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.58.250.111:49586][0m
+[mHTTP GET /api/core/events/ 200 [0.02, 10.58.250.111:49586][0m
+[mHTTP DELETE /api/accounts/income/d5b0ec97-372b-4320-9e23-caae36518497/ 204 [0.02, 10.58.250.21:10891][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-23&verification_status=UNVERIFIED 200 [0.02, 10.58.250.21:37458][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-23&limit=5000 200 [0.01, 10.58.250.111:49586][0m
+[mHTTP GET /api/hr/staff-dashboard/?date=2026-09-23 200 [0.02, 10.58.250.111:49586][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.02, 10.58.250.111:48878][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.58.250.111:49594][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.58.250.111:49586][0m
+[mHTTP GET /api/core/events/ 200 [0.02, 10.58.250.111:49586][0m
+WebSocket DISCONNECT /ws/notify/ [10.58.250.111:48868]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.58.250.111:49586][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.02, 10.58.250.111:49594][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.58.250.111:49586][0m
+[mHTTP GET /api/core/events/ 200 [0.01, 10.58.250.111:49586][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.05, 10.58.250.111:49586][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.05, 10.58.250.111:49594][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.05, 10.58.250.111:48878][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.58.250.111:49586][0m
+[mHTTP GET /api/core/events/ 200 [0.05, 10.58.250.111:48878][0m
+[mHTTP GET /api/hr/staff-vouchers/17bf9936-922b-4627-a40b-7687bf44f4b8/ 200 [0.06, 10.58.250.111:49594][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.07, 10.58.250.111:49586][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.02, 10.58.250.111:49586][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.58.250.111:49586][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.58.250.111:49594][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.58.250.111:49586][0m
+[mHTTP GET /api/core/events/ 200 [0.02, 10.58.250.111:49586][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.04, 10.58.250.111:49586][0m
+[mHTTP GET /api/hr/attendance/my-attendance/ 200 [0.05, 10.58.250.111:49586][0m
+[mHTTP GET /api/hr/staff-vouchers/17bf9936-922b-4627-a40b-7687bf44f4b8/ 200 [0.03, 10.58.250.111:49594][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.03, 10.58.250.111:48878][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.58.250.111:49586][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.02, 10.58.250.111:49594][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.58.250.111:49586][0m
+[mHTTP GET /api/core/events/ 200 [0.02, 10.58.250.111:49586][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.02, 10.58.250.111:49586][0m
