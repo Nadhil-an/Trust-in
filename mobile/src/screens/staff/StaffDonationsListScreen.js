@@ -6,7 +6,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
-import { donationApi } from '../../api';
+import { donationApi, staffApi } from '../../api';
 import Toast from 'react-native-toast-message';
 import { useNotificationSocket } from '../../hooks/useWebSocket';
 import { useTranslation } from 'react-i18next';
@@ -21,6 +21,7 @@ const StaffDonationsListScreen = ({ navigation, route }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('ALL');
   const [donationDetails, setDonationDetails] = useState(null);
+  const [stats, setStats] = useState({});
 
   // Get today's ISO date string
   const getTodayIso = () => {
@@ -49,8 +50,12 @@ const StaffDonationsListScreen = ({ navigation, route }) => {
   const fetchDonations = async (showLoading = true) => {
     if (showLoading) setLoading(true);
     try {
-      const res = await donationApi.list({ limit: 100 }); 
+      const [res, statsRes] = await Promise.all([
+        donationApi.list({ limit: 5000 }),
+        staffApi.todayStats()
+      ]);
       setDonations(res.data.results || res.data);
+      if (statsRes.data) setStats(statsRes.data);
     } catch (err) {
       Toast.show({ type: 'error', text1: 'Failed to load donations' });
     } finally {
@@ -207,12 +212,22 @@ const StaffDonationsListScreen = ({ navigation, route }) => {
     return sections;
   };
 
-  // Today totals: items CREATED today — includes offline + rolled-over entries
-  const todayIso = getTodayIso();
-  const todayItems = combinedDonations.filter(d => {
-    const createdDate = (d.created_at || d.date || '').substring(0, 10);
-    return createdDate === todayIso || d.date === todayIso;
-  });
+  // Today totals: from backend stats + offline items
+  const offlineDonationsTotal = React.useMemo(() => {
+    return offlineDonationItems.reduce((sum, item) => sum + (Number(item?.amount) || 0), 0);
+  }, [offlineDonationItems]);
+
+  const offlineCashTotal = React.useMemo(() => {
+    return offlineDonationItems.filter(item => (item?.payment_method || '').toUpperCase() === 'CASH').reduce((sum, item) => sum + (Number(item?.amount) || 0), 0);
+  }, [offlineDonationItems]);
+
+  const offlineBankTotal = React.useMemo(() => {
+    return offlineDonationItems.filter(item => (item?.payment_method || '').toUpperCase() !== 'CASH').reduce((sum, item) => sum + (Number(item?.amount) || 0), 0);
+  }, [offlineDonationItems]);
+
+  const displayTotalDonations = (stats?.donations || 0) + offlineDonationsTotal;
+  const displayCashDonations = (stats?.cash_donations || 0) + offlineCashTotal;
+  const displayBankDonations = (stats?.bank_donations || 0) + offlineBankTotal;
 
   return (
     <View style={styles.container}>
@@ -251,26 +266,26 @@ const StaffDonationsListScreen = ({ navigation, route }) => {
         </ScrollView>
       </View>
 
-      {/* Today's Summary — ONLY counts items whose date is today */}
+      {/* Today's Summary */}
       <View style={styles.summaryContainer}>
         <Text style={styles.summaryTitle}>{t('staff.today_total') || "Today's Collection Summary"}</Text>
         <View style={styles.summaryCards}>
           <View style={[styles.summaryCard, { backgroundColor: '#EFF6FF' }]}>
             <Text style={styles.summaryLabel}>{t('common.total')}</Text>
             <Text style={[styles.summaryValue, { color: Colors.primary }]}>
-              ₹{todayItems.reduce((sum, d) => sum + parseFloat(d.amount || 0), 0)}
+              ₹{displayTotalDonations}
             </Text>
           </View>
           <View style={[styles.summaryCard, { backgroundColor: '#ECFDF5' }]}>
             <Text style={styles.summaryLabel}>{t('staff.cash')}</Text>
             <Text style={[styles.summaryValue, { color: Colors.success }]}>
-              ₹{todayItems.filter(d => d.payment_method?.toUpperCase() === 'CASH').reduce((sum, d) => sum + parseFloat(d.amount || 0), 0)}
+              ₹{displayCashDonations}
             </Text>
           </View>
           <View style={[styles.summaryCard, { backgroundColor: '#FEF2F2' }]}>
             <Text style={styles.summaryLabel}>Bank/GPay</Text>
             <Text style={[styles.summaryValue, { color: Colors.error }]}>
-              ₹{todayItems.filter(d => d.payment_method?.toUpperCase() !== 'CASH').reduce((sum, d) => sum + parseFloat(d.amount || 0), 0)}
+              ₹{displayBankDonations}
             </Text>
           </View>
         </View>
