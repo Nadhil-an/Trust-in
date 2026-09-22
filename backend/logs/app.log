@@ -220290,3 +220290,11 @@ WebSocket DISCONNECT /ws/notify/ [10.58.250.111:48868]
 [mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.58.250.111:49586][0m
 [mHTTP GET /api/core/events/ 200 [0.02, 10.58.250.111:49586][0m
 [mHTTP GET /api/hr/birthday-alerts/ 200 [0.02, 10.58.250.111:49586][0m
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\sreelakshmi_trust\settings.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.58.250.21:30352]
+WebSocket REJECT /ws/notify/ [10.58.250.21:30352]
+WebSocket DISCONNECT /ws/notify/ [10.58.250.21:30352]

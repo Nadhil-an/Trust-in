@@ -32,11 +32,11 @@ export default function PurchaseEntry() {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await accountsApi.expenses.list({ search, category: 'PURCHASE', page })
+      const res = await accountsApi.expenses.list({ search, category: 'PURCHASE', page, page_size: 10 })
       setItems(res.data.results || res.data)
       if (res.data.count) {
         setTotalCount(res.data.count)
-        setTotalPages(Math.ceil(res.data.count / 20))
+        setTotalPages(Math.ceil(res.data.count / 10))
       } else {
         setTotalCount((res.data.results || res.data).length)
         setTotalPages(1)
@@ -132,7 +132,7 @@ export default function PurchaseEntry() {
         {!loading && totalPages > 1 && (
           <div style={{ padding: '12px 20px', borderTop: '1px solid #e2e8f0', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 10 }}>
             <div style={{ fontSize: 13, color: '#64748b' }}>
-              Showing <span style={{ fontWeight: 600, color: '#0f172a' }}>{(page - 1) * 20 + 1}</span> to <span style={{ fontWeight: 600, color: '#0f172a' }}>{Math.min(page * 20, totalCount)}</span> of <span style={{ fontWeight: 600, color: '#0f172a' }}>{totalCount}</span> entries
+              Page <span style={{ fontWeight: 600, color: '#0f172a' }}>{page}</span> / <span style={{ fontWeight: 600, color: '#0f172a' }}>{totalPages}</span> <span style={{ color: '#94a3b8' }}>({totalCount} entries)</span>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <button 
@@ -142,29 +142,6 @@ export default function PurchaseEntry() {
               >
                 Previous
               </button>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let p = i + 1;
-                  if (totalPages > 5) {
-                    if (page > 3) p = page - 2 + i;
-                    if (p > totalPages) p = totalPages - 4 + i;
-                  }
-                  return (
-                    <button
-                      key={p}
-                      onClick={() => setPage(p)}
-                      style={{
-                        width: 28, height: 28, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 13, fontWeight: 600, cursor: 'pointer', border: 'none',
-                        background: page === p ? '#4f46e5' : 'transparent',
-                        color: page === p ? 'white' : '#475569'
-                      }}
-                    >
-                      {p}
-                    </button>
-                  )
-                })}
-              </div>
               <button 
                 className="btn btn-secondary btn-sm" 
                 disabled={page === totalPages} 
