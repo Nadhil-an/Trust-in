@@ -137,14 +137,14 @@ export default function MembershipEntry() {
         <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Record Fee</button>
       </PageHeader>
 
-      <div className="data-card" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 160px)', padding: 0, overflow: 'hidden' }}>
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid #e2e8f0', background: 'white', zIndex: 10 }}>
+      <div className="data-card" style={{ padding: 0, overflow: 'hidden' }}>
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid #e2e8f0', background: 'white' }}>
           <FilterBar search={search} onSearch={setSearch} />
         </div>
         {loading ? <LoadingState /> : (
-          <div className="table-wrap" style={{ flex: 1, overflowY: 'auto', margin: 0, border: 'none', borderRadius: 0 }}>
+          <div className="table-wrap" style={{ margin: 0, border: 'none', borderRadius: 0 }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead style={{ position: 'sticky', top: 0, zIndex: 5, background: '#f8fafc', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}><tr>
+              <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}><tr>
                 <th style={{ background: '#f8fafc' }}>Date</th>
                 <th style={{ background: '#f8fafc' }}>Member Name</th>
                 <th style={{ background: '#f8fafc' }}>Phone</th>
