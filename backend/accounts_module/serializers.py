@@ -44,11 +44,16 @@ class IncomeSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'receipt_number', 'created_by', 'created_at']
 
     def to_internal_value(self, data):
-        if 'phone' in data and not data.get('donor_phone'):
-            mutable_data = data.copy()
+        mutable_data = data.copy() if hasattr(data, 'copy') else data
+        
+        if 'phone' in mutable_data and not mutable_data.get('donor_phone'):
             mutable_data['donor_phone'] = mutable_data.get('phone')
-            data = mutable_data
-        return super().to_internal_value(data)
+            
+        if 'payment_method' in mutable_data and not mutable_data.get('account_type'):
+            pm = str(mutable_data.get('payment_method')).upper()
+            mutable_data['account_type'] = 'BANK' if pm in ['UPI', 'NEFT', 'RTGS', 'IMPS', 'CHEQUE', 'DD'] else 'CASH'
+            
+        return super().to_internal_value(mutable_data)
 
 
 class ExpenseSerializer(serializers.ModelSerializer):

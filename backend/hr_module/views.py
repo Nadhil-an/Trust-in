@@ -122,7 +122,7 @@ class StaffDashboardView(APIView):
         
         incomes_today = Income.objects.filter(created_by=user, created_at__date=today)
         donations_today = incomes_today.aggregate(t=Sum('amount'))['t'] or 0
-        donations_cash = incomes_today.filter(Q(payment_method__iexact='CASH') | Q(account_type='CASH')).aggregate(t=Sum('amount'))['t'] or 0
+        donations_cash = incomes_today.filter(account_type='CASH').aggregate(t=Sum('amount'))['t'] or 0
         donations_bank = float(donations_today) - float(donations_cash)
         
         # Membership amount collected today
