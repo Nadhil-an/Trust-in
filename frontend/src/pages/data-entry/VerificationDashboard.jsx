@@ -405,6 +405,7 @@ export default function VerificationDashboard() {
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ background: '#F3F4F6' }}>
+                    <th style={{ padding: 12, textAlign: 'left', borderBottom: '1px solid #E5E7EB', width: 40 }}>#</th>
                     <th style={{ padding: 12, textAlign: 'left', borderBottom: '1px solid #E5E7EB' }}>Time</th>
                     <th style={{ padding: 12, textAlign: 'left', borderBottom: '1px solid #E5E7EB' }}>Voucher No</th>
                     <th style={{ padding: 12, textAlign: 'left', borderBottom: '1px solid #E5E7EB' }}>Amount</th>
@@ -417,8 +418,9 @@ export default function VerificationDashboard() {
                     (t.receipt_number && t.receipt_number.toLowerCase().includes(transactionSearch.toLowerCase())) ||
                     (t.donor_name && t.donor_name.toLowerCase().includes(transactionSearch.toLowerCase())) ||
                     (t.amount.toString().includes(transactionSearch))
-                  ).map(t => (
+                  ).map((t, index) => (
                     <tr key={t.id} style={{ borderBottom: '1px solid #E5E7EB' }}>
+                      <td style={{ padding: 12, color: '#6B7280', fontWeight: 600 }}>{index + 1}</td>
                       <td style={{ padding: 12, color: '#6B7280' }}>{t.time}</td>
                       <td style={{ padding: 12, fontWeight: 500 }}>{t.receipt_number || '-'}</td>
                       <td style={{ padding: 12, fontWeight: 700, color: '#0369A1' }}>₹{t.amount.toFixed(2)}</td>
