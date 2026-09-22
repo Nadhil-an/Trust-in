@@ -25,6 +25,7 @@ export default function PurchaseEntry() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
+  const [totalAmount, setTotalAmount] = useState(0)
   const [showModal, setShowModal] = useState(false)
   const [form, setForm]       = useState(EMPTY_FORM)
   const [saving, setSaving]   = useState(false)
@@ -34,12 +35,15 @@ export default function PurchaseEntry() {
     try {
       const res = await accountsApi.expenses.list({ search, category: 'PURCHASE', page, page_size: 10 })
       setItems(res.data.results || res.data)
-      if (res.data.count) {
+      if (res.data.count !== undefined) {
         setTotalCount(res.data.count)
         setTotalPages(Math.ceil(res.data.count / 10))
+        setTotalAmount(res.data.total_amount || 0)
       } else {
-        setTotalCount((res.data.results || res.data).length)
+        const dataList = res.data.results || res.data
+        setTotalCount(dataList.length)
         setTotalPages(1)
+        setTotalAmount(dataList.reduce((s, i) => s + parseFloat(i.amount || 0), 0))
       }
     } catch { toast.error('Failed to load purchase entries') }
     finally { setLoading(false) }
@@ -90,8 +94,8 @@ export default function PurchaseEntry() {
 
   return (
     <div>
-      <PageHeader title="🛒 Purchase Entry" subtitle="Record purchases and procurement transactions">
-        <span className="badge badge-yellow" style={{ fontSize: 13, padding: '6px 14px' }}>Total: {formatINR(total)}</span>
+      <PageHeader title="🛒 Purchase Entry" subtitle="Record Trust purchases and expenditures">
+        <span className="badge badge-red" style={{ fontSize: 13, padding: '6px 14px', background: '#fee2e2', color: '#991b1b' }}>Total: {formatINR(totalAmount)}</span>
         <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ New Purchase</button>
       </PageHeader>
 

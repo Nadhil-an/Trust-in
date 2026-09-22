@@ -30,6 +30,7 @@ export default function DonationEntry() {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
+  const [totalAmount, setTotalAmount] = useState(0)
   const [users, setUsers] = useState([])
   const [showModal, setShowModal] = useState(false)
   const [form, setForm]       = useState(EMPTY_FORM)
@@ -43,12 +44,15 @@ export default function DonationEntry() {
       if (filterStaff) params.created_by = filterStaff
       const res = await accountsApi.income.list(params)
       setItems(res.data.results || res.data)
-      if (res.data.count) {
+      if (res.data.count !== undefined) {
         setTotalCount(res.data.count)
         setTotalPages(Math.ceil(res.data.count / 10))
+        setTotalAmount(res.data.total_amount || 0)
       } else {
-        setTotalCount((res.data.results || res.data).length)
+        const dataList = res.data.results || res.data
+        setTotalCount(dataList.length)
         setTotalPages(1)
+        setTotalAmount(dataList.reduce((s, i) => s + parseFloat(i.amount || 0), 0))
       }
     } catch { toast.error('Failed to load donations') }
     finally { setLoading(false) }
@@ -159,12 +163,10 @@ export default function DonationEntry() {
     }
   }
 
-  const total = items.reduce((s, i) => s + parseFloat(i.amount || 0), 0)
-
   return (
     <div>
       <PageHeader title="💝 Donation Entry" subtitle="Record donations from individuals and organisations">
-        <span className="badge badge-green" style={{ fontSize: 13, padding: '6px 14px' }}>Total: {formatINR(total)}</span>
+        <span className="badge badge-green" style={{ fontSize: 13, padding: '6px 14px' }}>Total: {formatINR(totalAmount)}</span>
         <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Record Donation</button>
       </PageHeader>
 
