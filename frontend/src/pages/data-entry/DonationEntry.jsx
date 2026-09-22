@@ -31,6 +31,8 @@ export default function DonationEntry() {
   const [totalPages, setTotalPages] = useState(1)
   const [totalCount, setTotalCount] = useState(0)
   const [totalAmount, setTotalAmount] = useState(0)
+  const [totalCash, setTotalCash] = useState(0)
+  const [totalOnline, setTotalOnline] = useState(0)
   const [users, setUsers] = useState([])
   const [showModal, setShowModal] = useState(false)
   const [form, setForm]       = useState(EMPTY_FORM)
@@ -48,11 +50,15 @@ export default function DonationEntry() {
         setTotalCount(res.data.count)
         setTotalPages(Math.ceil(res.data.count / 10))
         setTotalAmount(res.data.total_amount || 0)
+        setTotalCash(res.data.total_cash || 0)
+        setTotalOnline(res.data.total_online || 0)
       } else {
         const dataList = res.data.results || res.data
         setTotalCount(dataList.length)
         setTotalPages(1)
         setTotalAmount(dataList.reduce((s, i) => s + parseFloat(i.amount || 0), 0))
+        setTotalCash(dataList.filter(i => i.payment_method === 'CASH').reduce((s, i) => s + parseFloat(i.amount || 0), 0))
+        setTotalOnline(dataList.filter(i => i.payment_method !== 'CASH').reduce((s, i) => s + parseFloat(i.amount || 0), 0))
       }
     } catch { toast.error('Failed to load donations') }
     finally { setLoading(false) }
@@ -166,7 +172,11 @@ export default function DonationEntry() {
   return (
     <div>
       <PageHeader title="💝 Donation Entry" subtitle="Record donations from individuals and organisations">
-        <span className="badge badge-green" style={{ fontSize: 13, padding: '6px 14px' }}>Total: {formatINR(totalAmount)}</span>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <span className="badge badge-green" style={{ fontSize: 13, padding: '6px 14px' }}>Cash: {formatINR(totalCash)}</span>
+          <span className="badge badge-blue" style={{ fontSize: 13, padding: '6px 14px' }}>Online: {formatINR(totalOnline)}</span>
+          <span className="badge badge-green" style={{ fontSize: 13, padding: '6px 14px', background: '#dcfce7', color: '#166534', fontWeight: 700 }}>Total: {formatINR(totalAmount)}</span>
+        </div>
         <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ Record Donation</button>
       </PageHeader>
 

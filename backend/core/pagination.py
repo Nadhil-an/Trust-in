@@ -10,9 +10,18 @@ class StandardResultsSetPagination(PageNumberPagination):
     def get_paginated_response(self, data):
         response = super().get_paginated_response(data)
         try:
+            from django.db.models import Sum, Q
             queryset = self.page.paginator.object_list
             total_amount = queryset.aggregate(total=Sum('amount'))['total'] or 0
             response.data['total_amount'] = float(total_amount)
+            
+            try:
+                cash_total = queryset.filter(payment_method='CASH').aggregate(total=Sum('amount'))['total'] or 0
+                online_total = queryset.filter(~Q(payment_method='CASH')).aggregate(total=Sum('amount'))['total'] or 0
+                response.data['total_cash'] = float(cash_total)
+                response.data['total_online'] = float(online_total)
+            except Exception:
+                pass
         except Exception:
             pass
         return response

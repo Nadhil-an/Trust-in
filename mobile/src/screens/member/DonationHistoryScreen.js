@@ -14,6 +14,8 @@ import { donationApi } from '../../api';
 
 const DonationHistoryScreen = ({ navigation }) => {
   const [totalAmount, setTotalAmount] = useState(0);
+  const [totalCash, setTotalCash] = useState(0);
+  const [totalOnline, setTotalOnline] = useState(0);
   const [loading, setLoading] = useState(false);
   const [donations, setDonations] = useState([]);
   const [selectedDonation, setSelectedDonation] = useState(null);
@@ -21,13 +23,19 @@ const DonationHistoryScreen = ({ navigation }) => {
   const fetchDonations = async () => {
     try {
       setLoading(true);
-      const res = await donationApi.list();
+      const res = await donationApi.list({ page_size: 1000 });
       if (res.data && res.data.results) {
         // Map backend response if available
         setDonations(res.data.results);
+        if (res.data.total_amount !== undefined) setTotalAmount(res.data.total_amount);
+        if (res.data.total_cash !== undefined) setTotalCash(res.data.total_cash);
+        if (res.data.total_online !== undefined) setTotalOnline(res.data.total_online);
+      } else {
+        setDonations(res.data || []);
       }
+      
       const totalRes = await donationApi.myTotal();
-      if (totalRes.data && totalRes.data.total_amount) {
+      if (totalRes.data && totalRes.data.total_amount && !res.data?.total_amount) {
         setTotalAmount(totalRes.data.total_amount);
       }
     } catch (error) {
@@ -60,7 +68,16 @@ const DonationHistoryScreen = ({ navigation }) => {
           </View>
           <Text style={styles.summaryLabel}>Total Donation</Text>
           <Text style={styles.summaryAmount}>₹{totalAmount.toLocaleString()}</Text>
-          <Text style={styles.summarySub}>Thank you for your kindness!</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%', paddingHorizontal: 20, marginTop: 8 }}>
+            <View style={{ alignItems: 'center' }}>
+              <Text style={{ fontSize: 12, color: Colors.gray600, fontWeight: '600' }}>Cash</Text>
+              <Text style={{ fontSize: 16, fontWeight: '800', color: '#16a34a' }}>₹{totalCash.toLocaleString()}</Text>
+            </View>
+            <View style={{ alignItems: 'center' }}>
+              <Text style={{ fontSize: 12, color: Colors.gray600, fontWeight: '600' }}>Online</Text>
+              <Text style={{ fontSize: 16, fontWeight: '800', color: '#0284c7' }}>₹{totalOnline.toLocaleString()}</Text>
+            </View>
+          </View>
         </View>
 
         {/* Section Header with Filter */}
