@@ -1729,12 +1729,15 @@ class PromoterRegistryDailySummaryView(APIView):
                 totals[sid] = {
                     'staff_name': inc.created_by.full_name if inc.created_by else '',
                     'cash': 0, 'online': 0,
+                    'cash_count': 0, 'online_count': 0,
                     'receipts': []
                 }
             if inc.payment_method == 'CASH':
                 totals[sid]['cash'] += float(inc.amount)
+                totals[sid]['cash_count'] += 1
             else:
                 totals[sid]['online'] += float(inc.amount)
+                totals[sid]['online_count'] += 1
                 
             # Track receipts to find min and max
             ref = inc.reference_number or inc.receipt_number
@@ -1796,6 +1799,8 @@ class PromoterRegistryDailySummaryView(APIView):
                 'is_present': is_present,
                 'cash_collected': income_data['cash'],
                 'online_collected': income_data['online'],
+                'cash_count': income_data.get('cash_count', 0),
+                'online_count': income_data.get('online_count', 0),
                 'auto_starting_reading': auto_starting,
                 'auto_ending_reading': auto_ending,
                 'book_number': str(vb_info['book_number']) if vb_info else '',

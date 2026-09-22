@@ -5,7 +5,8 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator
+  ActivityIndicator,
+  Modal
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
@@ -15,6 +16,7 @@ const DonationHistoryScreen = ({ navigation }) => {
   const [totalAmount, setTotalAmount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [donations, setDonations] = useState([]);
+  const [selectedDonation, setSelectedDonation] = useState(null);
 
   const fetchDonations = async () => {
     try {
@@ -76,7 +78,7 @@ const DonationHistoryScreen = ({ navigation }) => {
         ) : (
           <View style={styles.listContainer}>
             {donations.map((item) => (
-              <TouchableOpacity key={item.id} style={styles.donationRow} activeOpacity={0.7}>
+              <TouchableOpacity key={item.id} style={styles.donationRow} activeOpacity={0.7} onPress={() => setSelectedDonation(item)}>
                 <View style={styles.rowIconCircle}>
                   <Ionicons name={item.icon || 'gift-outline'} size={20} color="#0284c7" />
                 </View>
@@ -100,6 +102,58 @@ const DonationHistoryScreen = ({ navigation }) => {
           <Text style={styles.bannerText}>Your support brings hope and creates real change.</Text>
         </View>
       </ScrollView>
+
+      {/* Donation Details Modal */}
+      <Modal visible={!!selectedDonation} transparent animationType="fade" onRequestClose={() => setSelectedDonation(null)}>
+        <View style={styles.previewOverlay}>
+          <View style={styles.previewCard}>
+            <View style={styles.previewHeaderRow}>
+              <Text style={styles.previewHeaderTitle}>Donation Details</Text>
+              <TouchableOpacity style={styles.previewCloseBtn} onPress={() => setSelectedDonation(null)}>
+                <Ionicons name="close" size={22} color="#64748B" />
+              </TouchableOpacity>
+            </View>
+
+            {selectedDonation && (
+              <ScrollView style={styles.previewScrollContainer} showsVerticalScrollIndicator={false}>
+                <View style={styles.previewSectionBox}>
+                  <Text style={styles.previewSectionTitle}>Information</Text>
+                  <View style={styles.previewDivider} />
+                  
+                  <View style={styles.previewRow}>
+                    <Text style={styles.previewLabel}>Category:</Text>
+                    <Text style={styles.previewValue}>{selectedDonation.category || selectedDonation.source_name || 'General'}</Text>
+                  </View>
+                  
+                  <View style={styles.previewRow}>
+                    <Text style={styles.previewLabel}>Date:</Text>
+                    <Text style={styles.previewValue}>{new Date(selectedDonation.date || selectedDonation.created_at || new Date()).toLocaleDateString('en-GB')}</Text>
+                  </View>
+                  
+                  <View style={styles.previewRow}>
+                    <Text style={styles.previewLabel}>Amount:</Text>
+                    <Text style={[styles.previewValue, { color: '#16a34a', fontSize: 16 }]}>₹{(selectedDonation.amount || 0).toLocaleString()}</Text>
+                  </View>
+
+                  {selectedDonation.receipt_number ? (
+                    <View style={styles.previewRow}>
+                      <Text style={styles.previewLabel}>Receipt No:</Text>
+                      <Text style={styles.previewValue}>{selectedDonation.receipt_number}</Text>
+                    </View>
+                  ) : null}
+                  
+                  {selectedDonation.payment_method ? (
+                    <View style={styles.previewRow}>
+                      <Text style={styles.previewLabel}>Method:</Text>
+                      <Text style={styles.previewValue}>{selectedDonation.payment_method}</Text>
+                    </View>
+                  ) : null}
+                </View>
+              </ScrollView>
+            )}
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -196,6 +250,30 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   bannerText: { fontSize: 12, color: '#0369a1', fontWeight: '600', textAlign: 'center' },
+  
+  previewOverlay: {
+    flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.7)',
+    justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20,
+  },
+  previewCard: {
+    backgroundColor: '#FFFFFF', borderRadius: 24, width: '100%',
+    maxWidth: 380, maxHeight: '85%', padding: 20,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.15, shadowRadius: 20, elevation: 8,
+  },
+  previewHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  previewHeaderTitle: { fontSize: 20, fontWeight: '800', color: '#0F172A' },
+  previewCloseBtn: { padding: 4 },
+  previewScrollContainer: { marginBottom: 16 },
+  previewSectionBox: {
+    backgroundColor: '#F8FAFC', borderRadius: 16, padding: 16,
+    borderWidth: 1, borderColor: '#E2E8F0', marginBottom: 12,
+  },
+  previewSectionTitle: { fontSize: 14, fontWeight: '800', color: '#0284C7', marginBottom: 6 },
+  previewDivider: { height: 1, backgroundColor: '#E2E8F0', marginBottom: 10 },
+  previewRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 },
+  previewLabel: { fontSize: 13, color: '#64748B', fontWeight: '500', width: '35%' },
+  previewValue: { fontSize: 13, color: '#0F172A', fontWeight: '700', textAlign: 'right', flex: 1 },
 });
 
 export default DonationHistoryScreen;
