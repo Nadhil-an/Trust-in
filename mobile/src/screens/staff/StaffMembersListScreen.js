@@ -28,7 +28,7 @@ const StaffMembersListScreen = ({ navigation }) => {
 
   const fetchMembershipsIncome = async () => {
     try {
-      const res = await donationApi.list({ limit: 100 });
+      const res = await donationApi.list({ page_size: 1000 });
       const incomes = res.data.results || res.data;
       
       const todayDateObj = new Date();
@@ -61,7 +61,7 @@ const StaffMembersListScreen = ({ navigation }) => {
     try {
       fetchMembershipsIncome();
       // By default, backend filters to only show members created by this staff user
-      const res = await membersApi.list({ limit: 100 }); 
+      const res = await membersApi.list({ page_size: 1000 }); 
       setMembers(res.data.results || res.data);
     } catch (err) {
       Toast.show({ type: 'error', text1: 'Failed to load members' });

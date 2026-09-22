@@ -28,7 +28,7 @@ const StaffAssessmentsListScreen = ({ navigation }) => {
   const fetchAssessments = async (showLoading = true) => {
     if (showLoading) setLoading(true);
     try {
-      const res = await assessmentApi.list({ limit: 100 }); 
+      const res = await assessmentApi.list({ page_size: 1000 }); 
       setAssessments(res.data.results || res.data);
     } catch (err) {
       Toast.show({ type: 'error', text1: 'Failed to load assessments' });
