@@ -278,7 +278,7 @@ const StaffDonationsListScreen = ({ navigation, route }) => {
       <View style={styles.summaryContainer}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
           <Text style={[styles.summaryTitle, { marginBottom: 0 }]}>
-            Summary ({selectedDate.toLocaleDateString()})
+            Summary ({selectedDate.toLocaleDateString('en-GB')})
           </Text>
           <TouchableOpacity onPress={() => setShowDatePicker(true)} style={{ padding: 4 }}>
             <Ionicons name="calendar-outline" size={24} color={Colors.primary} />

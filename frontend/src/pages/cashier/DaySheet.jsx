@@ -91,9 +91,9 @@ export default function DaySheet() {
 
     // Restore closing balances
     setClosing({
-      cashInHand: data.physical_cash != null ? data.physical_cash : '',
-      bankBalance: data.physical_bank != null ? data.physical_bank : '',
-      sheetClosing: data.sheet_closing != null ? data.sheet_closing : ''
+      cashInHand: data.has_closing ? (data.physical_cash != null ? data.physical_cash : '') : '',
+      bankBalance: data.has_closing ? (data.physical_bank != null ? data.physical_bank : '') : '',
+      sheetClosing: data.has_closing ? (data.sheet_closing != null ? data.sheet_closing : '') : ''
     })
   }, [data])
 
@@ -101,7 +101,7 @@ export default function DaySheet() {
   const handlePrint = () => {
     const win = window.open('', '_blank')
     const formatAmt = (amt) => amt ? Number(amt).toLocaleString('en-IN') : ''
-    
+
     let tableHtml = ''
     const maxLen = Math.max(debits.length, credits.length)
     for (let i = 0; i < maxLen; i++) {
@@ -141,8 +141,8 @@ export default function DaySheet() {
             table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
             th, td { border: 1px solid #ddd; padding: 8px 10px; }
             th { background-color: #f8f9fa; font-weight: bold; text-transform: uppercase; font-size: 11px; color: #555; }
-            .header-debit { background-color: #e0f2fe; color: #0369a1; text-align: center; font-size: 14px; font-weight: bold; }
-            .header-credit { background-color: #dcfce7; color: #15803d; text-align: center; font-size: 14px; font-weight: bold; }
+            .header-debit { background-color: #dcfce7; color: #15803d; text-align: center; font-size: 14px; font-weight: bold; }
+            .header-credit { background-color: #e0f2fe; color: #0369a1; text-align: center; font-size: 14px; font-weight: bold; }
             .center { text-align: center; }
             .right { text-align: right; font-variant-numeric: tabular-nums; }
             .bold { font-weight: bold; }
@@ -163,8 +163,8 @@ export default function DaySheet() {
           <table>
             <thead>
               <tr>
-                <th colspan="3" class="header-debit">DEBIT</th>
-                <th colspan="3" class="header-credit">CREDIT</th>
+                <th colspan="3" class="header-debit">CREDIT</th>
+                <th colspan="3" class="header-credit">DEBIT</th>
               </tr>
               <tr>
                 <th width="35%">Particular</th>
@@ -178,11 +178,11 @@ export default function DaySheet() {
             <tbody>
               ${tableHtml}
               <tr class="total-row">
-                <td class="right">TOTAL DEBIT</td>
-                <td class="right" style="color: #0369a1;">${formatAmt(totalDebit)}</td>
-                <td></td>
                 <td class="right">TOTAL CREDIT</td>
-                <td class="right" style="color: #15803d;">${formatAmt(totalCredit)}</td>
+                <td class="right" style="color: #15803d;">${formatAmt(totalCreditSum)}</td>
+                <td></td>
+                <td class="right">TOTAL DEBIT</td>
+                <td class="right" style="color: #0369a1;">${formatAmt(totalDebitSum)}</td>
                 <td></td>
               </tr>
             </tbody>
@@ -212,10 +212,10 @@ export default function DaySheet() {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr><td>Total Debit</td><td class="right">${formatAmt(totalDebit)}</td></tr>
-                  <tr><td>Total Credit</td><td class="right">${formatAmt(totalCredit)}</td></tr>
+                  <tr><td>Total Credit</td><td class="right">${formatAmt(totalCreditSum)}</td></tr>
+                  <tr><td>Total Debit</td><td class="right">${formatAmt(totalDebitSum)}</td></tr>
                   <tr class="bold"><td>Total Value</td><td class="right">${(totalValue < 0 ? '-' : '') + formatAmt(Math.abs(totalValue))}</td></tr>
-                  <tr class="bold"><td>Net Difference</td><td class="right" style="color: ${!hasAllClosingInputs ? '#6b7280' : (netDiff < 0 ? '#dc2626' : (netDiff > 0 ? '#16a34a' : 'inherit'))}">${!hasAllClosingInputs ? '—' : (netDiff > 0 ? '+' + formatAmt(netDiff) + ' (Profit)' : (netDiff < 0 ? '-' + formatAmt(Math.abs(netDiff)) + ' (Loss)' : '0'))}</td></tr>
+                  <tr class="bold"><td>Net Difference</td><td class="right" style="color: ${!hasAllClosingInputs ? '#6b7280' : (netDiff < 0 ? '#dc2626' : (netDiff > 0 ? '#16a34a' : 'inherit'))}">${!hasAllClosingInputs ? '—' : (netDiff > 0 ? '+' + formatAmt(netDiff) + ' (Excess)' : (netDiff < 0 ? '-' + formatAmt(Math.abs(netDiff)) + ' (Shortage)' : '0'))}</td></tr>
                 </tbody>
               </table>
             </div>
@@ -280,9 +280,9 @@ export default function DaySheet() {
     setCredits(credits.filter((_, i) => i !== index))
   }
 
-  const totalDebit = debits.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0)
-  const totalCredit = credits.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0)
-  const totalValue = totalDebit - totalCredit
+  const totalCreditSum = debits.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0)
+  const totalDebitSum = credits.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0)
+  const totalValue = totalCreditSum - totalDebitSum
   const totalHandBank = (Number(closing.cashInHand) || 0) + (Number(closing.bankBalance) || 0)
   const netDiff = totalHandBank - totalValue
   const hasAllClosingInputs = closing.cashInHand !== '' && closing.cashInHand != null && closing.bankBalance !== '' && closing.bankBalance != null
@@ -294,7 +294,7 @@ export default function DaySheet() {
     const rows = []
     rows.push(['DAY SHEET — ' + date])
     rows.push([])
-    rows.push(['DEBIT', '', '', '', 'CREDIT', '', ''])
+    rows.push(['CREDIT', '', '', '', 'DEBIT', '', ''])
     rows.push(['SL', 'Particular', 'Amount (₹)', 'SC', 'SL', 'Particular', 'Amount (₹)', 'SC'])
     const maxLen = Math.max(debits.length, credits.length)
     for (let i = 0; i < maxLen; i++) {
@@ -305,7 +305,7 @@ export default function DaySheet() {
         i + 1, c ? c.particular : '', c ? c.amount : '', c ? c.sc : '',
       ])
     }
-    rows.push(['', 'Total', totalDebit, '', '', 'Total', totalCredit, ''])
+    rows.push(['', 'Total', totalCreditSum, '', '', 'Total', totalDebitSum, ''])
     rows.push([])
     rows.push(['BY HAND AND BANK CLOSING'])
     rows.push(['Cash In Hand', closing.cashInHand, 'CASH'])
@@ -354,18 +354,18 @@ export default function DaySheet() {
         <>
           {/* ── Summary strip ── */}
           <div className="stats-grid" style={{ marginBottom: 0 }}>
-            <StatCard label="Total Debit" value={INR(totalDebit)} type="info" />
-            <StatCard label="Total Credit" value={INR(totalCredit)} type="success" />
+            <StatCard label="Total Credit" value={INR(totalCreditSum)} type="success" />
+            <StatCard label="Total Debit" value={INR(totalDebitSum)} type="info" />
             <StatCard label="Total Value" value={(totalValue < 0 ? '-' : '') + INR(totalValue)} type="info" />
-            <StatCard label="Net Difference" value={!hasAllClosingInputs ? '—' : (netDiff > 0 ? `+${INR(netDiff)} (Profit)` : (netDiff < 0 ? `-${INR(Math.abs(netDiff))} (Loss)` : INR(0)))} type={!hasAllClosingInputs ? "" : (netDiff > 0 ? "success" : (netDiff < 0 ? "danger" : ""))} />
+            <StatCard label="Net Difference" value={!hasAllClosingInputs ? '—' : (netDiff > 0 ? `+${INR(netDiff)} (Excess)` : (netDiff < 0 ? `-${INR(Math.abs(netDiff))} (Shortage)` : INR(0)))} type={!hasAllClosingInputs ? "" : (netDiff > 0 ? "success" : (netDiff < 0 ? "danger" : ""))} />
           </div>
 
           {/* ── Main Day Sheet table ── */}
           <div className="data-card" ref={printRef} style={{ marginBottom: 0 }}>
-            {/* Column headers: DEBIT | CREDIT */}
+            {/* Column headers: CREDIT | DEBIT */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: '1px solid var(--gray-200)' }}>
-              <div style={{ background: 'var(--info-light)', color: 'var(--info)', textAlign: 'center', fontWeight: 700, fontSize: 13, padding: '12px', borderRight: '1px solid var(--gray-200)', letterSpacing: '1px' }}>DEBIT</div>
-              <div style={{ background: 'var(--success-light)', color: 'var(--success)', textAlign: 'center', fontWeight: 700, fontSize: 13, padding: '12px', letterSpacing: '1px' }}>CREDIT</div>
+              <div style={{ background: 'var(--success-light)', color: 'var(--success)', textAlign: 'center', fontWeight: 700, fontSize: 13, padding: '12px', borderRight: '1px solid var(--gray-200)', letterSpacing: '1px' }}>CREDIT</div>
+              <div style={{ background: 'var(--info-light)', color: 'var(--info)', textAlign: 'center', fontWeight: 700, fontSize: 13, padding: '12px', letterSpacing: '1px' }}>DEBIT</div>
             </div>
 
             {/* Sub-headers */}
@@ -397,48 +397,48 @@ export default function DaySheet() {
                     <div style={{ ...SH.td, color: 'var(--gray-400)' }}></div>
                     <div style={{ ...SH.tdL }}>
                       {d.particular === 'DONATION' || d.particular === 'TOTAL' ? (
-                        <TableInput 
-                          value={d.particular} 
-                          highlighted 
-                          readOnly 
-                          align={d.particular === 'TOTAL' ? 'right' : 'left'} 
-                          onChange={() => {}} 
+                        <TableInput
+                          value={d.particular}
+                          highlighted
+                          readOnly
+                          align={d.particular === 'TOTAL' ? 'right' : 'left'}
+                          onChange={() => { }}
                         />
                       ) : (
-                        <TableInput 
+                        <TableInput
                           id={`debit-particular-${i}`}
-                          value={d.particular} 
-                          onChange={val => updateRow('debit', i, 'particular', val)} 
+                          value={d.particular}
+                          onChange={val => updateRow('debit', i, 'particular', val)}
                           onKeyDown={e => handleEnter(e, 'debit-particular', i)}
-                          placeholder="Particular" 
+                          placeholder="Particular"
                         />
                       )}
                     </div>
                     <div style={{ ...SH.tdR }}>
                       {d.particular === 'TOTAL' ? (
-                        <TableInput 
-                          value={((Number(debits[3]?.amount) || 0) + (Number(debits[4]?.amount) || 0)).toString()} 
-                          align="right" 
-                          highlighted 
-                          readOnly 
-                          onChange={() => {}} 
+                        <TableInput
+                          value={((Number(debits[3]?.amount) || 0) + (Number(debits[4]?.amount) || 0)).toString()}
+                          align="right"
+                          highlighted
+                          readOnly
+                          onChange={() => { }}
                         />
                       ) : d.particular !== 'DONATION' && (
-                        <TableInput 
+                        <TableInput
                           id={`debit-amount-${i}`}
-                          type="number" align="right" 
-                          value={d.amount} 
-                          onChange={val => updateRow('debit', i, 'amount', val)} 
+                          type="number" align="right"
+                          value={d.amount}
+                          onChange={val => updateRow('debit', i, 'amount', val)}
                           onKeyDown={e => handleEnter(e, 'debit-amount', i)}
-                          placeholder="0" 
+                          placeholder="0"
                         />
                       )}
                     </div>
                     <div style={{ ...SH.td, padding: '4px' }}>
                       <div style={{ display: 'flex', width: '100%', gap: '4px', alignItems: 'center', justifyContent: 'flex-end' }}>
                         {d.particular !== 'DONATION' && d.particular !== 'TOTAL' && (
-                          <select 
-                            value={d.sc} 
+                          <select
+                            value={d.sc}
                             onChange={e => updateRow('debit', i, 'sc', e.target.value)}
                             style={{
                               background: d.sc === 'BANK' ? 'var(--primary-100)' : 'var(--success-light)',
@@ -452,7 +452,7 @@ export default function DaySheet() {
                           </select>
                         )}
                         {i >= 6 && (
-                          <button 
+                          <button
                             onClick={() => removeRow(i)}
                             title="Delete row"
                             style={{
@@ -472,48 +472,48 @@ export default function DaySheet() {
                     <div style={{ ...SH.td, color: 'var(--gray-400)' }}></div>
                     <div style={{ ...SH.tdL }}>
                       {c.particular === 'DONATION' || c.particular === 'TOTAL' ? (
-                        <TableInput 
-                          value={c.particular} 
-                          highlighted 
-                          readOnly 
-                          align={c.particular === 'TOTAL' ? 'right' : 'left'} 
-                          onChange={() => {}} 
+                        <TableInput
+                          value={c.particular}
+                          highlighted
+                          readOnly
+                          align={c.particular === 'TOTAL' ? 'right' : 'left'}
+                          onChange={() => { }}
                         />
                       ) : (
-                        <TableInput 
+                        <TableInput
                           id={`credit-particular-${i}`}
-                          value={c.particular} 
-                          onChange={val => updateRow('credit', i, 'particular', val)} 
+                          value={c.particular}
+                          onChange={val => updateRow('credit', i, 'particular', val)}
                           onKeyDown={e => handleEnter(e, 'credit-particular', i)}
-                          placeholder="Particular" 
+                          placeholder="Particular"
                         />
                       )}
                     </div>
                     <div style={{ ...SH.tdR }}>
                       {c.particular === 'TOTAL' ? (
-                        <TableInput 
-                          value={((Number(credits[3]?.amount) || 0) + (Number(credits[4]?.amount) || 0)).toString()} 
-                          align="right" 
-                          highlighted 
-                          readOnly 
-                          onChange={() => {}} 
+                        <TableInput
+                          value={((Number(credits[3]?.amount) || 0) + (Number(credits[4]?.amount) || 0)).toString()}
+                          align="right"
+                          highlighted
+                          readOnly
+                          onChange={() => { }}
                         />
                       ) : c.particular !== 'DONATION' && (
-                        <TableInput 
+                        <TableInput
                           id={`credit-amount-${i}`}
-                          type="number" align="right" 
-                          value={c.amount} 
-                          onChange={val => updateRow('credit', i, 'amount', val)} 
+                          type="number" align="right"
+                          value={c.amount}
+                          onChange={val => updateRow('credit', i, 'amount', val)}
                           onKeyDown={e => handleEnter(e, 'credit-amount', i)}
-                          placeholder="0" 
+                          placeholder="0"
                         />
                       )}
                     </div>
                     <div style={{ ...SH.td, padding: '4px' }}>
                       <div style={{ display: 'flex', width: '100%', gap: '4px', alignItems: 'center', justifyContent: 'flex-end' }}>
                         {c.particular !== 'DONATION' && c.particular !== 'TOTAL' && (
-                          <select 
-                            value={c.sc} 
+                          <select
+                            value={c.sc}
                             onChange={e => updateRow('credit', i, 'sc', e.target.value)}
                             style={{
                               background: c.sc === 'BANK' ? 'var(--primary-100)' : 'var(--success-light)',
@@ -527,7 +527,7 @@ export default function DaySheet() {
                           </select>
                         )}
                         {i >= 6 && (
-                          <button 
+                          <button
                             onClick={() => removeRow(i)}
                             title="Delete row"
                             style={{
@@ -548,7 +548,7 @@ export default function DaySheet() {
 
             {/* Add Row Button */}
             <div style={{ padding: '12px', display: 'flex', justifyContent: 'center', background: 'var(--white)', borderTop: '1px solid var(--gray-200)' }}>
-              <button 
+              <button
                 onClick={addRow}
                 style={{
                   background: 'var(--primary-50)', color: 'var(--primary-700)', border: '1px dashed var(--primary-300)',
@@ -565,13 +565,13 @@ export default function DaySheet() {
             {/* Total row */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', background: 'var(--gray-100)', borderTop: '1px solid var(--gray-200)' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '50px 1fr 130px 90px', borderRight: '1px solid var(--gray-200)' }}>
-                <div style={{ gridColumn: '1/3', padding: '14px 16px', color: 'var(--gray-700)', fontWeight: 700, fontSize: 13, textAlign: 'right', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>Total Debit</div>
-                <div style={{ padding: '14px 12px', color: 'var(--gray-900)', fontWeight: 800, fontSize: 15, textAlign: 'right', fontVariantNumeric: 'tabular-nums', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>{totalDebit.toLocaleString('en-IN')}</div>
+                <div style={{ gridColumn: '1/3', padding: '14px 16px', color: 'var(--gray-700)', fontWeight: 700, fontSize: 13, textAlign: 'right', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>Total Credit</div>
+                <div style={{ padding: '14px 12px', color: 'var(--gray-900)', fontWeight: 800, fontSize: 15, textAlign: 'right', fontVariantNumeric: 'tabular-nums', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>{totalCreditSum.toLocaleString('en-IN')}</div>
                 <div />
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '50px 1fr 130px 90px' }}>
-                <div style={{ gridColumn: '1/3', padding: '14px 16px', color: 'var(--gray-700)', fontWeight: 700, fontSize: 13, textAlign: 'right', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>Total Credit</div>
-                <div style={{ padding: '14px 12px', color: 'var(--gray-900)', fontWeight: 800, fontSize: 15, textAlign: 'right', fontVariantNumeric: 'tabular-nums', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>{totalCredit.toLocaleString('en-IN')}</div>
+                <div style={{ gridColumn: '1/3', padding: '14px 16px', color: 'var(--gray-700)', fontWeight: 700, fontSize: 13, textAlign: 'right', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>Total Debit</div>
+                <div style={{ padding: '14px 12px', color: 'var(--gray-900)', fontWeight: 800, fontSize: 15, textAlign: 'right', fontVariantNumeric: 'tabular-nums', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>{totalDebitSum.toLocaleString('en-IN')}</div>
                 <div />
               </div>
             </div>
@@ -587,19 +587,19 @@ export default function DaySheet() {
               <div className="table-wrap">
                 <table>
                   <tbody>
-                    <ClosingRow 
-                      label="Cash In Hand" 
-                      value={closing.cashInHand} 
+                    <ClosingRow
+                      label="Cash In Hand"
+                      value={closing.cashInHand}
                       isEditable
                       onValueChange={val => setClosing({ ...closing, cashInHand: val })}
-                      badge="CASH" badgeClass="badge-green" 
+                      badge="CASH" badgeClass="badge-green"
                     />
-                    <ClosingRow 
-                      label="Bank Balance" 
-                      value={closing.bankBalance} 
+                    <ClosingRow
+                      label="Bank Balance"
+                      value={closing.bankBalance}
                       isEditable
                       onValueChange={val => setClosing({ ...closing, bankBalance: val })}
-                      badge="BANK" badgeClass="badge-blue" 
+                      badge="BANK" badgeClass="badge-blue"
                     />
                     <ClosingRow label="Total (By Hand & Bank)" value={INR(totalHandBank)} bold />
                   </tbody>
@@ -620,12 +620,12 @@ export default function DaySheet() {
               <div className="table-wrap">
                 <table>
                   <tbody>
-                    <ClosingRow label="Total Debit" value={INR(totalDebit)} />
-                    <ClosingRow label="Total Credit" value={INR(totalCredit)} />
+                    <ClosingRow label="Total Credit" value={INR(totalCreditSum)} />
+                    <ClosingRow label="Total Debit" value={INR(totalDebitSum)} />
                     <ClosingRow label="Total Value" value={(totalValue < 0 ? '-' : '') + INR(totalValue)} bold />
                     <ClosingRow
                       label="Net Difference"
-                      value={!hasAllClosingInputs ? '—' : (netDiff > 0 ? `+${INR(netDiff)} (Profit)` : (netDiff < 0 ? `-${INR(Math.abs(netDiff))} (Loss)` : INR(0)))}
+                      value={!hasAllClosingInputs ? '—' : (netDiff > 0 ? `+${INR(netDiff)} (Excess)` : (netDiff < 0 ? `-${INR(Math.abs(netDiff))} (Shortage)` : INR(0)))}
                       bold
                       valueColor={!hasAllClosingInputs ? 'var(--gray-500)' : (netDiff === 0 ? 'var(--success)' : netDiff < 0 ? 'var(--danger)' : 'var(--success)')}
                     />
@@ -657,9 +657,9 @@ function ClosingRow({ label, value, bold, badge, badgeClass, valueColor, isEdita
       <td style={{ fontWeight: bold ? 600 : 500, color: bold ? 'var(--gray-900)' : 'var(--gray-700)', padding: '12px 16px' }}>{label}</td>
       <td style={{ fontWeight: 600, color: valueColor || 'var(--gray-900)', textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontSize: 14, padding: '12px 16px' }}>
         {isEditable ? (
-          <input 
-            type="number" 
-            value={value} 
+          <input
+            type="number"
+            value={value}
             onChange={e => {
               let val = e.target.value;
               if (val.length > 1 && val.startsWith('0') && !val.startsWith('0.')) {
@@ -668,8 +668,8 @@ function ClosingRow({ label, value, bold, badge, badgeClass, valueColor, isEdita
               onValueChange(val);
             }}
             onWheel={e => e.target.blur()}
-            style={{ 
-              width: '100%', maxWidth: '120px', textAlign: 'right', 
+            style={{
+              width: '100%', maxWidth: '120px', textAlign: 'right',
               padding: '6px 8px', borderRadius: '6px', border: '1px solid var(--gray-300)',
               outline: 'none', fontSize: 14, fontWeight: 600, color: 'inherit'
             }}
