@@ -220545,3 +220545,17 @@ WebSocket HANDSHAKING /ws/notify/ [10.58.250.21:46474]
 WebSocket REJECT /ws/notify/ [10.58.250.21:46474]
 WebSocket DISCONNECT /ws/notify/ [10.58.250.21:46474]
 C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\sreelakshmi_trust\settings.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\pagination.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\hr_module\models.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000

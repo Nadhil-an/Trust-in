@@ -35,8 +35,6 @@ export default function VerificationDashboard() {
           date: dateFilter,
           cash_collected: entry?.cash_collected ?? item.cash_collected,
           online_collected: entry?.online_collected ?? item.online_collected,
-          cash_count: item.cash_count || 0,
-          online_count: item.online_count || 0,
           entry_code: item.book_number ? String(item.book_number) : (entry?.entry_code || ''),
           starting_reading: item.auto_starting_reading || entry?.starting_reading || '',
           ending_reading: item.auto_ending_reading || entry?.ending_reading || '',
@@ -337,13 +335,8 @@ export default function VerificationDashboard() {
                         </div>
                       </td>
 
-                      <td style={{ padding: '10px 14px', textAlign: 'center', whiteSpace: 'nowrap' }}>
-                        <div style={{ fontWeight: 700, color: '#059669', fontSize: 13 }}>
-                          ₹{totalCollected.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                        </div>
-                        <div style={{ fontSize: 10, fontWeight: 500, color: '#6B7280', marginTop: 2 }}>
-                          ({(row.cash_count || 0) + (row.online_count || 0)} Entries)
-                        </div>
+                      <td style={{ padding: '10px 14px', textAlign: 'center', fontWeight: 700, color: '#059669', whiteSpace: 'nowrap' }}>
+                        ₹{totalCollected.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                       </td>
 
                       <td className="hide-print" style={{ padding: '6px 10px', textAlign: 'center' }}>
@@ -390,7 +383,7 @@ export default function VerificationDashboard() {
           <div style={{ background: 'white', borderRadius: 12, width: '90%', maxWidth: 700, padding: 24, maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
               <h2 style={{ margin: 0, fontSize: 18, color: '#1F2937' }}>
-                {modalType === 'CASH' ? '💵 Cash' : '📱 Online'} Transactions - <span style={{ textTransform: 'capitalize' }}>{modalStaff?.staff_name}</span> ({transactions.length} Entries)
+                {modalType === 'CASH' ? '💵 Cash' : '📱 Online'} Transactions - {modalStaff?.staff_name}
               </h2>
               <button onClick={() => setModalOpen(false)} style={{ background: 'none', border: 'none', fontSize: 24, cursor: 'pointer', color: '#6B7280' }}>&times;</button>
             </div>
