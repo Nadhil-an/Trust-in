@@ -761,8 +761,15 @@ class DaySheetView(APIView):
         incomes = Income.objects.filter(date=target_date).exclude(created_by__role='STAFF').order_by('created_at')
         income_rows = []
         for inc in incomes:
+            donor = (inc.donor_name or '').strip()
+            source = (inc.source or '').strip()
+            if donor and source and donor.lower() != source.lower():
+                part = f"{donor} / {source}"
+            else:
+                part = donor or source
+                
             income_rows.append({
-                'particular': (inc.donor_name or inc.source or '').upper(),
+                'particular': part.upper(),
                 'amount': float(inc.amount),
                 'sc': 'BANK' if inc.account_type == 'BANK' else 'CASH',
                 'source': inc.source,
@@ -775,8 +782,15 @@ class DaySheetView(APIView):
         expenses = Expense.objects.filter(date=target_date).order_by('created_at')
         expense_rows = []
         for exp in expenses:
+            payee = (exp.payee or '').strip()
+            purpose = (exp.purpose or '').strip()
+            if payee and purpose and payee.lower() != purpose.lower():
+                part = f"{payee} / {purpose}"
+            else:
+                part = payee or purpose
+                
             expense_rows.append({
-                'particular': (exp.payee or exp.purpose or '').upper(),
+                'particular': part.upper(),
                 'amount': float(exp.amount),
                 'sc': 'BANK' if exp.account_type == 'BANK' else 'CASH',
                 'category': exp.category,
