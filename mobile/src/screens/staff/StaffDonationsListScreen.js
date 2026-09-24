@@ -334,9 +334,9 @@ const StaffDonationsListScreen = ({ navigation, route }) => {
         sections={groupDataByDate(filteredEntries)}
         keyExtractor={item => item.id.toString()}
         renderItem={renderItem}
-        renderSectionHeader={({ section: { title } }) => (
+        renderSectionHeader={({ section: { title, data } }) => (
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionHeaderText}>{title}</Text>
+            <Text style={styles.sectionHeaderText}>{title} ({data.length} entries)</Text>
           </View>
         )}
         contentContainerStyle={styles.listContainer}
