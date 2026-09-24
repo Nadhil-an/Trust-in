@@ -302,7 +302,16 @@ class ChangePasswordView(APIView):
 
 class UserListCreateView(generics.ListCreateAPIView):
     queryset = User.objects.all().order_by('full_name')
-    filterset_fields = ['role', 'is_active']
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        role = self.request.query_params.get('role')
+        if role:
+            qs = qs.filter(role=role)
+        is_active = self.request.query_params.get('is_active')
+        if is_active is not None:
+            qs = qs.filter(is_active=is_active.lower() in ('true', '1', 't', 'y', 'yes'))
+        return qs
 
     def get_permissions(self):
         if self.request.method == 'GET':

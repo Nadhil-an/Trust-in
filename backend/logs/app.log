@@ -224925,3 +224925,47 @@ WebSocket CONNECT /ws/notify/ [10.105.92.21:60080]
 [mHTTP GET /api/accounts/day-sheet/?date=2026-09-25 200 [0.03, 10.105.92.21:6325][0m
 [mHTTP GET /api/accounts/day-sheet/?date=2026-09-24 200 [0.02, 10.105.92.21:64030][0m
 [mHTTP GET /api/accounts/day-sheet/?date=2026-09-25 200 [0.02, 10.105.92.21:22191][0m
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+[mHTTP POST /api/auth/login/ 200 [0.21, 10.105.92.21:11609][0m
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:40642]
+[mHTTP GET /api/core/features/ 200 [0.04, 10.105.92.21:63483][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.105.92.21:63482][0m
+WebSocket CONNECT /ws/notify/ [10.105.92.21:40642]
+[mHTTP GET /api/accounts/dashboard/?date=2026-09-25 200 [0.21, 10.105.92.21:52098][0m
+[mHTTP GET /api/accounts/dashboard/?date=2026-09-25 200 [0.05, 10.105.92.21:60890][0m
+[mHTTP GET /api/accounts/income/?page_size=5000&date=2026-09-25 200 [0.03, 10.105.92.21:58935][0m
+[mHTTP GET /api/accounts/income/?page_size=5000&date=2026-09-25 200 [0.02, 10.105.92.21:17418][0m
+[mHTTP DELETE /api/accounts/income/2d26237c-dbf4-4020-b7eb-e8f5d00d2619/ 204 [0.02, 10.105.92.21:43603][0m
+[mHTTP GET /api/accounts/income/?page_size=5000&date=2026-09-25 200 [0.02, 10.105.92.21:22491][0m
+[mHTTP GET /api/accounts/income/?page_size=5000&date=2026-09-25 200 [0.02, 10.105.92.21:63909][0m
+[mHTTP DELETE /api/accounts/income/678ed203-3d76-45b7-b674-3883ae72acfa/ 204 [0.03, 10.105.92.21:13905][0m
+[mHTTP GET /api/accounts/income/?page_size=5000&date=2026-09-25 200 [0.02, 10.105.92.21:39788][0m
+[mHTTP GET /api/accounts/income/?page_size=5000&date=2026-09-25 200 [0.02, 10.105.92.21:17617][0m
+[mHTTP DELETE /api/accounts/income/e21c1959-b383-445f-aefa-52c474eb0734/ 204 [0.02, 10.105.92.21:27355][0m
+[mHTTP GET /api/accounts/income/?page_size=5000&date=2026-09-25 200 [0.02, 10.105.92.21:50375][0m
+[mHTTP GET /api/accounts/income/?page_size=5000&date=2026-09-25 200 [0.02, 10.105.92.21:32883][0m
+[mHTTP DELETE /api/accounts/income/b3181ac7-84f1-473f-be7a-29507ac44056/ 204 [0.02, 10.105.92.21:5462][0m
+[mHTTP GET /api/accounts/income/?page_size=5000&date=2026-09-25 200 [0.04, 10.105.92.21:14625][0m
+[mHTTP GET /api/accounts/income/?page_size=5000&date=2026-09-25 200 [0.02, 10.105.92.21:45251][0m
+[mHTTP DELETE /api/accounts/income/7df6ff12-0470-435a-8a0b-aaf45a77477f/ 204 [0.03, 10.105.92.21:50671][0m
+[mHTTP GET /api/accounts/income/?page_size=5000&date=2026-09-25 200 [0.02, 10.105.92.21:38559][0m
+[mHTTP GET /api/accounts/income/?page_size=5000&date=2026-09-25 200 [0.02, 10.105.92.21:34489][0m
+[mHTTP POST /api/accounts/income/ 201 [0.03, 10.105.92.21:54476][0m
+[mHTTP GET /api/accounts/income/?page_size=5000&date=2026-09-25 200 [0.02, 10.105.92.21:5042][0m
+[mHTTP GET /api/accounts/income/?page_size=5000&date=2026-09-25 200 [0.02, 10.105.92.21:64589][0m
+[mHTTP DELETE /api/accounts/income/d367449c-ea14-454b-b818-1d5c257da870/ 204 [0.03, 10.105.92.21:28753][0m
+[mHTTP GET /api/accounts/income/?page_size=5000&date=2026-09-25 200 [0.02, 10.105.92.21:18121][0m
+[mHTTP GET /api/accounts/income/?page_size=5000&date=2026-09-25 200 [0.03, 10.105.92.21:45724][0m
+[mHTTP DELETE /api/accounts/income/6ed90f8a-1840-434a-b263-846245b08c0e/ 204 [0.02, 10.105.92.21:38188][0m
+[mHTTP GET /api/accounts/income/?page_size=5000&date=2026-09-25 200 [0.02, 10.105.92.21:49157][0m
+[mHTTP GET /api/accounts/income/?page_size=5000&date=2026-09-25 200 [0.02, 10.105.92.21:12731][0m
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:38924]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:38924]
