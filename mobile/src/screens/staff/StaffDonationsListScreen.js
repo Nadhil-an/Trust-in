@@ -25,11 +25,8 @@ const StaffDonationsListScreen = ({ navigation, route }) => {
   const [stats, setStats] = useState({});
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [allTotal, setAllTotal] = useState(0);
-  const [allCash, setAllCash] = useState(0);
-  const [allOnline, setAllOnline] = useState(0);
-
-  // Get today's ISO date string
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const getTodayIso = () => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -58,16 +55,10 @@ const StaffDonationsListScreen = ({ navigation, route }) => {
     try {
       const dateStr = selectedDate.getFullYear() + '-' + String(selectedDate.getMonth() + 1).padStart(2, '0') + '-' + String(selectedDate.getDate()).padStart(2, '0');
       const [res, statsRes] = await Promise.all([
-        donationApi.list({ page_size: 5000 }),
+        donationApi.list({ page_size: 5000, date: dateStr }),
         staffApi.todayStats(dateStr)
       ]);
       setDonations(res.data.results || res.data);
-      // Store totals from backend (covers all entries, not paginated)
-      if (res.data.total_amount !== undefined) {
-        setAllTotal(res.data.total_amount || 0);
-        setAllCash(res.data.total_cash || 0);
-        setAllOnline(res.data.total_online || 0);
-      }
       if (statsRes.data) setStats(statsRes.data);
     } catch (err) {
       Toast.show({ type: 'error', text1: 'Failed to load donations' });
@@ -246,10 +237,7 @@ const StaffDonationsListScreen = ({ navigation, route }) => {
   const displayCashDonations = (stats?.cash_donations || 0) + offlineCashTotal;
   const displayBankDonations = (stats?.bank_donations || 0) + offlineBankTotal;
 
-  // All-time totals from full donations list (for the grand summary)
-  const grandTotal = (allTotal || donations.reduce((s, i) => s + parseFloat(i.amount || 0), 0)) + offlineDonationsTotal;
-  const grandCash = (allCash || donations.filter(i => (i.payment_method || '').toUpperCase() === 'CASH').reduce((s, i) => s + parseFloat(i.amount || 0), 0)) + offlineCashTotal;
-  const grandOnline = (allOnline || donations.filter(i => (i.payment_method || '').toUpperCase() !== 'CASH').reduce((s, i) => s + parseFloat(i.amount || 0), 0)) + offlineBankTotal;
+
 
   return (
     <View style={styles.container}>
@@ -288,26 +276,8 @@ const StaffDonationsListScreen = ({ navigation, route }) => {
         </ScrollView>
       </View>
 
-      {/* Today's Summary */}
+      {/* Selected Date Summary */}
       <View style={styles.summaryContainer}>
-        {/* Grand Total of ALL entries */}
-        <View style={{ backgroundColor: '#F0FDF4', borderRadius: 12, padding: 12, marginBottom: 10, borderWidth: 1, borderColor: '#BBF7D0' }}>
-          <Text style={{ fontSize: 12, color: '#166534', fontWeight: '700', marginBottom: 6 }}>All Time Total ({donations.length + offlineDonationItems.length} entries)</Text>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <View style={{ alignItems: 'center' }}>
-              <Text style={{ fontSize: 11, color: '#166534' }}>Total</Text>
-              <Text style={{ fontSize: 15, fontWeight: '900', color: '#15803D' }}>₹{grandTotal.toLocaleString()}</Text>
-            </View>
-            <View style={{ alignItems: 'center' }}>
-              <Text style={{ fontSize: 11, color: '#166534' }}>Cash</Text>
-              <Text style={{ fontSize: 15, fontWeight: '900', color: '#16a34a' }}>₹{grandCash.toLocaleString()}</Text>
-            </View>
-            <View style={{ alignItems: 'center' }}>
-              <Text style={{ fontSize: 11, color: '#166534' }}>Online</Text>
-              <Text style={{ fontSize: 15, fontWeight: '900', color: '#0284c7' }}>₹{grandOnline.toLocaleString()}</Text>
-            </View>
-          </View>
-        </View>
 
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
           <Text style={[styles.summaryTitle, { marginBottom: 0 }]}>
@@ -353,6 +323,10 @@ const StaffDonationsListScreen = ({ navigation, route }) => {
 
       <SectionList
         sections={groupDataByDate(combinedDonations.filter(d => {
+          // If offline item, only show it if the selected date is today
+          if (d.isOfflinePending && d.date !== (selectedDate.getFullYear() + '-' + String(selectedDate.getMonth() + 1).padStart(2, '0') + '-' + String(selectedDate.getDate()).padStart(2, '0'))) {
+            return false;
+          }
           if (searchQuery && !d.donor_name?.toLowerCase().includes(searchQuery.toLowerCase()) && !d.receipt_number?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
           if (activeFilter === 'DONATIONS' && d.source !== 'DONATION') return false;
           if (activeFilter === 'MEMBERSHIPS' && d.source !== 'MEMBERSHIP') return false;
