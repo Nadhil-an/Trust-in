@@ -261,13 +261,15 @@ class CashClosingListCreateView(generics.ListCreateAPIView):
             if r.get('particular') in ['OB CASH', 'OB BANK']:
                 continue
             amt = float(r.get('amount') or 0)
-            if not r.get('particular') or amt <= 0: continue
+            if amt <= 0: continue
+            
+            particular = (r.get('particular') or '').strip() or '-'
             
             if r.get('id'):
                 try:
                     inc = Income.objects.get(id=r['id'])
-                    inc.source = r['particular']
-                    inc.donor_name = r['particular']
+                    inc.source = particular
+                    inc.donor_name = particular
                     inc.amount = amt
                     inc.account_type = r.get('sc', 'CASH')
                     inc.payment_method = 'CASH' if r.get('sc', 'CASH') == 'CASH' else 'UPI'
@@ -278,27 +280,30 @@ class CashClosingListCreateView(generics.ListCreateAPIView):
             else:
                 inc = Income.objects.create(
                     date=date,
-                    source=r['particular'],
-                    donor_name=r['particular'],
+                    source=particular,
+                    donor_name=particular,
                     amount=amt,
                     account_type=r.get('sc', 'CASH'),
                     payment_method='CASH' if r.get('sc', 'CASH') == 'CASH' else 'UPI',
                     created_by=self.request.user
                 )
                 r['id'] = str(inc.id)
+                r['particular'] = particular
                 submitted_income_ids.append(str(inc.id))
 
         # 2. Sync Expenses (credit_rows)
         submitted_expense_ids = []
         for r in credit_rows:
             amt = float(r.get('amount') or 0)
-            if not r.get('particular') or amt <= 0: continue
+            if amt <= 0: continue
+            
+            particular = (r.get('particular') or '').strip() or '-'
             
             if r.get('id'):
                 try:
                     exp = Expense.objects.get(id=r['id'])
-                    exp.payee = r['particular']
-                    exp.purpose = r['particular']
+                    exp.payee = particular
+                    exp.purpose = particular
                     exp.amount = amt
                     exp.account_type = r.get('sc', 'CASH')
                     exp.payment_method = 'CASH' if r.get('sc', 'CASH') == 'CASH' else 'UPI'
@@ -309,8 +314,8 @@ class CashClosingListCreateView(generics.ListCreateAPIView):
             else:
                 exp = Expense.objects.create(
                     date=date,
-                    payee=r['particular'],
-                    purpose=r['particular'],
+                    payee=particular,
+                    purpose=particular,
                     category='DayBook Entry',
                     amount=amt,
                     account_type=r.get('sc', 'CASH'),
@@ -319,6 +324,7 @@ class CashClosingListCreateView(generics.ListCreateAPIView):
                     status='COMPLETED'
                 )
                 r['id'] = str(exp.id)
+                r['particular'] = particular
                 submitted_expense_ids.append(str(exp.id))
 
         # 3. Handle Deletes - anything not in the submitted IDs for this date gets deleted
