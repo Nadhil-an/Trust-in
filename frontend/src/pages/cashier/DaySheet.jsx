@@ -556,19 +556,7 @@ export default function DaySheet() {
                     <div key={`d-${i}`} style={{ display: 'grid', gridTemplateColumns: '36px 1fr 130px 90px', background: bg, minHeight: 42 }}>
                       {/* Delete / index cell */}
                       <div style={{ ...SH.td, color: 'var(--gray-400)', padding: '4px 2px' }}>
-                        {!isFixed ? (
-                          <button
-                            onClick={() => {
-                              const n = debits.filter((_, idx) => idx !== i)
-                              const newExtras = n.filter(r => r.isExtra)
-                              saveExtraDebits(date, newExtras)
-                              setDebits(n)
-                              handleSave(true, n, credits, true)
-                            }}
-                            style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: '0 4px' }}
-                            title="Remove row"
-                          >×</button>
-                        ) : null}
+                        {/* Remove button disabled */}
                       </div>
                       {/* Content */}
                       {i === 4 ? (
@@ -592,13 +580,8 @@ export default function DaySheet() {
                           <div style={{ ...SH.tdL }}>
                             <TableInput
                               value={d.particular || ''}
-                              onChange={(val) => {
-                                if (i === 0 || i === 1 || i === 5 || i === 6) return;
-                                const n = [...debits]; n[i] = { ...n[i], particular: val }; setDebits(n)
-                                scheduleAutoSave()
-                              }}
-                              onBlur={() => scheduleAutoSave()}
-                              readOnly={i === 0 || i === 1 || i === 5 || i === 6}
+                              onChange={() => {}}
+                              readOnly={true}
                               highlighted={i === 5 || i === 6}
                               placeholder=""
                             />
@@ -607,28 +590,22 @@ export default function DaySheet() {
                             <TableInput
                               type="number" align="right"
                               value={d.amount || ''}
-                              onChange={(val) => { 
-                                if (i === 0 || i === 1 || i === 5 || i === 6) return;
-                                const n = [...debits]; n[i] = { ...n[i], amount: val }; setDebits(n); scheduleAutoSave() 
-                              }}
-                               onBlur={() => { scheduleAutoSave() }}
-                              readOnly={i === 0 || i === 1 || i === 5 || i === 6}
+                              onChange={() => {}}
+                              readOnly={true}
                               placeholder=""
                             />
                           </div>
                           <div style={{ ...SH.td, padding: '4px' }}>
-                            <div style={{ position: 'relative', width: '100%', opacity: (i === 0 || i === 1 || i === 5 || i === 6) ? 0.7 : 1 }}>
+                            <div style={{ position: 'relative', width: '100%', opacity: 0.7 }}>
                               <select
                                 value={d.sc || 'CASH'}
-                                disabled={i === 0 || i === 1 || i === 5 || i === 6}
-                                onChange={(e) => { if (i === 0 || i === 1 || i === 5 || i === 6) return; const n = [...debits]; n[i] = { ...n[i], sc: e.target.value }; setDebits(n); scheduleAutoSave() }}
-                                onBlur={() => { scheduleAutoSave() }}
-                                style={{ background: d.sc === 'BANK' ? 'var(--primary-100)' : 'var(--success-light)', color: d.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)', border: 'none', borderRadius: '12px', padding: '4px 16px 4px 8px', fontSize: 10, fontWeight: 700, outline: 'none', cursor: (i === 5 || i === 6) ? 'default' : 'pointer', appearance: 'none', width: '100%' }}
+                                disabled={true}
+                                onChange={() => {}}
+                                style={{ background: d.sc === 'BANK' ? 'var(--primary-100)' : 'var(--success-light)', color: d.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)', border: 'none', borderRadius: '12px', padding: '4px 16px 4px 8px', fontSize: 10, fontWeight: 700, outline: 'none', cursor: 'default', appearance: 'none', width: '100%' }}
                               >
                                 <option value="CASH">CASH</option>
                                 <option value="BANK">BANK</option>
                               </select>
-                              {!(i === 5 || i === 6) && <div style={{ position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', fontSize: '8px', color: d.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)' }}>▼</div>}
                             </div>
                           </div>
                         </>
@@ -636,21 +613,7 @@ export default function DaySheet() {
                     </div>
                   )
                 })}
-                {/* + Add Credit Row button */}
-                <button
-                  onClick={() => {
-                    const newRow = { particular: '', amount: '', sc: 'CASH', isExtra: true }
-                    setDebits(prev => {
-                      const next = [...prev, newRow]
-                      saveExtraDebits(date, next.filter(r => r.isExtra))
-                      return next
-                    })
-                    setIsDirty(true)
-                  }}
-                  style={{ width: '100%', padding: '12px', background: 'var(--success-light)', border: 'none', color: 'var(--success)', fontWeight: 800, fontSize: 13, cursor: 'pointer', textAlign: 'center', transition: 'background 0.2s', borderTop: '1px dashed var(--gray-200)' }}
-                  onMouseEnter={e => e.target.style.background = '#bbf7d0'}
-                  onMouseLeave={e => e.target.style.background = 'var(--success-light)'}
-                >+ Add Credit Row</button>
+                {/* Add Credit Row button removed */}
               </div>
 
               {/* ── DEBIT column (right) ── */}
@@ -661,25 +624,13 @@ export default function DaySheet() {
                   return (
                     <div key={`c-${i}`} style={{ display: 'grid', gridTemplateColumns: '36px 1fr 130px 90px', background: bg, minHeight: 42 }}>
                       <div style={{ ...SH.td, color: 'var(--gray-400)', padding: '4px 2px' }}>
-                        {!isFixed ? (
-                          <button
-                            onClick={() => {
-                              const n = credits.filter((_, idx) => idx !== i)
-                              const newExtras = n.filter(r => r.isExtra)
-                              saveExtraCredits(date, newExtras)
-                              setCredits(n)
-                              handleSave(true, debits, n, true)
-                            }}
-                            style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: '0 4px' }}
-                            title="Remove row"
-                          >×</button>
-                        ) : null}
+                        {/* No remove button */}
                       </div>
                       <div style={{ ...SH.tdL }}>
                         <TableInput
                           value={c.particular || ''}
-                          onChange={(val) => { const n = [...credits]; n[i] = { ...n[i], particular: val }; setCredits(n); scheduleAutoSave() }}
-                          onBlur={() => scheduleAutoSave()}
+                          onChange={() => {}}
+                          readOnly={true}
                           placeholder=""
                         />
                       </div>
@@ -687,43 +638,28 @@ export default function DaySheet() {
                         <TableInput
                           type="number" align="right"
                           value={c.amount || ''}
-                          onChange={(val) => { const n = [...credits]; n[i] = { ...n[i], amount: val }; setCredits(n); scheduleAutoSave() }}
-                          onBlur={() => scheduleAutoSave()}
+                          onChange={() => {}}
+                          readOnly={true}
                           placeholder=""
                         />
                       </div>
                       <div style={{ ...SH.td, padding: '4px' }}>
-                        <div style={{ position: 'relative', width: '100%' }}>
+                        <div style={{ position: 'relative', width: '100%', opacity: 0.7 }}>
                           <select
                             value={c.sc || 'CASH'}
-                            onChange={(e) => { const n = [...credits]; n[i] = { ...n[i], sc: e.target.value }; setCredits(n); scheduleAutoSave() }}
-                            onBlur={() => scheduleAutoSave()}
-                            style={{ background: c.sc === 'BANK' ? 'var(--primary-100)' : 'var(--success-light)', color: c.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)', border: 'none', borderRadius: '12px', padding: '4px 16px 4px 8px', fontSize: 10, fontWeight: 700, outline: 'none', cursor: 'pointer', appearance: 'none', width: '100%' }}
+                            disabled={true}
+                            onChange={() => {}}
+                            style={{ background: c.sc === 'BANK' ? 'var(--primary-100)' : 'var(--success-light)', color: c.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)', border: 'none', borderRadius: '12px', padding: '4px 16px 4px 8px', fontSize: 10, fontWeight: 700, outline: 'none', cursor: 'default', appearance: 'none', width: '100%' }}
                           >
                             <option value="CASH">CASH</option>
                             <option value="BANK">BANK</option>
                           </select>
-                          <div style={{ position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', fontSize: '8px', color: c.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)' }}>▼</div>
                         </div>
                       </div>
                     </div>
                   )
                 })}
-                {/* + Add Debit Row button */}
-                <button
-                  onClick={() => {
-                    const newRow = { particular: '', amount: '', sc: 'CASH', isExtra: true }
-                    setCredits(prev => {
-                      const next = [...prev, newRow]
-                      saveExtraCredits(date, next.filter(r => r.isExtra))
-                      return next
-                    })
-                    setIsDirty(true)
-                  }}
-                  style={{ width: '100%', padding: '12px', background: 'var(--info-light)', border: 'none', color: 'var(--info)', fontWeight: 800, fontSize: 13, cursor: 'pointer', textAlign: 'center', transition: 'background 0.2s', borderTop: '1px dashed var(--gray-200)' }}
-                  onMouseEnter={e => e.target.style.background = '#bae6fd'}
-                  onMouseLeave={e => e.target.style.background = 'var(--info-light)'}
-                >+ Add Debit Row</button>
+                {/* Add Debit Row button removed */}
               </div>
 
             </div>
