@@ -118,9 +118,21 @@ const AddMemberScreen = ({ navigation, route }) => {
 
   React.useEffect(() => {
     if (user?.id) {
+      // Attempt to load from offline cache first
+      AsyncStorage.getItem(`voucher_${user.id}`).then(cached => {
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached);
+            setVoucher(parsed);
+            if (!isEdit) set('voucher_id', String(parsed.current_voucher));
+          } catch (e) {}
+        }
+      });
+
       staffApi.vouchers.get(user.id)
         .then(res => {
           setVoucher(res.data);
+          AsyncStorage.setItem(`voucher_${user.id}`, JSON.stringify(res.data));
           if (!isEdit) {
             set('voucher_id', String(res.data.current_voucher));
           }

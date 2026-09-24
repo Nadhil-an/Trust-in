@@ -6,6 +6,7 @@ import {
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -57,9 +58,22 @@ const CollectDonationScreen = ({ navigation, route }) => {
   React.useEffect(() => {
     if (user?.id) {
       setLoadingVoucher(true);
+      
+      // Attempt to load from offline cache first
+      AsyncStorage.getItem(`voucher_${user.id}`).then(cached => {
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached);
+            setVoucher(parsed);
+            if (!isEdit) set('voucher_id', String(parsed.current_voucher));
+          } catch (e) {}
+        }
+      });
+
       staffApi.vouchers.get(user.id)
         .then(res => {
           setVoucher(res.data);
+          AsyncStorage.setItem(`voucher_${user.id}`, JSON.stringify(res.data));
           if (!isEdit) {
             set('voucher_id', String(res.data.current_voucher));
           }
@@ -145,7 +159,9 @@ const CollectDonationScreen = ({ navigation, route }) => {
         // Optimistically advance local voucher counter so next offline receipt uses next sequential number
         const currentNum = Number(form.voucher_id || voucher?.current_voucher || 0);
         if (voucher) {
-          setVoucher(v => ({ ...v, current_voucher: currentNum + 1 }));
+          const updatedVoucher = { ...voucher, current_voucher: currentNum + 1 };
+          setVoucher(updatedVoucher);
+          AsyncStorage.setItem(`voucher_${user.id}`, JSON.stringify(updatedVoucher));
         }
 
         setSuccessData({
