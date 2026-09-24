@@ -220563,3 +220563,31 @@ Watching for file changes with StatReloader
 HTTP/2 support not enabled (install the http2 and tls Twisted extras)
 Configuring endpoint tcp:port=8000:interface=0.0.0.0
 Listening on TCP address 0.0.0.0:8000
+[mHTTP POST /api/auth/login/ 200 [0.26, 10.58.250.111:34808][0m
+WebSocket HANDSHAKING /ws/notify/ [10.58.250.111:34818]
+WebSocket CONNECT /ws/notify/ [10.58.250.111:34818]
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.04, 10.58.250.111:34822][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.05, 10.58.250.111:34808][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.04, 10.58.250.111:34808][0m
+[mHTTP POST /api/core/update-push-token/ 200 [0.14, 10.58.250.111:34822][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.08, 10.58.250.111:34822][0m
+[mHTTP GET /api/core/events/ 200 [0.91, 10.58.250.111:34808][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.02, 10.58.250.111:34822][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.03, 10.58.250.111:34808][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.03, 10.58.250.111:34808][0m
+[mHTTP GET /api/core/events/ 200 [0.02, 10.58.250.111:34808][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.01, 10.58.250.111:34808][0m
+WebSocket HANDSHAKING /ws/notify/ [10.58.250.111:39428]
+WebSocket CONNECT /ws/notify/ [10.58.250.111:39428]
+[mHTTP GET /api/accounts/income/?page_size=5000 200 [0.02, 10.58.250.111:34808][0m
+[mHTTP GET /api/hr/staff-dashboard/?date=2026-09-24 200 [0.02, 10.58.250.111:34822][0m
+[mHTTP GET /api/accounts/income/?page_size=5000 200 [0.02, 10.58.250.111:34808][0m
+[mHTTP GET /api/hr/staff-dashboard/?date=2026-09-24 200 [0.01, 10.58.250.111:34822][0m
+[mHTTP GET /api/hr/staff-dashboard/?date=2026-09-23 200 [0.03, 10.58.250.111:34822][0m
+[mHTTP GET /api/accounts/income/?page_size=5000 200 [0.03, 10.58.250.111:34808][0m
+[mHTTP GET /api/accounts/income/?page_size=5000 200 [0.03, 10.58.250.111:34808][0m
+[mHTTP GET /api/hr/staff-dashboard/?date=2026-09-24 200 [0.03, 10.58.250.111:34822][0m
+[mHTTP GET /api/accounts/income/?page_size=5000 200 [0.02, 10.58.250.111:34808][0m
+[mHTTP GET /api/hr/staff-dashboard/?date=2026-09-22 200 [0.02, 10.58.250.111:34822][0m
+WebSocket DISCONNECT /ws/notify/ [10.58.250.111:39428]
+WebSocket DISCONNECT /ws/notify/ [10.58.250.111:34818]
