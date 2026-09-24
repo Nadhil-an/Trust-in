@@ -44,7 +44,7 @@ export default function Donations() {
     const fetchIncome = async () => {
       setItemsLoading(true)
       try {
-        const params = { date: selectedDate }
+        const params = { date: selectedDate, page_size: 5000 }
         if (selectedUser) params.created_by = selectedUser
         
         const res = await accountsApi.income.list(params)
