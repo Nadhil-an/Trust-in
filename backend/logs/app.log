@@ -224038,3 +224038,108 @@ WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:21028]
 WebSocket CONNECT /ws/notify/ [10.105.92.21:21028]
 [mHTTP GET /api/accounts/day-sheet/?date=2026-09-24 200 [0.02, 10.105.92.21:27838][0m
 WebSocket DISCONNECT /ws/notify/ [10.105.92.21:21028]
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:8694]
+WebSocket REJECT /ws/notify/ [10.105.92.21:8694]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:8694]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:7632]
+WebSocket REJECT /ws/notify/ [10.105.92.21:7632]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:7632]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:12146]
+WebSocket REJECT /ws/notify/ [10.105.92.21:12146]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:12146]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:30757]
+WebSocket REJECT /ws/notify/ [10.105.92.21:30757]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:30757]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:29635]
+WebSocket REJECT /ws/notify/ [10.105.92.21:29635]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:29635]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:28632]
+WebSocket REJECT /ws/notify/ [10.105.92.21:28632]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:28632]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:42895]
+WebSocket REJECT /ws/notify/ [10.105.92.21:42895]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:42895]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:33178]
+WebSocket REJECT /ws/notify/ [10.105.92.21:33178]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:33178]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:30464]
+WebSocket REJECT /ws/notify/ [10.105.92.21:30464]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:30464]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:60689]
+WebSocket REJECT /ws/notify/ [10.105.92.21:60689]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:60689]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:15080]
+WebSocket REJECT /ws/notify/ [10.105.92.21:15080]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:15080]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:53265]
+WebSocket REJECT /ws/notify/ [10.105.92.21:53265]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:53265]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:15879]
+WebSocket REJECT /ws/notify/ [10.105.92.21:15879]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:15879]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:1406]
+WebSocket REJECT /ws/notify/ [10.105.92.21:1406]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:1406]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:27317]
+WebSocket REJECT /ws/notify/ [10.105.92.21:27317]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:27317]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:63431]
+WebSocket REJECT /ws/notify/ [10.105.92.21:63431]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:63431]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:53386]
+WebSocket REJECT /ws/notify/ [10.105.92.21:53386]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:53386]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:44286]
+WebSocket REJECT /ws/notify/ [10.105.92.21:44286]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:44286]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:39400]
+WebSocket REJECT /ws/notify/ [10.105.92.21:39400]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:39400]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:40389]
+WebSocket REJECT /ws/notify/ [10.105.92.21:40389]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:40389]
+Unauthorized: /api/core/features/
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/core/features/ 401 [0.06, 10.105.92.21:39402][0m
+[31;1mHTTP GET /api/auth/profile/ 401 [0.06, 10.105.92.21:39401][0m
+Unauthorized: /api/auth/profile/
+Unauthorized: /api/core/features/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.03, 10.105.92.21:40391][0m
+[31;1mHTTP GET /api/core/features/ 401 [0.03, 10.105.92.21:40390][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.11, 10.105.92.21:40392][0m
+[mHTTP GET /api/core/features/ 200 [0.14, 10.105.92.21:56806][0m
+[mHTTP GET /api/auth/profile/ 200 [0.18, 10.105.92.21:56807][0m
+[mHTTP GET /api/core/features/ 200 [0.07, 10.105.92.21:27767][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-25 200 [0.09, 10.105.92.21:61902][0m
+[mHTTP GET /api/auth/profile/ 200 [0.07, 10.105.92.21:35816][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-25 200 [0.04, 10.105.92.21:22525][0m
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:58047]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:58047]
+[mHTTP POST /api/auth/logout/ 200 [0.04, 10.105.92.21:58048][0m
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:58047]
+[mHTTP POST /api/auth/login/ 200 [0.28, 10.105.92.21:26003][0m
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:60401]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:60401]
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.105.92.21:60402][0m
+[mHTTP GET /api/core/features/ 200 [0.06, 10.105.92.21:11753][0m
+[mHTTP GET /api/accounts/dashboard/?date=2026-09-25 200 [0.15, 10.105.92.21:11752][0m
+[mHTTP GET /api/accounts/dashboard/?date=2026-09-25 200 [0.07, 10.105.92.21:57144][0m
+[mHTTP POST /api/auth/logout/ 200 [0.03, 10.105.92.21:15514][0m
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:60401]
+Unauthorized: /api/auth/login/
+[31;1mHTTP POST /api/auth/login/ 401 [0.27, 10.105.92.21:8949][0m
+Unauthorized: /api/auth/login/
+[31;1mHTTP POST /api/auth/login/ 401 [0.20, 10.105.92.21:40414][0m
+[mHTTP POST /api/auth/login/ 200 [0.24, 10.105.92.21:24858][0m
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:31384]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:31384]
+[mHTTP GET /api/auth/profile/ 200 [0.07, 10.105.92.21:47734][0m
+[mHTTP GET /api/core/features/ 200 [0.08, 10.105.92.21:47735][0m
+[mHTTP GET /api/core/users/ 200 [1.09, 10.105.92.21:21145][0m
+[mHTTP GET /api/core/users/ 200 [0.07, 10.105.92.21:49679][0m
+[mHTTP POST /api/auth/logout/ 200 [0.04, 10.105.92.21:59120][0m
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:31384]
