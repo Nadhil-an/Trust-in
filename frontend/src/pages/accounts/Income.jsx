@@ -26,7 +26,7 @@ export default function IncomeList() {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const params = {}
+      const params = { page_size: 5000 }
       if (search) params.search = search
       if (dateFilter) params.date = dateFilter
       if (methodFilter !== "ALL") params.account_type = methodFilter
@@ -77,12 +77,6 @@ export default function IncomeList() {
     <div>
       <PageHeader title="Income Records" subtitle="All income and donations">
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          {dateFilter && (
-            <>
-              <span className="badge badge-green" style={{ fontSize: 13, padding: '6px 14px' }}>Cash: {formatINR(cashTotal)}</span>
-              <span className="badge badge-blue" style={{ fontSize: 13, padding: '6px 14px' }}>Online: {formatINR(onlineTotal)}</span>
-            </>
-          )}
           <button className="btn btn-primary" onClick={handleOpenModal}>+ Add Income</button>
         </div>
       </PageHeader>
