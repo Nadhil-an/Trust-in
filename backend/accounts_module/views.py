@@ -764,7 +764,7 @@ class DaySheetView(APIView):
             donor = (inc.donor_name or '').strip()
             source = (inc.source or '').strip()
             if donor and source and donor.lower() != source.lower():
-                part = f"{donor} / {source}"
+                part = f"{donor} ({source})"
             else:
                 part = donor or source
                 
@@ -785,7 +785,7 @@ class DaySheetView(APIView):
             payee = (exp.payee or '').strip()
             purpose = (exp.purpose or '').strip()
             if payee and purpose and payee.lower() != purpose.lower():
-                part = f"{payee} / {purpose}"
+                part = f"{payee} ({purpose})"
             else:
                 part = payee or purpose
                 
