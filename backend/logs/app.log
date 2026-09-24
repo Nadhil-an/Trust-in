@@ -224713,3 +224713,16 @@ WebSocket CONNECT /ws/notify/ [10.105.92.21:58305]
 [mHTTP POST /api/cashier/cash-closing/ 200 [0.07, 10.105.92.21:5057][0m
 [mHTTP POST /api/cashier/cash-closing/ 200 [0.05, 10.105.92.21:55590][0m
 [mHTTP POST /api/cashier/cash-closing/ 200 [0.04, 10.105.92.21:41877][0m
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:9319]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:9319]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\accounts_module\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:54794]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:54794]
