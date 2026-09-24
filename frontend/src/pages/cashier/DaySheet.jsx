@@ -126,14 +126,13 @@ export default function DaySheet() {
 
     const savedDebits = data.debit_rows || []
     const savedCredits = data.credit_rows || []
-    const maxRows = Math.max(savedDebits.length, savedCredits.length, 11)
 
     // Build debit rows — preserve incomes that come from backend
-    const obCash = savedDebits.find(r => r.particular === 'OB CASH') || { particular: 'OB CASH', amount: '', sc: 'CASH' };
-    const obBank = savedDebits.find(r => r.particular === 'OB BANK') || { particular: 'OB BANK', amount: '', sc: 'BANK' };
-    
-    // Any items from backend that are not OB CASH / OB BANK are incomes
-    const incomes = savedDebits.filter(r => r.particular !== 'OB CASH' && r.particular !== 'OB BANK');
+    const obCash = savedDebits.find(r => r.particular === 'OB CASH') || { particular: 'OB CASH', amount: '', sc: 'CASH' }
+    const obBank = savedDebits.find(r => r.particular === 'OB BANK') || { particular: 'OB BANK', amount: '', sc: 'BANK' }
+
+    // Income entries that came from the backend (have an `id`)
+    const incomes = savedDebits.filter(r => r.particular !== 'OB CASH' && r.particular !== 'OB BANK')
 
     const fixedRows = [
       obCash,
@@ -144,18 +143,39 @@ export default function DaySheet() {
       { particular: 'BY CASH', amount: (data.mobile_totals && data.mobile_totals.cash > 0) ? data.mobile_totals.cash : '', sc: 'CASH' },
       { particular: 'BY ONLINE', amount: (data.mobile_totals && data.mobile_totals.online > 0) ? data.mobile_totals.online : '', sc: 'BANK' },
       { particular: '', amount: '', sc: 'CASH' },
-    ];
+    ]
 
-    const dRows = [...fixedRows, ...incomes].map(r => ({ ...r, amount: r.amount != null ? r.amount : '' }));
-    while (dRows.length < maxRows) dRows.push({ particular: '', amount: '', sc: 'CASH' });
+    const dRows = [...fixedRows, ...incomes].map(r => ({ ...r, amount: r.amount != null ? r.amount : '' }))
+    while (dRows.length < 11) dRows.push({ particular: '', amount: '', sc: 'CASH' })
 
-    const dExtras = loadExtraDebits(date).map(r => ({ ...r, isExtra: true }))
+    // ── Clean stale localStorage extras ──────────────────────────────────────
+    // Remove any cached "extra" rows that are actually auto-computed or
+    // are now properly tracked by the backend (have an id).
+    const AUTO_PARTICULARS = new Set(['BY CASH', 'BY ONLINE', 'DONATION', 'TOTAL DONATION', 'OB CASH', 'OB BANK'])
+    const backendIncomeIds = new Set(incomes.filter(r => r.id).map(r => String(r.id)))
+    const backendExpenseIds = new Set(savedCredits.filter(r => r.id).map(r => String(r.id)))
+
+    const cleanExtras = (rows) => rows.filter(r => {
+      const p = (r.particular || '').trim().toUpperCase()
+      if (AUTO_PARTICULARS.has(p)) return false  // auto-computed, never cache
+      if (r.id && (backendIncomeIds.has(String(r.id)) || backendExpenseIds.has(String(r.id)))) return false
+      return true
+    })
+
+    const rawDExtras = loadExtraDebits(date)
+    const cleanDExtras = cleanExtras(rawDExtras)
+    if (cleanDExtras.length !== rawDExtras.length) saveExtraDebits(date, cleanDExtras)  // purge stale
+    const dExtras = cleanDExtras.map(r => ({ ...r, isExtra: true }))
     setDebits([...dRows, ...dExtras])
+
+    const rawCExtras = loadExtraCredits(date)
+    const cleanCExtras = cleanExtras(rawCExtras)
+    if (cleanCExtras.length !== rawCExtras.length) saveExtraCredits(date, cleanCExtras)  // purge stale
+    const cExtras = cleanCExtras.map(r => ({ ...r, isExtra: true }))
 
     // Build credit rows — always from server data
     const cRows = savedCredits.map(r => ({ ...r, amount: r.amount != null ? r.amount : '' }))
-    while (cRows.length < maxRows) cRows.push({ particular: '', amount: '', sc: 'CASH' })
-    const cExtras = loadExtraCredits(date).map(r => ({ ...r, isExtra: true }))
+    while (cRows.length < 11) cRows.push({ particular: '', amount: '', sc: 'CASH' })
     setCredits([...cRows, ...cExtras])
 
     // Restore closing balances
@@ -309,19 +329,41 @@ export default function DaySheet() {
     try {
       const rawDebits = overrideDebits ?? debits
       const rawCredits = overrideCredits ?? credits
-      const payloadDebits = rawDebits.map((d, i) => {
-        if (i === 2 || i === 3) return { ...d, particular: '', sc: 'CASH' }
-        if (i === 5) return { ...d, particular: 'BY CASH', sc: 'CASH' }
-        if (i === 6) return { ...d, particular: 'BY ONLINE', sc: 'BANK' }
-        if (i === 7) return { ...d, particular: '', amount: '', sc: 'CASH' }
-        return d
-      })
+
+      // Only save rows that are NOT auto-computed fixed rows.
+      // Fixed rows (indices 0-7): OB CASH, OB BANK, blank, blank, DONATION header,
+      // BY CASH (auto from mobile), BY ONLINE (auto from mobile), total-donation blank.
+      // Backend always re-computes these — we must NOT send them or they will duplicate.
+      const SKIP_INDICES = new Set([0, 1, 2, 3, 4, 5, 6, 7])
+      const AUTO_PARTICULARS = new Set(['BY CASH', 'BY ONLINE', 'DONATION', 'TOTAL DONATION', 'OB CASH', 'OB BANK'])
+
+      const payloadDebits = rawDebits
+        .map((d, i) => ({ ...d, _origIdx: i }))
+        .filter((d) => {
+          // Always skip auto-computed header rows
+          if (SKIP_INDICES.has(d._origIdx)) return false
+          const p = (d.particular || '').trim().toUpperCase()
+          if (AUTO_PARTICULARS.has(p)) return false
+          // Skip rows that have a backend id (income/expense) — backend re-fetches them
+          if (d.id) return false
+          return true
+        })
+        .map(({ _origIdx, isExtra, ...d }) => d) // strip internal flags
+
+      const payloadCredits = rawCredits
+        .filter((c) => {
+          // Skip rows that have a backend id (expense) — backend re-fetches them
+          if (c.id) return false
+          return true
+        })
+        .map(({ isExtra, ...c }) => c) // strip internal flags
+
       await cashierApi.cashClosing.create({
         date,
         physical_cash: closing.cashInHand || 0,
         physical_bank: closing.bankBalance || 0,
         debit_rows: payloadDebits,
-        credit_rows: rawCredits
+        credit_rows: payloadCredits
       })
       if (!isBackground) toast.success("Closing balances saved successfully!")
       if (!skipReload) load(true)

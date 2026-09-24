@@ -808,15 +808,29 @@ class DaySheetView(APIView):
         closing = CashClosing.objects.filter(date=target_date).first()
 
         if closing:
-            # Preserve incomplete drafts (rows saved by auto-save but missing info for ledgers)
+            # These particulars are ALWAYS auto-computed — never restore from closing snapshot
+            AUTO_COMPUTED = {'BY CASH', 'BY ONLINE', 'DONATION', 'TOTAL DONATION', 'OB CASH', 'OB BANK'}
+            # IDs of income rows already loaded from the DB — skip any duplicate draft row
+            known_income_ids = {r.get('id') for r in income_rows if r.get('id')}
+
             for r in closing.debit_rows:
-                if not r.get('id') and r.get('particular') not in ['OB CASH', 'OB BANK']:
-                    if r.get('particular') or r.get('amount'):
-                        debit_rows.append(r)
+                particular = (r.get('particular') or '').strip().upper()
+                row_id = r.get('id')
+                # Skip auto-computed rows and already-loaded income records
+                if particular in AUTO_COMPUTED:
+                    continue
+                if row_id and row_id in known_income_ids:
+                    continue
+                if not row_id and (r.get('particular') or r.get('amount')):
+                    debit_rows.append(r)
+
+            known_expense_ids = {r.get('id') for r in expense_rows if r.get('id')}
             for r in closing.credit_rows:
-                if not r.get('id'):
-                    if r.get('particular') or r.get('amount'):
-                        credit_rows.append(r)
+                row_id = r.get('id')
+                if row_id and row_id in known_expense_ids:
+                    continue
+                if not row_id and (r.get('particular') or r.get('amount')):
+                    credit_rows.append(r)
 
         total_debit = sum(float(r.get('amount') or 0) for r in debit_rows)
         total_credit = sum(float(r.get('amount') or 0) for r in credit_rows)
