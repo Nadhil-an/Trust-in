@@ -15,6 +15,30 @@ class MemberSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['id', 'member_id', 'created_by', 'created_at', 'updated_at']
 
+    def create(self, validated_data):
+        document = validated_data.pop('document', None)
+        member = super().create(validated_data)
+        if document:
+            MemberDocument.objects.create(
+                member=member,
+                doc_type='ID Proof',
+                file=document,
+                uploaded_by=validated_data.get('created_by')
+            )
+        return member
+
+    def update(self, instance, validated_data):
+        document = validated_data.pop('document', None)
+        member = super().update(instance, validated_data)
+        if document:
+            MemberDocument.objects.create(
+                member=member,
+                doc_type='ID Proof',
+                file=document,
+                uploaded_by=self.context['request'].user if 'request' in self.context else None
+            )
+        return member
+
 
 class MemberDocumentSerializer(serializers.ModelSerializer):
     class Meta:

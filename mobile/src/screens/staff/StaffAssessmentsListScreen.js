@@ -17,6 +17,7 @@ const StaffAssessmentsListScreen = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [assessmentToView, setAssessmentToView] = useState(null);
+  const [assessmentToDelete, setAssessmentToDelete] = useState(null);
   const user = useAuthStore(state => state.user);
 
   useNotificationSocket((data) => {
@@ -46,26 +47,20 @@ const StaffAssessmentsListScreen = ({ navigation }) => {
   }, [navigation]);
 
   const handleDelete = (assessment) => {
-    Alert.alert(
-      'Delete Assessment',
-      `Are you sure you want to delete assessment ${assessment.request_number}?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Delete', 
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await assessmentApi.delete(assessment.id);
-              Toast.show({ type: 'success', text1: 'Assessment deleted' });
-              fetchAssessments(false);
-            } catch (err) {
-              Alert.alert('Error', 'Failed to delete assessment. It might have already progressed to next stages.');
-            }
-          }
-        }
-      ]
-    );
+    setAssessmentToDelete(assessment);
+  };
+
+  const confirmDelete = async () => {
+    if (!assessmentToDelete) return;
+    try {
+      await assessmentApi.delete(assessmentToDelete.id);
+      Toast.show({ type: 'success', text1: 'Assessment deleted' });
+      fetchAssessments(false);
+    } catch (err) {
+      Alert.alert('Error', 'Failed to delete assessment. It might have already progressed to next stages.');
+    } finally {
+      setAssessmentToDelete(null);
+    }
   };
 
   const renderItem = ({ item }) => (
@@ -250,6 +245,30 @@ const StaffAssessmentsListScreen = ({ navigation }) => {
             <TouchableOpacity style={styles.previewSubmitBtn} onPress={() => setAssessmentToView(null)}>
               <Text style={styles.previewSubmitBtnText}>Close Preview</Text>
             </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Custom Delete Confirmation Modal */}
+      <Modal visible={!!assessmentToDelete} transparent animationType="fade" onRequestClose={() => setAssessmentToDelete(null)}>
+        <View style={styles.previewOverlay}>
+          <View style={[styles.previewCard, { alignItems: 'center', paddingVertical: 28 }]}>
+            <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: '#FEF2F2', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+              <Ionicons name="trash" size={32} color="#EF4444" />
+            </View>
+            <Text style={{ fontSize: 20, fontWeight: '800', color: '#0F172A', marginBottom: 12 }}>Delete Assessment?</Text>
+            <Text style={{ fontSize: 14, color: '#64748B', textAlign: 'center', marginBottom: 24, paddingHorizontal: 10, lineHeight: 20 }}>
+              Are you sure you want to permanently delete assessment <Text style={{fontWeight: '800', color: '#0F172A'}}>{assessmentToDelete?.request_number}</Text>? This action cannot be undone.
+            </Text>
+            
+            <View style={{ flexDirection: 'row', gap: 12, width: '100%' }}>
+              <TouchableOpacity style={[styles.previewSubmitBtn, { flex: 1, backgroundColor: '#F1F5F9' }]} onPress={() => setAssessmentToDelete(null)}>
+                <Text style={[styles.previewSubmitBtnText, { color: '#64748B' }]}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.previewSubmitBtn, { flex: 1, backgroundColor: '#EF4444' }]} onPress={confirmDelete}>
+                <Text style={[styles.previewSubmitBtnText, { color: 'white' }]}>Yes, Delete</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>

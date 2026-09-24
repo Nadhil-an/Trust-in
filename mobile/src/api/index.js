@@ -102,8 +102,8 @@ export const authApi = {
 
 // ── Members  (api/hr/members/) ───────────────────────────────────────────────
 export const membersApi = {
-  create: (data)  => api.post('/hr/members/', data),
-  update: (id, data) => api.patch(`/hr/members/${id}/`, data),
+  create: (data)  => api.post('/hr/members/', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  update: (id, data) => api.patch(`/hr/members/${id}/`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
   delete: (id)    => api.delete(`/hr/members/${id}/`),
   search: (query) => api.get('/hr/members/', { params: { search: query } }),
   get:    (id)    => api.get(`/hr/members/${id}/`),
@@ -118,8 +118,8 @@ export const membershipApi = {
 
 // ── Assessment / Assessment Requests ────────────────────────────────────────
 export const assessmentApi = {
-  create:  (data)        => api.post('/manager/requests/', data),
-  update:  (id, data)    => api.patch(`/manager/requests/${id}/`, data),
+  create:  (data)        => api.post('/manager/requests/', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  update:  (id, data)    => api.patch(`/manager/requests/${id}/`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
   delete:  (id)          => api.delete(`/manager/requests/${id}/`),
   get:     (id)          => api.get(`/manager/requests/${id}/`),
   list:    (params)      => api.get('/manager/requests/', { params }),
