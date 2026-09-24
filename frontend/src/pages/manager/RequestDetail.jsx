@@ -100,6 +100,24 @@ export default function RequestDetail() {
                 <div className="detail-field"><label>Address</label><span>{req.beneficiary_address || "-"}</span></div>
               </div>
               {req.description && <div style={{marginTop:12}}><label style={{fontSize:12,color:"var(--gray-500)"}}>Description</label><p style={{fontSize:13,marginTop:4}}>{req.description}</p></div>}
+              {req.document && (
+                <div style={{marginTop: 16}}>
+                  <label style={{fontSize:12,color:"var(--gray-500)", display: 'block', marginBottom: 6}}>Supporting Document / Image</label>
+                  {String(req.document).match(/\.(jpeg|jpg|gif|png|webp|bmp)(\?.*)?$/i) ? (
+                    <a href={req.document} target="_blank" rel="noreferrer" style={{display: 'inline-block', cursor: 'zoom-in'}}>
+                      <img src={req.document} alt="Supporting Document" style={{maxWidth: '100%', maxHeight: 200, borderRadius: 8, border: '1px solid #E5E7EB', objectFit: 'contain'}} title="Click to view full image" />
+                    </a>
+                  ) : (
+                    <a href={req.document} target="_blank" rel="noreferrer" className="btn btn-secondary" style={{padding: '6px 12px', fontSize: 13}}>📄 View Document</a>
+                  )}
+                </div>
+              )}
+              {req.voice_note && (
+                <div style={{marginTop: 16}}>
+                  <label style={{fontSize:12,color:"var(--gray-500)", display: 'block', marginBottom: 6}}>Voice Record</label>
+                  <audio controls src={req.voice_note} style={{width: '100%', height: 40, outline: 'none'}} />
+                </div>
+              )}
             </div>
           </div>
 

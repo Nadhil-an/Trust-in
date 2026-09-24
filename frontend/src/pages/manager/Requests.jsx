@@ -228,7 +228,7 @@ export default function Requests() {
               <thead>
                 <tr>
                   <th>Request No</th>
-                  <th>Purpose</th>
+                  <th>Beneficiary</th>
                   <th>Category</th>
                   <th>Amount</th>
                   <th>Priority</th>
@@ -246,7 +246,10 @@ export default function Requests() {
                       onClick={() => navigate(`/slt/mgr/requests/${r.id}`)}>
                       {r.request_number}
                     </td>
-                    <td>{r.purpose}</td>
+                    <td>
+                      <div style={{fontWeight: 600, color: 'var(--gray-800)'}}>{r.beneficiary_name || '-'}</div>
+                      {r.purpose && <div style={{fontSize: 12, color: 'var(--gray-500)', marginTop: 2}}>{r.purpose}</div>}
+                    </td>
                     <td><span className="badge badge-blue">{r.category}</span></td>
                     <td><AmountDisplay amount={r.amount_requested} /></td>
                     <td>
