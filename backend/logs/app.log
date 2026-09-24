@@ -223935,3 +223935,106 @@ Watching for file changes with StatReloader
 HTTP/2 support not enabled (install the http2 and tls Twisted extras)
 Configuring endpoint tcp:port=8000:interface=0.0.0.0
 Listening on TCP address 0.0.0.0:8000
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:5229]
+WebSocket REJECT /ws/notify/ [10.105.92.21:5229]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:5229]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:64436]
+WebSocket REJECT /ws/notify/ [10.105.92.21:64436]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:64436]
+Unauthorized: /api/auth/profile/
+Unauthorized: /api/core/features/
+Unauthorized: /api/accounts/dashboard/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.03, 10.105.92.21:5231][0m
+[31;1mHTTP GET /api/core/features/ 401 [0.03, 10.105.92.21:5232][0m
+[31;1mHTTP GET /api/accounts/dashboard/?date=2026-09-24 401 [0.04, 10.105.92.21:5230][0m
+Unauthorized: /api/accounts/dashboard/
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/accounts/dashboard/?date=2026-09-24 401 [0.01, 10.105.92.21:31618][0m
+Unauthorized: /api/core/features/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.02, 10.105.92.21:64437][0m
+[31;1mHTTP GET /api/core/features/ 401 [0.02, 10.105.92.21:31616][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.05, 10.105.92.21:31617][0m
+[mHTTP GET /api/core/features/ 200 [0.09, 10.105.92.21:20433][0m
+[mHTTP GET /api/auth/profile/ 200 [0.12, 10.105.92.21:28169][0m
+[mHTTP GET /api/core/features/ 200 [0.07, 10.105.92.21:6539][0m
+[mHTTP GET /api/accounts/dashboard/?date=2026-09-24 200 [0.17, 10.105.92.21:20434][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.105.92.21:29801][0m
+[mHTTP GET /api/accounts/dashboard/?date=2026-09-24 200 [0.03, 10.105.92.21:35054][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-24 200 [0.02, 10.105.92.21:40942][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-24 200 [0.02, 10.105.92.21:2594][0m
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:15419]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:15419]
+[mHTTP POST /api/cashier/cash-closing/ 200 [0.04, 10.105.92.21:19382][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-24 200 [0.02, 10.105.92.21:62567][0m
+[mHTTP POST /api/cashier/cash-closing/ 200 [0.03, 10.105.92.21:6106][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-24 200 [0.02, 10.105.92.21:29309][0m
+[mHTTP POST /api/cashier/cash-closing/ 200 [0.03, 10.105.92.21:25435][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-24 200 [0.02, 10.105.92.21:1962][0m
+[mHTTP POST /api/cashier/cash-closing/ 200 [0.02, 10.105.92.21:16169][0m
+[mHTTP POST /api/cashier/cash-closing/ 200 [0.03, 10.105.92.21:61087][0m
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:15419]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:64890]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:64890]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:64890]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:50873]
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.105.92.21:64891][0m
+[mHTTP GET /api/core/features/ 200 [0.03, 10.105.92.21:64892][0m
+WebSocket CONNECT /ws/notify/ [10.105.92.21:50873]
+[mHTTP GET /api/auth/profile/ 200 [0.02, 10.105.92.21:50874][0m
+[mHTTP GET /api/core/features/ 200 [0.02, 10.105.92.21:50875][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-24 200 [0.02, 10.105.92.21:50876][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-24 200 [0.01, 10.105.92.21:50877][0m
+[mHTTP POST /api/cashier/cash-closing/ 200 [0.02, 10.105.92.21:29998][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-24 200 [0.02, 10.105.92.21:51692][0m
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:50873]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:38240]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:38240]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:38240]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:42849]
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.105.92.21:38241][0m
+WebSocket CONNECT /ws/notify/ [10.105.92.21:42849]
+[mHTTP GET /api/core/features/ 200 [0.03, 10.105.92.21:38242][0m
+[mHTTP GET /api/auth/profile/ 200 [0.02, 10.105.92.21:42850][0m
+[mHTTP GET /api/core/features/ 200 [0.02, 10.105.92.21:42851][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-24 200 [0.03, 10.105.92.21:42852][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-24 200 [0.02, 10.105.92.21:42853][0m
+[mHTTP POST /api/cashier/cash-closing/ 200 [0.02, 10.105.92.21:8437][0m
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:42849]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:30963]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:30963]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:30963]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:31730]
+[mHTTP GET /api/core/features/ 200 [0.02, 10.105.92.21:30965][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.105.92.21:30964][0m
+WebSocket CONNECT /ws/notify/ [10.105.92.21:31730]
+[mHTTP GET /api/core/features/ 200 [0.03, 10.105.92.21:31731][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.105.92.21:31732][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-24 200 [0.03, 10.105.92.21:31733][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-24 200 [0.02, 10.105.92.21:31734][0m
+[mHTTP POST /api/cashier/cash-closing/ 200 [0.02, 10.105.92.21:54137][0m
+[mHTTP POST /api/cashier/cash-closing/ 200 [0.02, 10.105.92.21:65116][0m
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:31730]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:1253]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:1253]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:1253]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:51019]
+[mHTTP GET /api/core/features/ 200 [0.02, 10.105.92.21:1255][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.105.92.21:1254][0m
+WebSocket CONNECT /ws/notify/ [10.105.92.21:51019]
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.105.92.21:51021][0m
+[mHTTP GET /api/core/features/ 200 [0.03, 10.105.92.21:51020][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-24 200 [0.03, 10.105.92.21:51022][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-24 200 [0.01, 10.105.92.21:51023][0m
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\accounts_module\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:21028]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:21028]
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-24 200 [0.02, 10.105.92.21:27838][0m
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:21028]
