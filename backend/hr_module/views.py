@@ -49,7 +49,7 @@ class HRDashboardView(APIView):
     permission_classes = [IsHR]
 
     def get(self, request):
-        today = timezone.now().date()
+        today = timezone.localdate()
         present_qs = Attendance.objects.filter(date=today, status='PRESENT')
         absent_qs = Attendance.objects.filter(date=today, status='ABSENT')
         leave_qs = Attendance.objects.filter(date=today, status='LEAVE')
@@ -805,7 +805,7 @@ class OfficerAttendanceGraphView(APIView):
         except ValueError:
             days = 7
 
-        today = timezone.now().date()
+        today = timezone.localdate()
         history = []
         for i in range(days - 1, -1, -1):
             d = today - timezone.timedelta(days=i)
@@ -841,7 +841,7 @@ class BulkAttendanceView(APIView):
         created, updated = 0, 0
         for rec in records:
             emp_id = rec.get('employee')
-            date = rec.get('date', timezone.now().date())
+            date = rec.get('date', timezone.localdate())
             defaults_to_update = {
                 'status': rec.get('status', 'PRESENT'),
                 'remarks': rec.get('remarks', ''),
@@ -1149,7 +1149,7 @@ class PerformancePointLeaderboardView(APIView):
 
     def get(self, request):
         from django.db.models import Sum
-        today = timezone.now().date()
+        today = timezone.localdate()
         try:
             month = int(request.query_params.get('month', today.month))
             year = int(request.query_params.get('year', today.year))
@@ -1354,9 +1354,9 @@ class StaffLeaderboardView(APIView):
             try:
                 target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
             except ValueError:
-                target_date = timezone.now().date()
+                target_date = timezone.localdate()
         else:
-            target_date = timezone.now().date()
+            target_date = timezone.localdate()
         
         # Get list of names/emails for staff who are PRESENT, LATE, or HALF_DAY
         present_staff = Attendance.objects.filter(

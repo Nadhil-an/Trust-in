@@ -661,7 +661,7 @@ class ProcessPaymentView(APIView):
 
         payroll.status = 'PAID'
         payroll.payment_method = request.data.get('payment_method', 'BANK')
-        payroll.payment_date = timezone.now().date()
+        payroll.payment_date = timezone.localdate()
         payroll.payment_reference = request.data.get('payment_reference', '')
         payroll.save()
 
@@ -727,9 +727,9 @@ class DaySheetView(APIView):
                 from datetime import datetime
                 target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
             else:
-                target_date = timezone.now().date()
+                target_date = timezone.localdate()
         except ValueError:
-            target_date = timezone.now().date()
+            target_date = timezone.localdate()
 
         # ── Opening Balances (previous day closing balances via CashClosing)
         from cashier_module.models import CashClosing
