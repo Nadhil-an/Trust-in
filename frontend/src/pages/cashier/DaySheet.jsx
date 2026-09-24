@@ -593,12 +593,12 @@ export default function DaySheet() {
                             <TableInput
                               value={d.particular || ''}
                               onChange={(val) => {
-                                if (i === 5 || i === 6) return;
+                                if (i === 0 || i === 1 || i === 5 || i === 6) return;
                                 const n = [...debits]; n[i] = { ...n[i], particular: val }; setDebits(n)
                                 scheduleAutoSave()
                               }}
                               onBlur={() => scheduleAutoSave()}
-                              readOnly={i === 5 || i === 6}
+                              readOnly={i === 0 || i === 1 || i === 5 || i === 6}
                               highlighted={i === 5 || i === 6}
                               placeholder=""
                             />
@@ -607,17 +607,21 @@ export default function DaySheet() {
                             <TableInput
                               type="number" align="right"
                               value={d.amount || ''}
-                              onChange={(val) => { const n = [...debits]; n[i] = { ...n[i], amount: val }; setDebits(n); scheduleAutoSave() }}
+                              onChange={(val) => { 
+                                if (i === 0 || i === 1 || i === 5 || i === 6) return;
+                                const n = [...debits]; n[i] = { ...n[i], amount: val }; setDebits(n); scheduleAutoSave() 
+                              }}
                                onBlur={() => { scheduleAutoSave() }}
+                              readOnly={i === 0 || i === 1 || i === 5 || i === 6}
                               placeholder=""
                             />
                           </div>
                           <div style={{ ...SH.td, padding: '4px' }}>
-                            <div style={{ position: 'relative', width: '100%', opacity: (i === 5 || i === 6) ? 0.7 : 1 }}>
+                            <div style={{ position: 'relative', width: '100%', opacity: (i === 0 || i === 1 || i === 5 || i === 6) ? 0.7 : 1 }}>
                               <select
                                 value={d.sc || 'CASH'}
-                                disabled={i === 5 || i === 6}
-                                onChange={(e) => { if (i === 5 || i === 6) return; const n = [...debits]; n[i] = { ...n[i], sc: e.target.value }; setDebits(n); scheduleAutoSave() }}
+                                disabled={i === 0 || i === 1 || i === 5 || i === 6}
+                                onChange={(e) => { if (i === 0 || i === 1 || i === 5 || i === 6) return; const n = [...debits]; n[i] = { ...n[i], sc: e.target.value }; setDebits(n); scheduleAutoSave() }}
                                 onBlur={() => { scheduleAutoSave() }}
                                 style={{ background: d.sc === 'BANK' ? 'var(--primary-100)' : 'var(--success-light)', color: d.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)', border: 'none', borderRadius: '12px', padding: '4px 16px 4px 8px', fontSize: 10, fontWeight: 700, outline: 'none', cursor: (i === 5 || i === 6) ? 'default' : 'pointer', appearance: 'none', width: '100%' }}
                               >
