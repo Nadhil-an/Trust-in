@@ -67,9 +67,21 @@ export default function DaySheet() {
   const [incomeForm, setIncomeForm] = useState({ source:"", date:format(new Date(),"yyyy-MM-dd"), amount:"", donor_name:"", phone:"", address:"", purpose:"", payment_method:"CASH", account_type:"CASH", reference_number:"", remarks:"" })
   const [incomeSaving, setIncomeSaving] = useState(false)
 
+  const [showSaveWarning, setShowSaveWarning] = useState(null) // 'expense' or 'income'
+
   const handleOpenExpense = () => {
-    setExpenseForm({ category:"", date:date, amount:"", payee:"", purpose:"", payment_method:"CASH", account_type:"CASH", expense_id: "", remarks:"" })
-    setShowExpenseModal(true)
+    setShowSaveWarning('expense')
+  }
+
+  const proceedToModal = () => {
+    if (showSaveWarning === 'expense') {
+      setExpenseForm({ category:"", date:date, amount:"", payee:"", purpose:"", payment_method:"CASH", account_type:"CASH", expense_id: "", remarks:"" })
+      setShowExpenseModal(true)
+    } else if (showSaveWarning === 'income') {
+      setIncomeForm({ source:"", date:date, amount:"", donor_name:"", phone:"", address:"", purpose:"", payment_method:"CASH", account_type:"CASH", reference_number:"", remarks:"" })
+      setShowIncomeModal(true)
+    }
+    setShowSaveWarning(null)
   }
 
   const handleSaveExpense = async (e) => {
@@ -86,8 +98,7 @@ export default function DaySheet() {
   }
 
   const handleOpenIncome = () => {
-    setIncomeForm({ source:"", date:date, amount:"", donor_name:"", phone:"", address:"", purpose:"", payment_method:"CASH", account_type:"CASH", reference_number:"", remarks:"" })
-    setShowIncomeModal(true)
+    setShowSaveWarning('income')
   }
 
   const handleSaveIncome = async (e) => {
@@ -347,16 +358,14 @@ export default function DaySheet() {
           if (SKIP_INDICES.has(d._origIdx)) return false
           const p = (d.particular || '').trim().toUpperCase()
           if (AUTO_PARTICULARS.has(p)) return false
-          // Skip rows that have a backend id (income/expense) — backend re-fetches them
-          if (d.id) return false
+          // Keep rows even if they have an ID so they don't get deleted by the backend
           return true
         })
         .map(({ _origIdx, isExtra, ...d }) => d) // strip internal flags
 
       const payloadCredits = rawCredits
         .filter((c) => {
-          // Skip rows that have a backend id (expense) — backend re-fetches them
-          if (c.id) return false
+          // Keep rows even if they have an ID so they don't get deleted by the backend
           return true
         })
         .map(({ isExtra, ...c }) => c) // strip internal flags
@@ -446,7 +455,11 @@ export default function DaySheet() {
           <button onClick={load} className="btn btn-secondary">↺ Refresh</button>
           <button onClick={handlePrint} className="btn btn-secondary">🖨 Print</button>
           <button onClick={handleExport} className="btn btn-secondary">⬇ Export Excel</button>
-          <button className="btn btn-primary" onClick={handleSave}>💾 Save</button>
+          <button className="btn btn-primary" onClick={() => {
+            if (window.confirm("Are you sure you want to save the Day Book?")) {
+              handleSave(false);
+            }
+          }}>💾 Save</button>
         </div>
       </div>
 
@@ -741,6 +754,25 @@ export default function DaySheet() {
             </div>
           </div>
         </>
+      )}
+
+      {showSaveWarning && (
+        <Modal isOpen={true} onClose={() => setShowSaveWarning(null)} title="Warning: Unsaved Changes" size="modal-md"
+          footer={
+            <>
+              <button className="btn btn-secondary" onClick={() => setShowSaveWarning(null)}>Cancel</button>
+              <button className="btn btn-primary" onClick={proceedToModal}>Proceed</button>
+            </>
+          }
+        >
+          <div style={{ padding: '24px 20px', textAlign: 'center', background: '#fffbeb', borderRadius: '8px', border: '1px solid #fde68a' }}>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
+            <h3 style={{ marginBottom: '12px', color: '#b45309', fontWeight: 800 }}>Please Save the Day Book</h3>
+            <p style={{ color: '#92400e', lineHeight: '1.6', fontSize: 14 }}>
+              If you have made any manual entries in the Day Book, please ensure you have clicked the <strong>Save</strong> button first. Proceeding will refresh the page and any unsaved changes will be lost!
+            </p>
+          </div>
+        </Modal>
       )}
 
       {showExpenseModal && (
