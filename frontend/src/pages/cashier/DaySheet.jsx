@@ -59,6 +59,41 @@ export default function DaySheet() {
   const saveExtraDebits = (d, rows) => localStorage.setItem(getExtraDebitKey(d), JSON.stringify(rows))
   const saveExtraCredits = (d, rows) => localStorage.setItem(getExtraCreditKey(d), JSON.stringify(rows))
 
+  const [isDirty, setIsDirty] = useState(false)
+  const [autoSaveStatus, setAutoSaveStatus] = useState('saved') // 'saved' | 'saving' | 'pending'
+
+  // Auto-save: fires immediately on every change — no delay
+  const autoSaveTimerRef = useRef(null)
+  const handleSaveRef = useRef(null)
+  const isSavingRef = useRef(false)
+
+  const scheduleAutoSave = useCallback(() => {
+    setAutoSaveStatus('saving')
+    setIsDirty(true)
+    // Cancel any pending save (in case a previous save is still in-flight, queue one more)
+    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current)
+    autoSaveTimerRef.current = setTimeout(() => {
+      if (handleSaveRef.current) {
+        handleSaveRef.current(true, null, null, true)
+      }
+    }, 0)
+  }, [])
+
+  // Tab close interceptor
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isDirty]);
+
+  // Cleanup timer on unmount
+  useEffect(() => () => { if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current) }, [])
+
   const [showExpenseModal, setShowExpenseModal] = useState(false)
   const [expenseForm, setExpenseForm] = useState({ category:"", date:format(new Date(),"yyyy-MM-dd"), amount:"", payee:"", purpose:"", payment_method:"CASH", account_type:"CASH", expense_id:"", remarks:"" })
   const [expenseSaving, setExpenseSaving] = useState(false)
@@ -113,6 +148,7 @@ export default function DaySheet() {
 
       toast.success("Income recorded!"); 
       setShowIncomeModal(false); 
+      setIsDirty(true); // force load/save re-calc if needed, or just let auto-save handle it
       load(false);
     }
     catch (err) { toast.error(err.response?.data?.detail || "Save failed") } finally { setIncomeSaving(false) }
@@ -344,12 +380,11 @@ export default function DaySheet() {
       const rawDebits = overrideDebits ?? debits
       const rawCredits = overrideCredits ?? credits
 
-      // Only save rows that are NOT auto-computed fixed rows.
-      // Fixed rows (indices 0-7): OB CASH, OB BANK, blank, blank, DONATION header,
-      // BY CASH (auto from mobile), BY ONLINE (auto from mobile), total-donation blank.
-      // Backend always re-computes these — we must NOT send them or they will duplicate.
-      const SKIP_INDICES = new Set([0, 1, 2, 3, 4, 5, 6, 7])
-      const AUTO_PARTICULARS = new Set(['BY CASH', 'BY ONLINE', 'DONATION', 'TOTAL DONATION', 'OB CASH', 'OB BANK'])
+      // Only skip the truly auto-computed fixed rows.
+      // Fixed rows: 2, 3 (blank padding), 4 (DONATION), 5 (BY CASH), 6 (BY ONLINE), 7 (total-donation)
+      // We allow indices 0 (OB CASH) and 1 (OB BANK) so users can manually override them.
+      const SKIP_INDICES = new Set([2, 3, 4, 5, 6, 7])
+      const AUTO_PARTICULARS = new Set(['BY CASH', 'BY ONLINE', 'DONATION', 'TOTAL DONATION'])
 
       const payloadDebits = rawDebits
         .map((d, i) => ({ ...d, _origIdx: i }))
@@ -377,14 +412,24 @@ export default function DaySheet() {
         debit_rows: payloadDebits,
         credit_rows: payloadCredits
       })
+      
+      setIsDirty(false)
+      setAutoSaveStatus('saved')
+
       if (!isBackground) {
         toast.success("Closing balances saved successfully!")
         if (!skipReload) load(true)
       }
     } catch (e) {
+      setAutoSaveStatus('pending')
       if (!isBackground) toast.error('Failed to save data')
     }
   }
+
+  // Update the ref so the debounce timer always has the latest state closures
+  useEffect(() => {
+    handleSaveRef.current = handleSave;
+  })
 
   const totalCreditSum = debits.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0)
   const totalDebitSum = credits.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0)
@@ -455,11 +500,6 @@ export default function DaySheet() {
           <button onClick={load} className="btn btn-secondary">↺ Refresh</button>
           <button onClick={handlePrint} className="btn btn-secondary">🖨 Print</button>
           <button onClick={handleExport} className="btn btn-secondary">⬇ Export Excel</button>
-          <button className="btn btn-primary" onClick={() => {
-            if (window.confirm("Are you sure you want to save the Day Book?")) {
-              handleSave(false);
-            }
-          }}>💾 Save</button>
         </div>
       </div>
 
@@ -479,7 +519,7 @@ export default function DaySheet() {
           </div>
 
           {/* ── Main Day Sheet table ── */}
-          <div className="data-card" ref={printRef} style={{ marginBottom: 0 }}>
+          <div className="data-card" ref={printRef} style={{ marginBottom: 0 }} onChange={() => setIsDirty(true)}>
             {/* Column headers: CREDIT | DEBIT */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: '1px solid var(--gray-200)' }}>
               <div style={{ background: 'var(--success-light)', color: 'var(--success)', textAlign: 'center', fontWeight: 700, fontSize: 13, padding: '12px', borderRight: '1px solid var(--gray-200)', letterSpacing: '1px' }}>CREDIT</div>
@@ -555,8 +595,9 @@ export default function DaySheet() {
                               onChange={(val) => {
                                 if (i === 5 || i === 6) return;
                                 const n = [...debits]; n[i] = { ...n[i], particular: val }; setDebits(n)
+                                scheduleAutoSave()
                               }}
-                              onBlur={() => handleSave(true)}
+                              onBlur={() => scheduleAutoSave()}
                               readOnly={i === 5 || i === 6}
                               highlighted={i === 5 || i === 6}
                               placeholder=""
@@ -566,8 +607,8 @@ export default function DaySheet() {
                             <TableInput
                               type="number" align="right"
                               value={d.amount || ''}
-                              onChange={(val) => { const n = [...debits]; n[i] = { ...n[i], amount: val }; setDebits(n) }}
-                              onBlur={() => handleSave(true)}
+                              onChange={(val) => { const n = [...debits]; n[i] = { ...n[i], amount: val }; setDebits(n); scheduleAutoSave() }}
+                               onBlur={() => { scheduleAutoSave() }}
                               placeholder=""
                             />
                           </div>
@@ -576,8 +617,8 @@ export default function DaySheet() {
                               <select
                                 value={d.sc || 'CASH'}
                                 disabled={i === 5 || i === 6}
-                                onChange={(e) => { if (i === 5 || i === 6) return; const n = [...debits]; n[i] = { ...n[i], sc: e.target.value }; setDebits(n) }}
-                                onBlur={() => handleSave(true)}
+                                onChange={(e) => { if (i === 5 || i === 6) return; const n = [...debits]; n[i] = { ...n[i], sc: e.target.value }; setDebits(n); scheduleAutoSave() }}
+                                onBlur={() => { scheduleAutoSave() }}
                                 style={{ background: d.sc === 'BANK' ? 'var(--primary-100)' : 'var(--success-light)', color: d.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)', border: 'none', borderRadius: '12px', padding: '4px 16px 4px 8px', fontSize: 10, fontWeight: 700, outline: 'none', cursor: (i === 5 || i === 6) ? 'default' : 'pointer', appearance: 'none', width: '100%' }}
                               >
                                 <option value="CASH">CASH</option>
@@ -600,6 +641,7 @@ export default function DaySheet() {
                       saveExtraDebits(date, next.filter(r => r.isExtra))
                       return next
                     })
+                    setIsDirty(true)
                   }}
                   style={{ width: '100%', padding: '12px', background: 'var(--success-light)', border: 'none', color: 'var(--success)', fontWeight: 800, fontSize: 13, cursor: 'pointer', textAlign: 'center', transition: 'background 0.2s', borderTop: '1px dashed var(--gray-200)' }}
                   onMouseEnter={e => e.target.style.background = '#bbf7d0'}
@@ -632,8 +674,8 @@ export default function DaySheet() {
                       <div style={{ ...SH.tdL }}>
                         <TableInput
                           value={c.particular || ''}
-                          onChange={(val) => { const n = [...credits]; n[i] = { ...n[i], particular: val }; setCredits(n) }}
-                          onBlur={() => handleSave(true)}
+                          onChange={(val) => { const n = [...credits]; n[i] = { ...n[i], particular: val }; setCredits(n); scheduleAutoSave() }}
+                          onBlur={() => scheduleAutoSave()}
                           placeholder=""
                         />
                       </div>
@@ -641,8 +683,8 @@ export default function DaySheet() {
                         <TableInput
                           type="number" align="right"
                           value={c.amount || ''}
-                          onChange={(val) => { const n = [...credits]; n[i] = { ...n[i], amount: val }; setCredits(n) }}
-                          onBlur={() => handleSave(true)}
+                          onChange={(val) => { const n = [...credits]; n[i] = { ...n[i], amount: val }; setCredits(n); scheduleAutoSave() }}
+                          onBlur={() => scheduleAutoSave()}
                           placeholder=""
                         />
                       </div>
@@ -650,8 +692,8 @@ export default function DaySheet() {
                         <div style={{ position: 'relative', width: '100%' }}>
                           <select
                             value={c.sc || 'CASH'}
-                            onChange={(e) => { const n = [...credits]; n[i] = { ...n[i], sc: e.target.value }; setCredits(n) }}
-                            onBlur={() => handleSave(true)}
+                            onChange={(e) => { const n = [...credits]; n[i] = { ...n[i], sc: e.target.value }; setCredits(n); scheduleAutoSave() }}
+                            onBlur={() => scheduleAutoSave()}
                             style={{ background: c.sc === 'BANK' ? 'var(--primary-100)' : 'var(--success-light)', color: c.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)', border: 'none', borderRadius: '12px', padding: '4px 16px 4px 8px', fontSize: 10, fontWeight: 700, outline: 'none', cursor: 'pointer', appearance: 'none', width: '100%' }}
                           >
                             <option value="CASH">CASH</option>
@@ -672,6 +714,7 @@ export default function DaySheet() {
                       saveExtraCredits(date, next.filter(r => r.isExtra))
                       return next
                     })
+                    setIsDirty(true)
                   }}
                   style={{ width: '100%', padding: '12px', background: 'var(--info-light)', border: 'none', color: 'var(--info)', fontWeight: 800, fontSize: 13, cursor: 'pointer', textAlign: 'center', transition: 'background 0.2s', borderTop: '1px dashed var(--gray-200)' }}
                   onMouseEnter={e => e.target.style.background = '#bae6fd'}
@@ -710,14 +753,14 @@ export default function DaySheet() {
                       label="Cash In Hand"
                       value={closing.cashInHand}
                       isEditable
-                      onValueChange={val => setClosing({ ...closing, cashInHand: val })}
+                      onValueChange={val => { setClosing({ ...closing, cashInHand: val }); scheduleAutoSave() }}
                       badge="CASH" badgeClass="badge-green"
                     />
                     <ClosingRow
                       label="Bank Balance"
                       value={closing.bankBalance}
                       isEditable
-                      onValueChange={val => setClosing({ ...closing, bankBalance: val })}
+                      onValueChange={val => { setClosing({ ...closing, bankBalance: val }); scheduleAutoSave() }}
                       badge="BANK" badgeClass="badge-blue"
                     />
                     <ClosingRow label="Total (By Hand & Bank)" value={INR(totalHandBank)} bold />
@@ -732,7 +775,7 @@ export default function DaySheet() {
             </div>
 
             {/* Reading / Sheet Closing */}
-            <div className="data-card" style={{ marginBottom: 0 }}>
+            <div className="data-card" style={{ marginBottom: 0 }} onChange={() => setIsDirty(true)}>
               <div className="data-card-header" style={{ background: 'var(--info-light)', borderBottomColor: 'var(--info-light)' }}>
                 <h4 style={{ fontSize: 13, fontWeight: 700, color: 'var(--info)', letterSpacing: '0.5px' }}>READING / SHEET CLOSING</h4>
               </div>
@@ -757,7 +800,7 @@ export default function DaySheet() {
       )}
 
       {showSaveWarning && (
-        <Modal isOpen={true} onClose={() => setShowSaveWarning(null)} title="Warning: Unsaved Changes" size="modal-md"
+        <Modal isOpen={true} onClose={() => setShowSaveWarning(null)} title="Day Book Auto-Saving" size="modal-md"
           footer={
             <>
               <button className="btn btn-secondary" onClick={() => setShowSaveWarning(null)}>Cancel</button>
@@ -767,9 +810,9 @@ export default function DaySheet() {
         >
           <div style={{ padding: '24px 20px', textAlign: 'center', background: '#fffbeb', borderRadius: '8px', border: '1px solid #fde68a' }}>
             <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
-            <h3 style={{ marginBottom: '12px', color: '#b45309', fontWeight: 800 }}>Please Save the Day Book</h3>
+            <h3 style={{ marginBottom: '12px', color: '#b45309', fontWeight: 800 }}>Day Book is Auto-Saving</h3>
             <p style={{ color: '#92400e', lineHeight: '1.6', fontSize: 14 }}>
-              If you have made any manual entries in the Day Book, please ensure you have clicked the <strong>Save</strong> button first. Proceeding will refresh the page and any unsaved changes will be lost!
+              The Day Book is auto-saving your work every 2 seconds. Wait for the status badge to show <strong>✔ Auto Saved</strong> before proceeding to avoid losing data in unsaved fields.
             </p>
           </div>
         </Modal>

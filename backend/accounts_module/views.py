@@ -807,6 +807,17 @@ class DaySheetView(APIView):
         closing = CashClosing.objects.filter(date=target_date).first()
 
         if closing:
+            # Check if OB CASH/BANK were manually saved in the closing snapshot
+            saved_ob_cash = next((float(r.get('amount') or 0) for r in closing.debit_rows if str(r.get('particular')).strip().upper() == 'OB CASH' and r.get('amount') != ''), None)
+            saved_ob_bank = next((float(r.get('amount') or 0) for r in closing.debit_rows if str(r.get('particular')).strip().upper() == 'OB BANK' and r.get('amount') != ''), None)
+            
+            if saved_ob_cash is not None:
+                for d in debit_rows:
+                    if d['particular'] == 'OB CASH': d['amount'] = saved_ob_cash
+            if saved_ob_bank is not None:
+                for d in debit_rows:
+                    if d['particular'] == 'OB BANK': d['amount'] = saved_ob_bank
+
             # These particulars are ALWAYS auto-computed — never restore from closing snapshot
             AUTO_COMPUTED = {'BY CASH', 'BY ONLINE', 'DONATION', 'TOTAL DONATION', 'OB CASH', 'OB BANK'}
             # IDs and Particulars of income rows already loaded from the DB — skip any duplicate draft row
