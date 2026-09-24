@@ -154,11 +154,14 @@ export default function DaySheet() {
     const AUTO_PARTICULARS = new Set(['BY CASH', 'BY ONLINE', 'DONATION', 'TOTAL DONATION', 'OB CASH', 'OB BANK'])
     const backendIncomeIds = new Set(incomes.filter(r => r.id).map(r => String(r.id)))
     const backendExpenseIds = new Set(savedCredits.filter(r => r.id).map(r => String(r.id)))
+    const backendIncomeParticulars = new Set(incomes.map(r => (r.particular || '').trim().toUpperCase()).filter(Boolean))
+    const backendExpenseParticulars = new Set(savedCredits.map(r => (r.particular || '').trim().toUpperCase()).filter(Boolean))
 
     const cleanExtras = (rows) => rows.filter(r => {
       const p = (r.particular || '').trim().toUpperCase()
       if (AUTO_PARTICULARS.has(p)) return false  // auto-computed, never cache
       if (r.id && (backendIncomeIds.has(String(r.id)) || backendExpenseIds.has(String(r.id)))) return false
+      if (backendIncomeParticulars.has(p) || backendExpenseParticulars.has(p)) return false // match backend names
       return true
     })
 

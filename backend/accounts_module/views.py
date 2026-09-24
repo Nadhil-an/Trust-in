@@ -810,24 +810,31 @@ class DaySheetView(APIView):
         if closing:
             # These particulars are ALWAYS auto-computed — never restore from closing snapshot
             AUTO_COMPUTED = {'BY CASH', 'BY ONLINE', 'DONATION', 'TOTAL DONATION', 'OB CASH', 'OB BANK'}
-            # IDs of income rows already loaded from the DB — skip any duplicate draft row
-            known_income_ids = {r.get('id') for r in income_rows if r.get('id')}
+            # IDs and Particulars of income rows already loaded from the DB — skip any duplicate draft row
+            known_income_ids = {str(r.get('id')) for r in income_rows if r.get('id')}
+            known_income_particulars = {(r.get('particular') or '').strip().upper() for r in income_rows if r.get('particular')}
 
             for r in closing.debit_rows:
                 particular = (r.get('particular') or '').strip().upper()
-                row_id = r.get('id')
+                row_id = str(r.get('id')) if r.get('id') else None
                 # Skip auto-computed rows and already-loaded income records
                 if particular in AUTO_COMPUTED:
                     continue
                 if row_id and row_id in known_income_ids:
                     continue
+                if particular and particular in known_income_particulars:
+                    continue
                 if not row_id and (r.get('particular') or r.get('amount')):
                     debit_rows.append(r)
 
-            known_expense_ids = {r.get('id') for r in expense_rows if r.get('id')}
+            known_expense_ids = {str(r.get('id')) for r in expense_rows if r.get('id')}
+            known_expense_particulars = {(r.get('particular') or '').strip().upper() for r in expense_rows if r.get('particular')}
             for r in closing.credit_rows:
-                row_id = r.get('id')
+                particular = (r.get('particular') or '').strip().upper()
+                row_id = str(r.get('id')) if r.get('id') else None
                 if row_id and row_id in known_expense_ids:
+                    continue
+                if particular and particular in known_expense_particulars:
                     continue
                 if not row_id and (r.get('particular') or r.get('amount')):
                     credit_rows.append(r)
