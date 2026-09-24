@@ -487,7 +487,6 @@ const AddMemberScreen = ({ navigation, route }) => {
                   placeholderTextColor="#94A3B8"
                 />
               </View>
-              </View>
             </View>
           </View>
         ) : null}
