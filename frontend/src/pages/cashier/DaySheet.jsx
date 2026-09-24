@@ -368,8 +368,10 @@ export default function DaySheet() {
         debit_rows: payloadDebits,
         credit_rows: payloadCredits
       })
-      if (!isBackground) toast.success("Closing balances saved successfully!")
-      if (!skipReload) load(true)
+      if (!isBackground) {
+        toast.success("Closing balances saved successfully!")
+        if (!skipReload) load(true)
+      }
     } catch (e) {
       if (!isBackground) toast.error('Failed to save data')
     }
