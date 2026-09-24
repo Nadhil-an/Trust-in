@@ -174,3 +174,49 @@ export function downloadBlob(response, filename) {
 export function formatINR(amount) {
   return `₹${Number(amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
 }
+
+export function Combobox({ value, onChange, options, placeholder = '' }) {
+  const [isOpen, setIsOpen] = React.useState(false)
+  const filtered = options.filter(o => o.toLowerCase().includes((value || '').toLowerCase()))
+  
+  return (
+    <div style={{ position: 'relative' }}>
+      <input 
+        type="text"
+        className="form-control"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        onFocus={() => setIsOpen(true)}
+        onBlur={() => setTimeout(() => setIsOpen(false), 200)}
+        placeholder={placeholder}
+        style={{ width: '100%', paddingRight: '24px' }}
+      />
+      <div style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#94a3b8', fontSize: 10 }}>▼</div>
+      
+      {isOpen && filtered.length > 0 && (
+        <div style={{ 
+          position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, 
+          background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', 
+          boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)', zIndex: 1000, 
+          maxHeight: '200px', overflowY: 'auto', padding: '4px' 
+        }}>
+          {filtered.map(o => (
+            <div 
+              key={o} 
+              style={{ 
+                padding: '8px 12px', cursor: 'pointer', fontSize: '13px', 
+                borderRadius: '6px', color: '#334155', transition: 'background 0.2s',
+                fontWeight: 500
+              }}
+              onMouseDown={(e) => { e.preventDefault(); onChange(o); setIsOpen(false); }}
+              onMouseEnter={e => { e.target.style.background = '#f8fafc'; e.target.style.color = '#0f172a'; }}
+              onMouseLeave={e => { e.target.style.background = 'transparent'; e.target.style.color = '#334155'; }}
+            >
+              {o}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}

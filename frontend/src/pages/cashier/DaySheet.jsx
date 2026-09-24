@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { accountsApi, cashierApi } from '../../api'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
-import { Modal } from '../../components/shared'
+import { Modal, Combobox } from '../../components/shared'
 import PaymentMethodSelector from '../../components/PaymentMethodSelector'
 import { isValidPhone, isPositiveNumber } from '../../utils/validators'
 
@@ -769,13 +769,12 @@ export default function DaySheet() {
                   <input className="form-control" type={t} value={expenseForm[k]} required={["date","payee","amount"].includes(k)} onChange={e=>setExpenseForm(f=>({...f,[k]:e.target.value}))} /></div>
               ))}
               <div className="form-group"><label className="form-label">Category</label>
-                <input className="form-control" type="text" list="ds-expense-categories" value={expenseForm.category} onChange={e=>setExpenseForm(f=>({...f,category:e.target.value}))} placeholder="e.g. Office, Travel" />
-                <datalist id="ds-expense-categories">
-                  <option value="SALARY ADVANCE" />
-                  <option value="OFFICE EXPENSE" />
-                  <option value="TEA EXPENSE" />
-                  <option value="TRAVEL EXPENSE" />
-                </datalist>
+                <Combobox 
+                  value={expenseForm.category} 
+                  onChange={v => setExpenseForm(f => ({...f, category: v}))} 
+                  options={["SALARY ADVANCE", "OFFICE EXPENSE", "TEA EXPENSE", "TRAVEL EXPENSE"]} 
+                  placeholder="e.g. Office, Travel" 
+                />
               </div>
               <div className="form-group"><label className="form-label">Payment Method</label>
                 <PaymentMethodSelector value={expenseForm.payment_method} onChange={v=>setExpenseForm(f=>({...f,payment_method:v,account_type:v==="CASH"?"CASH":"BANK"}))} options={["CASH","CHEQUE","NEFT","UPI","OTHER"]} /></div>

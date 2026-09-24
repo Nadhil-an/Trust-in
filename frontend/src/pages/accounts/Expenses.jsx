@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react"
 import { accountsApi } from "../../api"
-import { AmountDisplay, LoadingState, EmptyState, PageHeader, FilterBar, Modal, formatINR } from "../../components/shared"
+import { AmountDisplay, LoadingState, EmptyState, PageHeader, FilterBar, Modal, formatINR, Combobox } from "../../components/shared"
 import PaymentMethodSelector from "../../components/PaymentMethodSelector"
 import { format } from "date-fns"
 import toast from "react-hot-toast"
@@ -188,13 +188,12 @@ export default function ExpenseList() {
                   <input className="form-control" type={t} value={form[k]} required={["date","payee","amount","expense_id"].includes(k)} onChange={e=>setForm(f=>({...f,[k]:e.target.value}))} /></div>
               ))}
               <div className="form-group"><label className="form-label">Category</label>
-                <input className="form-control" type="text" list="expense-categories" value={form.category} onChange={e=>setForm(f=>({...f,category:e.target.value}))} placeholder="e.g. Office, Travel" />
-                <datalist id="expense-categories">
-                  <option value="SALARY ADVANCE" />
-                  <option value="OFFICE EXPENSE" />
-                  <option value="TEA EXPENSE" />
-                  <option value="TRAVEL EXPENSE" />
-                </datalist>
+                <Combobox 
+                  value={form.category} 
+                  onChange={v => setForm(f => ({...f, category: v}))} 
+                  options={["SALARY ADVANCE", "OFFICE EXPENSE", "TEA EXPENSE", "TRAVEL EXPENSE"]} 
+                  placeholder="e.g. Office, Travel" 
+                />
               </div>
               <div className="form-group"><label className="form-label">Payment Method</label>
                 <PaymentMethodSelector value={form.payment_method} onChange={v=>setForm(f=>({...f,payment_method:v,account_type:v==="CASH"?"CASH":"BANK"}))} options={["CASH","CHEQUE","NEFT","UPI","OTHER"]} /></div>
