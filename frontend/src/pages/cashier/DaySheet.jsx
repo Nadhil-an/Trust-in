@@ -769,7 +769,14 @@ export default function DaySheet() {
                   <input className="form-control" type={t} value={expenseForm[k]} required={["date","payee","amount"].includes(k)} onChange={e=>setExpenseForm(f=>({...f,[k]:e.target.value}))} /></div>
               ))}
               <div className="form-group"><label className="form-label">Category</label>
-                <input className="form-control" type="text" value={expenseForm.category} onChange={e=>setExpenseForm(f=>({...f,category:e.target.value}))} placeholder="e.g. Office, Travel" /></div>
+                <input className="form-control" type="text" list="ds-expense-categories" value={expenseForm.category} onChange={e=>setExpenseForm(f=>({...f,category:e.target.value}))} placeholder="e.g. Office, Travel" />
+                <datalist id="ds-expense-categories">
+                  <option value="SALARY ADVANCE" />
+                  <option value="OFFICE EXPENSE" />
+                  <option value="TEA EXPENSE" />
+                  <option value="TRAVEL EXPENSE" />
+                </datalist>
+              </div>
               <div className="form-group"><label className="form-label">Payment Method</label>
                 <PaymentMethodSelector value={expenseForm.payment_method} onChange={v=>setExpenseForm(f=>({...f,payment_method:v,account_type:v==="CASH"?"CASH":"BANK"}))} options={["CASH","CHEQUE","NEFT","UPI","OTHER"]} /></div>
             </div>

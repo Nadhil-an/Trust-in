@@ -188,7 +188,14 @@ export default function ExpenseList() {
                   <input className="form-control" type={t} value={form[k]} required={["date","payee","amount","expense_id"].includes(k)} onChange={e=>setForm(f=>({...f,[k]:e.target.value}))} /></div>
               ))}
               <div className="form-group"><label className="form-label">Category</label>
-                <input className="form-control" type="text" value={form.category} onChange={e=>setForm(f=>({...f,category:e.target.value}))} placeholder="e.g. Office, Travel" /></div>
+                <input className="form-control" type="text" list="expense-categories" value={form.category} onChange={e=>setForm(f=>({...f,category:e.target.value}))} placeholder="e.g. Office, Travel" />
+                <datalist id="expense-categories">
+                  <option value="SALARY ADVANCE" />
+                  <option value="OFFICE EXPENSE" />
+                  <option value="TEA EXPENSE" />
+                  <option value="TRAVEL EXPENSE" />
+                </datalist>
+              </div>
               <div className="form-group"><label className="form-label">Payment Method</label>
                 <PaymentMethodSelector value={form.payment_method} onChange={v=>setForm(f=>({...f,payment_method:v,account_type:v==="CASH"?"CASH":"BANK"}))} options={["CASH","CHEQUE","NEFT","UPI","OTHER"]} /></div>
             </div>
