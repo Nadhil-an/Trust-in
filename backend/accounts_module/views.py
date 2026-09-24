@@ -788,6 +788,17 @@ class DaySheetView(APIView):
 
         credit_rows = expense_rows
 
+        # 📊 Auto from Mobile (Incomes created by STAFF)
+        from accounts_module.models import Income as _Income
+        mobile_incomes = _Income.objects.filter(date=target_date, created_by__role='STAFF')
+        mobile_cash = sum(float(i.amount) for i in mobile_incomes if i.payment_method == 'CASH')
+        mobile_online = sum(float(i.amount) for i in mobile_incomes if i.payment_method != 'CASH')
+
+        mobile_totals = {
+            'cash': round(mobile_cash, 2),
+            'online': round(mobile_online, 2)
+        }
+
         # ── Cash Closing (physical closing entered by cashier)
         from cashier_module.models import CashClosing
         closing = CashClosing.objects.filter(date=target_date).first()
@@ -828,5 +839,6 @@ class DaySheetView(APIView):
             'sheet_closing': sheet_closing,
             'closing_diff': closing_diff,
             'has_closing': closing is not None,
+            'mobile_totals': mobile_totals,
         })
 

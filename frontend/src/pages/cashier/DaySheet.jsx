@@ -120,6 +120,21 @@ export default function DaySheet() {
     // Build debit rows — always from server data
     const dRows = savedDebits.map(r => ({ ...r, amount: r.amount != null ? r.amount : '' }))
     while (dRows.length < maxRows) dRows.push({ particular: '', amount: '', sc: 'CASH' })
+    
+    // Clear rows 3 and 4
+    if (dRows.length > 2) { dRows[2].particular = ''; dRows[2].amount = ''; dRows[2].sc = 'CASH'; }
+    if (dRows.length > 3) { dRows[3].particular = ''; dRows[3].amount = ''; dRows[3].sc = 'CASH'; }
+    
+    if (dRows.length > 5) { 
+      dRows[5].particular = 'BY CASH'; 
+      dRows[5].sc = 'CASH'; 
+      if (data.mobile_totals && data.mobile_totals.cash > 0) dRows[5].amount = data.mobile_totals.cash;
+    }
+    if (dRows.length > 6) { 
+      dRows[6].particular = 'BY ONLINE'; 
+      dRows[6].sc = 'BANK'; 
+      if (data.mobile_totals && data.mobile_totals.online > 0) dRows[6].amount = data.mobile_totals.online;
+    }
     setDebits(dRows)
 
     // Build credit rows — always from server data
@@ -149,9 +164,12 @@ export default function DaySheet() {
 
       tableHtml += `
         <tr>
-          <td>${d.particular || ''}</td>
-          <td class="right">${formatAmt(d.amount)}</td>
-          <td class="center">${d.sc || ''}</td>
+          ${i === 4 
+            ? `<td colspan="3" class="bold" style="text-align: left; padding-left: 12px; color: #15803d; font-size: 14px; letter-spacing: 2px; background-color: #dcfce7;">DONATION</td>`
+            : `<td>${d.particular || ''}</td>
+               <td class="right">${formatAmt(d.amount)}</td>
+               <td class="center">${d.sc || ''}</td>`
+          }
           
           <td>${c.particular || ''}</td>
           <td class="right">${formatAmt(c.amount)}</td>
@@ -252,8 +270,8 @@ export default function DaySheet() {
                 <tbody>
                   <tr><td>Total Credit</td><td class="right">${formatAmt(totalCreditSum)}</td></tr>
                   <tr><td>Total Debit</td><td class="right">${formatAmt(totalDebitSum)}</td></tr>
-                  <tr class="bold"><td>Total Value</td><td class="right">${(totalValue < 0 ? '-' : '') + formatAmt(Math.abs(totalValue))}</td></tr>
-                  <tr class="bold"><td>Net Difference</td><td class="right" style="color: ${!hasAllClosingInputs ? '#6b7280' : (netDiff < 0 ? '#dc2626' : (netDiff > 0 ? '#16a34a' : 'inherit'))}">${!hasAllClosingInputs ? '—' : (netDiff > 0 ? '+' + formatAmt(netDiff) + ' (Excess)' : (netDiff < 0 ? '-' + formatAmt(Math.abs(netDiff)) + ' (Shortage)' : '0'))}</td></tr>
+                  <tr class="bold"><td>Profit / Loss</td><td class="right" style="color: ${totalValue > 0 ? '#15803d' : (totalValue < 0 ? '#b91c1c' : 'inherit')}">${totalValue > 0 ? '+' + formatAmt(totalValue) + ' (Profit)' : (totalValue < 0 ? '-' + formatAmt(Math.abs(totalValue)) + ' (Loss)' : '0')}</td></tr>
+                  <tr class="bold"><td>Shortage / Excess</td><td class="right" style="color: ${!hasAllClosingInputs ? '#6b7280' : (netDiff < 0 ? '#dc2626' : (netDiff > 0 ? '#16a34a' : 'inherit'))}">${!hasAllClosingInputs ? '—' : (netDiff > 0 ? '+' + formatAmt(netDiff) + ' (Excess)' : (netDiff < 0 ? '-' + formatAmt(Math.abs(netDiff)) + ' (Shortage)' : '0'))}</td></tr>
                 </tbody>
               </table>
             </div>
@@ -269,11 +287,17 @@ export default function DaySheet() {
 
   const handleSave = async (isBackground = false) => {
     try {
+      const payloadDebits = debits.map((d, i) => {
+        if (i === 2 || i === 3) return { ...d, particular: '', sc: 'CASH' }
+        if (i === 5) return { ...d, particular: 'BY CASH', sc: 'CASH' }
+        if (i === 6) return { ...d, particular: 'BY ONLINE', sc: 'BANK' }
+        return d
+      })
       await cashierApi.cashClosing.create({
         date,
         physical_cash: closing.cashInHand || 0,
         physical_bank: closing.bankBalance || 0,
-        debit_rows: debits,
+        debit_rows: payloadDebits,
         credit_rows: credits
       })
       if (!isBackground) toast.success("Closing balances saved successfully!")
@@ -303,8 +327,12 @@ export default function DaySheet() {
     for (let i = 0; i < maxLen; i++) {
       const d = debits[i]
       const c = credits[i]
+      const creditRow = i === 4 
+        ? [i + 1, 'DONATION', '', '']
+        : [i + 1, d ? d.particular : '', d ? d.amount : '', d ? d.sc : '']
+
       rows.push([
-        i + 1, d ? d.particular : '', d ? d.amount : '', d ? d.sc : '',
+        ...creditRow,
         i + 1, c ? c.particular : '', c ? c.amount : '', c ? c.sc : '',
       ])
     }
@@ -360,9 +388,9 @@ export default function DaySheet() {
           {/* ── Summary strip ── */}
           <div className="stats-grid" style={{ marginBottom: 0 }}>
             <StatCard label="Total Credit" value={INR(totalCreditSum)} type="success" />
-            <StatCard label="Total Debit" value={INR(totalDebitSum)} type="info" />
-            <StatCard label="Total Value" value={(totalValue < 0 ? '-' : '') + INR(totalValue)} type="info" />
-            <StatCard label="Net Difference" value={!hasAllClosingInputs ? '—' : (netDiff > 0 ? `+${INR(netDiff)} (Excess)` : (netDiff < 0 ? `-${INR(Math.abs(netDiff))} (Shortage)` : INR(0)))} type={!hasAllClosingInputs ? "" : (netDiff > 0 ? "success" : (netDiff < 0 ? "danger" : ""))} />
+            <StatCard label="Total Debit" value={INR(totalDebitSum)} type="danger" />
+            <StatCard label="Profit / Loss" value={totalValue > 0 ? `+${INR(totalValue)} (Profit)` : (totalValue < 0 ? `-${INR(Math.abs(totalValue))} (Loss)` : INR(0))} type={totalValue > 0 ? "success" : (totalValue < 0 ? "danger" : "")} />
+            <StatCard label="Shortage / Excess" value={!hasAllClosingInputs ? '—' : (netDiff > 0 ? `+${INR(netDiff)} (Excess)` : (netDiff < 0 ? `-${INR(Math.abs(netDiff))} (Shortage)` : INR(0)))} type={!hasAllClosingInputs ? "" : (netDiff > 0 ? "success" : (netDiff < 0 ? "danger" : ""))} />
           </div>
 
           {/* ── Main Day Sheet table ── */}
@@ -400,58 +428,71 @@ export default function DaySheet() {
                   {/* Debit row */}
                   <div style={{ display: 'grid', gridTemplateColumns: '50px 1fr 130px 90px', borderRight: '1px solid var(--gray-200)' }}>
                     <div style={{ ...SH.td, color: 'var(--gray-400)' }}></div>
-                    <div style={{ ...SH.tdL }}>
-                      <TableInput
-                        value={d.particular}
-                        onChange={(val) => {
-                          const newDebits = [...debits]
-                          newDebits[i].particular = val
-                          setDebits(newDebits)
-                        }}
-                        onBlur={() => handleSave(true)}
-                        placeholder=""
-                      />
-                    </div>
-                    <div style={{ ...SH.tdR }}>
-                      <TableInput
-                        type="number" align="right"
-                        value={d.amount}
-                        onChange={(val) => {
-                          const newDebits = [...debits]
-                          newDebits[i].amount = val
-                          setDebits(newDebits)
-                        }}
-                        onBlur={() => handleSave(true)}
-                        placeholder=""
-                      />
-                    </div>
-                    <div style={{ ...SH.td, padding: '4px' }}>
-                      <div style={{ display: 'flex', width: '100%', gap: '4px', alignItems: 'center', justifyContent: 'flex-end' }}>
-                        <div style={{ position: 'relative', width: '100%' }}>
-                          <select
-                            value={d.sc || 'CASH'}
-                            onChange={(e) => {
+                    {i === 4 ? (
+                      <div style={{ gridColumn: '2 / 5', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', paddingLeft: '8px', fontWeight: 800, fontSize: 16, color: 'var(--success)', letterSpacing: '2px', borderBottom: '1px solid var(--gray-100)', background: 'var(--success-light)' }}>
+                        DONATION
+                      </div>
+                    ) : (
+                      <>
+                        <div style={{ ...SH.tdL }}>
+                          <TableInput
+                            value={d.particular}
+                            onChange={(val) => {
+                              if (i === 5 || i === 6) return;
                               const newDebits = [...debits]
-                              newDebits[i].sc = e.target.value
+                              newDebits[i].particular = val
                               setDebits(newDebits)
                             }}
                             onBlur={() => handleSave(true)}
-                            style={{
-                              background: d.sc === 'BANK' ? 'var(--primary-100)' : 'var(--success-light)',
-                              color: d.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)',
-                              border: 'none', borderRadius: '12px', padding: '4px 16px 4px 8px', fontSize: 10, fontWeight: 700,
-                              outline: 'none', cursor: 'pointer', textAlign: 'center', appearance: 'none', width: '100%'
+                            placeholder=""
+                            readOnly={i === 5 || i === 6}
+                            highlighted={i === 5 || i === 6}
+                          />
+                        </div>
+                        <div style={{ ...SH.tdR }}>
+                          <TableInput
+                            type="number" align="right"
+                            value={d.amount}
+                            onChange={(val) => {
+                              const newDebits = [...debits]
+                              newDebits[i].amount = val
+                              setDebits(newDebits)
                             }}
-                          >
-                            <option value="CASH">CASH</option>
-                            <option value="BANK">BANK</option>
-                          </select>
-                          <div style={{ position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', fontSize: '8px', color: d.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)' }}>
-                            ▼
+                            onBlur={() => handleSave(true)}
+                            placeholder=""
+                          />
+                        </div>
+                        <div style={{ ...SH.td, padding: '4px' }}>
+                          <div style={{ display: 'flex', width: '100%', gap: '4px', alignItems: 'center', justifyContent: 'flex-end' }}>
+                            <div style={{ position: 'relative', width: '100%', opacity: (i === 5 || i === 6) ? 0.7 : 1 }}>
+                              <select
+                                value={d.sc || 'CASH'}
+                                onChange={(e) => {
+                                  if (i === 5 || i === 6) return;
+                                  const newDebits = [...debits]
+                                  newDebits[i].sc = e.target.value
+                                  setDebits(newDebits)
+                                }}
+                                onBlur={() => handleSave(true)}
+                                disabled={i === 5 || i === 6}
+                                style={{
+                                  background: d.sc === 'BANK' ? 'var(--primary-100)' : 'var(--success-light)',
+                                  color: d.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)',
+                                  border: 'none', borderRadius: '12px', padding: '4px 16px 4px 8px', fontSize: 10, fontWeight: 700,
+                                  outline: 'none', cursor: (i === 5 || i === 6) ? 'default' : 'pointer', textAlign: 'center', appearance: 'none', width: '100%'
+                                }}
+                              >
+                                <option value="CASH">CASH</option>
+                                <option value="BANK">BANK</option>
+                              </select>
+                              <div style={{ position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', fontSize: '8px', color: d.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)', display: (i === 5 || i === 6) ? 'none' : 'block' }}>
+                                ▼
+                              </div>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
+                      </>
+                    )}
                   </div>
                   {/* Credit row */}
                   <div style={{ display: 'grid', gridTemplateColumns: '50px 1fr 130px 90px' }}>
@@ -573,9 +614,9 @@ export default function DaySheet() {
                   <tbody>
                     <ClosingRow label="Total Credit" value={INR(totalCreditSum)} />
                     <ClosingRow label="Total Debit" value={INR(totalDebitSum)} />
-                    <ClosingRow label="Total Value" value={(totalValue < 0 ? '-' : '') + INR(totalValue)} bold />
+                    <ClosingRow label="Profit / Loss" value={totalValue > 0 ? `+${INR(totalValue)} (Profit)` : (totalValue < 0 ? `-${INR(Math.abs(totalValue))} (Loss)` : INR(0))} bold valueColor={totalValue > 0 ? 'var(--success)' : (totalValue < 0 ? 'var(--danger)' : 'var(--gray-900)')} />
                     <ClosingRow
-                      label="Net Difference"
+                      label="Shortage / Excess"
                       value={!hasAllClosingInputs ? '—' : (netDiff > 0 ? `+${INR(netDiff)} (Excess)` : (netDiff < 0 ? `-${INR(Math.abs(netDiff))} (Shortage)` : INR(0)))}
                       bold
                       valueColor={!hasAllClosingInputs ? 'var(--gray-500)' : (netDiff === 0 ? 'var(--success)' : netDiff < 0 ? 'var(--danger)' : 'var(--success)')}
