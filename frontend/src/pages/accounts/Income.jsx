@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react"
 import { accountsApi, cashierApi } from "../../api"
-import { AmountDisplay, LoadingState, EmptyState, PageHeader, FilterBar, Modal, formatINR } from "../../components/shared"
+import { AmountDisplay, LoadingState, EmptyState, PageHeader, FilterBar, Modal, ConfirmModal, formatINR } from "../../components/shared"
 import PaymentMethodSelector from "../../components/PaymentMethodSelector"
 import { format } from "date-fns"
 import toast from "react-hot-toast"
@@ -17,6 +17,21 @@ export default function IncomeList() {
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState({ source:"", date: TODAY, amount:"", donor_name:"", phone:"", address:"", purpose:"", payment_method:"CASH", account_type:"CASH", reference_number:"", remarks:"" })
   const [saving, setSaving] = useState(false)
+  const [processingId, setProcessingId] = useState(null)
+  const [incomeToDelete, setIncomeToDelete] = useState(null)
+
+  const confirmDelete = async () => {
+    if (!incomeToDelete) return
+    const id = incomeToDelete.id
+    setIncomeToDelete(null)
+    setProcessingId(id)
+    try {
+      await accountsApi.income.delete(id)
+      toast.success("Income permanently deleted")
+      load()
+    } catch (err) { toast.error("Failed to delete income") }
+    finally { setProcessingId(null) }
+  }
 
   const handleOpenModal = () => {
     setForm({ source:"", date: TODAY, amount:"", donor_name:"", phone:"", address:"", purpose:"", payment_method:"CASH", account_type:"CASH", reference_number:"", remarks:"" })
@@ -106,11 +121,12 @@ export default function IncomeList() {
                   <th>Breakdown</th>
                   <th>Total Amount</th>
                   <th>Type</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {items.length === 0 ? (
-                  <tr><td colSpan={5}><EmptyState icon="📥" title="No income records" /></td></tr>
+                  <tr><td colSpan={6}><EmptyState icon="📥" title="No income records" /></td></tr>
                 ) : (
                   <>
                     {/* ONE summary row for all donations */}
@@ -139,6 +155,7 @@ export default function IncomeList() {
                           </span>
                         </td>
                         <td><span className="badge badge-green" style={{ fontSize: 11 }}>DONATION</span></td>
+                        <td></td>
                       </tr>
                     )}
 
@@ -150,6 +167,9 @@ export default function IncomeList() {
                         <td><span className="badge badge-blue" style={{ fontSize: 11 }}>{i.source}</span></td>
                         <td><AmountDisplay amount={i.amount} type="credit" /></td>
                         <td><span className="badge badge-gray" style={{ fontSize: 11 }}>{i.payment_method}</span></td>
+                        <td>
+                          <button className="btn btn-sm" style={{ background: '#fef2f2', color: '#ef4444', padding: '4px 8px', border: '1px solid #ef4444' }} onClick={() => setIncomeToDelete(i)} disabled={processingId === i.id} title="Delete Permanently">❌</button>
+                        </td>
                       </tr>
                     ))}
                   </>
@@ -204,6 +224,18 @@ export default function IncomeList() {
             </div>
           </form>
         </Modal>
+      )}
+
+      {incomeToDelete && (
+        <ConfirmModal
+          isOpen={true}
+          onClose={() => setIncomeToDelete(null)}
+          onConfirm={confirmDelete}
+          title="Delete Income?"
+          message={`Are you sure you want to permanently delete this income record for ${incomeToDelete.donor_name || incomeToDelete.source}? This action cannot be undone.`}
+          confirmText="Yes, Delete"
+          isDanger={true}
+        />
       )}
     </div>
   )
