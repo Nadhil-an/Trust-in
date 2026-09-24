@@ -223927,3 +223927,7 @@ WebSocket CONNECT /ws/notify/ [10.105.92.21:28147]
 [mHTTP GET /api/accounts/expenses/?date=2026-09-24 200 [0.02, 10.105.92.21:1572][0m
 [mHTTP GET /api/accounts/day-sheet/?date=2026-09-24 200 [0.02, 10.105.92.21:24790][0m
 [mHTTP GET /api/accounts/day-sheet/?date=2026-09-24 200 [0.01, 10.105.92.21:61584][0m
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000

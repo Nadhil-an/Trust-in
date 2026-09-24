@@ -64,15 +64,14 @@ export default function IncomeList() {
     } finally { setSaving(false) }
   }
 
-  // Donation entries: source is "BY CASH", "BY ONLINE", or "DONATION"
-  const DONATION_SOURCES = ['BY CASH', 'BY ONLINE', 'DONATION', 'BYCASH', 'BYONLINE']
-  const isDonation = (i) => DONATION_SOURCES.includes((i.source || '').toUpperCase().replace(/\s/g,'').replace('BY','BY ').trim()) || (i.source || '').toUpperCase().startsWith('BY ')
+  // Donation summary should exactly match Day Book's mobile_totals (incomes created by STAFF)
+  const isDonation = (i) => i.created_by_role === 'STAFF'
   const donationItems = items.filter(isDonation)
   const nonDonationItems = items.filter(i => !isDonation(i))
   const donationTotal = donationItems.reduce((s, i) => s + parseFloat(i.amount || 0), 0)
   const total = items.reduce((s, i) => s + parseFloat(i.amount || 0), 0)
-  const cashTotal = donationItems.filter(i => i.account_type === 'CASH').reduce((s, i) => s + parseFloat(i.amount || 0), 0)
-  const onlineTotal = donationItems.filter(i => i.account_type === 'BANK').reduce((s, i) => s + parseFloat(i.amount || 0), 0)
+  const cashTotal = donationItems.filter(i => (i.account_type || '').toUpperCase() === 'CASH').reduce((s, i) => s + parseFloat(i.amount || 0), 0)
+  const onlineTotal = donationItems.filter(i => (i.account_type || '').toUpperCase() === 'BANK').reduce((s, i) => s + parseFloat(i.amount || 0), 0)
 
   return (
     <div>

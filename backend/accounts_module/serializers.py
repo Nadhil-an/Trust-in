@@ -36,6 +36,7 @@ class BankTransactionSerializer(serializers.ModelSerializer):
 
 class IncomeSerializer(serializers.ModelSerializer):
     created_by_name = serializers.CharField(source='created_by.full_name', read_only=True)
+    created_by_role = serializers.CharField(source='created_by.role', read_only=True)
     donor_phone = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     
     class Meta:
