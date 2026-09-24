@@ -1358,22 +1358,30 @@ class StaffLeaderboardView(APIView):
         else:
             target_date = timezone.now().date()
         
-        # Get list of names for staff who are PRESENT on target_date (ignoring case)
-        present_staff_names = Attendance.objects.filter(
-            date=target_date, status='PRESENT'
-        ).values_list('employee__full_name', flat=True)
+        # Get list of names/emails for staff who are PRESENT, LATE, or HALF_DAY
+        present_staff = Attendance.objects.filter(
+            date=target_date, status__in=['PRESENT', 'LATE', 'HALF_DAY']
+        ).values('employee__full_name', 'employee__email')
         
-        present_users = User.objects.filter(role=Role.STAFF)
+        present_staff_names = [s['employee__full_name'].strip().lower() for s in present_staff if s['employee__full_name']]
+        present_staff_emails = [s['employee__email'].strip().lower() for s in present_staff if s['employee__email']]
+        
+        present_users = User.objects.filter(role=Role.STAFF, is_active=True)
         
         results = []
         for user in present_users:
-            is_present = any(user.full_name.lower() == name.lower() for name in present_staff_names)
-            if not is_present:
-                continue
-                
             total_collection = Income.objects.filter(
                 date=target_date, created_by=user
             ).aggregate(t=Sum('amount'))['t'] or 0
+            
+            user_name_clean = user.full_name.strip().lower() if user.full_name else ''
+            user_email_clean = user.email.strip().lower() if user.email else ''
+            
+            is_present = (user_name_clean in present_staff_names) or (user_email_clean in present_staff_emails and user_email_clean)
+            
+            # Show if they are present OR if they collected any amount
+            if not is_present and total_collection <= 0:
+                continue
             
             from core.serializers import UserSerializer as UserProfileSerializer
             user_data = UserProfileSerializer(user, context={'request': request}).data
