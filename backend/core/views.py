@@ -69,7 +69,7 @@ class LoginView(APIView):
             if user_obj:
                 user_obj.failed_login_attempts += 1
                 if user_obj.failed_login_attempts >= 5:
-                    user_obj.locked_until = timezone.now() + timedelta(minutes=15)
+                    user_obj.locked_until = timezone.now() + timedelta(minutes=1)
                 user_obj.save(update_fields=['failed_login_attempts', 'locked_until'])
                 # Log failed attempt
                 AuditLog.objects.create(
