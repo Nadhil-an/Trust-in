@@ -16,6 +16,9 @@ export default function Donations() {
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'))
   const [items, setItems] = useState([])
   const [itemsLoading, setItemsLoading] = useState(true)
+  
+  // Pagination State
+  const [page, setPage] = useState(1)
 
   // Fetch users once
   useEffect(() => {
@@ -56,6 +59,7 @@ export default function Donations() {
           return isCorrectSource && matchesSource && matchesMethod
         })
         setItems(filtered)
+        setPage(1) // Reset page on filter change
       } catch (err) {
         toast.error('Failed to load collections')
       } finally {
@@ -67,6 +71,11 @@ export default function Donations() {
 
   if (loading) return <LoadingState />
   const acc = data || {}
+
+  // Calculate Pagination variables
+  const totalCount = items.length;
+  const totalPages = Math.ceil(totalCount / 10) || 1;
+  const currentItems = items.slice((page - 1) * 10, page * 10);
 
   return (
     <div className="page-container">
@@ -114,14 +123,14 @@ export default function Donations() {
         </div>
       </div>
 
-      <div className="card">
-        <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, borderBottom: '1px solid #f3f4f6', paddingBottom: 16, marginBottom: 16 }}>
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, borderBottom: '1px solid #e2e8f0', padding: '16px 20px', background: 'white' }}>
           <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Individual Collections</h3>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             <select 
               value={selectedSource} 
               onChange={e => setSelectedSource(e.target.value)}
-              style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14, minWidth: 160, backgroundColor: '#f9fafb' }}
+              style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 13, minWidth: 160, backgroundColor: '#f9fafb' }}
             >
               <option value="">All Sources</option>
               <option value="DONATION">Donation</option>
@@ -130,7 +139,7 @@ export default function Donations() {
             <select 
               value={selectedMethod} 
               onChange={e => setSelectedMethod(e.target.value)}
-              style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14, minWidth: 160, backgroundColor: '#f9fafb' }}
+              style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 13, minWidth: 160, backgroundColor: '#f9fafb' }}
             >
               <option value="">All Methods</option>
               <option value="CASH">Cash</option>
@@ -141,9 +150,9 @@ export default function Donations() {
             <select 
               value={selectedUser} 
               onChange={e => setSelectedUser(e.target.value)}
-              style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 14, minWidth: 200, backgroundColor: '#f9fafb' }}
+              style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid #d1d5db', fontSize: 13, minWidth: 200, backgroundColor: '#f9fafb' }}
             >
-              <option value="">All Staff Members</option>
+              <option value="">All Staff</option>
               {users.map(u => (
                 <option key={u.id} value={u.id}>{u.full_name}</option>
               ))}
@@ -154,108 +163,61 @@ export default function Donations() {
         {itemsLoading ? (
           <LoadingState />
         ) : (
-          <>
-            {items.length === 0 ? (
-              <div style={{ padding: 40, textAlign: 'center', color: '#9ca3af' }}>
-                No collections found for the selected date.
-              </div>
-            ) : (
-              <div className="table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Staff Member</th>
-                      <th>Donor Name</th>
-                      <th>Source</th>
-                      <th>Method</th>
-                      <th style={{ textAlign: 'right' }}>Amount</th>
+          <div className="table-wrap" style={{ margin: 0, border: 'none', borderRadius: 0 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}><tr>
+                <th style={{ background: '#f8fafc' }}>Date</th>
+                <th style={{ background: '#f8fafc' }}>Staff Member</th>
+                <th style={{ background: '#f8fafc' }}>Donor</th>
+                <th style={{ background: '#f8fafc' }}>Phone</th>
+                <th style={{ background: '#f8fafc' }}>Place</th>
+                <th style={{ background: '#f8fafc' }}>Payment</th>
+                <th style={{ background: '#f8fafc' }}>Voucher No.</th>
+                <th style={{ background: '#f8fafc' }}>Amount</th>
+              </tr></thead>
+              <tbody>
+                {currentItems.length === 0
+                  ? <tr><td colSpan={8}><div style={{ padding: 40, textAlign: 'center', color: '#9ca3af' }}>No collections found for the selected date.</div></td></tr>
+                  : currentItems.map(i => (
+                    <tr key={i.id}>
+                      <td style={{ fontSize: 12 }}>{format(new Date(i.date), 'dd MMM yyyy')}</td>
+                      <td style={{ fontSize: 12, fontWeight: 600, color: '#4f46e5' }}>{i.created_by_name || '—'}</td>
+                      <td style={{ fontWeight: 600 }}>{i.donor_name || '—'}</td>
+                      <td style={{ fontSize: 12 }}>{i.phone || '—'}</td>
+                      <td style={{ maxWidth: 160, fontSize: 12 }}>{i.place || '—'}</td>
+                      <td><span className="badge badge-blue" style={{ fontSize: 10 }}>{i.payment_method}</span></td>
+                      <td className="td-mono" style={{ fontSize: 11 }}>{i.reference_number || '—'}</td>
+                      <td style={{ fontWeight: 700, color: '#EC4899' }}>{formatINR(i.amount)}</td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {items.map(item => {
-                      const formatDate = (dateStr, fallbackStr) => {
-                        if (dateStr) {
-                          const parts = dateStr.split('-');
-                          if (parts.length === 3) {
-                            return `${parts[2]}-${parts[1]}-${parts[0]}`;
-                          }
-                        }
-                        try {
-                          return format(new Date(fallbackStr), 'dd-MM-yyyy');
-                        } catch (e) {
-                          return fallbackStr || '—';
-                        }
-                      };
-
-                      const formatTime = (isoString) => {
-                        try {
-                          if (!isoString) return '';
-                          return format(new Date(isoString), 'hh:mm a');
-                        } catch (e) {
-                          return '';
-                        }
-                      };
-
-                      return (
-                        <tr key={item.id}>
-                          <td style={{ color: '#6b7280' }}>
-                            <div style={{ fontSize: 13, fontWeight: 500, color: '#374151' }}>{formatDate(item.date, item.created_at)}</div>
-                            <div style={{ fontSize: 12, marginTop: 2, color: '#6B7280', fontWeight: 500 }}>{formatTime(item.created_at)}</div>
-                          </td>
-                          <td style={{ fontWeight: 600, color: '#111827' }}>{item.created_by_name || '—'}</td>
-                          <td>{item.donor_name || 'Anonymous'}</td>
-                          <td><span className="badge" style={{ background: '#e0e7ff', color: '#4f46e5' }}>{item.source}</span></td>
-                          <td><span className="badge" style={{ background: '#f3f4f6', color: '#4b5563' }}>{item.payment_method}</span></td>
-                          <td style={{ textAlign: 'right', fontWeight: 700, color: C.green }}>{formatINR(item.amount)}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-
-            {/* Sticky/Fixed summary footer containing totals calculated from filtered items */}
-            {(() => {
-              const filteredTotal = items.reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
-              const filteredCash = items.filter(item => item.payment_method === 'CASH').reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
-              const filteredBank = items.filter(item => item.payment_method !== 'CASH').reduce((sum, item) => sum + parseFloat(item.amount || 0), 0);
-
-              return (
-                <div style={{
-                  position: 'sticky',
-                  bottom: 0,
-                  background: '#f8fafc',
-                  borderTop: '1px solid #e2e8f0',
-                  padding: '16px 24px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
-                  gap: 16,
-                  margin: '16px -24px -24px -24px',
-                  borderBottomLeftRadius: 16,
-                  borderBottomRightRadius: 16,
-                  boxShadow: '0 -4px 6px -1px rgba(0, 0, 0, 0.03)',
-                  zIndex: 5
-                }}>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: '#475569' }}>Total Filtered:</span>
-                  <div style={{ display: 'flex', gap: 24, alignItems: 'center', flexWrap: 'wrap' }}>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: '#64748b' }}>
-                      Cash: <span style={{ color: '#0f172a', fontWeight: 700 }}>{formatINR(filteredCash)}</span>
-                    </div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: '#64748b' }}>
-                      Bank: <span style={{ color: '#0f172a', fontWeight: 700 }}>{formatINR(filteredBank)}</span>
-                    </div>
-                    <div style={{ fontSize: 18, fontWeight: 800, color: C.green }}>
-                      {formatINR(filteredTotal)}
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
-          </>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        
+        {/* Pagination Footer */}
+        {!itemsLoading && totalPages >= 1 && (
+          <div style={{ padding: '12px 20px', borderTop: '1px solid #e2e8f0', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 10 }}>
+            <div style={{ fontSize: 13, color: '#64748b' }}>
+              Page <span style={{ fontWeight: 600, color: '#0f172a' }}>{page}</span> / <span style={{ fontWeight: 600, color: '#0f172a' }}>{totalPages}</span> <span style={{ color: '#94a3b8' }}>({totalCount} entries)</span>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button 
+                className="btn btn-secondary btn-sm" 
+                disabled={page === 1} 
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+              >
+                Previous
+              </button>
+              <button 
+                className="btn btn-secondary btn-sm" 
+                disabled={page === totalPages} 
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              >
+                Next
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </div>
