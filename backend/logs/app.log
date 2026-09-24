@@ -224697,3 +224697,19 @@ WebSocket CONNECT /ws/notify/ [10.105.92.21:6331]
 [mHTTP GET /api/accounts/expenses/?date=2026-09-25 200 [0.02, 10.105.92.21:20731][0m
 [mHTTP GET /api/accounts/day-sheet/?date=2026-09-25 200 [0.03, 10.105.92.21:43656][0m
 [mHTTP GET /api/accounts/day-sheet/?date=2026-09-25 200 [0.03, 10.105.92.21:23628][0m
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+[mHTTP POST /api/auth/login/ 200 [0.24, 10.105.92.21:53663][0m
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:58305]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:58305]
+[mHTTP GET /api/core/features/ 200 [0.05, 10.105.92.21:62471][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.105.92.21:59821][0m
+[mHTTP GET /api/accounts/dashboard/?date=2026-09-25 200 [0.11, 10.105.92.21:58304][0m
+[mHTTP GET /api/accounts/dashboard/?date=2026-09-25 200 [0.10, 10.105.92.21:58306][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-25 200 [0.02, 10.105.92.21:25890][0m
+[mHTTP GET /api/accounts/day-sheet/?date=2026-09-25 200 [0.01, 10.105.92.21:13725][0m
+[mHTTP POST /api/cashier/cash-closing/ 200 [0.07, 10.105.92.21:5057][0m
+[mHTTP POST /api/cashier/cash-closing/ 200 [0.05, 10.105.92.21:55590][0m
+[mHTTP POST /api/cashier/cash-closing/ 200 [0.04, 10.105.92.21:41877][0m

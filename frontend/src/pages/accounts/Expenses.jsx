@@ -17,6 +17,7 @@ export default function ExpenseList() {
   const [saving, setSaving] = useState(false)
   const [editId, setEditId] = useState(null)
   const [processingId, setProcessingId] = useState(null)
+  const [expenseToDelete, setExpenseToDelete] = useState(null)
 
   const handleAddExpense = () => {
     let nextId = 1;
@@ -102,11 +103,17 @@ export default function ExpenseList() {
     finally { setProcessingId(null) }
   }
 
-  const handleHardDelete = async (expense) => {
-    if (!window.confirm("Are you sure you want to permanently delete this expense? This cannot be undone.")) return;
-    setProcessingId(expense.id)
+  const handleHardDelete = (expense) => {
+    setExpenseToDelete(expense)
+  }
+
+  const confirmHardDelete = async () => {
+    if (!expenseToDelete) return
+    const id = expenseToDelete.id
+    setExpenseToDelete(null)
+    setProcessingId(id)
     try {
-      await accountsApi.expenses.delete(expense.id)
+      await accountsApi.expenses.delete(id)
       toast.success("Expense permanently deleted")
       load()
     } catch (err) { toast.error("Failed to delete expense") }
@@ -188,6 +195,25 @@ export default function ExpenseList() {
             <div className="form-group"><label className="form-label">Purpose</label>
               <textarea className="form-control" rows={2} value={form.purpose} onChange={e=>setForm(f=>({...f,purpose:e.target.value}))} /></div>
           </form>
+        </Modal>
+      )}
+
+      {expenseToDelete && (
+        <Modal isOpen={true} onClose={() => setExpenseToDelete(null)} title="Delete Expense?" size="modal-md"
+          footer={
+            <>
+              <button className="btn btn-secondary" onClick={() => setExpenseToDelete(null)}>Cancel</button>
+              <button className="btn btn-primary" style={{ background: 'var(--danger)', borderColor: 'var(--danger)' }} onClick={confirmHardDelete}>Yes, Delete</button>
+            </>
+          }
+        >
+          <div style={{ padding: '24px 20px', textAlign: 'center', background: '#fef2f2', borderRadius: '8px', border: '1px solid #fecaca' }}>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>🗑️</div>
+            <h3 style={{ marginBottom: '12px', color: '#991b1b', fontWeight: 800 }}>Permanently Delete?</h3>
+            <p style={{ color: '#7f1d1d', lineHeight: '1.6', fontSize: 14 }}>
+              Are you sure you want to permanently delete this expense record for <strong>{expenseToDelete.payee || expenseToDelete.purpose || 'this amount'}</strong>? This action cannot be undone.
+            </p>
+          </div>
         </Modal>
       )}
     </div>
