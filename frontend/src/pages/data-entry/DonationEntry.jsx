@@ -25,7 +25,7 @@ export default function DonationEntry() {
   const [items, setItems]     = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch]   = useState('')
-  const [filterDate, setFilterDate] = useState('')
+  const [filterDate, setFilterDate] = useState(format(new Date(), 'yyyy-MM-dd'))
   const [filterStaff, setFilterStaff] = useState('')
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)

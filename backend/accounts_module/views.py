@@ -769,7 +769,11 @@ class DaySheetView(APIView):
             })
 
         # ── Expense entries for the day (CREDIT side)
-        expenses = Expense.objects.filter(date=target_date, created_by__role='ACCOUNTANT').order_by('created_at')
+        from django.db.models import Q
+        expenses = Expense.objects.filter(
+            Q(created_by__role='ACCOUNTANT') | Q(category='PURCHASE'),
+            date=target_date
+        ).order_by('created_at')
         expense_rows = []
         for exp in expenses:
             expense_rows.append({

@@ -187,8 +187,11 @@ export default function PurchaseEntry() {
               <label className="form-label">Payment Method</label>
               <PaymentMethodSelector 
                 value={form.payment_method} 
-                onChange={v => setF('payment_method', v)} 
-                options={['CASH','CHEQUE','BANK_TRANSFER','ONLINE','UPI']}
+                onChange={v => {
+                  setF('payment_method', v);
+                  setF('account_type', v === 'CASH' ? 'CASH' : 'BANK');
+                }} 
+                options={['CASH','CHEQUE','NEFT','RTGS','UPI']}
               />
             </div>
             <div className="form-group" style={{ gridColumn: 'span 2' }}>

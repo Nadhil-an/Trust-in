@@ -51,6 +51,14 @@ export default function DaySheet() {
   const [credits, setCredits] = useState([])
   const [closing, setClosing] = useState({ cashInHand: '', bankBalance: '', sheetClosing: '' })
 
+  // Helpers to persist extra rows (index >= 11) across F5 / browser refresh
+  const getExtraDebitKey = (d) => `ds_extra_debit_${d}`
+  const getExtraCreditKey = (d) => `ds_extra_credit_${d}`
+  const loadExtraDebits = (d) => { try { return JSON.parse(localStorage.getItem(getExtraDebitKey(d)) || '[]') } catch { return [] } }
+  const loadExtraCredits = (d) => { try { return JSON.parse(localStorage.getItem(getExtraCreditKey(d)) || '[]') } catch { return [] } }
+  const saveExtraDebits = (d, rows) => localStorage.setItem(getExtraDebitKey(d), JSON.stringify(rows))
+  const saveExtraCredits = (d, rows) => localStorage.setItem(getExtraCreditKey(d), JSON.stringify(rows))
+
   const [showExpenseModal, setShowExpenseModal] = useState(false)
   const [expenseForm, setExpenseForm] = useState({ category:"", date:format(new Date(),"yyyy-MM-dd"), amount:"", payee:"", purpose:"", payment_method:"CASH", account_type:"CASH", expense_id:"", remarks:"" })
   const [expenseSaving, setExpenseSaving] = useState(false)
@@ -88,10 +96,13 @@ export default function DaySheet() {
     if (!isPositiveNumber(incomeForm.amount)) return toast.error("Amount must be a positive number");
     setIncomeSaving(true)
     try { 
-      await accountsApi.income.create(incomeForm); 
-      toast.success("Income recorded."); 
+      const fd = new FormData();
+      Object.entries(incomeForm).forEach(([k, v]) => { if (v !== '') fd.append(k, v) });
+      await accountsApi.income.create(fd); 
+
+      toast.success("Income recorded!"); 
       setShowIncomeModal(false); 
-      load() 
+      load(false);
     }
     catch (err) { toast.error(err.response?.data?.detail || "Save failed") } finally { setIncomeSaving(false) }
   }
@@ -115,32 +126,35 @@ export default function DaySheet() {
 
     const savedDebits = data.debit_rows || []
     const savedCredits = data.credit_rows || []
-    const maxRows = Math.max(savedDebits.length, savedCredits.length, 9)
+    const maxRows = Math.max(savedDebits.length, savedCredits.length, 11)
 
-    // Build debit rows — always from server data
-    const dRows = savedDebits.map(r => ({ ...r, amount: r.amount != null ? r.amount : '' }))
-    while (dRows.length < maxRows) dRows.push({ particular: '', amount: '', sc: 'CASH' })
+    // Build debit rows — preserve incomes that come from backend
+    const obCash = savedDebits.find(r => r.particular === 'OB CASH') || { particular: 'OB CASH', amount: '', sc: 'CASH' };
+    const obBank = savedDebits.find(r => r.particular === 'OB BANK') || { particular: 'OB BANK', amount: '', sc: 'BANK' };
     
-    // Clear rows 3 and 4
-    if (dRows.length > 2) { dRows[2].particular = ''; dRows[2].amount = ''; dRows[2].sc = 'CASH'; }
-    if (dRows.length > 3) { dRows[3].particular = ''; dRows[3].amount = ''; dRows[3].sc = 'CASH'; }
-    
-    if (dRows.length > 5) { 
-      dRows[5].particular = 'BY CASH'; 
-      dRows[5].sc = 'CASH'; 
-      if (data.mobile_totals && data.mobile_totals.cash > 0) dRows[5].amount = data.mobile_totals.cash;
-    }
-    if (dRows.length > 6) { 
-      dRows[6].particular = 'BY ONLINE'; 
-      dRows[6].sc = 'BANK'; 
-      if (data.mobile_totals && data.mobile_totals.online > 0) dRows[6].amount = data.mobile_totals.online;
-    }
-    setDebits(dRows)
+    // Any items from backend that are not OB CASH / OB BANK are incomes
+    const incomes = savedDebits.filter(r => r.particular !== 'OB CASH' && r.particular !== 'OB BANK');
+
+    const fixedRows = [
+      obCash,
+      obBank,
+      { particular: '', amount: '', sc: 'CASH' },
+      { particular: '', amount: '', sc: 'CASH' },
+      { particular: 'DONATION', amount: '', sc: 'CASH' },
+      { particular: 'BY CASH', amount: (data.mobile_totals && data.mobile_totals.cash > 0) ? data.mobile_totals.cash : '', sc: 'CASH' },
+      { particular: 'BY ONLINE', amount: (data.mobile_totals && data.mobile_totals.online > 0) ? data.mobile_totals.online : '', sc: 'BANK' },
+      { particular: '', amount: '', sc: 'CASH' },
+    ];
+
+    const dRows = [...fixedRows, ...incomes].map(r => ({ ...r, amount: r.amount != null ? r.amount : '' }));
+    while (dRows.length < maxRows) dRows.push({ particular: '', amount: '', sc: 'CASH' });
+
+    setDebits([...dRows, ...loadExtraDebits(date)])
 
     // Build credit rows — always from server data
     const cRows = savedCredits.map(r => ({ ...r, amount: r.amount != null ? r.amount : '' }))
     while (cRows.length < maxRows) cRows.push({ particular: '', amount: '', sc: 'CASH' })
-    setCredits(cRows)
+    setCredits([...cRows, ...loadExtraCredits(date)])
 
     // Restore closing balances
     setClosing({
@@ -166,6 +180,10 @@ export default function DaySheet() {
         <tr>
           ${i === 4 
             ? `<td colspan="3" class="bold" style="text-align: left; padding-left: 12px; color: #15803d; font-size: 14px; letter-spacing: 2px; background-color: #dcfce7;">DONATION</td>`
+            : i === 7
+            ? `<td class="bold right" style="color: #0369a1; padding-right: 12px;">TOTAL DONATION</td>
+               <td class="bold right" style="color: #0369a1;">${formatAmt(Number(debits[5]?.amount || 0) + Number(debits[6]?.amount || 0))}</td>
+               <td></td>`
             : `<td>${d.particular || ''}</td>
                <td class="right">${formatAmt(d.amount)}</td>
                <td class="center">${d.sc || ''}</td>`
@@ -285,12 +303,15 @@ export default function DaySheet() {
     }, 250)
   }
 
-  const handleSave = async (isBackground = false) => {
+  const handleSave = async (isBackground = false, overrideDebits = null, overrideCredits = null, skipReload = false) => {
     try {
-      const payloadDebits = debits.map((d, i) => {
+      const rawDebits = overrideDebits ?? debits
+      const rawCredits = overrideCredits ?? credits
+      const payloadDebits = rawDebits.map((d, i) => {
         if (i === 2 || i === 3) return { ...d, particular: '', sc: 'CASH' }
         if (i === 5) return { ...d, particular: 'BY CASH', sc: 'CASH' }
         if (i === 6) return { ...d, particular: 'BY ONLINE', sc: 'BANK' }
+        if (i === 7) return { ...d, particular: '', amount: '', sc: 'CASH' }
         return d
       })
       await cashierApi.cashClosing.create({
@@ -298,10 +319,10 @@ export default function DaySheet() {
         physical_cash: closing.cashInHand || 0,
         physical_bank: closing.bankBalance || 0,
         debit_rows: payloadDebits,
-        credit_rows: credits
+        credit_rows: rawCredits
       })
       if (!isBackground) toast.success("Closing balances saved successfully!")
-      load(true)
+      if (!skipReload) load(true)
     } catch (e) {
       if (!isBackground) toast.error('Failed to save data')
     }
@@ -329,6 +350,8 @@ export default function DaySheet() {
       const c = credits[i]
       const creditRow = i === 4 
         ? [i + 1, 'DONATION', '', '']
+        : i === 7
+        ? [i + 1, 'TOTAL DONATION', Number(debits[5]?.amount || 0) + Number(debits[6]?.amount || 0), '']
         : [i + 1, d ? d.particular : '', d ? d.amount : '', d ? d.sc : '']
 
       rows.push([
@@ -419,140 +442,178 @@ export default function DaySheet() {
               </div>
             </div>
 
-            {/* Data rows */}
-            {debits.map((d, i) => {
-              const c = credits[i]
-              const bg = i % 2 === 0 ? 'var(--white)' : 'var(--gray-50)'
-              return (
-                <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', background: bg }}>
-                  {/* Debit row */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '50px 1fr 130px 90px', borderRight: '1px solid var(--gray-200)' }}>
-                    <div style={{ ...SH.td, color: 'var(--gray-400)' }}></div>
-                    {i === 4 ? (
-                      <div style={{ gridColumn: '2 / 5', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', paddingLeft: '8px', fontWeight: 800, fontSize: 16, color: 'var(--success)', letterSpacing: '2px', borderBottom: '1px solid var(--gray-100)', background: 'var(--success-light)' }}>
-                        DONATION
+            {/* Data rows — rendered as two independent columns */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
+
+              {/* ── CREDIT column (left) ── */}
+              <div style={{ borderRight: '1px solid var(--gray-200)' }}>
+                {debits.map((d, i) => {
+                  const bg = i % 2 === 0 ? 'var(--white)' : 'var(--gray-50)'
+                  const isFixed = i < 11 // rows 0-10 are fixed
+                  return (
+                    <div key={`d-${i}`} style={{ display: 'grid', gridTemplateColumns: '36px 1fr 130px 90px', background: bg, minHeight: 42 }}>
+                      {/* Delete / index cell */}
+                      <div style={{ ...SH.td, color: 'var(--gray-400)', padding: '4px 2px' }}>
+                        {!isFixed ? (
+                          <button
+                            onClick={() => {
+                              const n = debits.filter((_, idx) => idx !== i)
+                              const newExtras = n.slice(11)
+                              saveExtraDebits(date, newExtras)
+                              setDebits(n)
+                              handleSave(true, n, credits, true)
+                            }}
+                            style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: '0 4px' }}
+                            title="Remove row"
+                          >×</button>
+                        ) : null}
                       </div>
-                    ) : (
-                      <>
-                        <div style={{ ...SH.tdL }}>
-                          <TableInput
-                            value={d.particular}
-                            onChange={(val) => {
-                              if (i === 5 || i === 6) return;
-                              const newDebits = [...debits]
-                              newDebits[i].particular = val
-                              setDebits(newDebits)
-                            }}
-                            onBlur={() => handleSave(true)}
-                            placeholder=""
-                            readOnly={i === 5 || i === 6}
-                            highlighted={i === 5 || i === 6}
-                          />
+                      {/* Content */}
+                      {i === 4 ? (
+                        <div style={{ gridColumn: '2 / 5', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', paddingLeft: '8px', fontWeight: 800, fontSize: 16, color: 'var(--success)', letterSpacing: '2px', borderBottom: '1px solid var(--gray-100)', background: 'var(--success-light)' }}>
+                          DONATION
                         </div>
-                        <div style={{ ...SH.tdR }}>
-                          <TableInput
-                            type="number" align="right"
-                            value={d.amount}
-                            onChange={(val) => {
-                              const newDebits = [...debits]
-                              newDebits[i].amount = val
-                              setDebits(newDebits)
-                            }}
-                            onBlur={() => handleSave(true)}
-                            placeholder=""
-                          />
-                        </div>
-                        <div style={{ ...SH.td, padding: '4px' }}>
-                          <div style={{ display: 'flex', width: '100%', gap: '4px', alignItems: 'center', justifyContent: 'flex-end' }}>
+                      ) : i === 7 ? (
+                        <>
+                          <div style={{ ...SH.tdL, justifyContent: 'flex-end', paddingRight: '12px', background: 'var(--primary-50)' }}>
+                            <span style={{ fontWeight: 800, color: 'var(--primary-700)', fontSize: 12, letterSpacing: '0.5px' }}>TOTAL DONATION</span>
+                          </div>
+                          <div style={{ ...SH.tdR, background: 'var(--primary-50)' }}>
+                            <span style={{ fontWeight: 800, color: 'var(--primary-700)', fontSize: 15 }}>
+                              {(Number(debits[5]?.amount || 0) + Number(debits[6]?.amount || 0)).toLocaleString('en-IN')}
+                            </span>
+                          </div>
+                          <div style={{ ...SH.td, background: 'var(--primary-50)' }}></div>
+                        </>
+                      ) : (
+                        <>
+                          <div style={{ ...SH.tdL }}>
+                            <TableInput
+                              value={d.particular || ''}
+                              onChange={(val) => {
+                                if (i === 5 || i === 6) return;
+                                const n = [...debits]; n[i] = { ...n[i], particular: val }; setDebits(n)
+                              }}
+                              onBlur={() => handleSave(true)}
+                              readOnly={i === 5 || i === 6}
+                              highlighted={i === 5 || i === 6}
+                              placeholder=""
+                            />
+                          </div>
+                          <div style={{ ...SH.tdR }}>
+                            <TableInput
+                              type="number" align="right"
+                              value={d.amount || ''}
+                              onChange={(val) => { const n = [...debits]; n[i] = { ...n[i], amount: val }; setDebits(n) }}
+                              onBlur={() => handleSave(true)}
+                              placeholder=""
+                            />
+                          </div>
+                          <div style={{ ...SH.td, padding: '4px' }}>
                             <div style={{ position: 'relative', width: '100%', opacity: (i === 5 || i === 6) ? 0.7 : 1 }}>
                               <select
                                 value={d.sc || 'CASH'}
-                                onChange={(e) => {
-                                  if (i === 5 || i === 6) return;
-                                  const newDebits = [...debits]
-                                  newDebits[i].sc = e.target.value
-                                  setDebits(newDebits)
-                                }}
-                                onBlur={() => handleSave(true)}
                                 disabled={i === 5 || i === 6}
-                                style={{
-                                  background: d.sc === 'BANK' ? 'var(--primary-100)' : 'var(--success-light)',
-                                  color: d.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)',
-                                  border: 'none', borderRadius: '12px', padding: '4px 16px 4px 8px', fontSize: 10, fontWeight: 700,
-                                  outline: 'none', cursor: (i === 5 || i === 6) ? 'default' : 'pointer', textAlign: 'center', appearance: 'none', width: '100%'
-                                }}
+                                onChange={(e) => { if (i === 5 || i === 6) return; const n = [...debits]; n[i] = { ...n[i], sc: e.target.value }; setDebits(n) }}
+                                onBlur={() => handleSave(true)}
+                                style={{ background: d.sc === 'BANK' ? 'var(--primary-100)' : 'var(--success-light)', color: d.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)', border: 'none', borderRadius: '12px', padding: '4px 16px 4px 8px', fontSize: 10, fontWeight: 700, outline: 'none', cursor: (i === 5 || i === 6) ? 'default' : 'pointer', appearance: 'none', width: '100%' }}
                               >
                                 <option value="CASH">CASH</option>
                                 <option value="BANK">BANK</option>
                               </select>
-                              <div style={{ position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', fontSize: '8px', color: d.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)', display: (i === 5 || i === 6) ? 'none' : 'block' }}>
-                                ▼
-                              </div>
+                              {!(i === 5 || i === 6) && <div style={{ position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', fontSize: '8px', color: d.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)' }}>▼</div>}
                             </div>
                           </div>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                  {/* Credit row */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '50px 1fr 130px 90px' }}>
-                    <div style={{ ...SH.td, color: 'var(--gray-400)' }}></div>
-                    <div style={{ ...SH.tdL }}>
-                      <TableInput
-                        value={c.particular}
-                        onChange={(val) => {
-                          const newCredits = [...credits]
-                          newCredits[i].particular = val
-                          setCredits(newCredits)
-                        }}
-                        onBlur={() => handleSave(true)}
-                        placeholder=""
-                      />
+                        </>
+                      )}
                     </div>
-                    <div style={{ ...SH.tdR }}>
-                      <TableInput
-                        type="number" align="right"
-                        value={c.amount}
-                        onChange={(val) => {
-                          const newCredits = [...credits]
-                          newCredits[i].amount = val
-                          setCredits(newCredits)
-                        }}
-                        onBlur={() => handleSave(true)}
-                        placeholder=""
-                      />
-                    </div>
-                    <div style={{ ...SH.td, padding: '4px' }}>
-                      <div style={{ display: 'flex', width: '100%', gap: '4px', alignItems: 'center', justifyContent: 'flex-end' }}>
+                  )
+                })}
+                {/* + Add Credit Row button */}
+                <button
+                  onClick={() => {
+                    const newRow = { particular: '', amount: '', sc: 'CASH' }
+                    const current = loadExtraDebits(date)
+                    saveExtraDebits(date, [...current, newRow])
+                    setDebits(prev => [...prev, newRow])
+                  }}
+                  style={{ width: '100%', padding: '12px', background: 'var(--success-light)', border: 'none', color: 'var(--success)', fontWeight: 800, fontSize: 13, cursor: 'pointer', textAlign: 'center', transition: 'background 0.2s', borderTop: '1px dashed var(--gray-200)' }}
+                  onMouseEnter={e => e.target.style.background = '#bbf7d0'}
+                  onMouseLeave={e => e.target.style.background = 'var(--success-light)'}
+                >+ Add Credit Row</button>
+              </div>
+
+              {/* ── DEBIT column (right) ── */}
+              <div>
+                {credits.map((c, i) => {
+                  const bg = i % 2 === 0 ? 'var(--white)' : 'var(--gray-50)'
+                  const isFixed = i < 11
+                  return (
+                    <div key={`c-${i}`} style={{ display: 'grid', gridTemplateColumns: '36px 1fr 130px 90px', background: bg, minHeight: 42 }}>
+                      <div style={{ ...SH.td, color: 'var(--gray-400)', padding: '4px 2px' }}>
+                        {!isFixed ? (
+                          <button
+                            onClick={() => {
+                              const n = credits.filter((_, idx) => idx !== i)
+                              const newExtras = n.slice(11)
+                              saveExtraCredits(date, newExtras)
+                              setCredits(n)
+                              handleSave(true, debits, n, true)
+                            }}
+                            style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: '0 4px' }}
+                            title="Remove row"
+                          >×</button>
+                        ) : null}
+                      </div>
+                      <div style={{ ...SH.tdL }}>
+                        <TableInput
+                          value={c.particular || ''}
+                          onChange={(val) => { const n = [...credits]; n[i] = { ...n[i], particular: val }; setCredits(n) }}
+                          onBlur={() => handleSave(true)}
+                          placeholder=""
+                        />
+                      </div>
+                      <div style={{ ...SH.tdR }}>
+                        <TableInput
+                          type="number" align="right"
+                          value={c.amount || ''}
+                          onChange={(val) => { const n = [...credits]; n[i] = { ...n[i], amount: val }; setCredits(n) }}
+                          onBlur={() => handleSave(true)}
+                          placeholder=""
+                        />
+                      </div>
+                      <div style={{ ...SH.td, padding: '4px' }}>
                         <div style={{ position: 'relative', width: '100%' }}>
                           <select
                             value={c.sc || 'CASH'}
-                            onChange={(e) => {
-                              const newCredits = [...credits]
-                              newCredits[i].sc = e.target.value
-                              setCredits(newCredits)
-                            }}
+                            onChange={(e) => { const n = [...credits]; n[i] = { ...n[i], sc: e.target.value }; setCredits(n) }}
                             onBlur={() => handleSave(true)}
-                            style={{
-                              background: c.sc === 'BANK' ? 'var(--primary-100)' : 'var(--success-light)',
-                              color: c.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)',
-                              border: 'none', borderRadius: '12px', padding: '4px 16px 4px 8px', fontSize: 10, fontWeight: 700,
-                              outline: 'none', cursor: 'pointer', textAlign: 'center', appearance: 'none', width: '100%'
-                            }}
+                            style={{ background: c.sc === 'BANK' ? 'var(--primary-100)' : 'var(--success-light)', color: c.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)', border: 'none', borderRadius: '12px', padding: '4px 16px 4px 8px', fontSize: 10, fontWeight: 700, outline: 'none', cursor: 'pointer', appearance: 'none', width: '100%' }}
                           >
                             <option value="CASH">CASH</option>
                             <option value="BANK">BANK</option>
                           </select>
-                          <div style={{ position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', fontSize: '8px', color: c.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)' }}>
-                            ▼
-                          </div>
+                          <div style={{ position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', fontSize: '8px', color: c.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)' }}>▼</div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              )
-            })}
+                  )
+                })}
+                {/* + Add Debit Row button */}
+                <button
+                  onClick={() => {
+                    const newRow = { particular: '', amount: '', sc: 'CASH' }
+                    const current = loadExtraCredits(date)
+                    saveExtraCredits(date, [...current, newRow])
+                    setCredits(prev => [...prev, newRow])
+                  }}
+                  style={{ width: '100%', padding: '12px', background: 'var(--info-light)', border: 'none', color: 'var(--info)', fontWeight: 800, fontSize: 13, cursor: 'pointer', textAlign: 'center', transition: 'background 0.2s', borderTop: '1px dashed var(--gray-200)' }}
+                  onMouseEnter={e => e.target.style.background = '#bae6fd'}
+                  onMouseLeave={e => e.target.style.background = 'var(--info-light)'}
+                >+ Add Debit Row</button>
+              </div>
+
+            </div>
 
             {/* Total row */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', background: 'var(--gray-100)', borderTop: '1px solid var(--gray-200)' }}>
