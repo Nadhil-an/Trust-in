@@ -149,12 +149,14 @@ export default function DaySheet() {
     const dRows = [...fixedRows, ...incomes].map(r => ({ ...r, amount: r.amount != null ? r.amount : '' }));
     while (dRows.length < maxRows) dRows.push({ particular: '', amount: '', sc: 'CASH' });
 
-    setDebits([...dRows, ...loadExtraDebits(date)])
+    const dExtras = loadExtraDebits(date).map(r => ({ ...r, isExtra: true }))
+    setDebits([...dRows, ...dExtras])
 
     // Build credit rows — always from server data
     const cRows = savedCredits.map(r => ({ ...r, amount: r.amount != null ? r.amount : '' }))
     while (cRows.length < maxRows) cRows.push({ particular: '', amount: '', sc: 'CASH' })
-    setCredits([...cRows, ...loadExtraCredits(date)])
+    const cExtras = loadExtraCredits(date).map(r => ({ ...r, isExtra: true }))
+    setCredits([...cRows, ...cExtras])
 
     // Restore closing balances
     setClosing({
@@ -449,7 +451,7 @@ export default function DaySheet() {
               <div style={{ borderRight: '1px solid var(--gray-200)' }}>
                 {debits.map((d, i) => {
                   const bg = i % 2 === 0 ? 'var(--white)' : 'var(--gray-50)'
-                  const isFixed = i < 11 // rows 0-10 are fixed
+                  const isFixed = !d.isExtra
                   return (
                     <div key={`d-${i}`} style={{ display: 'grid', gridTemplateColumns: '36px 1fr 130px 90px', background: bg, minHeight: 42 }}>
                       {/* Delete / index cell */}
@@ -458,7 +460,7 @@ export default function DaySheet() {
                           <button
                             onClick={() => {
                               const n = debits.filter((_, idx) => idx !== i)
-                              const newExtras = n.slice(11)
+                              const newExtras = n.filter(r => r.isExtra)
                               saveExtraDebits(date, newExtras)
                               setDebits(n)
                               handleSave(true, n, credits, true)
@@ -532,10 +534,12 @@ export default function DaySheet() {
                 {/* + Add Credit Row button */}
                 <button
                   onClick={() => {
-                    const newRow = { particular: '', amount: '', sc: 'CASH' }
-                    const current = loadExtraDebits(date)
-                    saveExtraDebits(date, [...current, newRow])
-                    setDebits(prev => [...prev, newRow])
+                    const newRow = { particular: '', amount: '', sc: 'CASH', isExtra: true }
+                    setDebits(prev => {
+                      const next = [...prev, newRow]
+                      saveExtraDebits(date, next.filter(r => r.isExtra))
+                      return next
+                    })
                   }}
                   style={{ width: '100%', padding: '12px', background: 'var(--success-light)', border: 'none', color: 'var(--success)', fontWeight: 800, fontSize: 13, cursor: 'pointer', textAlign: 'center', transition: 'background 0.2s', borderTop: '1px dashed var(--gray-200)' }}
                   onMouseEnter={e => e.target.style.background = '#bbf7d0'}
@@ -547,7 +551,7 @@ export default function DaySheet() {
               <div>
                 {credits.map((c, i) => {
                   const bg = i % 2 === 0 ? 'var(--white)' : 'var(--gray-50)'
-                  const isFixed = i < 11
+                  const isFixed = !c.isExtra
                   return (
                     <div key={`c-${i}`} style={{ display: 'grid', gridTemplateColumns: '36px 1fr 130px 90px', background: bg, minHeight: 42 }}>
                       <div style={{ ...SH.td, color: 'var(--gray-400)', padding: '4px 2px' }}>
@@ -555,7 +559,7 @@ export default function DaySheet() {
                           <button
                             onClick={() => {
                               const n = credits.filter((_, idx) => idx !== i)
-                              const newExtras = n.slice(11)
+                              const newExtras = n.filter(r => r.isExtra)
                               saveExtraCredits(date, newExtras)
                               setCredits(n)
                               handleSave(true, debits, n, true)
@@ -602,10 +606,12 @@ export default function DaySheet() {
                 {/* + Add Debit Row button */}
                 <button
                   onClick={() => {
-                    const newRow = { particular: '', amount: '', sc: 'CASH' }
-                    const current = loadExtraCredits(date)
-                    saveExtraCredits(date, [...current, newRow])
-                    setCredits(prev => [...prev, newRow])
+                    const newRow = { particular: '', amount: '', sc: 'CASH', isExtra: true }
+                    setCredits(prev => {
+                      const next = [...prev, newRow]
+                      saveExtraCredits(date, next.filter(r => r.isExtra))
+                      return next
+                    })
                   }}
                   style={{ width: '100%', padding: '12px', background: 'var(--info-light)', border: 'none', color: 'var(--info)', fontWeight: 800, fontSize: 13, cursor: 'pointer', textAlign: 'center', transition: 'background 0.2s', borderTop: '1px dashed var(--gray-200)' }}
                   onMouseEnter={e => e.target.style.background = '#bae6fd'}
