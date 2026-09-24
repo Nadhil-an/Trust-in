@@ -235,7 +235,18 @@ const StaffDonationsListScreen = ({ navigation, route }) => {
   const displayCashDonations = (stats?.cash_donations || 0) + offlineCashTotal;
   const displayBankDonations = (stats?.bank_donations || 0) + offlineBankTotal;
 
-
+  const filteredEntries = combinedDonations.filter(d => {
+    // If offline item, only show it if the selected date is today
+    if (d.isOfflinePending && d.date !== (selectedDate.getFullYear() + '-' + String(selectedDate.getMonth() + 1).padStart(2, '0') + '-' + String(selectedDate.getDate()).padStart(2, '0'))) {
+      return false;
+    }
+    if (searchQuery && !d.donor_name?.toLowerCase().includes(searchQuery.toLowerCase()) && !d.receipt_number?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (activeFilter === 'DONATIONS' && d.source !== 'DONATION') return false;
+    if (activeFilter === 'MEMBERSHIPS' && d.source !== 'MEMBERSHIP') return false;
+    if (activeFilter === 'CASH' && d.payment_method?.toUpperCase() !== 'CASH') return false;
+    if (activeFilter === 'GPAY/BANK' && d.payment_method?.toUpperCase() === 'CASH') return false;
+    return true;
+  });
 
   return (
     <View style={styles.container}>
@@ -279,7 +290,7 @@ const StaffDonationsListScreen = ({ navigation, route }) => {
 
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
           <Text style={[styles.summaryTitle, { marginBottom: 0 }]}>
-            Summary ({selectedDate.toLocaleDateString('en-GB')})
+            Summary ({selectedDate.toLocaleDateString('en-GB')}) ({filteredEntries.length} entries)
           </Text>
           <TouchableOpacity onPress={() => setShowDatePicker(true)} style={{ padding: 4 }}>
             <Ionicons name="calendar-outline" size={24} color={Colors.primary} />
@@ -320,18 +331,7 @@ const StaffDonationsListScreen = ({ navigation, route }) => {
       </View>
 
       <SectionList
-        sections={groupDataByDate(combinedDonations.filter(d => {
-          // If offline item, only show it if the selected date is today
-          if (d.isOfflinePending && d.date !== (selectedDate.getFullYear() + '-' + String(selectedDate.getMonth() + 1).padStart(2, '0') + '-' + String(selectedDate.getDate()).padStart(2, '0'))) {
-            return false;
-          }
-          if (searchQuery && !d.donor_name?.toLowerCase().includes(searchQuery.toLowerCase()) && !d.receipt_number?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
-          if (activeFilter === 'DONATIONS' && d.source !== 'DONATION') return false;
-          if (activeFilter === 'MEMBERSHIPS' && d.source !== 'MEMBERSHIP') return false;
-          if (activeFilter === 'CASH' && d.payment_method?.toUpperCase() !== 'CASH') return false;
-          if (activeFilter === 'GPAY/BANK' && d.payment_method?.toUpperCase() === 'CASH') return false;
-          return true;
-        }))}
+        sections={groupDataByDate(filteredEntries)}
         keyExtractor={item => item.id.toString()}
         renderItem={renderItem}
         renderSectionHeader={({ section: { title } }) => (
