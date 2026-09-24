@@ -196,9 +196,27 @@ const AddMemberScreen = ({ navigation, route }) => {
     });
   }, [navigation]);
 
+  const hasVoucherAssigned = voucher && Number(voucher.book_number) > 0 && Number(voucher.current_voucher) > 0;
+  const isVoucherExhausted = voucher && Number(voucher.current_voucher) > Number(voucher.voucher_end);
+
   const handleSubmit = async () => {
     const isAttendanceOk = await verifyAttendanceMarked(navigation, 'add members');
     if (!isAttendanceOk) return;
+
+    if (!hasVoucherAssigned && !isEdit) {
+      Alert.alert(
+        'Voucher Book Not Assigned',
+        'You cannot add members until HR/Admin assigns a voucher book to your account.'
+      );
+      return;
+    }
+    if (isVoucherExhausted && !isEdit) {
+      Alert.alert(
+        'Voucher Book Exhausted',
+        'You have exhausted all vouchers in your current book. Please contact HR or the office to get a new voucher book assigned.'
+      );
+      return;
+    }
 
     setLoading(true);
     try {
@@ -404,7 +422,55 @@ const AddMemberScreen = ({ navigation, route }) => {
       <KeyboardAwareScrollView enableOnAndroid={true} extraScrollHeight={20} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <StepDots total={TOTAL_STEPS} current={step} />
         
-        {voucher && (
+        {!hasVoucherAssigned ? (
+          <View style={{
+            backgroundColor: '#FEF2F2',
+            borderWidth: 1,
+            borderColor: '#FCA5A5',
+            borderLeftWidth: 5,
+            borderLeftColor: '#EF4444',
+            borderRadius: 14,
+            padding: 16,
+            marginBottom: 16,
+            flexDirection: 'row',
+            alignItems: 'flex-start',
+            gap: 12,
+          }}>
+            <Ionicons name="warning" size={24} color="#DC2626" />
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 15, fontWeight: '800', color: '#991B1B', marginBottom: 4 }}>
+                No Voucher Book Assigned!
+              </Text>
+              <Text style={{ fontSize: 13, color: '#7F1D1D', lineHeight: 18 }}>
+                You have not been assigned a voucher book by HR/Admin. Please contact the office.
+              </Text>
+            </View>
+          </View>
+        ) : isVoucherExhausted && !isEdit ? (
+          <View style={{
+            backgroundColor: '#FFFBEB',
+            borderWidth: 1,
+            borderColor: '#FDE68A',
+            borderLeftWidth: 5,
+            borderLeftColor: '#F59E0B',
+            borderRadius: 14,
+            padding: 16,
+            marginBottom: 16,
+            flexDirection: 'row',
+            alignItems: 'flex-start',
+            gap: 12,
+          }}>
+            <Ionicons name="warning" size={24} color="#D97706" />
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 15, fontWeight: '800', color: '#B45309', marginBottom: 4 }}>
+                Voucher Book Exhausted!
+              </Text>
+              <Text style={{ fontSize: 13, color: '#92400E', lineHeight: 18 }}>
+                You have used all the vouchers in your current book. Please contact HR or the office to get a new voucher book assigned.
+              </Text>
+            </View>
+          </View>
+        ) : voucher ? (
           <View style={{ backgroundColor: '#EEF2FF', padding: 12, borderRadius: 12, marginBottom: 16, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#C7D2FE' }}>
             <View style={{ backgroundColor: '#4338CA', padding: 8, borderRadius: 8, marginRight: 12 }}>
               <Ionicons name="ticket" size={20} color="#FFFFFF" />
@@ -421,9 +487,10 @@ const AddMemberScreen = ({ navigation, route }) => {
                   placeholderTextColor="#94A3B8"
                 />
               </View>
+              </View>
             </View>
           </View>
-        )}
+        ) : null}
 
         {renderStep()}
 

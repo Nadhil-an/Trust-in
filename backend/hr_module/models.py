@@ -608,7 +608,10 @@ class StaffVoucherBook(models.Model):
                 self.next_voucher_end = None
                 self.next_current_voucher = None
             else:
-                raise ValueError("Voucher book exhausted. Please contact HR to assign a new voucher book.")
+                if self.current_voucher == self.voucher_end:
+                    self.current_voucher += 1
+                else:
+                    raise ValueError("Voucher book exhausted. Please contact HR to assign a new voucher book.")
         else:
             self.current_voucher += 1
         

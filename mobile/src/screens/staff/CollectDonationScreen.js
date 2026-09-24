@@ -101,6 +101,7 @@ const CollectDonationScreen = ({ navigation, route }) => {
   };
 
   const hasVoucherAssigned = voucher && Number(voucher.book_number) > 0 && Number(voucher.current_voucher) > 0;
+  const isVoucherExhausted = voucher && Number(voucher.current_voucher) > Number(voucher.voucher_end);
 
   const handleSubmit = async () => {
     const isAttendanceOk = await verifyAttendanceMarked(navigation, 'collect donations');
@@ -109,6 +110,13 @@ const CollectDonationScreen = ({ navigation, route }) => {
       Alert.alert(
         'Voucher Book Not Assigned',
         'You cannot collect donations until HR/Admin assigns a voucher book to your account. Please contact the office to get a voucher book assigned.'
+      );
+      return;
+    }
+    if (isVoucherExhausted && !isEdit) {
+      Alert.alert(
+        'Voucher Book Exhausted',
+        'You have exhausted all vouchers in your current book. Please contact HR or the office to get a new voucher book assigned before collecting more donations.'
       );
       return;
     }
@@ -217,6 +225,30 @@ const CollectDonationScreen = ({ navigation, route }) => {
                 </Text>
                 <Text style={{ fontSize: 13, color: '#7F1D1D', lineHeight: 18 }}>
                   You have not been assigned a voucher book by HR/Admin. Please contact the office to assign a voucher book to your account before collecting donations.
+                </Text>
+              </View>
+            </View>
+          ) : isVoucherExhausted && !isEdit ? (
+            <View style={{
+              backgroundColor: '#FFFBEB',
+              borderWidth: 1,
+              borderColor: '#FDE68A',
+              borderLeftWidth: 5,
+              borderLeftColor: '#F59E0B',
+              borderRadius: 14,
+              padding: 16,
+              marginBottom: 16,
+              flexDirection: 'row',
+              alignItems: 'flex-start',
+              gap: 12,
+            }}>
+              <Ionicons name="warning" size={24} color="#D97706" />
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 15, fontWeight: '800', color: '#B45309', marginBottom: 4 }}>
+                  Voucher Book Exhausted!
+                </Text>
+                <Text style={{ fontSize: 13, color: '#92400E', lineHeight: 18 }}>
+                  You have used all the vouchers in your current book. Please contact HR or the office to get a new voucher book assigned.
                 </Text>
               </View>
             </View>
