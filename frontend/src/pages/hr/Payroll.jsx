@@ -10,7 +10,7 @@ export default function PayrollPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("")
-  const [monthFilter, setMonthFilter] = useState(8) // Default to August
+  const [monthFilter, setMonthFilter] = useState(new Date().getMonth() + 1)
   const [yearFilter, setYearFilter] = useState(new Date().getFullYear())
   const [recentAdvances, setRecentAdvances] = useState([])
   
