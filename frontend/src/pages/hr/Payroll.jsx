@@ -256,9 +256,24 @@ export default function PayrollPage() {
                     <td><span className={`badge ${p.status==="PAID"?"badge-green":p.status==="APPROVED"?"badge-yellow":p.status==="UNGENERATED"?"badge-gray":"badge-gray"}`}>{p.status==="APPROVED"?"PENDING":p.status}</span></td>
                     <td style={{textAlign:'center'}}>
                       {p.isGenerated ? (
-                        <button className="btn btn-sm btn-secondary" onClick={() => setSelectedSlip(p.original)} style={{fontSize:'12px', padding:'4px 8px'}}>
-                          👁️ View Slip
-                        </button>
+                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                          <button className="btn btn-sm btn-secondary" onClick={() => setSelectedSlip(p.original)} style={{fontSize:'12px', padding:'4px 8px'}}>
+                            👁️ View Slip
+                          </button>
+                          {p.status !== 'PAID' && (
+                            <button className="btn btn-sm btn-success" onClick={async () => {
+                              try {
+                                await hrApi.payroll.update(p.id, { status: 'PAID' });
+                                toast.success("Payroll marked as paid!");
+                                load();
+                              } catch (e) {
+                                toast.error("Failed to mark as paid");
+                              }
+                            }} style={{fontSize:'12px', padding:'4px 8px'}}>
+                              ✓ Mark Paid
+                            </button>
+                          )}
+                        </div>
                       ) : (
                         <button className="btn btn-sm btn-primary" onClick={() => {
                           const emp = employees.find(e => e.full_name === p.employee_name);
