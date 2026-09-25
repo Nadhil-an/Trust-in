@@ -83,24 +83,6 @@ export default function PayrollPage() {
     });
   }, [employees, items, recentAdvances, monthFilter, yearFilter, search, statusFilter]);
 
-
-  const [genForm, setGenForm] = useState({
-    employee: "",
-    month: currentMonth,
-    year: currentYear,
-    salary_structure: "",
-    working_days: 30,
-    present_days: 0,
-    absent_days: 0,
-    leave_days: 0,
-    basic_salary: 0,
-    hra: 0,
-    ta: 0,
-    other_allowances: 0,
-    pf_deduction: 0,
-    other_deductions: 0,
-  })
-
   const load = useCallback(async () => {
     setLoading(true)
     try { 
