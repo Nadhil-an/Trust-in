@@ -246,6 +246,7 @@ export default function PayrollPage() {
             </div>
           </div>
         </Modal>
+      )}
     </div>
   )
 }
