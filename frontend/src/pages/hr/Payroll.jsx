@@ -49,6 +49,24 @@ export default function PayrollPage() {
       const basic = emp.salary_structure ? Number(emp.salary_structure.basic_salary) : 0;
       const balance = basic - advanceTotal;
       
+      const mockOriginal = {
+         id: 'UNGEN-' + emp.id,
+         payroll_id: 'N/A',
+         employee_name: emp.full_name,
+         month: monthFilter,
+         year: yearFilter,
+         basic_salary: basic,
+         gross_salary: basic,
+         pf_deduction: 0,
+         hra: 0,
+         ta: 0,
+         other_allowances: 0,
+         other_deductions: advanceTotal,
+         net_salary: balance,
+         status: 'PAID',
+         remarks: ''
+      };
+
       return {
          isGenerated: false,
          id: 'UNGEN-' + emp.id,
@@ -60,7 +78,7 @@ export default function PayrollPage() {
          advance_salary: advanceTotal,
          balance_salary: balance,
          status: 'UNGENERATED',
-         original: null
+         original: mockOriginal
       };
     }).filter(item => {
       // Do not display ungenerated staff unless they have taken an advance this month
@@ -255,21 +273,11 @@ export default function PayrollPage() {
                     <td style={{ fontWeight: 'bold' }}><AmountDisplay amount={p.balance_salary} type="neutral" /></td>
                     <td><span className="badge badge-green">PAID</span></td>
                     <td style={{textAlign:'center'}}>
-                      {p.isGenerated ? (
-                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                          <button className="btn btn-sm btn-secondary" onClick={() => setSelectedSlip(p.original)} style={{fontSize:'12px', padding:'4px 8px'}}>
-                            👁️ View Slip
-                          </button>
-                        </div>
-                      ) : (
-                        <button className="btn btn-sm btn-primary" onClick={() => {
-                          const emp = employees.find(e => e.full_name === p.employee_name);
-                          setGenForm({ employee: emp.id, month: p.month, year: p.year, payment_method: 'BANK', remarks: '', basic_salary: 0, hra: 0, ta: 0, other_allowances: 0, pf_deduction: 0, other_deductions: 0 });
-                          setGenModal(true);
-                        }} style={{fontSize:'12px', padding:'4px 8px'}}>
-                          Generate
+                      <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                        <button className="btn btn-sm btn-secondary" onClick={() => setSelectedSlip(p.original)} style={{fontSize:'12px', padding:'4px 8px'}}>
+                          👁️ View Slip
                         </button>
-                      )}
+                      </div>
                     </td>
                   </tr>))}
               </tbody>
