@@ -735,6 +735,17 @@ class OfficerPayrollDataView(APIView):
         
         att_counts = {item['status']: item['count'] for item in attendance}
         
+        # Get Salary Advances taken in this month
+        from accounts_module.models import Expense
+        advances = Expense.objects.filter(
+            category='SALARY ADVANCE',
+            payee__iexact=employee.full_name,
+            date__year=year,
+            date__month=month
+        ).exclude(status='CANCELLED')
+        
+        advance_taken = sum(float(exp.amount) for exp in advances)
+        
         return Response({
             'employee_name': employee.full_name,
             'employment_type': employee.employment_type,
@@ -744,7 +755,8 @@ class OfficerPayrollDataView(APIView):
                 'absent': att_counts.get('ABSENT', 0),
                 'leave': att_counts.get('LEAVE', 0),
                 'late': att_counts.get('LATE', 0),
-            }
+            },
+            'salary_advance_taken': advance_taken
         })
 
 

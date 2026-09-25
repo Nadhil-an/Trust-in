@@ -95,8 +95,8 @@ export default function PayrollPage() {
         hra: Number(structure.hra),
         ta: Number(structure.ta),
         other_allowances: Number(structure.other_allowances),
-        pf_deduction: Number(structure.pf_deduction), // User requested fixed amount first
-        other_deductions: 0, // Reset advance/other deductions for manual input
+        pf_deduction: Number(structure.pf_deduction),
+        other_deductions: data.salary_advance_taken || 0, // Auto-populate with advance taken
       }))
       
     } catch (err) {
