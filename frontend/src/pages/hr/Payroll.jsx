@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react"
-import { hrApi } from "../../api"
+import { hrApi, accountsApi } from "../../api"
 import { LoadingState, EmptyState, PageHeader, FilterBar, Modal, AmountDisplay, formatINR } from "../../components/shared"
 import { format } from "date-fns"
 import toast from "react-hot-toast"
@@ -12,6 +12,7 @@ export default function PayrollPage() {
   const [statusFilter, setStatusFilter] = useState("")
   const [monthFilter, setMonthFilter] = useState(8) // Default to August
   const [yearFilter, setYearFilter] = useState(new Date().getFullYear())
+  const [recentAdvances, setRecentAdvances] = useState([])
   
   const [genModal, setGenModal] = useState(false)
   const [genLoading, setGenLoading] = useState(false)
@@ -42,17 +43,26 @@ export default function PayrollPage() {
   const load = useCallback(async () => {
     setLoading(true)
     try { 
-      const [res, empRes] = await Promise.all([
+      const [res, empRes, expRes] = await Promise.all([
         hrApi.payroll.list({
           search,
           status: statusFilter,
           month: monthFilter,
           year: yearFilter
         }),
-        hrApi.officers.list()
+        hrApi.officers.list(),
+        accountsApi.expenses.list({ category: 'SALARY ADVANCE', limit: 300 }).catch(() => ({ data: [] }))
       ])
       setItems(res.data.results || res.data)
       setEmployees(empRes.data.results || empRes.data)
+      
+      const advances = (expRes.data.results || expRes.data || []).filter(a => {
+        if (a.status === 'CANCELLED') return false;
+        if (!a.date) return false;
+        const d = new Date(a.date);
+        return (d.getMonth() + 1) == monthFilter && d.getFullYear() == yearFilter;
+      });
+      setRecentAdvances(advances)
     }
     catch (_) {} finally { setLoading(false) }
   }, [search, statusFilter, monthFilter, yearFilter])
@@ -204,6 +214,30 @@ export default function PayrollPage() {
           </div>
         )}
       </div>
+
+      {recentAdvances.length > 0 && (
+        <div className="data-card" style={{ marginTop: '20px' }}>
+          <h3 style={{ margin: '0 0 15px 0', color: '#1e293b', fontSize: '16px' }}>
+            💸 Recent Salary Advances ({format(new Date(2020, monthFilter - 1, 1), 'MMMM')} {yearFilter})
+          </h3>
+          <div className="table-wrap">
+            <table>
+              <thead><tr><th>Date</th><th>Employee (Payee)</th><th>Amount</th><th>Method</th><th>Status</th></tr></thead>
+              <tbody>
+                {recentAdvances.map(a => (
+                  <tr key={a.id}>
+                    <td>{format(new Date(a.date), 'dd MMM yyyy')}</td>
+                    <td><strong style={{color: '#1d4ed8'}}>{a.payee}</strong></td>
+                    <td style={{color: '#ef4444', fontWeight: 'bold'}}>- {formatINR(a.amount)}</td>
+                    <td>{a.payment_method}</td>
+                    <td><span className="badge badge-green">DISBURSED</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {selectedSlip && (
         <Modal isOpen={true} onClose={() => setSelectedSlip(null)} title="Salary Slip" size="modal-lg"
