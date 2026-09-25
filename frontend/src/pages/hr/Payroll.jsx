@@ -23,6 +23,53 @@ export default function PayrollPage() {
   const currentMonth = new Date().getMonth() + 1
   const currentYear = new Date().getFullYear()
 
+  const unifiedItems = React.useMemo(() => {
+    return employees.map(emp => {
+      const payroll = items.find(p => p.employee === emp.id || p.employee_name === emp.full_name);
+      if (payroll) {
+        return {
+           isGenerated: true,
+           id: payroll.id,
+           payroll_id: payroll.payroll_id,
+           employee_name: payroll.employee_name,
+           month: payroll.month,
+           year: payroll.year,
+           basic_salary: payroll.basic_salary,
+           advance_salary: payroll.other_deductions || 0,
+           balance_salary: payroll.net_salary,
+           status: payroll.status,
+           original: payroll
+        };
+      }
+      const empAdvances = recentAdvances.filter(a => (a.payee || '').toLowerCase() === emp.full_name.toLowerCase());
+      const advanceTotal = empAdvances.reduce((sum, a) => sum + Number(a.amount), 0);
+      
+      // If we don't have basic_salary directly in emp object without detailed fetch,
+      // we can check if it exists in emp.salary_structure or default to 0.
+      const basic = emp.salary_structure ? Number(emp.salary_structure.basic_salary) : 0;
+      const balance = basic - advanceTotal;
+      
+      return {
+         isGenerated: false,
+         id: 'UNGEN-' + emp.id,
+         payroll_id: '-',
+         employee_name: emp.full_name,
+         month: monthFilter,
+         year: yearFilter,
+         basic_salary: basic,
+         advance_salary: advanceTotal,
+         balance_salary: balance,
+         status: 'UNGENERATED',
+         original: null
+      };
+    }).filter(item => {
+      if (search && !item.employee_name.toLowerCase().includes(search.toLowerCase())) return false;
+      if (statusFilter && item.status !== statusFilter) return false;
+      return true;
+    });
+  }, [employees, items, recentAdvances, monthFilter, yearFilter, search, statusFilter]);
+
+
   const [genForm, setGenForm] = useState({
     employee: "",
     month: currentMonth,
@@ -180,6 +227,7 @@ export default function PayrollPage() {
         <FilterBar search={search} onSearch={setSearch}>
           <select className="filter-select" style={{ width: '130px' }} value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
             <option value="">All Statuses</option>
+            <option value="UNGENERATED">Ungenerated</option>
             <option value="APPROVED">Pending</option>
             <option value="PAID">Paid</option>
           </select>
@@ -192,21 +240,31 @@ export default function PayrollPage() {
         {loading ? <LoadingState /> : (
           <div className="table-wrap">
             <table>
-              <thead><tr><th>Payroll ID</th><th>Employee</th><th>Month/Year</th><th>Basic</th><th>Gross</th><th>Net Salary</th><th>Status</th><th style={{textAlign:'center'}}>Actions</th></tr></thead>
+              <thead><tr><th>Payroll ID</th><th>Employee</th><th>Month/Year</th><th>Basic Salary</th><th>Advance Salary</th><th>Balance Salary</th><th>Status</th><th style={{textAlign:'center'}}>Actions</th></tr></thead>
               <tbody>
-                {items.length===0 ? <tr><td colSpan={8}><EmptyState icon="💰" title="No payroll records" /></td></tr>
-                  : items.map(p=>(<tr key={p.id}>
+                {unifiedItems.length===0 ? <tr><td colSpan={8}><EmptyState icon="💰" title="No payroll records" /></td></tr>
+                  : unifiedItems.map(p=>(<tr key={p.id}>
                     <td className="td-mono">{p.payroll_id}</td>
                     <td>{p.employee_name}</td>
                     <td>{p.month}/{p.year}</td>
                     <td><AmountDisplay amount={p.basic_salary} /></td>
-                    <td><AmountDisplay amount={p.gross_salary} /></td>
-                    <td><AmountDisplay amount={p.net_salary} type="neutral" /></td>
-                    <td><span className={`badge ${p.status==="PAID"?"badge-green":p.status==="APPROVED"?"badge-yellow":"badge-gray"}`}>{p.status==="APPROVED"?"PENDING":p.status}</span></td>
+                    <td style={{ color: p.advance_salary > 0 ? '#ef4444' : 'inherit' }}><AmountDisplay amount={p.advance_salary} /></td>
+                    <td style={{ fontWeight: 'bold' }}><AmountDisplay amount={p.balance_salary} type="neutral" /></td>
+                    <td><span className={`badge ${p.status==="PAID"?"badge-green":p.status==="APPROVED"?"badge-yellow":p.status==="UNGENERATED"?"badge-gray":"badge-gray"}`}>{p.status==="APPROVED"?"PENDING":p.status}</span></td>
                     <td style={{textAlign:'center'}}>
-                      <button className="btn btn-sm btn-secondary" onClick={() => setSelectedSlip(p)} style={{fontSize:'12px', padding:'4px 8px'}}>
-                        👁️ View Slip
-                      </button>
+                      {p.isGenerated ? (
+                        <button className="btn btn-sm btn-secondary" onClick={() => setSelectedSlip(p.original)} style={{fontSize:'12px', padding:'4px 8px'}}>
+                          👁️ View Slip
+                        </button>
+                      ) : (
+                        <button className="btn btn-sm btn-primary" onClick={() => {
+                          const emp = employees.find(e => e.full_name === p.employee_name);
+                          setGenForm({ employee: emp.id, month: p.month, year: p.year, payment_method: 'BANK', remarks: '', basic_salary: 0, hra: 0, ta: 0, other_allowances: 0, pf_deduction: 0, other_deductions: 0 });
+                          setGenModal(true);
+                        }} style={{fontSize:'12px', padding:'4px 8px'}}>
+                          Generate
+                        </button>
+                      )}
                     </td>
                   </tr>))}
               </tbody>
