@@ -227174,3 +227174,22 @@ WebSocket CONNECT /ws/notify/ [10.105.92.21:27089]
 Not Found: /api/hr/officers/d7dc3f9b-f7d8-4678-ac2e-a6598c3fc368/payroll-data/
 [33mHTTP GET /api/hr/officers/d7dc3f9b-f7d8-4678-ac2e-a6598c3fc368/payroll-data/?month=9&year=2026 404 [0.02, 10.105.92.21:40393][0m
 [mHTTP GET /api/hr/officers/a40e9702-3e0e-4ad5-b912-bb4ca2056cfb/payroll-data/?month=9&year=2026 200 [0.02, 10.105.92.21:45893][0m
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+[mHTTP POST /api/auth/login/ 200 [0.34, 10.105.92.21:13421][0m
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:9754]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:9754]
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.105.92.21:31771][0m
+[mHTTP GET /api/core/features/ 200 [0.05, 10.105.92.21:31772][0m
+[mHTTP GET /api/hr/dashboard/ 200 [0.07, 10.105.92.21:31773][0m
+[mHTTP GET /api/hr/dashboard/ 200 [0.11, 10.105.92.21:31774][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.09, 10.105.92.21:54366][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.01, 10.105.92.21:58811][0m
+[mHTTP GET /api/hr/payroll/?search=&status=&month=9&year=2026 200 [0.05, 10.105.92.21:36774][0m
+[mHTTP GET /api/accounts/expenses/?category=SALARY+ADVANCE&limit=300 200 [0.07, 10.105.92.21:60557][0m
+[mHTTP GET /api/hr/payroll/?search=&status=&month=9&year=2026 200 [0.05, 10.105.92.21:24774][0m
+[mHTTP GET /api/accounts/expenses/?category=SALARY+ADVANCE&limit=300 200 [0.06, 10.105.92.21:18376][0m
+[mHTTP GET /api/hr/officers/ 200 [0.17, 10.105.92.21:60556][0m
+[mHTTP GET /api/hr/officers/ 200 [0.08, 10.105.92.21:52207][0m
