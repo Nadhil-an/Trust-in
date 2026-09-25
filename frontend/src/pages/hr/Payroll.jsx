@@ -17,6 +17,7 @@ export default function PayrollPage() {
   const [genLoading, setGenLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [editAttendance, setEditAttendance] = useState(false)
+  const [selectedSlip, setSelectedSlip] = useState(null)
   
   const currentMonth = new Date().getMonth() + 1
   const currentYear = new Date().getFullYear()
@@ -181,9 +182,9 @@ export default function PayrollPage() {
         {loading ? <LoadingState /> : (
           <div className="table-wrap">
             <table>
-              <thead><tr><th>Payroll ID</th><th>Employee</th><th>Month/Year</th><th>Basic</th><th>Gross</th><th>Net Salary</th><th>Status</th></tr></thead>
+              <thead><tr><th>Payroll ID</th><th>Employee</th><th>Month/Year</th><th>Basic</th><th>Gross</th><th>Net Salary</th><th>Status</th><th style={{textAlign:'center'}}>Actions</th></tr></thead>
               <tbody>
-                {items.length===0 ? <tr><td colSpan={7}><EmptyState icon="💰" title="No payroll records" /></td></tr>
+                {items.length===0 ? <tr><td colSpan={8}><EmptyState icon="💰" title="No payroll records" /></td></tr>
                   : items.map(p=>(<tr key={p.id}>
                     <td className="td-mono">{p.payroll_id}</td>
                     <td>{p.employee_name}</td>
@@ -192,12 +193,81 @@ export default function PayrollPage() {
                     <td><AmountDisplay amount={p.gross_salary} /></td>
                     <td><AmountDisplay amount={p.net_salary} type="neutral" /></td>
                     <td><span className={`badge ${p.status==="PAID"?"badge-green":p.status==="APPROVED"?"badge-yellow":"badge-gray"}`}>{p.status==="APPROVED"?"PENDING":p.status}</span></td>
+                    <td style={{textAlign:'center'}}>
+                      <button className="btn btn-sm btn-secondary" onClick={() => setSelectedSlip(p)} style={{fontSize:'12px', padding:'4px 8px'}}>
+                        👁️ View Slip
+                      </button>
+                    </td>
                   </tr>))}
               </tbody>
             </table>
           </div>
         )}
       </div>
+
+      {selectedSlip && (
+        <Modal isOpen={true} onClose={() => setSelectedSlip(null)} title="Salary Slip" size="modal-lg"
+          footer={<>
+            <button className="btn btn-secondary" onClick={() => setSelectedSlip(null)}>Close</button>
+            <button className="btn btn-primary" onClick={() => {
+              const printContent = document.getElementById('printable-slip').innerHTML;
+              const originalContent = document.body.innerHTML;
+              document.body.innerHTML = printContent;
+              window.print();
+              document.body.innerHTML = originalContent;
+              window.location.reload();
+            }}>🖨️ Print Slip</button>
+          </>}>
+          <div id="printable-slip" style={{ padding: '20px', fontFamily: 'Arial, sans-serif', color: '#1e293b' }}>
+            <div style={{ textAlign: 'center', marginBottom: '20px', borderBottom: '2px solid #e2e8f0', paddingBottom: '15px' }}>
+              <h2 style={{ margin: '0 0 5px 0', color: '#0f172a' }}>Sree Lakshmi Charitable Trust</h2>
+              <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>Salary Slip for {format(new Date(2020, selectedSlip.month - 1, 1), 'MMMM')} {selectedSlip.year}</p>
+            </div>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '25px', fontSize: '14px' }}>
+              <div>
+                <p style={{ margin: '4px 0' }}><strong>Employee Name:</strong> {selectedSlip.employee_name}</p>
+                <p style={{ margin: '4px 0' }}><strong>Payroll ID:</strong> {selectedSlip.payroll_id}</p>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ margin: '4px 0' }}><strong>Status:</strong> {selectedSlip.status}</p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '20px' }}>
+              <div style={{ flex: 1, border: '1px solid #e2e8f0', borderRadius: '8px', padding: '15px' }}>
+                <h4 style={{ margin: '0 0 15px 0', borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>Earnings</h4>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}><span>Basic Salary</span><span>{formatINR(selectedSlip.basic_salary)}</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}><span>HRA</span><span>{formatINR(selectedSlip.hra)}</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}><span>TA</span><span>{formatINR(selectedSlip.ta)}</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}><span>Other Allowances</span><span>{formatINR(selectedSlip.other_allowances)}</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '15px', paddingTop: '10px', borderTop: '1px solid #e2e8f0', fontWeight: 'bold' }}>
+                  <span>Gross Salary</span><span>{formatINR(selectedSlip.gross_salary)}</span>
+                </div>
+              </div>
+
+              <div style={{ flex: 1, border: '1px solid #e2e8f0', borderRadius: '8px', padding: '15px' }}>
+                <h4 style={{ margin: '0 0 15px 0', borderBottom: '1px solid #e2e8f0', paddingBottom: '8px' }}>Deductions</h4>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}><span>PF Deduction</span><span>{formatINR(selectedSlip.pf_deduction)}</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', color: '#ef4444' }}><span>Salary Advance</span><span>{formatINR(selectedSlip.other_deductions)}</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '15px', paddingTop: '10px', borderTop: '1px solid #e2e8f0', fontWeight: 'bold' }}>
+                  <span>Total Deductions</span><span>{formatINR(Number(selectedSlip.pf_deduction) + Number(selectedSlip.other_deductions))}</span>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ marginTop: '25px', background: '#f8fafc', padding: '15px 20px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #bfdbfe' }}>
+              <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#1e293b' }}>Net Payable Salary</span>
+              <span style={{ fontSize: '24px', fontWeight: '900', color: '#1d4ed8' }}>{formatINR(selectedSlip.net_salary)}</span>
+            </div>
+            
+            <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'space-between', color: '#64748b', fontSize: '12px' }}>
+              <div><hr style={{width: '150px', borderTop: '1px solid #94a3b8', margin: '0 0 5px 0'}}/>Employer Signature</div>
+              <div style={{textAlign: 'right'}}><hr style={{width: '150px', borderTop: '1px solid #94a3b8', margin: '0 0 5px 0'}}/>Employee Signature</div>
+            </div>
+          </div>
+        </Modal>
+      )}
 
 
 
