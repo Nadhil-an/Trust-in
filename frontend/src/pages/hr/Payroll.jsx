@@ -63,6 +63,9 @@ export default function PayrollPage() {
          original: null
       };
     }).filter(item => {
+      // Do not display ungenerated staff unless they have taken an advance this month
+      if (!item.isGenerated && item.advance_salary === 0) return false;
+
       if (search && !item.employee_name.toLowerCase().includes(search.toLowerCase())) return false;
       if (statusFilter && item.status !== statusFilter) return false;
       return true;
