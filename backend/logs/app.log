@@ -226874,3 +226874,46 @@ WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:1278]
 WebSocket CONNECT /ws/notify/ [10.105.92.21:1278]
 [mHTTP GET /api/hr/officers/97174e27-c85b-4cd8-908b-5d36a065d485/payroll-data/?month=9&year=2026 200 [0.04, 10.105.92.21:30090][0m
 WebSocket DISCONNECT /ws/notify/ [10.105.92.21:1278]
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:52879]
+WebSocket REJECT /ws/notify/ [10.105.92.21:52879]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:52879]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:37947]
+WebSocket REJECT /ws/notify/ [10.105.92.21:37947]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:37947]
+Unauthorized: /api/auth/profile/
+Unauthorized: /api/core/features/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.04, 10.105.92.21:52880][0m
+[31;1mHTTP GET /api/core/features/ 401 [0.04, 10.105.92.21:52881][0m
+Unauthorized: /api/core/features/
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/core/features/ 401 [0.01, 10.105.92.21:37949][0m
+[31;1mHTTP GET /api/auth/profile/ 401 [0.02, 10.105.92.21:37948][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.06, 10.105.92.21:37950][0m
+[mHTTP GET /api/core/features/ 200 [0.03, 10.105.92.21:35289][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.105.92.21:35288][0m
+[mHTTP GET /api/core/features/ 200 [0.02, 10.105.92.21:6890][0m
+[mHTTP GET /api/auth/profile/ 200 [0.11, 10.105.92.21:61618][0m
+[mHTTP GET /api/hr/payroll/?search=&status=&month=9&year=2026 200 [0.16, 10.105.92.21:39587][0m
+[mHTTP GET /api/accounts/expenses/?category=SALARY+ADVANCE&limit=300 200 [0.19, 10.105.92.21:57319][0m
+[mHTTP GET /api/hr/payroll/?search=&status=&month=9&year=2026 200 [0.09, 10.105.92.21:54613][0m
+[mHTTP GET /api/accounts/expenses/?category=SALARY+ADVANCE&limit=300 200 [0.08, 10.105.92.21:61594][0m
+[mHTTP GET /api/hr/officers/ 200 [0.32, 10.105.92.21:57318][0m
+[mHTTP GET /api/hr/officers/ 200 [0.10, 10.105.92.21:49190][0m
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:42042]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:42042]
+[mHTTP GET /api/hr/officers/97174e27-c85b-4cd8-908b-5d36a065d485/payroll-data/?month=9&year=2026 200 [0.03, 10.105.92.21:51989][0m
+Bad Request: /api/hr/payroll/
+[31;1mHTTP POST /api/hr/payroll/ 400 [0.03, 10.105.92.21:9458][0m
+[mHTTP GET /api/hr/officers/a40e9702-3e0e-4ad5-b912-bb4ca2056cfb/payroll-data/?month=9&year=2026 200 [0.02, 10.105.92.21:23417][0m
+[mHTTP POST /api/hr/payroll/ 201 [0.04, 10.105.92.21:28469][0m
+[mHTTP GET /api/hr/payroll/?search=&status=&month=9&year=2026 200 [0.04, 10.105.92.21:34426][0m
+[mHTTP GET /api/accounts/expenses/?category=SALARY+ADVANCE&limit=300 200 [0.04, 10.105.92.21:34428][0m
+[mHTTP GET /api/hr/officers/ 200 [0.11, 10.105.92.21:34427][0m
+[mHTTP GET /api/hr/payroll/?search=&status=&month=9&year=2026 200 [0.03, 10.105.92.21:63411][0m
+[mHTTP GET /api/accounts/expenses/?category=SALARY+ADVANCE&limit=300 200 [0.04, 10.105.92.21:58124][0m
+[mHTTP GET /api/hr/officers/ 200 [0.07, 10.105.92.21:58123][0m
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:42042]
