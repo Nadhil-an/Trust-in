@@ -297,14 +297,18 @@ export default function PayrollPage() {
                     </div>
                   </div>
 
-                  <div style={{ marginTop: '1.5rem', background: 'var(--primary-50)', padding: '16px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ position: 'sticky', bottom: '-15px', zIndex: 10, marginTop: '1.5rem', background: '#f8fafc', padding: '16px 24px', borderRadius: '12px', border: '1px solid #e2e8f0', borderTop: '4px solid var(--primary-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 -10px 25px -5px rgba(0, 0, 0, 0.1)' }}>
                     <div>
-                      <div style={{ fontSize: '12px', color: 'var(--gray-600)', textTransform: 'uppercase' }}>Gross Salary</div>
-                      <div style={{ fontSize: '18px', fontWeight: 'bold' }}>{formatINR(grossSalary)}</div>
+                      <div style={{ fontSize: '11px', color: 'var(--gray-500)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.5px' }}>Basic Salary</div>
+                      <div style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--gray-800)' }}>{formatINR(genForm.basic_salary)}</div>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '11px', color: 'var(--gray-500)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.5px' }}>Salary Advance</div>
+                      <div style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--danger-color)' }}>- {formatINR(genForm.other_deductions)}</div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '12px', color: 'var(--gray-600)', textTransform: 'uppercase' }}>Net Payable Salary</div>
-                      <div style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--primary-color)' }}>{formatINR(netSalary)}</div>
+                      <div style={{ fontSize: '12px', color: 'var(--primary-700)', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.5px' }}>Pending Salary</div>
+                      <div style={{ fontSize: '26px', fontWeight: '900', color: 'var(--primary-800)' }}>{formatINR(netSalary)}</div>
                     </div>
                   </div>
                 </>
