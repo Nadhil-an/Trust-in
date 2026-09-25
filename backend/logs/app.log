@@ -227046,3 +227046,35 @@ WebSocket CONNECT /ws/notify/ [10.105.92.21:7984]
 [mHTTP GET /api/hr/officers/ 200 [0.32, 10.105.92.21:18386][0m
 [mHTTP GET /api/hr/officers/ 200 [0.15, 10.105.92.21:56601][0m
 WebSocket DISCONNECT /ws/notify/ [10.105.92.21:7984]
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:43919]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:37438]
+[mHTTP GET /api/core/features/ 200 [0.08, 10.105.92.21:43921][0m
+WebSocket CONNECT /ws/notify/ [10.105.92.21:43919]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:43919]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:37438]
+[mHTTP GET /api/auth/profile/ 200 [0.11, 10.105.92.21:43920][0m
+[mHTTP GET /api/core/features/ 200 [0.07, 10.105.92.21:37439][0m
+[mHTTP GET /api/auth/profile/ 200 [0.24, 10.105.92.21:44232][0m
+[mHTTP GET /api/hr/payroll/?search=&status=&month=9&year=2026 200 [0.27, 10.105.92.21:37440][0m
+[mHTTP GET /api/accounts/expenses/?category=SALARY+ADVANCE&limit=300 200 [0.28, 10.105.92.21:37442][0m
+[mHTTP GET /api/hr/payroll/?search=&status=&month=9&year=2026 200 [0.10, 10.105.92.21:8129][0m
+[mHTTP GET /api/accounts/expenses/?category=SALARY+ADVANCE&limit=300 200 [0.11, 10.105.92.21:32129][0m
+[mHTTP GET /api/hr/officers/ 200 [0.45, 10.105.92.21:37441][0m
+[mHTTP GET /api/hr/officers/ 200 [0.17, 10.105.92.21:28989][0m
+[mHTTP GET /api/hr/payroll/?search=&status=&month=9&year=2026 200 [0.05, 10.105.92.21:32529][0m
+[mHTTP GET /api/accounts/expenses/?category=SALARY+ADVANCE&limit=300 200 [0.08, 10.105.92.21:4248][0m
+[mHTTP GET /api/hr/officers/ 200 [0.14, 10.105.92.21:32530][0m
+[mHTTP GET /api/hr/officers/97174e27-c85b-4cd8-908b-5d36a065d485/payroll-data/?month=9&year=2026 200 [0.04, 10.105.92.21:40462][0m
+Bad Request: /api/hr/payroll/
+[31;1mHTTP POST /api/hr/payroll/ 400 [0.04, 10.105.92.21:57378][0m
+Not Found: /api/hr/officers/cb16f5af-3910-4b1b-8e1f-4d00a2803474/payroll-data/
+[33mHTTP GET /api/hr/officers/cb16f5af-3910-4b1b-8e1f-4d00a2803474/payroll-data/?month=9&year=2026 404 [0.03, 10.105.92.21:40061][0m
+[mHTTP GET /api/hr/officers/c79cbf9a-429c-42cd-ac4e-f513ccf8557a/payroll-data/?month=9&year=2026 200 [0.04, 10.105.92.21:2970][0m
+[mHTTP POST /api/hr/payroll/ 201 [0.07, 10.105.92.21:55675][0m
+[mHTTP GET /api/hr/payroll/?search=&status=&month=9&year=2026 200 [0.11, 10.105.92.21:62161][0m
+[mHTTP GET /api/accounts/expenses/?category=SALARY+ADVANCE&limit=300 200 [0.12, 10.105.92.21:62163][0m
+[mHTTP GET /api/hr/officers/ 200 [0.23, 10.105.92.21:62162][0m
