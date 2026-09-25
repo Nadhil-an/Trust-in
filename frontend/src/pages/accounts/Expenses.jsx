@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react"
-import { accountsApi } from "../../api"
+import { accountsApi, hrApi } from "../../api"
 import { AmountDisplay, LoadingState, EmptyState, PageHeader, FilterBar, Modal, formatINR, Combobox } from "../../components/shared"
 import PaymentMethodSelector from "../../components/PaymentMethodSelector"
 import { format } from "date-fns"
@@ -18,6 +18,14 @@ export default function ExpenseList() {
   const [editId, setEditId] = useState(null)
   const [processingId, setProcessingId] = useState(null)
   const [expenseToDelete, setExpenseToDelete] = useState(null)
+  const [staffList, setStaffList] = useState([])
+  const [maxAdvanceAmount, setMaxAdvanceAmount] = useState("")
+
+  useEffect(() => {
+    hrApi.officers.list({ page_size: 100 }).then(res => {
+      setStaffList(res.data.results || res.data)
+    }).catch(console.error)
+  }, [])
 
   const handleAddExpense = () => {
     let nextId = 1;
@@ -40,6 +48,42 @@ export default function ExpenseList() {
     setEditId(expense.id)
     setShowModal(true)
   }
+
+  const calculateSalaryAdvanceAmount = async (payeeName, dateStr, currentEditId = null) => {
+    const staff = staffList.find(s => s.full_name === payeeName);
+    if (!staff || !staff.salary_structure) return "";
+    
+    const basic = Number(staff.salary_structure.basic_salary) || 0;
+    try {
+      const monthPrefix = (dateStr || new Date().toISOString()).substring(0, 7);
+      const res = await accountsApi.expenses.list({ category: 'SALARY ADVANCE', limit: 300 });
+      let advances = res.data.results || res.data;
+      
+      const withdrawn = advances.filter(exp => 
+        exp.payee === payeeName && 
+        exp.date && exp.date.startsWith(monthPrefix) && 
+        exp.status !== 'CANCELLED' && 
+        exp.id !== currentEditId
+      ).reduce((sum, exp) => sum + Number(exp.amount), 0);
+      
+      return Math.max(0, basic - withdrawn);
+    } catch (e) {
+      return basic;
+    }
+  };
+
+  const handlePayeeChange = async (e) => {
+    const payeeName = e.target.value;
+    setForm(f => ({ ...f, payee: payeeName, amount: "" }));
+    if (form.category === "SALARY ADVANCE" && payeeName) {
+      const remaining = await calculateSalaryAdvanceAmount(payeeName, form.date, editId);
+      if (remaining !== "") {
+        setMaxAdvanceAmount(remaining);
+      }
+    } else {
+      setMaxAdvanceAmount("");
+    }
+  };
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -183,20 +227,55 @@ export default function ExpenseList() {
             <button className="btn btn-primary" form="expense-form" type="submit" disabled={saving}>{saving?"Saving...":"Save"}</button></>}>
           <form id="expense-form" onSubmit={handleSave}>
             <div className="form-grid-2">
-              {[["date","Date","date"],["payee","Payee","text"],["amount","Amount (₹)","number"],["expense_id","Bill Number","text"]].map(([k,l,t])=>(
-                <div className="form-group" key={k}><label className={`form-label${["date","payee","amount","expense_id"].includes(k)?" required":""}`}>{l}</label>
-                  <input className="form-control" type={t} value={form[k]} required={["date","payee","amount","expense_id"].includes(k)} onChange={e=>setForm(f=>({...f,[k]:e.target.value}))} /></div>
-              ))}
-              <div className="form-group"><label className="form-label">Category</label>
+              <div className="form-group">
+                <label className="form-label required">Date</label>
+                <input className="form-control" type="date" value={form.date} required onChange={e=>setForm(f=>({...f,date:e.target.value}))} />
+              </div>
+              
+              <div className="form-group"><label className="form-label required">Category</label>
                 <Combobox 
                   value={form.category} 
-                  onChange={v => setForm(f => ({...f, category: v}))} 
+                  onChange={v => {
+                    setForm(f => ({...f, category: v, payee: v === 'SALARY ADVANCE' ? '' : f.payee}));
+                    if (v !== 'SALARY ADVANCE') setMaxAdvanceAmount("");
+                  }} 
                   options={["SALARY ADVANCE", "OFFICE EXPENSE", "TEA EXPENSE", "TRAVEL EXPENSE"]} 
                   placeholder="e.g. Office, Travel" 
                 />
               </div>
-              <div className="form-group"><label className="form-label">Payment Method</label>
-                <PaymentMethodSelector value={form.payment_method} onChange={v=>setForm(f=>({...f,payment_method:v,account_type:v==="CASH"?"CASH":"BANK"}))} options={["CASH","CHEQUE","NEFT","UPI","OTHER"]} /></div>
+
+              <div className="form-group">
+                <label className="form-label required">Payee</label>
+                {form.category === "SALARY ADVANCE" ? (
+                  <select className="form-control" value={form.payee} required onChange={handlePayeeChange}>
+                    <option value="">Select Staff</option>
+                    {staffList.map(s => <option key={s.id} value={s.full_name}>{s.full_name}</option>)}
+                  </select>
+                ) : (
+                  <input className="form-control" type="text" value={form.payee} required onChange={e=>setForm(f=>({...f,payee:e.target.value}))} />
+                )}
+              </div>
+
+              <div className="form-group">
+                <label className="form-label required">Amount (₹)</label>
+                <input 
+                  className="form-control" 
+                  type="number" 
+                  value={form.amount} 
+                  required 
+                  onChange={e=>setForm(f=>({...f,amount:e.target.value}))} 
+                  placeholder={form.category === "SALARY ADVANCE" && maxAdvanceAmount !== "" ? `Max Allowed: ₹${maxAdvanceAmount}` : ""}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label required">Bill Number</label>
+                <input className="form-control" type="text" value={form.expense_id} required onChange={e=>setForm(f=>({...f,expense_id:e.target.value}))} />
+              </div>
+
+              <div className="form-group"><label className="form-label required">Payment Method</label>
+                <PaymentMethodSelector value={form.payment_method} onChange={v=>setForm(f=>({...f,payment_method:v,account_type:v==="CASH"?"CASH":"BANK"}))} options={["CASH","CHEQUE","NEFT","UPI","OTHER"]} />
+              </div>
             </div>
             <div className="form-group"><label className="form-label">Purpose</label>
               <textarea className="form-control" rows={2} value={form.purpose} onChange={e=>setForm(f=>({...f,purpose:e.target.value}))} /></div>
