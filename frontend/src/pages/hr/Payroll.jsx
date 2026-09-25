@@ -276,30 +276,6 @@ export default function PayrollPage() {
         )}
       </div>
 
-      {recentAdvances.length > 0 && (
-        <div className="data-card" style={{ marginTop: '20px' }}>
-          <h3 style={{ margin: '0 0 15px 0', color: '#1e293b', fontSize: '16px' }}>
-            💸 Recent Salary Advances ({format(new Date(2020, monthFilter - 1, 1), 'MMMM')} {yearFilter})
-          </h3>
-          <div className="table-wrap">
-            <table>
-              <thead><tr><th>Date</th><th>Employee (Payee)</th><th>Amount</th><th>Method</th><th>Status</th></tr></thead>
-              <tbody>
-                {recentAdvances.map(a => (
-                  <tr key={a.id}>
-                    <td>{format(new Date(a.date), 'dd MMM yyyy')}</td>
-                    <td><strong style={{color: '#1d4ed8'}}>{a.payee}</strong></td>
-                    <td style={{color: '#ef4444', fontWeight: 'bold'}}>- {formatINR(a.amount)}</td>
-                    <td>{a.payment_method}</td>
-                    <td><span className="badge badge-green">DISBURSED</span></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
       {selectedSlip && (
         <Modal isOpen={true} onClose={() => setSelectedSlip(null)} title="Salary Slip" size="modal-lg"
           footer={<>
