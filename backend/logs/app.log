@@ -226917,3 +226917,132 @@ Bad Request: /api/hr/payroll/
 [mHTTP GET /api/accounts/expenses/?category=SALARY+ADVANCE&limit=300 200 [0.04, 10.105.92.21:58124][0m
 [mHTTP GET /api/hr/officers/ 200 [0.07, 10.105.92.21:58123][0m
 WebSocket DISCONNECT /ws/notify/ [10.105.92.21:42042]
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:36416]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:55972]
+[mHTTP GET /api/core/features/ 200 [0.10, 10.105.92.21:36418][0m
+WebSocket CONNECT /ws/notify/ [10.105.92.21:36416]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:36416]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:55972]
+[mHTTP GET /api/auth/profile/ 200 [0.13, 10.105.92.21:36417][0m
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:55972]
+[mHTTP GET /api/core/features/ 200 [0.04, 10.105.92.21:55973][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.105.92.21:55974][0m
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:8812]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:8812]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:8812]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:54155]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:54155]
+[mHTTP GET /api/auth/profile/ 200 [0.08, 10.105.92.21:8813][0m
+[mHTTP GET /api/core/features/ 200 [0.08, 10.105.92.21:8814][0m
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:54155]
+[mHTTP GET /api/core/features/ 200 [0.04, 10.105.92.21:54157][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.105.92.21:54156][0m
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:33168]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:33168]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:33168]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:27918]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:27918]
+[mHTTP GET /api/core/features/ 200 [0.06, 10.105.92.21:33170][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.105.92.21:33169][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.105.92.21:8190][0m
+[mHTTP GET /api/core/features/ 200 [0.05, 10.105.92.21:25959][0m
+[mHTTP GET /api/hr/payment-advances/?search= 200 [0.06, 10.105.92.21:38875][0m
+[mHTTP GET /api/hr/payment-advances/?search= 200 [0.04, 10.105.92.21:48707][0m
+[mHTTP GET /api/accounts/expenses/?category=SALARY+ADVANCE&limit=300 200 [0.10, 10.105.92.21:46012][0m
+[mHTTP GET /api/hr/payroll/?search=&status=&month=9&year=2026 200 [0.12, 10.105.92.21:46010][0m
+[mHTTP GET /api/accounts/expenses/?category=SALARY+ADVANCE&limit=300 200 [0.13, 10.105.92.21:44142][0m
+[mHTTP GET /api/hr/payroll/?search=&status=&month=9&year=2026 200 [0.12, 10.105.92.21:6110][0m
+[mHTTP GET /api/hr/officers/ 200 [0.30, 10.105.92.21:46011][0m
+[mHTTP GET /api/hr/officers/ 200 [0.15, 10.105.92.21:4893][0m
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:27918]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:39448]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:39448]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:39448]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:54685]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:54685]
+[mHTTP GET /api/core/features/ 200 [0.06, 10.105.92.21:39450][0m
+[mHTTP GET /api/auth/profile/ 200 [0.07, 10.105.92.21:39449][0m
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:54685]
+[mHTTP GET /api/core/features/ 200 [0.05, 10.105.92.21:54686][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.105.92.21:54687][0m
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:48702]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:48702]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:42158]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:48702]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:42158]
+[mHTTP GET /api/auth/profile/ 200 [0.07, 10.105.92.21:48703][0m
+[mHTTP GET /api/core/features/ 200 [0.08, 10.105.92.21:48704][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.105.92.21:42160][0m
+[mHTTP GET /api/core/features/ 200 [0.08, 10.105.92.21:42161][0m
+[mHTTP GET /api/hr/dashboard/ 200 [0.16, 10.105.92.21:42159][0m
+[mHTTP GET /api/hr/dashboard/ 200 [0.07, 10.105.92.21:42162][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.03, 10.105.92.21:54913][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.02, 10.105.92.21:33570][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-25&verification_status=VERIFIED 200 [0.04, 10.105.92.21:3239][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-25&verification_status=VERIFIED 200 [0.05, 10.105.92.21:3240][0m
+[mHTTP GET /api/hr/officers/ 200 [0.25, 10.105.92.21:6868][0m
+[mHTTP GET /api/hr/officers/ 200 [0.22, 10.105.92.21:16622][0m
+[mHTTP GET /api/hr/leave/?search= 200 [0.12, 10.105.92.21:50637][0m
+[mHTTP GET /api/hr/leave/?search= 200 [0.10, 10.105.92.21:17404][0m
+[mHTTP GET /api/hr/attendance/?date=2026-09-25 200 [1.47, 10.105.92.21:6867][0m
+[mHTTP GET /api/hr/attendance/?date=2026-09-25 200 [0.04, 10.105.92.21:11722][0m
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:42158]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:52299]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:52299]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:56938]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:56938]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:52299]
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.105.92.21:11677][0m
+[mHTTP GET /api/core/features/ 200 [0.09, 10.105.92.21:32945][0m
+[mHTTP GET /api/hr/payroll/?search=&status=&month=9&year=2026 200 [0.13, 10.105.92.21:53438][0m
+[mHTTP GET /api/hr/payroll/?search=&status=&month=9&year=2026 200 [0.12, 10.105.92.21:32946][0m
+[mHTTP GET /api/accounts/expenses/?category=SALARY+ADVANCE&limit=300 200 [0.16, 10.105.92.21:52484][0m
+[mHTTP GET /api/auth/profile/ 200 [0.09, 10.105.92.21:35606][0m
+[mHTTP GET /api/accounts/expenses/?category=SALARY+ADVANCE&limit=300 200 [0.13, 10.105.92.21:61220][0m
+[mHTTP GET /api/core/features/ 200 [0.10, 10.105.92.21:29325][0m
+[mHTTP GET /api/hr/officers/ 200 [0.31, 10.105.92.21:25083][0m
+[mHTTP GET /api/hr/officers/ 200 [0.25, 10.105.92.21:15091][0m
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:43834]
+WebSocket REJECT /ws/notify/ [10.105.92.21:43834]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:43834]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:1062]
+WebSocket REJECT /ws/notify/ [10.105.92.21:1062]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:1062]
+Unauthorized: /api/auth/profile/
+Unauthorized: /api/core/features/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.06, 10.105.92.21:1060][0m
+[31;1mHTTP GET /api/core/features/ 401 [0.07, 10.105.92.21:1061][0m
+Unauthorized: /api/core/features/
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/core/features/ 401 [0.03, 10.105.92.21:1064][0m
+[31;1mHTTP GET /api/auth/profile/ 401 [0.03, 10.105.92.21:1063][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.07, 10.105.92.21:1067][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 10.105.92.21:57075][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.105.92.21:57074][0m
+[mHTTP GET /api/core/features/ 200 [0.05, 10.105.92.21:31201][0m
+[mHTTP GET /api/auth/profile/ 200 [0.16, 10.105.92.21:26915][0m
+[mHTTP GET /api/accounts/expenses/?category=SALARY+ADVANCE&limit=300 200 [0.23, 10.105.92.21:44138][0m
+[mHTTP GET /api/hr/payroll/?search=&status=&month=9&year=2026 200 [0.24, 10.105.92.21:1900][0m
+[mHTTP GET /api/hr/payroll/?search=&status=&month=9&year=2026 200 [0.10, 10.105.92.21:38171][0m
+[mHTTP GET /api/accounts/expenses/?category=SALARY+ADVANCE&limit=300 200 [0.13, 10.105.92.21:14749][0m
+[mHTTP GET /api/hr/officers/ 200 [0.43, 10.105.92.21:44137][0m
+[mHTTP GET /api/hr/officers/ 200 [0.18, 10.105.92.21:64684][0m
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:7984]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:7984]
+[mHTTP GET /api/hr/leave/?search= 200 [0.03, 10.105.92.21:16921][0m
+[mHTTP GET /api/hr/leave/?search= 200 [0.03, 10.105.92.21:33122][0m
+[mHTTP GET /api/hr/payroll/?search=&status=&month=9&year=2026 200 [0.12, 10.105.92.21:18385][0m
+[mHTTP GET /api/accounts/expenses/?category=SALARY+ADVANCE&limit=300 200 [0.15, 10.105.92.21:18387][0m
+[mHTTP GET /api/hr/payroll/?search=&status=&month=9&year=2026 200 [0.10, 10.105.92.21:17930][0m
+[mHTTP GET /api/accounts/expenses/?category=SALARY+ADVANCE&limit=300 200 [0.11, 10.105.92.21:13579][0m
+[mHTTP GET /api/hr/officers/ 200 [0.32, 10.105.92.21:18386][0m
+[mHTTP GET /api/hr/officers/ 200 [0.15, 10.105.92.21:56601][0m
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:7984]
