@@ -89,7 +89,8 @@ export default function VerificationDashboard() {
         await hrApi.promoterRegistry.create(payload)
       }
       toast.success(`${row.staff_name} verified successfully!`)
-      load()
+      // Remove the verified row from the local state so it 'moves' out of the dashboard
+      setRows(prev => prev.filter(r => r.staff_id !== row.staff_id))
     } catch (err) {
       toast.error(err.response?.data?.error || err.message)
     } finally {
@@ -118,8 +119,23 @@ export default function VerificationDashboard() {
     try {
       await accountsApi.income.delete(id)
       toast.success('Transaction deleted')
+      
+      const deletedTx = transactions.find(t => t.id === id);
+      if (deletedTx) {
+        const isCash = modalType === 'CASH';
+        setRows(prev => prev.map(r => {
+          if (r.staff_id === modalStaff?.staff_id) {
+            return {
+              ...r,
+              cash_collected: isCash ? Math.max(0, (parseFloat(r.cash_collected) || 0) - deletedTx.amount) : r.cash_collected,
+              online_collected: !isCash ? Math.max(0, (parseFloat(r.online_collected) || 0) - deletedTx.amount) : r.online_collected,
+            }
+          }
+          return r;
+        }))
+      }
+
       setTransactions(prev => prev.filter(t => t.id !== id))
-      load() // Refresh main table totals
     } catch (err) {
       toast.error('Failed to delete transaction')
     }

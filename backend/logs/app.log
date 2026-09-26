@@ -227401,3 +227401,121 @@ WebSocket CONNECT /ws/notify/ [10.105.92.21:11152]
 [mHTTP GET /api/manager/requests/344d8bae-242b-4a46-99ba-26704bdec21d/ 200 [0.07, 10.105.92.21:56783][0m
 [mHTTP GET /api/manager/requests/344d8bae-242b-4a46-99ba-26704bdec21d/history/ 200 [0.08, 10.105.92.21:4516][0m
 [mHTTP GET /api/manager/requests/344d8bae-242b-4a46-99ba-26704bdec21d/ 200 [0.09, 10.105.92.21:37396][0m
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:47848]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:47848]
+[mHTTP GET /api/accounts/income/?search=&source=DONATION&date=2026-09-26&page=1&page_size=10 200 [0.16, 10.105.92.21:8008][0m
+[mHTTP GET /api/accounts/income/?search=&source=DONATION&date=2026-09-26&page=1&page_size=10 200 [0.16, 10.105.92.21:29827][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.90, 10.105.92.21:8009][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.07, 10.105.92.21:14369][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=UNVERIFIED 200 [0.06, 10.105.92.21:10319][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=UNVERIFIED 200 [0.05, 10.105.92.21:22871][0m
+[mHTTP POST /api/hr/promoter-registry/ 201 [0.07, 10.105.92.21:21362][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=UNVERIFIED 200 [0.05, 10.105.92.21:26185][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=VERIFIED 200 [0.05, 10.105.92.21:64717][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=VERIFIED 200 [0.04, 10.105.92.21:33921][0m
+[mHTTP PATCH /api/hr/promoter-registry/f3477600-5e46-4ad7-96f2-9618bcb1e63d/ 200 [0.05, 10.105.92.21:41449][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=VERIFIED 200 [0.04, 10.105.92.21:33813][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=UNVERIFIED 200 [0.04, 10.105.92.21:25548][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=UNVERIFIED 200 [0.05, 10.105.92.21:6128][0m
+[mHTTP POST /api/auth/logout/ 200 [0.03, 10.105.92.21:51226][0m
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:47848]
+[mHTTP POST /api/auth/login/ 200 [0.26, 10.105.92.21:60946][0m
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:35182]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:35182]
+[mHTTP GET /api/core/features/ 200 [0.08, 10.105.92.21:35184][0m
+[mHTTP GET /api/auth/profile/ 200 [0.09, 10.105.92.21:35183][0m
+[mHTTP GET /api/manager/dashboard/ 200 [0.17, 10.105.92.21:27325][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.04, 10.105.92.21:52768][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.05, 10.105.92.21:9032][0m
+[mHTTP GET /api/manager/dashboard/ 200 [0.15, 10.105.92.21:19040][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-09-26 200 [0.04, 10.105.92.21:52937][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-09-26 200 [0.03, 10.105.92.21:54066][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date= 200 [0.06, 10.105.92.21:26257][0m
+[mHTTP POST /api/auth/logout/ 200 [0.04, 10.105.92.21:7419][0m
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:35182]
+[mHTTP POST /api/auth/login/ 200 [0.20, 10.105.92.21:30113][0m
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:22335]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:22335]
+[mHTTP GET /api/auth/profile/ 200 [0.14, 10.105.92.21:22788][0m
+[mHTTP GET /api/manager/partners/?date=2026-09-26 200 [0.14, 10.105.92.21:22087][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-26&source=DONATION 200 [0.15, 10.105.92.21:58370][0m
+[mHTTP GET /api/core/features/ 200 [0.16, 10.105.92.21:58369][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-26&source=MEMBERSHIP 200 [0.16, 10.105.92.21:58371][0m
+[mHTTP GET /api/manager/requests/?date=2026-09-26 200 [0.16, 10.105.92.21:22086][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-26&source=INWARD 200 [0.15, 10.105.92.21:51747][0m
+[mHTTP GET /api/manager/partners/?date=2026-09-26 200 [0.13, 10.105.92.21:45226][0m
+[mHTTP GET /api/core/events/?date=2026-09-26 200 [0.14, 10.105.92.21:45225][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-26&category=OUTWARD 200 [0.16, 10.105.92.21:59694][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-26&category=PURCHASE 200 [0.17, 10.105.92.21:24105][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-26&source=DONATION 200 [0.17, 10.105.92.21:54378][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-26&source=MEMBERSHIP 200 [0.16, 10.105.92.21:12406][0m
+[mHTTP GET /api/manager/requests/?date=2026-09-26 200 [0.16, 10.105.92.21:60481][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-26&category=OUTWARD 200 [0.15, 10.105.92.21:43402][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-26&category=PURCHASE 200 [0.15, 10.105.92.21:7110][0m
+[mHTTP GET /api/core/events/?date=2026-09-26 200 [0.17, 10.105.92.21:10617][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-26&source=INWARD 200 [0.19, 10.105.92.21:22764][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=UNVERIFIED 200 [0.04, 10.105.92.21:52003][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=UNVERIFIED 200 [0.04, 10.105.92.21:5457][0m
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:22335]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:55384]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:55384]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:55384]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:57035]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:57035]
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.105.92.21:55385][0m
+[mHTTP GET /api/core/features/ 200 [0.05, 10.105.92.21:55386][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.105.92.21:57036][0m
+[mHTTP GET /api/core/features/ 200 [0.03, 10.105.92.21:57037][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=UNVERIFIED 200 [0.04, 10.105.92.21:57038][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=UNVERIFIED 200 [0.04, 10.105.92.21:57039][0m
+[mHTTP PATCH /api/hr/promoter-registry/f3477600-5e46-4ad7-96f2-9618bcb1e63d/ 200 [0.05, 10.105.92.21:7992][0m
+[mHTTP PATCH /api/hr/promoter-registry/f3477600-5e46-4ad7-96f2-9618bcb1e63d/ 200 [0.05, 10.105.92.21:30334][0m
+[mHTTP PATCH /api/hr/promoter-registry/f3477600-5e46-4ad7-96f2-9618bcb1e63d/ 200 [0.05, 10.105.92.21:29251][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=VERIFIED 200 [0.05, 10.105.92.21:16661][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=VERIFIED 200 [0.06, 10.105.92.21:49391][0m
+[mHTTP PATCH /api/hr/promoter-registry/f3477600-5e46-4ad7-96f2-9618bcb1e63d/ 200 [0.06, 10.105.92.21:5676][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=VERIFIED 200 [0.04, 10.105.92.21:41994][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=UNVERIFIED 200 [0.04, 10.105.92.21:64826][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=UNVERIFIED 200 [0.04, 10.105.92.21:42220][0m
+[mHTTP PATCH /api/hr/promoter-registry/f3477600-5e46-4ad7-96f2-9618bcb1e63d/ 200 [0.07, 10.105.92.21:63466][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=UNVERIFIED 200 [0.02, 10.105.92.21:60622][0m
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:57035]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:9721]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:9721]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:9721]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:33820]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:33820]
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.105.92.21:9722][0m
+[mHTTP GET /api/core/features/ 200 [0.06, 10.105.92.21:9723][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 10.105.92.21:33822][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.105.92.21:33821][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=UNVERIFIED 200 [0.05, 10.105.92.21:33823][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=UNVERIFIED 200 [0.04, 10.105.92.21:33824][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=VERIFIED 200 [0.04, 10.105.92.21:37496][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=VERIFIED 200 [0.04, 10.105.92.21:61323][0m
+[mHTTP PATCH /api/hr/promoter-registry/f3477600-5e46-4ad7-96f2-9618bcb1e63d/ 200 [0.06, 10.105.92.21:21803][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=VERIFIED 200 [0.04, 10.105.92.21:27153][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=UNVERIFIED 200 [0.04, 10.105.92.21:11223][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=UNVERIFIED 200 [0.04, 10.105.92.21:36289][0m
+[mHTTP PATCH /api/hr/promoter-registry/f3477600-5e46-4ad7-96f2-9618bcb1e63d/ 200 [0.05, 10.105.92.21:37128][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=VERIFIED 200 [0.04, 10.105.92.21:7925][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=VERIFIED 200 [0.04, 10.105.92.21:48990][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=UNVERIFIED 200 [0.04, 10.105.92.21:17346][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=UNVERIFIED 200 [0.04, 10.105.92.21:13575][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=VERIFIED 200 [0.04, 10.105.92.21:60006][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=VERIFIED 200 [0.04, 10.105.92.21:24317][0m
+[mHTTP PATCH /api/hr/promoter-registry/f3477600-5e46-4ad7-96f2-9618bcb1e63d/ 200 [0.05, 10.105.92.21:57826][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=VERIFIED 200 [0.05, 10.105.92.21:37768][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=UNVERIFIED 200 [0.04, 10.105.92.21:14286][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=UNVERIFIED 200 [0.04, 10.105.92.21:23629][0m
+[mHTTP PATCH /api/hr/promoter-registry/f3477600-5e46-4ad7-96f2-9618bcb1e63d/ 200 [0.05, 10.105.92.21:7909][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=VERIFIED 200 [0.05, 10.105.92.21:5106][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=VERIFIED 200 [0.06, 10.105.92.21:61824][0m
+[mHTTP PATCH /api/hr/promoter-registry/f3477600-5e46-4ad7-96f2-9618bcb1e63d/ 200 [0.05, 10.105.92.21:35275][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=VERIFIED 200 [0.04, 10.105.92.21:51255][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=UNVERIFIED 200 [0.05, 10.105.92.21:8351][0m
+[mHTTP GET /api/hr/promoter-registry/daily-summary/?date=2026-09-26&verification_status=UNVERIFIED 200 [0.05, 10.105.92.21:15932][0m
