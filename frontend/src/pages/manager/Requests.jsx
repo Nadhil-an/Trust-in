@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { managerApi } from '../../api'
 import { useAuthStore } from '../../store/authStore'
 import { StatusBadge, AmountDisplay, LoadingState, EmptyState, PageHeader, FilterBar, Modal, formatINR } from '../../components/shared'
@@ -143,6 +143,15 @@ export default function Requests() {
   const [actionRemarks, setActionRemarks] = useState('')
   const [actionLoading, setActionLoading] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
+
+  const handleView = (id) => {
+    if (location.pathname.includes('/entry/')) {
+      navigate(`/slt/entry/assessment/${id}`)
+    } else {
+      navigate(`/slt/mgr/requests/${id}`)
+    }
+  }
   const { user } = useAuthStore()
 
   const load = useCallback(async () => {
@@ -243,7 +252,7 @@ export default function Requests() {
                 ) : requests.map(r => (
                   <tr key={r.id}>
                     <td className="td-mono" style={{ cursor: 'pointer' }}
-                      onClick={() => navigate(`/slt/mgr/requests/${r.id}`)}>
+                      onClick={() => handleView(r.id)}>
                       {r.request_number}
                     </td>
                     <td>
@@ -264,7 +273,7 @@ export default function Requests() {
                     <td>
                       <div style={{ display: 'flex', gap: 4 }}>
                         <button className="btn btn-sm btn-secondary"
-                          onClick={() => navigate(`/slt/mgr/requests/${r.id}`)}>View</button>
+                          onClick={() => handleView(r.id)}>View</button>
                         {canSubmit(r) && (
                           <button className="btn btn-sm btn-primary"
                             onClick={() => setActionModal({ req: r, action: 'submit' })}>Submit</button>

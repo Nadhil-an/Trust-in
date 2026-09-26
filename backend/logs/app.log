@@ -227193,3 +227193,211 @@ WebSocket CONNECT /ws/notify/ [10.105.92.21:9754]
 [mHTTP GET /api/accounts/expenses/?category=SALARY+ADVANCE&limit=300 200 [0.06, 10.105.92.21:18376][0m
 [mHTTP GET /api/hr/officers/ 200 [0.17, 10.105.92.21:60556][0m
 [mHTTP GET /api/hr/officers/ 200 [0.08, 10.105.92.21:52207][0m
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:18063]
+WebSocket REJECT /ws/notify/ [10.105.92.21:18063]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:18063]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:16871]
+WebSocket REJECT /ws/notify/ [10.105.92.21:16871]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:16871]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:4000]
+WebSocket REJECT /ws/notify/ [10.105.92.21:4000]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:4000]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:50737]
+WebSocket REJECT /ws/notify/ [10.105.92.21:50737]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:50737]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:30524]
+WebSocket REJECT /ws/notify/ [10.105.92.21:30524]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:30524]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:9663]
+WebSocket REJECT /ws/notify/ [10.105.92.21:9663]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:9663]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:23676]
+WebSocket REJECT /ws/notify/ [10.105.92.21:23676]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:23676]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:39467]
+WebSocket REJECT /ws/notify/ [10.105.92.21:39467]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:39467]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:38868]
+WebSocket REJECT /ws/notify/ [10.105.92.21:38868]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:38868]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:11368]
+WebSocket REJECT /ws/notify/ [10.105.92.21:11368]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:11368]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:25336]
+WebSocket REJECT /ws/notify/ [10.105.92.21:25336]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:25336]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:55681]
+WebSocket REJECT /ws/notify/ [10.105.92.21:55681]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:55681]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:36129]
+WebSocket REJECT /ws/notify/ [10.105.92.21:36129]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:36129]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:36747]
+WebSocket REJECT /ws/notify/ [10.105.92.21:36747]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:36747]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:49239]
+WebSocket REJECT /ws/notify/ [10.105.92.21:49239]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:49239]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:29453]
+WebSocket REJECT /ws/notify/ [10.105.92.21:29453]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:29453]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:48245]
+WebSocket REJECT /ws/notify/ [10.105.92.21:48245]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:48245]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:4695]
+WebSocket REJECT /ws/notify/ [10.105.92.21:4695]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:4695]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:38657]
+WebSocket REJECT /ws/notify/ [10.105.92.21:38657]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:38657]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:3795]
+WebSocket REJECT /ws/notify/ [10.105.92.21:3795]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:3795]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:23697]
+WebSocket REJECT /ws/notify/ [10.105.92.21:23697]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:23697]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:23310]
+WebSocket REJECT /ws/notify/ [10.105.92.21:23310]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:23310]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:63336]
+WebSocket REJECT /ws/notify/ [10.105.92.21:63336]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:63336]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:34115]
+WebSocket REJECT /ws/notify/ [10.105.92.21:34115]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:34115]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:41471]
+WebSocket REJECT /ws/notify/ [10.105.92.21:41471]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:41471]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:33123]
+WebSocket REJECT /ws/notify/ [10.105.92.21:33123]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:33123]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:5794]
+WebSocket REJECT /ws/notify/ [10.105.92.21:5794]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:5794]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:24888]
+WebSocket REJECT /ws/notify/ [10.105.92.21:24888]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:24888]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:56094]
+WebSocket REJECT /ws/notify/ [10.105.92.21:56094]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:56094]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:61883]
+WebSocket REJECT /ws/notify/ [10.105.92.21:61883]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:61883]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:9131]
+WebSocket REJECT /ws/notify/ [10.105.92.21:9131]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:9131]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:54261]
+WebSocket REJECT /ws/notify/ [10.105.92.21:54261]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:54261]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:19787]
+WebSocket REJECT /ws/notify/ [10.105.92.21:19787]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:19787]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:8058]
+WebSocket REJECT /ws/notify/ [10.105.92.21:8058]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:8058]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:43932]
+WebSocket REJECT /ws/notify/ [10.105.92.21:43932]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:43932]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:57655]
+WebSocket REJECT /ws/notify/ [10.105.92.21:57655]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:57655]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:6883]
+WebSocket REJECT /ws/notify/ [10.105.92.21:6883]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:6883]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:10400]
+WebSocket REJECT /ws/notify/ [10.105.92.21:10400]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:10400]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:63080]
+WebSocket REJECT /ws/notify/ [10.105.92.21:63080]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:63080]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:18469]
+WebSocket REJECT /ws/notify/ [10.105.92.21:18469]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:18469]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:64719]
+WebSocket REJECT /ws/notify/ [10.105.92.21:64719]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:64719]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:22651]
+WebSocket REJECT /ws/notify/ [10.105.92.21:22651]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:22651]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:20538]
+WebSocket REJECT /ws/notify/ [10.105.92.21:20538]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:20538]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:5945]
+WebSocket REJECT /ws/notify/ [10.105.92.21:5945]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:5945]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:16724]
+WebSocket REJECT /ws/notify/ [10.105.92.21:16724]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:16724]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:5067]
+WebSocket REJECT /ws/notify/ [10.105.92.21:5067]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:5067]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:12075]
+WebSocket REJECT /ws/notify/ [10.105.92.21:12075]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:12075]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:3990]
+WebSocket REJECT /ws/notify/ [10.105.92.21:3990]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:3990]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:36668]
+WebSocket REJECT /ws/notify/ [10.105.92.21:36668]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:36668]
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:21679]
+WebSocket REJECT /ws/notify/ [10.105.92.21:21679]
+WebSocket DISCONNECT /ws/notify/ [10.105.92.21:21679]
+Unauthorized: /api/core/features/
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/core/features/ 401 [0.05, 10.105.92.21:48843][0m
+[31;1mHTTP GET /api/auth/profile/ 401 [0.05, 10.105.92.21:48842][0m
+Unauthorized: /api/core/features/
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/core/features/ 401 [0.03, 10.105.92.21:48844][0m
+[31;1mHTTP GET /api/auth/profile/ 401 [0.04, 10.105.92.21:48845][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.23, 10.105.92.21:48846][0m
+[mHTTP GET /api/core/features/ 200 [0.05, 10.105.92.21:18478][0m
+[mHTTP GET /api/auth/profile/ 200 [0.07, 10.105.92.21:18479][0m
+[mHTTP GET /api/core/features/ 200 [0.03, 10.105.92.21:3653][0m
+[mHTTP GET /api/auth/profile/ 200 [0.10, 10.105.92.21:35659][0m
+[mHTTP GET /api/hr/payroll/?search=&status=&month=9&year=2026 200 [0.14, 10.105.92.21:45278][0m
+[mHTTP GET /api/accounts/expenses/?category=SALARY+ADVANCE&limit=300 200 [0.15, 10.105.92.21:10724][0m
+[mHTTP GET /api/hr/payroll/?search=&status=&month=9&year=2026 200 [0.12, 10.105.92.21:15695][0m
+[mHTTP GET /api/accounts/expenses/?category=SALARY+ADVANCE&limit=300 200 [0.13, 10.105.92.21:52686][0m
+[mHTTP GET /api/hr/officers/ 200 [0.35, 10.105.92.21:10723][0m
+[mHTTP GET /api/hr/officers/ 200 [0.16, 10.105.92.21:51778][0m
+[mHTTP POST /api/auth/logout/ 200 [0.04, 10.105.92.21:4841][0m
+[mHTTP POST /api/auth/login/ 200 [0.29, 10.105.92.21:2010][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.105.92.21:31631][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 10.105.92.21:31632][0m
+[mHTTP GET /api/manager/partners/?date=2026-09-26 200 [0.10, 10.105.92.21:31296][0m
+[mHTTP GET /api/manager/requests/?date=2026-09-26 200 [0.11, 10.105.92.21:31295][0m
+WebSocket HANDSHAKING /ws/notify/ [10.105.92.21:11152]
+WebSocket CONNECT /ws/notify/ [10.105.92.21:11152]
+[mHTTP GET /api/accounts/income/?date=2026-09-26&source=MEMBERSHIP 200 [0.24, 10.105.92.21:5561][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-26&category=OUTWARD 200 [0.24, 10.105.92.21:31298][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-26&source=INWARD 200 [0.25, 10.105.92.21:31297][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-26&source=DONATION 200 [0.29, 10.105.92.21:28815][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-26&category=PURCHASE 200 [0.18, 10.105.92.21:60151][0m
+[mHTTP GET /api/manager/partners/?date=2026-09-26 200 [0.14, 10.105.92.21:59714][0m
+[mHTTP GET /api/manager/requests/?date=2026-09-26 200 [0.16, 10.105.92.21:56142][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-26&source=MEMBERSHIP 200 [0.18, 10.105.92.21:56143][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-26&source=INWARD 200 [0.15, 10.105.92.21:3072][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-26&category=OUTWARD 200 [0.16, 10.105.92.21:3071][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-26&category=PURCHASE 200 [0.09, 10.105.92.21:47380][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-26&source=DONATION 200 [0.13, 10.105.92.21:9149][0m
+[mHTTP GET /api/core/events/?date=2026-09-26 200 [1.30, 10.105.92.21:16257][0m
+[mHTTP GET /api/core/events/?date=2026-09-26 200 [0.04, 10.105.92.21:26484][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-09-26 200 [0.04, 10.105.92.21:53967][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-09-26 200 [0.04, 10.105.92.21:41021][0m
+[mHTTP GET /api/accounts/income/?search=&source=MEMBERSHIP&page=1&page_size=10 200 [0.06, 10.105.92.21:44207][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.12, 10.105.92.21:44208][0m
+[mHTTP GET /api/accounts/income/?search=&source=MEMBERSHIP&page=1&page_size=10 200 [0.08, 10.105.92.21:57107][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.07, 10.105.92.21:4912][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-09-26 200 [0.04, 10.105.92.21:18473][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-09-26 200 [0.03, 10.105.92.21:28073][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-09-25 200 [0.05, 10.105.92.21:37975][0m
+[mHTTP GET /api/manager/requests/344d8bae-242b-4a46-99ba-26704bdec21d/history/ 200 [0.06, 10.105.92.21:56782][0m
+[mHTTP GET /api/manager/requests/344d8bae-242b-4a46-99ba-26704bdec21d/ 200 [0.07, 10.105.92.21:56783][0m
+[mHTTP GET /api/manager/requests/344d8bae-242b-4a46-99ba-26704bdec21d/history/ 200 [0.08, 10.105.92.21:4516][0m
+[mHTTP GET /api/manager/requests/344d8bae-242b-4a46-99ba-26704bdec21d/ 200 [0.09, 10.105.92.21:37396][0m
