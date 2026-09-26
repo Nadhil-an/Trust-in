@@ -98,6 +98,8 @@ export default function MembershipEntry() {
     e.preventDefault()
     if (!form.amount || parseFloat(form.amount) <= 0) return toast.error('Enter a valid fee amount')
     if (form.phone && form.phone.length !== 10) return toast.error('Enter a valid 10-digit phone number')
+    
+    if (saving) return;
     setSaving(true)
     try {
       const fd = new FormData()

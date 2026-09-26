@@ -106,6 +106,8 @@ export default function DonationEntry() {
     if (form.phone && form.phone.length !== 10) return toast.error('Enter a valid 10-digit phone number')
     if (form.staff_id && !form.donor_name) return toast.error('Enter a donor name')
     if (!form.staff_id && !form.voucher_id) return toast.error('Please enter a voucher ID or select NULL')
+    
+    if (saving) return;
     setSaving(true)
     try {
       const fd = new FormData()

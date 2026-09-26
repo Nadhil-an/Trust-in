@@ -26,6 +26,7 @@ function RequestForm({ onClose, onSaved, initial = null }) {
     if (form.beneficiary_phone && !isValidPhone(form.beneficiary_phone)) return toast.error("Enter a valid 10-digit phone number");
     if (!isPositiveNumber(form.amount_requested)) return toast.error("Amount must be a positive number");
     
+    if (saving) return;
     setSaving(true)
     try {
       const fd = new FormData()
