@@ -24,9 +24,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 export default function PaymentAdvanceScreen({ navigation, route }) {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [advances, setAdvances] = useState([]);
-  const [salaryData, setSalaryData] = useState({ salary: 0, balance: 0, total_advances: 0 });
+  const [salaryData, setSalaryData] = useState({ salary: 0, balance: 0, total_advances: 0, requests_this_month: 0, allowed_amount: 0, current_day: 1 });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [filterMonth, setFilterMonth] = useState(new Date().getMonth() + 1);
+  const [filterYear, setFilterYear] = useState(new Date().getFullYear());
   const insets = useSafeAreaInsets();
 
   const handleGoBack = () => {
@@ -122,6 +124,26 @@ export default function PaymentAdvanceScreen({ navigation, route }) {
     }
   };
 
+  const changeMonth = (increment) => {
+    let newMonth = filterMonth + increment;
+    let newYear = filterYear;
+    if (newMonth > 12) {
+      newMonth = 1;
+      newYear += 1;
+    } else if (newMonth < 1) {
+      newMonth = 12;
+      newYear -= 1;
+    }
+    setFilterMonth(newMonth);
+    setFilterYear(newYear);
+  };
+
+  const filteredAdvances = advances.filter(adv => {
+    if (!adv.created_at) return true;
+    const d = new Date(adv.created_at);
+    return (d.getMonth() + 1) === filterMonth && d.getFullYear() === filterYear;
+  });
+
   const onChangeDate = (event, selectedDate) => {
     setShowDatePicker(Platform.OS === 'ios');
     if (selectedDate) {
@@ -198,7 +220,21 @@ export default function PaymentAdvanceScreen({ navigation, route }) {
           <Ionicons name="arrow-back" size={24} color="#ffffff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Payment Advance</Text>
-        <TouchableOpacity style={styles.addBtn} onPress={() => setModalVisible(true)}>
+        <TouchableOpacity style={styles.addBtn} onPress={() => {
+          if (salaryData.current_day < 15) {
+            Toast.show({ type: 'error', text1: 'Not Eligible Yet', text2: 'Salary advance can only be requested from the 15th of the month onwards.' });
+            return;
+          }
+          if (salaryData.requests_this_month >= 2) {
+            Toast.show({ type: 'error', text1: 'Limit Reached', text2: 'You have reached the limit of 2 salary advance requests for this month.' });
+            return;
+          }
+          if (salaryData.balance <= 0) {
+            Toast.show({ type: 'error', text1: 'No Balance', text2: 'You do not have any available balance for salary advance.' });
+            return;
+          }
+          setModalVisible(true);
+        }}>
           <Ionicons name="add" size={28} color="#ffffff" />
         </TouchableOpacity>
       </View>
@@ -214,9 +250,23 @@ export default function PaymentAdvanceScreen({ navigation, route }) {
           <View style={styles.salaryColumn}>
             <Text style={styles.salaryOverviewLabel}>Available Balance</Text>
             <Text style={[styles.salaryOverviewVal, { color: Colors.primary }]}>₹{salaryData.balance.toLocaleString('en-IN')}</Text>
+            <Text style={{ fontSize: 10, color: '#64748b', marginTop: 4 }}>Allowed: ₹{salaryData.allowed_amount?.toLocaleString('en-IN') || 0}</Text>
           </View>
         </View>
       )}
+
+      {/* Month Filter */}
+      <View style={styles.monthFilterContainer}>
+        <TouchableOpacity onPress={() => changeMonth(-1)} style={styles.monthBtn}>
+          <Ionicons name="chevron-back" size={24} color={Colors.primary} />
+        </TouchableOpacity>
+        <Text style={styles.monthFilterText}>
+          {new Date(filterYear, filterMonth - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}
+        </Text>
+        <TouchableOpacity onPress={() => changeMonth(1)} style={styles.monthBtn}>
+          <Ionicons name="chevron-forward" size={24} color={Colors.primary} />
+        </TouchableOpacity>
+      </View>
 
       {/* Main Content */}
       {loading ? (
@@ -225,7 +275,7 @@ export default function PaymentAdvanceScreen({ navigation, route }) {
         </View>
       ) : (
         <FlatList
-          data={advances}
+          data={filteredAdvances}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           contentContainerStyle={styles.listContainer}
@@ -253,6 +303,9 @@ export default function PaymentAdvanceScreen({ navigation, route }) {
 
             <View style={styles.modalBalanceBox}>
               <Text style={styles.modalBalanceText}>Your Balance: ₹{salaryData.balance.toLocaleString('en-IN')}</Text>
+              <Text style={{ fontSize: 12, color: '#0369a1', marginTop: 4 }}>
+                Requests this month: {salaryData.requests_this_month} / 2
+              </Text>
             </View>
 
             <Text style={styles.inputLabel}>Advance Amount (₹) *</Text>
@@ -580,5 +633,26 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
   },
+  monthFilterContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#ffffff',
+    marginHorizontal: 16,
+    marginTop: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    elevation: 1,
+  },
+  monthBtn: {
+    padding: 4,
+  },
+  monthFilterText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#334155',
+  },
 });
-

@@ -1039,31 +1039,45 @@ class SalaryBalanceView(APIView):
     def get(self, request):
         officer = get_officer_for_user(request.user)
         if not officer:
-            return Response({'salary': 0, 'balance': 0}, status=200)
+            return Response({'salary': 0, 'balance': 0, 'requests_this_month': 0, 'allowed_amount': 0}, status=200)
 
         from hr_module.models import SalaryStructure
         try:
             salary_struct = SalaryStructure.objects.get(employee=officer, is_active=True)
             net_salary = float(salary_struct.net_salary)
+            basic_salary = float(salary_struct.basic_salary)
         except SalaryStructure.DoesNotExist:
             net_salary = 0
+            basic_salary = 0
 
         # Calculate current month's approved advances to determine balance
         from django.utils import timezone
-        now = timezone.now()
+        now = timezone.localtime(timezone.now())
         advances = PaymentAdvanceRequest.objects.filter(
             employee=officer,
             created_at__year=now.year,
             created_at__month=now.month,
-            status__in=['APPROVED', 'DISBURSED']
+            status__in=['APPROVED', 'DISBURSED', 'PENDING']
         )
         total_advances = sum(float(a.amount) for a in advances)
-        balance = net_salary - total_advances
+        requests_this_month = advances.count()
+        
+        current_day = now.day
+        allowed_amount = 0
+        if current_day >= 15:
+            # (Basic Salary / 30 * current_day) / 4
+            allowed_amount = ((basic_salary / 30) * current_day) / 4
+
+        balance = allowed_amount - total_advances
 
         return Response({
-            'salary': net_salary,
+            'salary': net_salary, # Keep net_salary for backward compatibility if needed
+            'basic_salary': basic_salary,
             'balance': balance if balance > 0 else 0,
-            'total_advances': total_advances
+            'total_advances': total_advances,
+            'requests_this_month': requests_this_month,
+            'allowed_amount': allowed_amount,
+            'current_day': current_day
         })
 
 # ── Payment Advance Requests ──────────────────────────────────────

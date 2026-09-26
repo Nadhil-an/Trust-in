@@ -62,6 +62,10 @@ def request_doc_path(instance, filename):
     return f'requests/{instance.request_number}/{filename}'
 
 
+def assessment_photo_path(instance, filename):
+    return f'requests/{instance.assessment.request_number}/photos/{filename}'
+
+
 def fao_photo_path(instance, filename):
     return f'fao_reports/{instance.assessment.request_number}/{filename}'
 
@@ -153,6 +157,18 @@ class AssessmentRequest(models.Model):
                 created_at__year=year).count() + 1
             self.request_number = f"ASM-{year}-{count:05d}"
         super().save(*args, **kwargs)
+
+
+class AssessmentPhoto(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    assessment = models.ForeignKey(AssessmentRequest, on_delete=models.CASCADE, related_name='photos')
+    image = models.ImageField(upload_to=assessment_photo_path, validators=[validate_image_file])
+    caption = models.CharField(max_length=255, blank=True)
+    uploaded_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = 'manager_assessment_photos'
+
 
 
 class RequestStatusHistory(models.Model):

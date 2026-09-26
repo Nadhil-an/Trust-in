@@ -7,11 +7,18 @@ from manager_module.models import (
     GEOReport, GEOPhoto,
     CharityInventory, InventoryTransaction,
     MinutesRegistry, Partner, ScheduledPayout,
+    AssessmentPhoto
 )
 from core.serializers import UserSerializer
 
 
 # ── Assessment Request ────────────────────────────────────────────
+
+class AssessmentPhotoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AssessmentPhoto
+        fields = ['id', 'image', 'caption', 'uploaded_at']
+
 
 class AssessmentRequestListSerializer(serializers.ModelSerializer):
     requested_by_name = serializers.SerializerMethodField()
@@ -20,6 +27,7 @@ class AssessmentRequestListSerializer(serializers.ModelSerializer):
     has_aco_calculation = serializers.SerializerMethodField()
     has_geo_report = serializers.SerializerMethodField()
     recommended_amount = serializers.SerializerMethodField()
+    photos = AssessmentPhotoSerializer(many=True, read_only=True)
 
     class Meta:
         model = AssessmentRequest
@@ -33,6 +41,7 @@ class AssessmentRequestListSerializer(serializers.ModelSerializer):
             'has_fao_report', 'has_aco_calculation', 'has_geo_report',
             'recommended_amount',
             'created_at', 'submitted_at', 'approved_at', 'updated_at',
+            'document', 'voice_note', 'photos'
         ]
 
     def get_requested_by_name(self, obj):
@@ -108,6 +117,10 @@ class AssessmentRequestSerializer(serializers.ModelSerializer):
     fao_report_summary = serializers.SerializerMethodField()
     aco_calculation_summary = serializers.SerializerMethodField()
     geo_report_summary = serializers.SerializerMethodField()
+    photos = AssessmentPhotoSerializer(many=True, read_only=True)
+    uploaded_photos = serializers.ListField(
+        child=serializers.ImageField(), write_only=True, required=False
+    )
 
     class Meta:
         model = AssessmentRequest
@@ -137,6 +150,20 @@ class AssessmentRequestSerializer(serializers.ModelSerializer):
         if hasattr(obj, 'geo_report'):
             return GEOReportSummarySerializer(obj.geo_report).data
         return None
+
+    def create(self, validated_data):
+        uploaded_photos = validated_data.pop('uploaded_photos', [])
+        request_obj = super().create(validated_data)
+        for photo in uploaded_photos:
+            AssessmentPhoto.objects.create(assessment=request_obj, image=photo)
+        return request_obj
+
+    def update(self, instance, validated_data):
+        uploaded_photos = validated_data.pop('uploaded_photos', [])
+        request_obj = super().update(instance, validated_data)
+        for photo in uploaded_photos:
+            AssessmentPhoto.objects.create(assessment=request_obj, image=photo)
+        return request_obj
 
 
 class RequestStatusHistorySerializer(serializers.ModelSerializer):

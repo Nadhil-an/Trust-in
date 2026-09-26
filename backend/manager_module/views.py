@@ -262,7 +262,8 @@ class AssessmentRequestListCreateView(generics.ListCreateAPIView):
             qs = qs.filter(status=RequestStatus.WITH_GEO)
         elif role in [Role.STAFF, Role.MEMBER]:
             qs = qs.filter(requested_by=user)
-        return qs
+            
+        return qs.order_by('-created_at')
 
     def perform_create(self, serializer):
         req = serializer.save(
