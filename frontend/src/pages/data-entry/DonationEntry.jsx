@@ -386,8 +386,12 @@ export default function DonationEntry() {
               <label className="form-label">Payment Method</label>
               <PaymentMethodSelector 
                 value={form.payment_method} 
-                onChange={v => setF('payment_method', v)} 
-                options={['CASH','CHEQUE','BANK_TRANSFER','ONLINE','UPI']}
+                onChange={v => setForm(f => ({ 
+                  ...f, 
+                  payment_method: v, 
+                  account_type: v === 'CASH' ? 'CASH' : 'BANK' 
+                }))} 
+                options={['CASH','CHEQUE','BANK_TRANSFER','UPI']}
               />
             </div>
           </div>

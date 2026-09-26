@@ -1,6 +1,6 @@
 import React from 'react';
 
-const defaultOptions = ['CASH', 'CHEQUE', 'BANK_TRANSFER', 'ONLINE', 'UPI'];
+const defaultOptions = ['CASH', 'CHEQUE', 'BANK_TRANSFER', 'UPI'];
 
 export default function PaymentMethodSelector({ value, onChange, options = defaultOptions, className }) {
   return (
