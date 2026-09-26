@@ -2,8 +2,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, SectionList, TouchableOpacity,
-  Alert, RefreshControl, TextInput, Modal, ScrollView
+  Alert, RefreshControl, TextInput, Modal, ScrollView, Image
 } from 'react-native';
+import { Audio } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
 import { assessmentApi } from '../../api';
@@ -18,7 +19,43 @@ const StaffAssessmentsListScreen = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [assessmentToView, setAssessmentToView] = useState(null);
   const [assessmentToDelete, setAssessmentToDelete] = useState(null);
+  
+  // Voice Note Playback State
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [sound, setSound] = useState(null);
+
+  // Full Screen Image Viewer State
+  const [fullScreenImages, setFullScreenImages] = useState(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
   const user = useAuthStore(state => state.user);
+
+  // Stop sound if modal closes
+  useEffect(() => {
+    return sound ? () => { sound.unloadAsync(); } : undefined;
+  }, [sound]);
+
+  const toggleVoiceNote = async (uri) => {
+    if (isPlaying && sound) {
+      await sound.stopAsync();
+      setIsPlaying(false);
+      return;
+    }
+    try {
+      const { sound: newSound } = await Audio.Sound.createAsync(
+        { uri },
+        { shouldPlay: true }
+      );
+      setSound(newSound);
+      setIsPlaying(true);
+      newSound.setOnPlaybackStatusUpdate(status => {
+        if (status.didJustFinish) setIsPlaying(false);
+      });
+    } catch (e) {
+      console.error(e);
+      Alert.alert('Error', 'Could not play audio');
+    }
+  };
 
   useNotificationSocket((data) => {
     if (data.type === 'DASHBOARD_REFRESH') {
@@ -127,7 +164,7 @@ const StaffAssessmentsListScreen = ({ navigation }) => {
 
     const sections = Object.keys(grouped).map(date => ({
       title: date,
-      data: grouped[date].reverse()
+      data: grouped[date].sort((a, b) => new Date(b.created_at || b.date) - new Date(a.created_at || a.date))
     }));
 
     sections.sort((a, b) => {
@@ -189,7 +226,7 @@ const StaffAssessmentsListScreen = ({ navigation }) => {
           <View style={styles.previewCard}>
             <View style={styles.previewHeaderRow}>
               <Text style={styles.previewHeaderTitle}>Preview Details</Text>
-              <TouchableOpacity style={styles.previewCloseBtn} onPress={() => setAssessmentToView(null)}>
+              <TouchableOpacity style={styles.previewCloseBtn} onPress={() => { setAssessmentToView(null); if(isPlaying && sound) sound.stopAsync(); setIsPlaying(false); }}>
                 <Ionicons name="close" size={22} color="#64748B" />
               </TouchableOpacity>
             </View>
@@ -206,20 +243,49 @@ const StaffAssessmentsListScreen = ({ navigation }) => {
                     <Text style={styles.previewValue}>{assessmentToView.request_number || 'N/A'}</Text>
                   </View>
                   <View style={styles.previewRow}>
+                    <Text style={styles.previewLabel}>Submitted:</Text>
+                    <Text style={styles.previewValue}>{new Date(assessmentToView.created_at).toLocaleDateString()}</Text>
+                  </View>
+                  <View style={styles.previewRow}>
+                    <Text style={styles.previewLabel}>Source:</Text>
+                    <Text style={styles.previewValue}>{assessmentToView.source || 'N/A'}</Text>
+                  </View>
+                </View>
+
+                {/* Section 2: Beneficiary Details */}
+                <View style={styles.previewSectionBox}>
+                  <Text style={styles.previewSectionTitle}>Beneficiary Details</Text>
+                  <View style={styles.previewDivider} />
+                  
+                  <View style={styles.previewRow}>
                     <Text style={styles.previewLabel}>Name:</Text>
                     <Text style={styles.previewValue}>{assessmentToView.beneficiary_name || 'N/A'}</Text>
                   </View>
                   <View style={styles.previewRow}>
-                    <Text style={styles.previewLabel}>Category:</Text>
-                    <Text style={styles.previewValue}>{assessmentToView.category || assessmentToView.issue_category || 'N/A'}</Text>
+                    <Text style={styles.previewLabel}>Age:</Text>
+                    <Text style={styles.previewValue}>{assessmentToView.beneficiary_age || 'N/A'}</Text>
+                  </View>
+                  <View style={styles.previewRow}>
+                    <Text style={styles.previewLabel}>Phone:</Text>
+                    <Text style={styles.previewValue}>{assessmentToView.beneficiary_phone || 'N/A'}</Text>
+                  </View>
+                  <View style={[styles.previewRow, { flexDirection: 'column', alignItems: 'flex-start' }]}>
+                    <Text style={[styles.previewLabel, { width: '100%', marginBottom: 4 }]}>Address:</Text>
+                    <Text style={[styles.previewValue, { textAlign: 'left', fontWeight: '400', color: Colors.gray700 }]}>
+                      {assessmentToView.beneficiary_address || 'N/A'}
+                    </Text>
                   </View>
                 </View>
 
-                {/* Section 2: Assessment Details */}
+                {/* Section 3: Assessment Details */}
                 <View style={styles.previewSectionBox}>
                   <Text style={styles.previewSectionTitle}>Assessment Details</Text>
                   <View style={styles.previewDivider} />
                   
+                  <View style={styles.previewRow}>
+                    <Text style={styles.previewLabel}>Category:</Text>
+                    <Text style={styles.previewValue}>{assessmentToView.category || assessmentToView.issue_category || 'N/A'}</Text>
+                  </View>
                   <View style={styles.previewRow}>
                     <Text style={styles.previewLabel}>Priority:</Text>
                     <Text style={styles.previewValue}>{assessmentToView.priority || assessmentToView.urgency_level || 'N/A'}</Text>
@@ -232,17 +298,94 @@ const StaffAssessmentsListScreen = ({ navigation }) => {
                     <Text style={styles.previewLabel}>Amount Req:</Text>
                     <Text style={styles.previewValue}>{assessmentToView.amount_requested ? `₹${assessmentToView.amount_requested}` : 'N/A'}</Text>
                   </View>
-                  <View style={[styles.previewRow, { flexDirection: 'column', alignItems: 'flex-start' }]}>
+                  
+                  <View style={[styles.previewRow, { flexDirection: 'column', alignItems: 'flex-start', marginTop: 8 }]}>
                     <Text style={[styles.previewLabel, { width: '100%', marginBottom: 4 }]}>Description:</Text>
                     <Text style={[styles.previewValue, { textAlign: 'left', fontWeight: '400', color: Colors.gray700 }]}>
                       {assessmentToView.description || assessmentToView.problem_description || 'N/A'}
                     </Text>
                   </View>
+                  
+                  {assessmentToView.manager_remarks ? (
+                    <View style={[styles.previewRow, { flexDirection: 'column', alignItems: 'flex-start', marginTop: 12, backgroundColor: '#FEF3C7', padding: 8, borderRadius: 8 }]}>
+                      <Text style={[styles.previewLabel, { width: '100%', marginBottom: 4, color: '#D97706' }]}>Manager Remarks:</Text>
+                      <Text style={[styles.previewValue, { textAlign: 'left', fontWeight: '400', color: '#92400E' }]}>
+                        {assessmentToView.manager_remarks}
+                      </Text>
+                    </View>
+                  ) : null}
+                  
+                  {/* Attachments Section */}
+                  {(assessmentToView.photos?.length > 0 || assessmentToView.document || assessmentToView.voice_note) && (
+                    <>
+                      <View style={{ height: 1, backgroundColor: '#E2E8F0', marginVertical: 12 }} />
+                      <Text style={[styles.previewSectionTitle, { color: '#64748B', marginBottom: 12 }]}>Attachments</Text>
+                      
+                      {(assessmentToView.photos?.length > 0) ? (
+                        <View style={{ marginBottom: 12 }}>
+                          <Text style={[styles.previewLabel, { marginBottom: 6 }]}>Uploaded Photos ({assessmentToView.photos.length}):</Text>
+                          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexDirection: 'row' }}>
+                            {assessmentToView.photos.map((photo, idx) => (
+                              <TouchableOpacity 
+                                key={photo.id || idx} 
+                                onPress={() => {
+                                  setFullScreenImages(assessmentToView.photos.map(p => p.image));
+                                  setCurrentImageIndex(idx);
+                                }}
+                              >
+                                <Image 
+                                  source={{ uri: photo.image }} 
+                                  style={{ width: 140, height: 140, borderRadius: 12, backgroundColor: '#F1F5F9', marginRight: 10 }} 
+                                  resizeMode="cover"
+                                />
+                              </TouchableOpacity>
+                            ))}
+                          </ScrollView>
+                        </View>
+                      ) : assessmentToView.document ? (
+                        <View style={{ marginBottom: 12 }}>
+                          <Text style={[styles.previewLabel, { marginBottom: 6 }]}>Uploaded Photo:</Text>
+                          <TouchableOpacity 
+                            onPress={() => {
+                              setFullScreenImages([assessmentToView.document]);
+                              setCurrentImageIndex(0);
+                            }}
+                          >
+                            <Image 
+                              source={{ uri: assessmentToView.document }} 
+                              style={{ width: '100%', height: 160, borderRadius: 12, backgroundColor: '#F1F5F9' }} 
+                              resizeMode="cover"
+                            />
+                          </TouchableOpacity>
+                        </View>
+                      ) : null}
+
+                      {assessmentToView.voice_note && (
+                        <View style={{ marginBottom: 4 }}>
+                          <Text style={[styles.previewLabel, { marginBottom: 6 }]}>Voice Note:</Text>
+                          <TouchableOpacity 
+                            style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#EFF6FF', padding: 12, borderRadius: 12, borderWidth: 1, borderColor: '#BFDBFE' }}
+                            onPress={() => toggleVoiceNote(assessmentToView.voice_note)}
+                          >
+                            <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: isPlaying ? '#FEE2E2' : '#DBEAFE', alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+                              <Ionicons name={isPlaying ? "stop" : "play"} size={20} color={isPlaying ? '#EF4444' : '#2563EB'} />
+                            </View>
+                            <View>
+                              <Text style={{ fontWeight: '700', color: '#1E3A8A' }}>
+                                {isPlaying ? 'Playing Audio...' : 'Listen to Voice Note'}
+                              </Text>
+                              <Text style={{ fontSize: 12, color: '#64748B', marginTop: 2 }}>Tap to {isPlaying ? 'stop' : 'play'}</Text>
+                            </View>
+                          </TouchableOpacity>
+                        </View>
+                      )}
+                    </>
+                  )}
                 </View>
               </ScrollView>
             )}
 
-            <TouchableOpacity style={styles.previewSubmitBtn} onPress={() => setAssessmentToView(null)}>
+            <TouchableOpacity style={styles.previewSubmitBtn} onPress={() => { setAssessmentToView(null); if(isPlaying && sound) sound.stopAsync(); setIsPlaying(false); }}>
               <Text style={styles.previewSubmitBtnText}>Close Preview</Text>
             </TouchableOpacity>
           </View>
@@ -272,6 +415,47 @@ const StaffAssessmentsListScreen = ({ navigation }) => {
           </View>
         </View>
       </Modal>
+      {/* Full Screen Image Viewer Modal */}
+      {fullScreenImages && (
+        <Modal visible={true} transparent animationType="fade">
+          <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.95)', justifyContent: 'center', alignItems: 'center' }}>
+            <TouchableOpacity 
+              style={{ position: 'absolute', top: 50, right: 20, zIndex: 10, padding: 8 }}
+              onPress={() => setFullScreenImages(null)}
+            >
+              <Ionicons name="close" size={32} color="#FFF" />
+            </TouchableOpacity>
+            
+            <Image 
+              source={{ uri: fullScreenImages[currentImageIndex] }} 
+              style={{ width: '100%', height: '80%' }} 
+              resizeMode="contain"
+            />
+
+            {fullScreenImages.length > 1 && (
+              <View style={{ position: 'absolute', bottom: 50, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
+                <TouchableOpacity 
+                  style={{ padding: 16, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 30, marginRight: 20 }}
+                  onPress={() => setCurrentImageIndex(prev => prev > 0 ? prev - 1 : fullScreenImages.length - 1)}
+                >
+                  <Ionicons name="chevron-back" size={24} color="#FFF" />
+                </TouchableOpacity>
+                
+                <Text style={{ color: '#FFF', fontSize: 16, fontWeight: '600' }}>
+                  {currentImageIndex + 1} / {fullScreenImages.length}
+                </Text>
+                
+                <TouchableOpacity 
+                  style={{ padding: 16, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 30, marginLeft: 20 }}
+                  onPress={() => setCurrentImageIndex(prev => prev < fullScreenImages.length - 1 ? prev + 1 : 0)}
+                >
+                  <Ionicons name="chevron-forward" size={24} color="#FFF" />
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        </Modal>
+      )}
     </View>
   );
 };

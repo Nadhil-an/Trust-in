@@ -9,9 +9,8 @@ const PRODUCTION_HOST = 'api.sreelakshmicharity.org';
 const getApiConfig = () => {
   if (__DEV__) {
     // In local development: the phone must reach your PC's Django backend
-    // Expo tells us your PC's IP via Constants.expoConfig.hostUri (e.g. "192.168.x.x:8081")
     const expoHost = Constants.expoConfig?.hostUri?.split(':')[0];
-    const localHost = expoHost || '192.168.20.9'; // fallback to your PC's IP
+    const localHost = expoHost || '10.105.92.21'; // fallback to your PC's IP
     return {
       apiBase:  `http://${localHost}:8000/api`,
       wsBase:   `ws://${localHost}:8000/ws`,

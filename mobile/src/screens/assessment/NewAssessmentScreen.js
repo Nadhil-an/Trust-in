@@ -128,7 +128,54 @@ const NewAssessmentScreen = ({ navigation, route }) => {
   const [errors, setErrors] = useState({});
   const TOTAL_STEPS = 3; // 0: Info, 1: Details, 2: Review
 
+  // Force re-initialization if editItem changes or if the screen comes into focus
+  useEffect(() => {
+    if (editItem) {
+      let cat = editItem.category || '';
+      let customCat = '';
+      let desc = editItem.description || '';
 
+      if (cat === 'OTHER' && desc.includes('[Custom Category:')) {
+        const match = desc.match(/\[Custom Category:\s*(.*?)\]/);
+        if (match) {
+          customCat = match[1];
+          desc = desc.replace(/\[Custom Category:\s*.*?\]\s*\n\n/, '');
+          
+          // Optionally add it to customCategories array if not exists
+          setCustomCategories(prev => {
+            const key = customCat.toUpperCase().replace(/\s+/g, '_');
+            if (!prev.find(c => c.key === key)) {
+              return [...prev, { key, label: `📌 ${customCat}`, custom: true }];
+            }
+            return prev;
+          });
+          cat = customCat.toUpperCase().replace(/\s+/g, '_');
+        }
+      }
+
+      setForm({
+        beneficiary_name: editItem.beneficiary_name || '',
+        beneficiary_age: editItem.beneficiary_age?.toString() || '',
+        beneficiary_phone: editItem.beneficiary_phone || '',
+        beneficiary_address: editItem.beneficiary_address || '',
+        location_text: editItem.location_text || '',
+        latitude: editItem.beneficiary_latitude || editItem.latitude || null,
+        longitude: editItem.beneficiary_longitude || editItem.longitude || null,
+        category: cat,
+        custom_category: customCat,
+        description: desc,
+        priority: editItem.priority || 'NORMAL',
+        member: editItem.member || null,
+        source: editItem.source || route?.params?.source || 'STAFF',
+      });
+
+      if (editItem.photos && editItem.photos.length > 0) {
+        setPhotos(editItem.photos.map(p => ({ uri: p.image })));
+      } else if (editItem.document) {
+        setPhotos([{ uri: editItem.document }]);
+      }
+    }
+  }, [editItem]);
 
   const allCategories = [...BUILT_IN_CATEGORIES, ...customCategories];
 
@@ -236,8 +283,19 @@ const NewAssessmentScreen = ({ navigation, route }) => {
         }
       }
     });
-    if (photos.length > 0) {
-      formData.append('document', { uri: photos[0].uri, type: 'image/jpeg', name: `document_${Date.now()}.jpg` });
+    const newPhotos = photos.filter(p => !p.uri.startsWith('http'));
+    
+    if (newPhotos.length > 0) {
+      // Send first photo as primary document
+      formData.append('document', { uri: newPhotos[0].uri, type: 'image/jpeg', name: `document_${Date.now()}.jpg` });
+      // Send all new photos to uploaded_photos array
+      newPhotos.forEach((photo, index) => {
+        formData.append('uploaded_photos', { 
+          uri: photo.uri, 
+          type: 'image/jpeg', 
+          name: `photo_${Date.now()}_${index}.jpg` 
+        });
+      });
     }
     if (voiceUri) {
       formData.append('voice_note', { uri: voiceUri, type: 'audio/m4a', name: `voice_${Date.now()}.m4a` });
