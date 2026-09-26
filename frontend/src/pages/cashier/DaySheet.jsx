@@ -49,7 +49,7 @@ export default function DaySheet() {
 
   const [debits, setDebits] = useState([])
   const [credits, setCredits] = useState([])
-  const [closing, setClosing] = useState({ cashInHand: '', bankBalance: '', sheetClosing: '' })
+  const [closing, setClosing] = useState({ cashInHand: '', bankBalance: '', sheetClosing: '', notes: '' })
 
   // Helpers to persist extra rows (index >= 11) across F5 / browser refresh
   const getExtraDebitKey = (d) => `ds_extra_debit_${d}`
@@ -232,7 +232,8 @@ export default function DaySheet() {
     setClosing({
       cashInHand: data.has_closing ? (data.physical_cash != null ? data.physical_cash : '') : '',
       bankBalance: data.has_closing ? (data.physical_bank != null ? data.physical_bank : '') : '',
-      sheetClosing: data.has_closing ? (data.sheet_closing != null ? data.sheet_closing : '') : ''
+      sheetClosing: data.has_closing ? (data.sheet_closing != null ? data.sheet_closing : '') : '',
+      notes: data.has_closing ? (data.notes || '') : ''
     })
   }, [data])
 
@@ -409,6 +410,7 @@ export default function DaySheet() {
         date,
         physical_cash: closing.cashInHand || 0,
         physical_bank: closing.bankBalance || 0,
+        notes: closing.notes || '',
         debit_rows: payloadDebits,
         credit_rows: payloadCredits
       })
@@ -733,6 +735,16 @@ export default function DaySheet() {
                     />
                   </tbody>
                 </table>
+              </div>
+              <div style={{ padding: '16px', borderTop: '1px solid var(--gray-200)' }}>
+                 <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: 'var(--gray-600)', textTransform: 'uppercase' }}>Remarks / Description</label>
+                 <textarea
+                   className="form-control"
+                   rows="2"
+                   placeholder="Write any problems or reasons for shortage/excess..."
+                   value={closing.notes || ''}
+                   onChange={e => { setClosing({ ...closing, notes: e.target.value }); scheduleAutoSave() }}
+                 />
               </div>
             </div>
           </div>

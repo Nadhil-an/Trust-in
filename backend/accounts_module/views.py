@@ -877,6 +877,7 @@ class DaySheetView(APIView):
             'sheet_closing': sheet_closing,
             'closing_diff': closing_diff,
             'has_closing': closing is not None,
+            'notes': closing.notes if closing else '',
             'mobile_totals': mobile_totals,
         })
 
