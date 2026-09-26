@@ -177,7 +177,7 @@ export default function PromotorRegistry() {
         @media print {
           @page {
             size: landscape;
-            margin: 15mm;
+            margin: 0; /* Removes browser date/time/URL headers */
           }
           body * {
             visibility: hidden;
@@ -190,6 +190,8 @@ export default function PromotorRegistry() {
             left: 0;
             top: 0;
             width: 100%;
+            padding: 10mm 15mm;
+            box-sizing: border-box;
           }
           .hide-print {
             display: none !important;
@@ -210,9 +212,12 @@ export default function PromotorRegistry() {
         }
         @media print {
           .print-header {
-            display: block;
-            text-align: center;
-            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #E5E7EB;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
           }
         }
       `}</style>
@@ -242,13 +247,9 @@ export default function PromotorRegistry() {
 
       <div className="data-card printable-area">
         <div className="print-header">
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, borderBottom: '2px solid #E5E7EB', paddingBottom: 16, marginBottom: 16 }}>
-            <img src="/logo-full.png" alt="Sreelakshmi Charitable Trust" style={{ height: 100, objectFit: 'contain' }} />
-            <h1 style={{ margin: '10px 0 0 0', color: '#1F2937', fontSize: 24 }}>Promoters Registry Book</h1>
-            <p style={{ margin: 0, fontSize: 14, color: '#6B7280' }}>Daily collection reconciliation — auto-populated from mobile app transactions</p>
-            <div style={{ marginTop: 10, padding: '6px 16px', background: '#F3F4F6', borderRadius: 8, fontWeight: 700, fontSize: 15, color: '#374151' }}>
-              Date: {format(new Date(dateFilter + 'T00:00:00'), 'dd-MMM-yyyy')}
-            </div>
+          <h1 style={{ margin: 0, color: '#1F2937', fontSize: 22 }}>Promoters Registry Book</h1>
+          <div style={{ fontWeight: 700, fontSize: 16, color: '#374151' }}>
+            Date: {format(new Date(dateFilter + 'T00:00:00'), 'dd-MMM-yyyy')}
           </div>
         </div>
 
