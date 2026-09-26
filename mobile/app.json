@@ -26,7 +26,7 @@
         "foregroundImage": "./assets/android-icon-foreground.png"
       },
       "package": "com.sreelakshmiappsteam.mobile",
-      "versionCode": 1,
+      "versionCode": 54,
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
