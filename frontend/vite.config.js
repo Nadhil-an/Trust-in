@@ -8,11 +8,11 @@ export default defineConfig({
     port: 5174,
     proxy: {
       '/api': {
-        target: 'http://10.105.92.21:8000',
+        target: 'http://192.168.20.9:8000',
         changeOrigin: true,
       },
       '/ws': {
-        target: 'ws://10.105.92.21:8000',
+        target: 'ws://192.168.20.9:8000',
         ws: true,
         configure: (proxy, options) => {
           proxy.on('error', (err, req, res) => {
@@ -25,7 +25,7 @@ export default defineConfig({
         }
       },
       '/media': {
-        target: 'http://10.105.92.21:8000',
+        target: 'http://192.168.20.9:8000',
         changeOrigin: true,
       },
     },
