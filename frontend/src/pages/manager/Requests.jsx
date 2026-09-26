@@ -133,12 +133,22 @@ function RequestForm({ onClose, onSaved, initial = null }) {
 export default function Requests() {
   const [requests, setRequests] = useState([])
   const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('')
-  const [roleFilter, setRoleFilter] = useState('')
-  const [dateFilter, setDateFilter] = useState(format(new Date(), 'yyyy-MM-dd'))
+  const [search, setSearch] = useState(() => sessionStorage.getItem('req_search') || '')
+  const [statusFilter, setStatusFilter] = useState(() => sessionStorage.getItem('req_statusFilter') || '')
+  const [roleFilter, setRoleFilter] = useState(() => sessionStorage.getItem('req_roleFilter') || '')
+  const [dateFilter, setDateFilter] = useState(() => {
+    const saved = sessionStorage.getItem('req_dateFilter')
+    return saved !== null ? saved : format(new Date(), 'yyyy-MM-dd')
+  })
   const [totalPendingCount, setTotalPendingCount] = useState(0)
   const [showModal, setShowModal] = useState(false)
+
+  useEffect(() => {
+    sessionStorage.setItem('req_search', search)
+    sessionStorage.setItem('req_statusFilter', statusFilter)
+    sessionStorage.setItem('req_roleFilter', roleFilter)
+    sessionStorage.setItem('req_dateFilter', dateFilter)
+  }, [search, statusFilter, roleFilter, dateFilter])
   const [actionModal, setActionModal] = useState(null) // { req, action }
   const [actionRemarks, setActionRemarks] = useState('')
   const [actionLoading, setActionLoading] = useState(false)
