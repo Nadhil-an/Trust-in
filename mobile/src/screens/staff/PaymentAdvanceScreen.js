@@ -244,13 +244,13 @@ export default function PaymentAdvanceScreen({ navigation, route }) {
         <View style={styles.salaryOverviewCard}>
           <View style={styles.salaryColumn}>
             <Text style={styles.salaryOverviewLabel}>Actual Net Salary / Month</Text>
-            <Text style={styles.salaryOverviewVal}>₹{salaryData.salary.toLocaleString('en-IN')}</Text>
+            <Text style={styles.salaryOverviewVal}>₹{Math.round(salaryData.salary).toLocaleString('en-IN')}</Text>
           </View>
           <View style={styles.salaryDivider} />
           <View style={styles.salaryColumn}>
             <Text style={styles.salaryOverviewLabel}>Available Balance</Text>
-            <Text style={[styles.salaryOverviewVal, { color: Colors.primary }]}>₹{salaryData.balance.toLocaleString('en-IN')}</Text>
-            <Text style={{ fontSize: 10, color: '#64748b', marginTop: 4 }}>Allowed: ₹{salaryData.allowed_amount?.toLocaleString('en-IN') || 0}</Text>
+            <Text style={[styles.salaryOverviewVal, { color: Colors.primary }]}>₹{Math.round(salaryData.balance).toLocaleString('en-IN')}</Text>
+            <Text style={{ fontSize: 10, color: '#64748b', marginTop: 4 }}>Allowed: ₹{Math.round(salaryData.allowed_amount || 0).toLocaleString('en-IN')}</Text>
           </View>
         </View>
       )}
