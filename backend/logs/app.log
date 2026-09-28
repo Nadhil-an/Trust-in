@@ -228493,3 +228493,39 @@ WebSocket DISCONNECT /ws/notify/ [10.105.92.2:59348]
 [mHTTP GET /api/accounts/expenses/?category=SALARY+ADVANCE&limit=300 200 [0.15, 10.105.92.21:23097][0m
 [mHTTP GET /api/hr/officers/ 200 [0.33, 10.105.92.21:51910][0m
 [mHTTP GET /api/hr/officers/ 200 [0.16, 10.105.92.21:59216][0m
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\sreelakshmi_trust\settings.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+[mHTTP POST /api/auth/login/ 200 [0.44, 10.25.217.21:33408][0m
+WebSocket HANDSHAKING /ws/notify/ [10.25.217.21:35767]
+WebSocket CONNECT /ws/notify/ [10.25.217.21:35767]
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.25.217.21:35768][0m
+[mHTTP GET /api/core/features/ 200 [0.03, 10.25.217.21:35769][0m
+[mHTTP GET /api/manager/partners/?date=2026-09-28 200 [0.21, 10.25.217.21:42468][0m
+[mHTTP GET /api/manager/requests/?date=2026-09-28 200 [0.24, 10.25.217.21:42467][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-28&source=DONATION 200 [0.32, 10.25.217.21:35770][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-28&category=OUTWARD 200 [0.33, 10.25.217.21:42470][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-28&source=MEMBERSHIP 200 [0.35, 10.25.217.21:52367][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-28&source=INWARD 200 [0.34, 10.25.217.21:42469][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-28&category=PURCHASE 200 [0.15, 10.25.217.21:7781][0m
+[mHTTP GET /api/manager/partners/?date=2026-09-28 200 [0.11, 10.25.217.21:52325][0m
+[mHTTP GET /api/manager/requests/?date=2026-09-28 200 [0.14, 10.25.217.21:53199][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-28&source=DONATION 200 [0.14, 10.25.217.21:25505][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-28&category=OUTWARD 200 [0.15, 10.25.217.21:25506][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-28&source=INWARD 200 [0.13, 10.25.217.21:22655][0m
+[mHTTP GET /api/accounts/income/?date=2026-09-28&source=MEMBERSHIP 200 [0.10, 10.25.217.21:12662][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-28&category=PURCHASE 200 [0.07, 10.25.217.21:34708][0m
+[mHTTP GET /api/core/events/?date=2026-09-28 200 [1.22, 10.25.217.21:55598][0m
+[mHTTP GET /api/core/events/?date=2026-09-28 200 [0.04, 10.25.217.21:40640][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.08, 10.25.217.21:24594][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.06, 10.25.217.21:1685][0m
