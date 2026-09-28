@@ -124,7 +124,7 @@ export default function PartnersEntry() {
             </div>
             <div className="form-group">
               <label className="form-label required">Contact Person</label>
-              <input className="form-control" required value={form.contact_person} onChange={e => setF('contact_person', e.target.value)} placeholder="Primary contact name" />
+              <input className="form-control" required value={form.contact_person} onChange={e => setF('contact_person', e.target.value.replace(/\D/g, '').slice(0, 10))} placeholder="10-digit number" />
             </div>
             <div className="form-group">
               <label className="form-label required">Phone</label>

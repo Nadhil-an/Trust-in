@@ -48,13 +48,7 @@ const ENTRIES = [
     path: '/slt/entry/purchase',
     color: '#F59E0B', bg: '#FFFBEB', border: '#FDE68A',
   },
-  {
-    icon: '📖', label: 'Donation Registry',
-    desc: 'Fast bulk-entry system for ledger data',
-    path: '/slt/entry/donation-registry',
-    color: '#8B5CF6', bg: '#F5F3FF', border: '#DDD6FE',
-    noStats: true,
-  },
+
   {
     icon: '📅', label: 'Event Entry',
     desc: 'Record event details and participants',
