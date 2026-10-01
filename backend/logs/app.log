@@ -228529,3 +228529,137 @@ WebSocket CONNECT /ws/notify/ [10.25.217.21:35767]
 [mHTTP GET /api/core/events/?date=2026-09-28 200 [0.04, 10.25.217.21:40640][0m
 [mHTTP GET /api/core/users/?role=STAFF 200 [0.08, 10.25.217.21:24594][0m
 [mHTTP GET /api/core/users/?role=STAFF 200 [0.06, 10.25.217.21:1685][0m
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\sreelakshmi_trust\settings.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+[mHTTP POST /api/auth/login/ 200 [0.37, 10.18.180.21:25527][0m
+WebSocket HANDSHAKING /ws/notify/ [10.18.180.21:1546]
+WebSocket CONNECT /ws/notify/ [10.18.180.21:1546]
+[mHTTP GET /api/auth/profile/ 200 [0.16, 10.18.180.21:57383][0m
+[mHTTP GET /api/core/features/ 200 [0.17, 10.18.180.21:57382][0m
+[mHTTP GET /api/accounts/dashboard/?date=2026-10-01 200 [0.26, 10.18.180.21:57381][0m
+[mHTTP GET /api/accounts/dashboard/?date=2026-10-01 200 [0.07, 10.18.180.21:57384][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-01&page_size=5000 200 [0.10, 10.18.180.21:51136][0m
+[mHTTP GET /api/accounts/dashboard/?date=2026-10-01 200 [0.16, 10.18.180.21:51138][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-01&page_size=5000 200 [0.06, 10.18.180.21:15269][0m
+[mHTTP GET /api/accounts/dashboard/?date=2026-10-01 200 [0.08, 10.18.180.21:59207][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [1.07, 10.18.180.21:51137][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.06, 10.18.180.21:1808][0m
+[mHTTP GET /api/accounts/cash/ 200 [0.03, 10.18.180.21:7374][0m
+[mHTTP GET /api/accounts/cash/transactions/?search=&page_size=1000 200 [0.04, 10.18.180.21:7373][0m
+[mHTTP GET /api/accounts/cash/ 200 [0.04, 10.18.180.21:10196][0m
+[mHTTP GET /api/accounts/cash/transactions/?search=&page_size=1000 200 [0.05, 10.18.180.21:46586][0m
+WebSocket DISCONNECT /ws/notify/ [10.18.180.21:1546]
+WebSocket HANDSHAKING /ws/notify/ [10.18.180.21:13365]
+WebSocket CONNECT /ws/notify/ [10.18.180.21:13365]
+WebSocket HANDSHAKING /ws/notify/ [10.18.180.21:53777]
+WebSocket DISCONNECT /ws/notify/ [10.18.180.21:13365]
+WebSocket CONNECT /ws/notify/ [10.18.180.21:53777]
+[mHTTP GET /api/core/features/ 200 [0.05, 10.18.180.21:13367][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.18.180.21:13366][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.18.180.21:53779][0m
+[mHTTP GET /api/core/features/ 200 [0.05, 10.18.180.21:53778][0m
+[mHTTP GET /api/accounts/cash/transactions/?search=&page_size=1000 200 [0.06, 10.18.180.21:53780][0m
+[mHTTP GET /api/accounts/cash/ 200 [0.06, 10.18.180.21:53781][0m
+[mHTTP GET /api/accounts/cash/transactions/?search=&page_size=1000 200 [0.04, 10.18.180.21:5678][0m
+[mHTTP GET /api/accounts/cash/ 200 [0.04, 10.18.180.21:24696][0m
+[mHTTP GET /api/accounts/cash/ 200 [0.03, 10.18.180.21:25432][0m
+[mHTTP GET /api/accounts/cash/transactions/?search=&page_size=1000&from_date=2026-09-30&to_date=2026-09-30 200 [0.04, 10.18.180.21:25431][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-10-01 200 [0.08, 10.18.180.21:21140][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-10-01 200 [0.06, 10.18.180.21:8889][0m
+[mHTTP GET /api/hr/officers/?page_size=100 200 [0.22, 10.18.180.21:21141][0m
+[mHTTP GET /api/hr/officers/?page_size=100 200 [0.14, 10.18.180.21:52934][0m
+[mHTTP GET /api/accounts/income/?page_size=5000&date=2026-10-01 200 [0.03, 10.18.180.21:51217][0m
+[mHTTP GET /api/accounts/income/?page_size=5000&date=2026-10-01 200 [0.04, 10.18.180.21:31418][0m
+[mHTTP GET /api/accounts/cash/ 200 [0.04, 10.18.180.21:30476][0m
+[mHTTP GET /api/accounts/cash/transactions/?search=&page_size=1000 200 [0.04, 10.18.180.21:30475][0m
+[mHTTP GET /api/accounts/cash/ 200 [0.02, 10.18.180.21:48597][0m
+[mHTTP GET /api/accounts/cash/transactions/?search=&page_size=1000 200 [0.04, 10.18.180.21:48598][0m
+[mHTTP GET /api/accounts/cash/ 200 [0.05, 10.18.180.21:27157][0m
+[mHTTP GET /api/accounts/cash/transactions/?search=&page_size=1000&from_date=2026-09-01&to_date=2026-10-01 200 [0.06, 10.18.180.21:27156][0m
+[mHTTP GET /api/accounts/cash/ 200 [0.04, 10.18.180.21:51300][0m
+[mHTTP GET /api/accounts/cash/transactions/?search=&page_size=1000 200 [0.04, 10.18.180.21:51299][0m
+WebSocket DISCONNECT /ws/notify/ [10.18.180.21:53777]
+WebSocket HANDSHAKING /ws/notify/ [10.18.180.21:21516]
+WebSocket CONNECT /ws/notify/ [10.18.180.21:21516]
+WebSocket DISCONNECT /ws/notify/ [10.18.180.21:21516]
+WebSocket HANDSHAKING /ws/notify/ [10.18.180.21:47456]
+WebSocket CONNECT /ws/notify/ [10.18.180.21:47456]
+[mHTTP GET /api/core/features/ 200 [0.05, 10.18.180.21:21518][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.18.180.21:21517][0m
+[mHTTP GET /api/auth/profile/ 200 [0.07, 10.18.180.21:38112][0m
+[mHTTP GET /api/core/features/ 200 [0.08, 10.18.180.21:38111][0m
+[mHTTP GET /api/accounts/cash/transactions/?search=&page_size=1000 200 [0.08, 10.18.180.21:38113][0m
+[mHTTP GET /api/accounts/cash/ 200 [0.08, 10.18.180.21:38114][0m
+[mHTTP GET /api/accounts/cash/transactions/?search=&page_size=1000 200 [0.04, 10.18.180.21:53293][0m
+[mHTTP GET /api/accounts/cash/ 200 [0.04, 10.18.180.21:27401][0m
+WebSocket DISCONNECT /ws/notify/ [10.18.180.21:47456]
+WebSocket HANDSHAKING /ws/notify/ [10.18.180.21:35253]
+WebSocket CONNECT /ws/notify/ [10.18.180.21:35253]
+WebSocket DISCONNECT /ws/notify/ [10.18.180.21:35253]
+WebSocket HANDSHAKING /ws/notify/ [10.18.180.21:21636]
+WebSocket CONNECT /ws/notify/ [10.18.180.21:21636]
+[mHTTP GET /api/core/features/ 200 [0.07, 10.18.180.21:35255][0m
+[mHTTP GET /api/auth/profile/ 200 [0.07, 10.18.180.21:35254][0m
+[mHTTP GET /api/core/features/ 200 [0.05, 10.18.180.21:21637][0m
+[mHTTP GET /api/auth/profile/ 200 [0.07, 10.18.180.21:21638][0m
+[mHTTP GET /api/accounts/cash/transactions/?search=&page_size=1000 200 [0.05, 10.18.180.21:21639][0m
+[mHTTP GET /api/accounts/cash/ 200 [0.06, 10.18.180.21:21640][0m
+[mHTTP GET /api/accounts/cash/ 200 [0.04, 10.18.180.21:50155][0m
+[mHTTP GET /api/accounts/cash/transactions/?search=&page_size=1000 200 [0.04, 10.18.180.21:24679][0m
+[mHTTP GET /api/accounts/cash/ 200 [0.06, 10.18.180.21:63735][0m
+[mHTTP GET /api/accounts/cash/transactions/?search=&page_size=1000&from_date=2026-10-01&to_date=2026-10-31 200 [0.06, 10.18.180.21:63734][0m
+[mHTTP GET /api/accounts/cash/transactions/?search=&page_size=1000&from_date=2026-09-01&to_date=2026-09-30 200 [0.04, 10.18.180.21:65401][0m
+[mHTTP GET /api/accounts/cash/ 200 [0.03, 10.18.180.21:55300][0m
+[mHTTP GET /api/accounts/cash/ 200 [0.03, 10.18.180.21:44489][0m
+[mHTTP GET /api/accounts/cash/transactions/?search=&page_size=1000 200 [0.04, 10.18.180.21:44488][0m
+[mHTTP GET /api/accounts/cash/ 200 [0.04, 10.18.180.21:16776][0m
+[mHTTP GET /api/accounts/cash/transactions/?search=&page_size=1000&from_date=2026-09-01&to_date=2026-09-30 200 [0.04, 10.18.180.21:16775][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-10-01 200 [0.04, 10.18.180.21:57613][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-10-01 200 [0.07, 10.18.180.21:40573][0m
+[mHTTP GET /api/hr/officers/?page_size=100 200 [0.21, 10.18.180.21:57614][0m
+[mHTTP GET /api/hr/officers/?page_size=100 200 [0.15, 10.18.180.21:8745][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-01 200 [0.03, 10.18.180.21:6506][0m
+[mHTTP GET /api/accounts/expenses/?category=SALARY+ADVANCE&limit=300 200 [0.05, 10.18.180.21:22053][0m
+[mHTTP POST /api/accounts/expenses/ 201 [0.06, 10.18.180.21:42241][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-09-01 200 [0.03, 10.18.180.21:1409][0m
+WebSocket DISCONNECT /ws/notify/ [10.18.180.21:21636]
+WebSocket HANDSHAKING /ws/notify/ [10.18.180.21:52529]
+WebSocket CONNECT /ws/notify/ [10.18.180.21:52529]
+WebSocket DISCONNECT /ws/notify/ [10.18.180.21:52529]
+WebSocket HANDSHAKING /ws/notify/ [10.18.180.21:20587]
+WebSocket CONNECT /ws/notify/ [10.18.180.21:20587]
+[mHTTP GET /api/core/features/ 200 [0.06, 10.18.180.21:52531][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.18.180.21:52530][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.18.180.21:20589][0m
+[mHTTP GET /api/core/features/ 200 [0.05, 10.18.180.21:20588][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-10-01 200 [0.08, 10.18.180.21:20591][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-10-01 200 [0.07, 10.18.180.21:12538][0m
+[mHTTP GET /api/hr/officers/?page_size=100 200 [0.24, 10.18.180.21:20590][0m
+[mHTTP GET /api/hr/officers/?page_size=100 200 [0.15, 10.18.180.21:57654][0m
+[mHTTP GET /api/accounts/cash/ 200 [0.04, 10.18.180.21:16487][0m
+[mHTTP GET /api/accounts/cash/transactions/?search=&page_size=1000 200 [0.06, 10.18.180.21:16486][0m
+[mHTTP GET /api/accounts/cash/ 200 [0.04, 10.18.180.21:24844][0m
+[mHTTP GET /api/accounts/cash/transactions/?search=&page_size=1000 200 [0.04, 10.18.180.21:47873][0m
+[mHTTP GET /api/accounts/cash/ 200 [0.05, 10.18.180.21:46503][0m
+[mHTTP GET /api/accounts/cash/transactions/?search=&page_size=1000&from_date=2026-10-01&to_date=2026-10-31 200 [0.06, 10.18.180.21:46502][0m
+[mHTTP GET /api/accounts/cash/transactions/?search=&page_size=1000&from_date=2026-09-01&to_date=2026-09-30 200 [0.04, 10.18.180.21:6487][0m
+[mHTTP GET /api/accounts/cash/ 200 [0.03, 10.18.180.21:7642][0m
+[mHTTP GET /api/accounts/cash/ 200 [0.03, 10.18.180.21:20043][0m
+[mHTTP GET /api/accounts/cash/transactions/?search=&page_size=1000&from_date=2026-09-01&to_date=2026-09-30 200 [0.04, 10.18.180.21:20042][0m
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.18.180.21:57024]
+WebSocket CONNECT /ws/notify/ [10.18.180.21:57024]

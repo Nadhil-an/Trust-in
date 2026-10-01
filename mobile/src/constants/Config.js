@@ -10,7 +10,7 @@ const getApiConfig = () => {
   if (__DEV__) {
     // In local development: the phone must reach your PC's Django backend
     const expoHost = Constants.expoConfig?.hostUri?.split(':')[0];
-    const localHost = expoHost || '10.25.217.21'; // fallback to your PC's IP
+    const localHost = expoHost || '10.18.180.21'; // fallback to your PC's IP
     return {
       apiBase:  `http://${localHost}:8000/api`,
       wsBase:   `ws://${localHost}:8000/ws`,

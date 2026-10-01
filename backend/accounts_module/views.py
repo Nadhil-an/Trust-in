@@ -152,7 +152,14 @@ class CashTransactionListCreateView(generics.ListCreateAPIView):
     ordering_fields = ['date', 'created_at']
 
     def get_queryset(self):
-        return CashTransaction.objects.select_related('cash_account', 'created_by').all()
+        qs = CashTransaction.objects.select_related('cash_account', 'created_by').all()
+        from_date = self.request.query_params.get('from_date')
+        to_date = self.request.query_params.get('to_date')
+        if from_date:
+            qs = qs.filter(date__gte=from_date)
+        if to_date:
+            qs = qs.filter(date__lte=to_date)
+        return qs
 
     def perform_create(self, serializer):
         account_name = serializer.validated_data.pop('account_name', 'Main Cash')

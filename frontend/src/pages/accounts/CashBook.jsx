@@ -9,6 +9,8 @@ export default function CashBook() {
   const [accounts, setAccounts] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
+  const [dateFilter, setDateFilter] = useState("all") // all, today, yesterday, weekly, monthly, custom_month
+  const [customMonth, setCustomMonth] = useState(format(new Date(), "yyyy-MM"))
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState({ cash_account:"", transaction_type:"RECEIPT", date:format(new Date(),"yyyy-MM-dd"), description:"", amount:"", reference_id:"", voucher_number:"" })
   const [saving, setSaving] = useState(false)
@@ -16,11 +18,35 @@ export default function CashBook() {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const [tRes, aRes] = await Promise.all([accountsApi.cash.transactions({search}), accountsApi.cash.accounts()])
+      const today = new Date();
+      let from_date = "";
+      let to_date = format(today, "yyyy-MM-dd");
+      if (dateFilter === "today") { from_date = to_date; }
+      else if (dateFilter === "yesterday") { const y = new Date(today); y.setDate(y.getDate() - 1); from_date = format(y, "yyyy-MM-dd"); to_date = from_date; }
+      else if (dateFilter === "weekly") { const w = new Date(today); w.setDate(w.getDate() - 7); from_date = format(w, "yyyy-MM-dd"); }
+      else if (dateFilter === "monthly") { const m = new Date(today); m.setMonth(m.getMonth() - 1); from_date = format(m, "yyyy-MM-dd"); }
+      else if (dateFilter === "custom_month") {
+        if (customMonth) {
+          const [year, month] = customMonth.split("-");
+          const mDate = new Date(year, parseInt(month) - 1, 1);
+          from_date = format(mDate, "yyyy-MM-dd");
+          const lastDay = new Date(year, parseInt(month), 0);
+          to_date = format(lastDay, "yyyy-MM-dd");
+        } else {
+          from_date = ""; to_date = "";
+        }
+      }
+      else { to_date = ""; } // 'all'
+
+      const params = { search, page_size: 1000 };
+      if (from_date) params.from_date = from_date;
+      if (to_date) params.to_date = to_date;
+
+      const [tRes, aRes] = await Promise.all([accountsApi.cash.transactions(params), accountsApi.cash.accounts()])
       setTxns(tRes.data.results || tRes.data)
       setAccounts(aRes.data.results || aRes.data)
     } catch (_) { toast.error("Load failed") } finally { setLoading(false) }
-  }, [search])
+  }, [search, dateFilter, customMonth])
 
   useEffect(() => { load() }, [load])
 
@@ -39,6 +65,7 @@ export default function CashBook() {
 
   const totalReceipts = txns.filter(t=>["RECEIPT","TRANSFER_IN","OPENING"].includes(t.transaction_type)).reduce((s,t)=>s+parseFloat(t.amount||0),0)
   const totalPayments = txns.filter(t=>!["RECEIPT","TRANSFER_IN","OPENING"].includes(t.transaction_type)).reduce((s,t)=>s+parseFloat(t.amount||0),0)
+  const netAmount = totalReceipts - totalPayments
 
   return (
     <div>
@@ -50,11 +77,32 @@ export default function CashBook() {
       </PageHeader>
       <div className="stats-grid" style={{gridTemplateColumns:"repeat(3,1fr)"}}>
         <div className="stat-card success"><div className="stat-card-header"><div className="stat-card-label">Total Receipts</div><div className="stat-card-icon">📥</div></div><div className="stat-card-value">{formatINR(totalReceipts)}</div></div>
-        <div className="stat-card danger"><div className="stat-card-header"><div className="stat-card-label">Total Payments</div><div className="stat-card-icon">📤</div></div><div className="stat-card-value">{formatINR(totalPayments)}</div></div>
-        <div className="stat-card"><div className="stat-card-header"><div className="stat-card-label">Net</div><div className="stat-card-icon">💰</div></div><div className="stat-card-value">{formatINR(totalReceipts-totalPayments)}</div></div>
+        <div className="stat-card danger"><div className="stat-card-header"><div className="stat-card-label">Amount Spend</div><div className="stat-card-icon">📤</div></div><div className="stat-card-value">{formatINR(totalPayments)}</div></div>
+        <div className="stat-card"><div className="stat-card-header"><div className="stat-card-label">Amount in Hand</div><div className="stat-card-icon">💰</div></div><div className="stat-card-value">{formatINR(netAmount)}</div></div>
       </div>
       <div className="data-card">
-        <FilterBar search={search} onSearch={setSearch} />
+        <div style={{ display: "flex", gap: "1rem", alignItems: "center", marginBottom: "1rem" }}>
+          <div style={{ flex: 1 }}>
+            <FilterBar search={search} onSearch={setSearch} />
+          </div>
+          <select className="form-control" style={{ width: "auto" }} value={dateFilter} onChange={e => setDateFilter(e.target.value)}>
+            <option value="all">All Time</option>
+            <option value="today">Today</option>
+            <option value="yesterday">Yesterday</option>
+            <option value="weekly">Last 7 Days</option>
+            <option value="monthly">Last 30 Days</option>
+            <option value="custom_month">Specific Month</option>
+          </select>
+          {dateFilter === "custom_month" && (
+            <input 
+              type="month" 
+              className="form-control" 
+              style={{ width: "auto" }} 
+              value={customMonth} 
+              onChange={e => setCustomMonth(e.target.value)} 
+            />
+          )}
+        </div>
         {loading ? <LoadingState /> : (
           <div className="table-wrap">
             <table>
@@ -111,6 +159,35 @@ export default function CashBook() {
           </form>
         </Modal>
       )}
+
+      {/* Fixed Bottom Bar */}
+      <div style={{
+        position: 'sticky',
+        bottom: 0,
+        backgroundColor: '#fff',
+        borderTop: '1px solid #e2e8f0',
+        padding: '1rem',
+        display: 'flex',
+        justifyContent: 'space-around',
+        alignItems: 'center',
+        boxShadow: '0 -4px 6px -1px rgba(0, 0, 0, 0.05)',
+        zIndex: 10,
+        marginTop: '1rem',
+        borderRadius: '0.5rem'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#64748b', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Total Receipts</div>
+          <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#10b981' }}>{formatINR(totalReceipts)}</div>
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#64748b', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Amount Spend</div>
+          <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#ef4444' }}>{formatINR(totalPayments)}</div>
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#64748b', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Amount in Hand</div>
+          <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#3b82f6' }}>{formatINR(netAmount)}</div>
+        </div>
+      </div>
     </div>
   )
 }
