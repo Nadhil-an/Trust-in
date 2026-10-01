@@ -669,10 +669,59 @@ class PendingPayrollListView(generics.ListAPIView):
         return MonthlyPayrollSerializer
 
     def get_queryset(self):
-        from hr_module.models import MonthlyPayroll
-        return MonthlyPayroll.objects.filter(
-            status__in=['APPROVED', 'PAID']
-        ).select_related('employee').order_by('-created_at')
+        from hr_module.models import MonthlyPayroll, ExecutiveOfficer, SalaryStructure
+        from django.utils import timezone
+        
+        # Get requested month/year or default to current
+        try:
+            month = int(self.request.query_params.get('month') or timezone.localdate().month)
+            year = int(self.request.query_params.get('year') or timezone.localdate().year)
+        except (ValueError, TypeError):
+            month = timezone.localdate().month
+            year = timezone.localdate().year
+
+        # Auto-generate payrolls for active officers who don't have one this month
+        active_officers = ExecutiveOfficer.objects.filter(status='ACTIVE')
+        for officer in active_officers:
+            structure = SalaryStructure.objects.filter(employee=officer, is_active=True).first()
+            if not structure:
+                continue
+            
+            MonthlyPayroll.objects.get_or_create(
+                employee=officer,
+                month=month,
+                year=year,
+                defaults={
+                    'salary_structure': structure,
+                    'basic_salary': structure.basic_salary,
+                    'hra': structure.hra,
+                    'ta': structure.ta,
+                    'other_allowances': structure.other_allowances,
+                    'gross_salary': structure.gross_salary,
+                    'pf_deduction': structure.pf_deduction,
+                    'other_deductions': structure.other_deductions,
+                    'net_salary': structure.net_salary,
+                    'status': 'APPROVED', # Auto-approve for accountant
+                }
+            )
+
+        qs = MonthlyPayroll.objects.select_related('employee').order_by('-year', '-month', 'employee__full_name')
+        
+        # Apply filters
+        status_filter = self.request.query_params.get('status')
+        if status_filter:
+            qs = qs.filter(status=status_filter)
+        else:
+            qs = qs.filter(status__in=['APPROVED', 'PAID', 'GENERATED', 'DRAFT'])
+            
+        req_month = self.request.query_params.get('month')
+        if req_month:
+            qs = qs.filter(month=req_month)
+        req_year = self.request.query_params.get('year')
+        if req_year:
+            qs = qs.filter(year=req_year)
+            
+        return qs
 
 
 class ProcessPaymentView(APIView):
