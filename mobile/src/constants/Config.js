@@ -7,11 +7,19 @@ import Constants from 'expo-constants';
 const PRODUCTION_HOST = 'api.sreelakshmicharity.org';
 
 const getApiConfig = () => {
-  const localHost = '10.25.217.21'; // New IP address
-
+  if (__DEV__) {
+    // In local development: the phone must reach your PC's Django backend
+    const expoHost = Constants.expoConfig?.hostUri?.split(':')[0];
+    const localHost = expoHost || '10.25.217.21'; // fallback to your PC's IP
+    return {
+      apiBase:  `http://${localHost}:8000/api`,
+      wsBase:   `ws://${localHost}:8000/ws`,
+    };
+  }
+  // Production APK: always connect to the live EC2 server over HTTPS
   return {
-    apiBase:  `http://${localHost}:8000/api`,
-    wsBase:   `ws://${localHost}:8000/ws`,
+    apiBase: `https://${PRODUCTION_HOST}/api`,
+    wsBase:  `wss://${PRODUCTION_HOST}/ws`,
   };
 };
 
