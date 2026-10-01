@@ -294,17 +294,21 @@ class IncomeListCreateView(generics.ListCreateAPIView):
         _sync_promoter_registry(income.created_by, income.date)
         
         # Auto-update account balance
-        if income.account_type == 'CASH' and income.cash_account:
+        if income.account_type == 'CASH':
             acc = income.cash_account
-            new_bal = acc.current_balance + income.amount
-            CashTransaction.objects.create(
-                cash_account=acc, transaction_type='RECEIPT',
-                date=income.date, description=f"Income: {income.source} — {income.donor_name}",
-                reference_id=income.receipt_number, amount=income.amount,
-                balance_after=new_bal, created_by=self.request.user
-            )
-            acc.current_balance = new_bal
-            acc.save(update_fields=['current_balance'])
+            if not acc:
+                from accounts_module.models import CashAccount
+                acc = CashAccount.objects.filter(is_active=True).first()
+            if acc:
+                new_bal = acc.current_balance + income.amount
+                CashTransaction.objects.create(
+                    cash_account=acc, transaction_type='RECEIPT',
+                    date=income.date, description=f"Income: {income.source} — {income.donor_name}",
+                    reference_id=income.receipt_number, amount=income.amount,
+                    balance_after=new_bal, created_by=self.request.user
+                )
+                acc.current_balance = new_bal
+                acc.save(update_fields=['current_balance'])
         # Trigger WhatsApp e-receipt dispatch from central Trust number if donor_phone is provided
         if income.donor_phone:
             import threading
@@ -468,6 +472,22 @@ class ExpenseListCreateView(generics.ListCreateAPIView):
             payment_method=expense.payment_method, reference_id=expense.expense_id,
             created_by=self.request.user
         )
+        
+        if expense.account_type == 'CASH':
+            acc = expense.cash_account
+            if not acc:
+                from accounts_module.models import CashAccount
+                acc = CashAccount.objects.filter(is_active=True).first()
+            if acc:
+                new_bal = acc.current_balance - expense.amount
+                CashTransaction.objects.create(
+                    cash_account=acc, transaction_type='PAYMENT',
+                    date=expense.date, description=f"Expense: {expense.category} — {expense.payee}",
+                    reference_id=expense.expense_id, amount=expense.amount,
+                    balance_after=new_bal, created_by=self.request.user
+                )
+                acc.current_balance = new_bal
+                acc.save(update_fields=['current_balance'])
 
 
 class ExpenseDetailView(generics.RetrieveUpdateDestroyAPIView):
