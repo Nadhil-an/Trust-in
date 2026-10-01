@@ -690,6 +690,14 @@ class ProcessPaymentView(APIView):
         payroll.payment_method = request.data.get('payment_method', 'BANK')
         payroll.payment_date = timezone.localdate()
         payroll.payment_reference = request.data.get('payment_reference', '')
+        
+        advance_deduction = request.data.get('advance_deduction')
+        if advance_deduction:
+            advance_deduction = float(advance_deduction)
+            if advance_deduction > 0:
+                payroll.other_deductions = float(payroll.other_deductions) + advance_deduction
+                payroll.net_salary = float(payroll.net_salary) - advance_deduction
+
         payroll.save()
 
         # Create Accounts Transaction
