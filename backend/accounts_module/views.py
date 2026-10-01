@@ -671,6 +671,8 @@ class PendingPayrollListView(generics.ListAPIView):
     def get_queryset(self):
         from hr_module.models import MonthlyPayroll, ExecutiveOfficer, SalaryStructure
         from django.utils import timezone
+        import logging
+        logger = logging.getLogger(__name__)
         
         # Get requested month/year or default to current
         try:
@@ -681,29 +683,46 @@ class PendingPayrollListView(generics.ListAPIView):
             year = timezone.localdate().year
 
         # Auto-generate payrolls for active officers who don't have one this month
-        active_officers = ExecutiveOfficer.objects.filter(status='ACTIVE')
-        for officer in active_officers:
-            structure = SalaryStructure.objects.filter(employee=officer, is_active=True).first()
-            if not structure:
-                continue
-            
-            MonthlyPayroll.objects.get_or_create(
-                employee=officer,
-                month=month,
-                year=year,
-                defaults={
-                    'salary_structure': structure,
-                    'basic_salary': structure.basic_salary or 0,
-                    'hra': structure.hra or 0,
-                    'ta': structure.ta or 0,
-                    'other_allowances': structure.other_allowances or 0,
-                    'gross_salary': structure.gross_salary or 0,
-                    'pf_deduction': structure.pf_deduction or 0,
-                    'other_deductions': structure.other_deductions or 0,
-                    'net_salary': structure.net_salary or 0,
-                    'status': 'APPROVED', # Auto-approve for accountant
-                }
-            )
+        try:
+            active_officers = ExecutiveOfficer.objects.filter(status='ACTIVE')
+            for officer in active_officers:
+                try:
+                    structure = SalaryStructure.objects.filter(employee=officer, is_active=True).first()
+                    if not structure:
+                        continue
+                    
+                    basic = float(structure.basic_salary or 0)
+                    hra = float(structure.hra or 0)
+                    ta = float(structure.ta or 0)
+                    other_allow = float(structure.other_allowances or 0)
+                    pf = float(structure.pf_deduction or 0)
+                    other_ded = float(structure.other_deductions or 0)
+                    gross = basic + hra + ta + other_allow
+                    net = gross - pf - other_ded
+
+                    MonthlyPayroll.objects.get_or_create(
+                        employee=officer,
+                        month=month,
+                        year=year,
+                        defaults={
+                            'salary_structure': structure,
+                            'basic_salary': basic,
+                            'hra': hra,
+                            'ta': ta,
+                            'other_allowances': other_allow,
+                            'gross_salary': gross,
+                            'pf_deduction': pf,
+                            'other_deductions': other_ded,
+                            'net_salary': net,
+                            'status': 'APPROVED',
+                            'generated_by': self.request.user,
+                        }
+                    )
+                except Exception as e:
+                    logger.error(f"Error auto-generating payroll for {officer}: {e}")
+                    continue
+        except Exception as e:
+            logger.error(f"Error in payroll auto-generation: {e}")
 
         qs = MonthlyPayroll.objects.select_related('employee').order_by('-year', '-month', 'employee__full_name')
         
