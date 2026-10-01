@@ -228663,3 +228663,4 @@ Configuring endpoint tcp:port=8000:interface=0.0.0.0
 Listening on TCP address 0.0.0.0:8000
 WebSocket HANDSHAKING /ws/notify/ [10.18.180.21:57024]
 WebSocket CONNECT /ws/notify/ [10.18.180.21:57024]
+Unauthorized: /api/accounts/pending-salaries/

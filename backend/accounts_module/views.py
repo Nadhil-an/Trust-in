@@ -693,14 +693,14 @@ class PendingPayrollListView(generics.ListAPIView):
                 year=year,
                 defaults={
                     'salary_structure': structure,
-                    'basic_salary': structure.basic_salary,
-                    'hra': structure.hra,
-                    'ta': structure.ta,
-                    'other_allowances': structure.other_allowances,
-                    'gross_salary': structure.gross_salary,
-                    'pf_deduction': structure.pf_deduction,
-                    'other_deductions': structure.other_deductions,
-                    'net_salary': structure.net_salary,
+                    'basic_salary': structure.basic_salary or 0,
+                    'hra': structure.hra or 0,
+                    'ta': structure.ta or 0,
+                    'other_allowances': structure.other_allowances or 0,
+                    'gross_salary': structure.gross_salary or 0,
+                    'pf_deduction': structure.pf_deduction or 0,
+                    'other_deductions': structure.other_deductions or 0,
+                    'net_salary': structure.net_salary or 0,
                     'status': 'APPROVED', # Auto-approve for accountant
                 }
             )

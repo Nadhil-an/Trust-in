@@ -280,11 +280,11 @@ class SalaryStructure(models.Model):
 
     @property
     def gross_salary(self):
-        return self.basic_salary + self.hra + self.ta + self.other_allowances
+        return (self.basic_salary or 0) + (self.hra or 0) + (self.ta or 0) + (self.other_allowances or 0)
 
     @property
     def net_salary(self):
-        return self.gross_salary - self.pf_deduction - self.other_deductions
+        return self.gross_salary - (self.pf_deduction or 0) - (self.other_deductions or 0)
 
 
 # ── Attendance ────────────────────────────────────────────────────
