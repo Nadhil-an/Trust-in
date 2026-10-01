@@ -152,7 +152,7 @@ class CashTransactionListCreateView(generics.ListCreateAPIView):
     ordering_fields = ['date', 'created_at']
 
     def get_queryset(self):
-        qs = CashTransaction.objects.select_related('cash_account', 'created_by').all()
+        qs = CashTransaction.objects.select_related('cash_account', 'created_by').all().order_by('-date', '-created_at')
         from_date = self.request.query_params.get('from_date')
         to_date = self.request.query_params.get('to_date')
         if from_date:

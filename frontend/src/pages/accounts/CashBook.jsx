@@ -9,8 +9,9 @@ export default function CashBook() {
   const [accounts, setAccounts] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
-  const [dateFilter, setDateFilter] = useState("all") // all, today, yesterday, weekly, monthly, custom_month
-  const [customMonth, setCustomMonth] = useState(format(new Date(), "yyyy-MM"))
+  const [dateFilter, setDateFilter] = useState(() => localStorage.getItem('cashbook_dateFilter') || "all")
+  const [customMonth, setCustomMonth] = useState(() => localStorage.getItem('cashbook_customMonth') || format(new Date(), "yyyy-MM"))
+  const [typeFilter, setTypeFilter] = useState(() => localStorage.getItem('cashbook_typeFilter') || "all")
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState({ cash_account:"", transaction_type:"RECEIPT", date:format(new Date(),"yyyy-MM-dd"), description:"", amount:"", reference_id:"", voucher_number:"" })
   const [saving, setSaving] = useState(false)
@@ -48,6 +49,10 @@ export default function CashBook() {
     } catch (_) { toast.error("Load failed") } finally { setLoading(false) }
   }, [search, dateFilter, customMonth])
 
+  useEffect(() => { localStorage.setItem('cashbook_dateFilter', dateFilter) }, [dateFilter])
+  useEffect(() => { localStorage.setItem('cashbook_customMonth', customMonth) }, [customMonth])
+  useEffect(() => { localStorage.setItem('cashbook_typeFilter', typeFilter) }, [typeFilter])
+
   useEffect(() => { load() }, [load])
 
   // Real-time synchronization
@@ -76,8 +81,8 @@ export default function CashBook() {
         }}>+ Add Transaction</button>
       </PageHeader>
       <div className="stats-grid" style={{gridTemplateColumns:"repeat(3,1fr)"}}>
-        <div className="stat-card success"><div className="stat-card-header"><div className="stat-card-label">Total Receipts</div><div className="stat-card-icon">📥</div></div><div className="stat-card-value">{formatINR(totalReceipts)}</div></div>
-        <div className="stat-card danger"><div className="stat-card-header"><div className="stat-card-label">Amount Spend</div><div className="stat-card-icon">📤</div></div><div className="stat-card-value">{formatINR(totalPayments)}</div></div>
+        <div className="stat-card success"><div className="stat-card-header"><div className="stat-card-label">Total Inward</div><div className="stat-card-icon">📥</div></div><div className="stat-card-value">{formatINR(totalReceipts)}</div></div>
+        <div className="stat-card danger"><div className="stat-card-header"><div className="stat-card-label">Total Outward</div><div className="stat-card-icon">📤</div></div><div className="stat-card-value">{formatINR(totalPayments)}</div></div>
         <div className="stat-card"><div className="stat-card-header"><div className="stat-card-label">Amount in Hand</div><div className="stat-card-icon">💰</div></div><div className="stat-card-value">{formatINR(netAmount)}</div></div>
       </div>
       <div className="data-card">
@@ -85,6 +90,11 @@ export default function CashBook() {
           <div style={{ flex: 1 }}>
             <FilterBar search={search} onSearch={setSearch} />
           </div>
+          <select className="form-control" style={{ width: "auto" }} value={typeFilter} onChange={e => setTypeFilter(e.target.value)}>
+            <option value="all">All Types</option>
+            <option value="inward">Inward Only</option>
+            <option value="outward">Outward Only</option>
+          </select>
           <select className="form-control" style={{ width: "auto" }} value={dateFilter} onChange={e => setDateFilter(e.target.value)}>
             <option value="all">All Time</option>
             <option value="today">Today</option>
@@ -106,10 +116,18 @@ export default function CashBook() {
         {loading ? <LoadingState /> : (
           <div className="table-wrap">
             <table>
-              <thead><tr><th>Date</th><th>Reference</th><th>Description</th><th>Type</th><th>Receipt (₹)</th><th>Payment (₹)</th><th>Balance (₹)</th></tr></thead>
+              <thead><tr><th>Date</th><th>Reference</th><th>Description</th><th>Type</th><th>Inward (₹)</th><th>Outward (₹)</th><th>Balance (₹)</th></tr></thead>
               <tbody>
-                {txns.length === 0 ? <tr><td colSpan={7}><EmptyState icon="💵" title="No transactions" /></td></tr>
-                  : txns.map(t => {
+                {txns.filter(t => {
+                  if (typeFilter === "inward") return ["RECEIPT","TRANSFER_IN","OPENING"].includes(t.transaction_type);
+                  if (typeFilter === "outward") return !["RECEIPT","TRANSFER_IN","OPENING"].includes(t.transaction_type);
+                  return true;
+                }).length === 0 ? <tr><td colSpan={7}><EmptyState icon="💵" title="No transactions" /></td></tr>
+                  : txns.filter(t => {
+                  if (typeFilter === "inward") return ["RECEIPT","TRANSFER_IN","OPENING"].includes(t.transaction_type);
+                  if (typeFilter === "outward") return !["RECEIPT","TRANSFER_IN","OPENING"].includes(t.transaction_type);
+                  return true;
+                }).map(t => {
                     const isReceipt = ["RECEIPT","TRANSFER_IN","OPENING"].includes(t.transaction_type)
                     return (
                       <tr key={t.id}>
@@ -176,11 +194,11 @@ export default function CashBook() {
         borderRadius: '0.5rem'
       }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#64748b', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Total Receipts</div>
+          <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#64748b', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Total Inward</div>
           <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#10b981' }}>{formatINR(totalReceipts)}</div>
         </div>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#64748b', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Amount Spend</div>
+          <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#64748b', fontWeight: 700, letterSpacing: '0.05em', marginBottom: '0.25rem' }}>Total Outward</div>
           <div style={{ fontSize: '1.25rem', fontWeight: 700, color: '#ef4444' }}>{formatINR(totalPayments)}</div>
         </div>
         <div style={{ textAlign: 'center' }}>
