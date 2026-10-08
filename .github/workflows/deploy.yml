@@ -28,6 +28,9 @@ jobs:
           pip install -r requirment.txt
 
       - name: Run Django Tests
+        env:
+          SECRET_KEY: 'test-secret-key-do-not-use-in-prod'
+          FIELD_ENCRYPTION_KEY: 'YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE='
         run: |
           cd backend
           python manage.py test
