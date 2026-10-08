@@ -114,9 +114,7 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="login-footer">
-            <span>🔒</span> Secured internal portal &nbsp;·&nbsp; Sree Lakshmi Charitable Trust
-          </div>
+
         </div>
       </div>
     </div>
