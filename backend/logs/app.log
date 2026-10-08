@@ -228677,3 +228677,73 @@ HTTP/2 support not enabled (install the http2 and tls Twisted extras)
 Configuring endpoint tcp:port=8000:interface=0.0.0.0
 Listening on TCP address 0.0.0.0:8000
 Forbidden: /api/core/users/373ce59c-e27c-494d-b2e8-8087961fc7fb/
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\sreelakshmi_trust\settings.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\sreelakshmi_trust\settings.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\sreelakshmi_trust\settings.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+[mHTTP POST /api/auth/login/ 200 [0.39, 10.246.183.21:25261][0m
+WebSocket HANDSHAKING /ws/notify/ [10.246.183.21:52007]
+WebSocket CONNECT /ws/notify/ [10.246.183.21:52007]
+[mHTTP GET /api/core/features/ 200 [0.18, 10.246.183.21:52009][0m
+[mHTTP GET /api/auth/profile/ 200 [0.20, 10.246.183.21:52008][0m
+[mHTTP GET /api/manager/partners/?date=2026-10-09 200 [0.13, 10.246.183.21:29822][0m
+[mHTTP GET /api/manager/requests/?date=2026-10-09 200 [0.15, 10.246.183.21:29821][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-09&source=DONATION 200 [0.19, 10.246.183.21:29819][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-09&source=MEMBERSHIP 200 [0.20, 10.246.183.21:29820][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-09&source=INWARD 200 [0.14, 10.246.183.21:51276][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-10-09&category=OUTWARD 200 [0.12, 10.246.183.21:8981][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-10-09&category=PURCHASE 200 [0.15, 10.246.183.21:39714][0m
+[mHTTP GET /api/manager/partners/?date=2026-10-09 200 [0.12, 10.246.183.21:60881][0m
+[mHTTP GET /api/manager/requests/?date=2026-10-09 200 [0.13, 10.246.183.21:15179][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-09&source=DONATION 200 [0.14, 10.246.183.21:19968][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-09&source=MEMBERSHIP 200 [0.18, 10.246.183.21:52124][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-09&source=INWARD 200 [0.17, 10.246.183.21:62204][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-10-09&category=OUTWARD 200 [0.17, 10.246.183.21:56586][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-10-09&category=PURCHASE 200 [0.13, 10.246.183.21:22999][0m
+[mHTTP GET /api/core/events/?date=2026-10-09 200 [1.25, 10.246.183.21:55629][0m
+[mHTTP GET /api/core/events/?date=2026-10-09 200 [0.02, 10.246.183.21:11023][0m
+[mHTTP POST /api/auth/logout/ 200 [0.03, 10.246.183.21:44043][0m
+WebSocket DISCONNECT /ws/notify/ [10.246.183.21:52007]
+[mHTTP POST /api/auth/login/ 200 [0.27, 10.246.183.21:64109][0m
+WebSocket HANDSHAKING /ws/notify/ [10.246.183.21:42324]
+WebSocket CONNECT /ws/notify/ [10.246.183.21:42324]
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.246.183.21:7111][0m
+[mHTTP GET /api/core/features/ 200 [0.07, 10.246.183.21:7112][0m
+[mHTTP GET /api/manager/dashboard/ 200 [0.19, 10.246.183.21:7113][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.05, 10.246.183.21:36304][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.06, 10.246.183.21:57013][0m
+[mHTTP GET /api/manager/dashboard/ 200 [0.19, 10.246.183.21:55010][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date= 200 [0.08, 10.246.183.21:29550][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date= 200 [0.08, 10.246.183.21:54444][0m
+[mHTTP POST /api/auth/logout/ 200 [0.04, 10.246.183.21:5642][0m
+WebSocket DISCONNECT /ws/notify/ [10.246.183.21:42324]
+[mHTTP POST /api/auth/login/ 200 [0.25, 10.246.183.21:49691][0m
+WebSocket HANDSHAKING /ws/notify/ [10.246.183.21:6252]
+WebSocket CONNECT /ws/notify/ [10.246.183.21:6252]
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.246.183.21:15091][0m
+[mHTTP GET /api/core/features/ 200 [0.07, 10.246.183.21:46451][0m
+[mHTTP GET /api/manager/dashboard/ 200 [0.19, 10.246.183.21:46450][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.08, 10.246.183.21:54569][0m
+[mHTTP GET /api/manager/dashboard/ 200 [0.19, 10.246.183.21:4494][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.05, 10.246.183.21:64101][0m
+[mHTTP POST /api/auth/logout/ 200 [0.03, 10.246.183.21:17297][0m
+WebSocket DISCONNECT /ws/notify/ [10.246.183.21:6252]

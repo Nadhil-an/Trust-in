@@ -139,7 +139,7 @@ export default function Requests() {
   const [roleFilter, setRoleFilter] = useState(() => sessionStorage.getItem('req_roleFilter') || '')
   const [dateFilter, setDateFilter] = useState(() => {
     const saved = sessionStorage.getItem('req_dateFilter')
-    return saved !== null ? saved : format(new Date(), 'yyyy-MM-dd')
+    return saved !== null ? saved : ''
   })
   const [totalPendingCount, setTotalPendingCount] = useState(0)
   const [showModal, setShowModal] = useState(false)

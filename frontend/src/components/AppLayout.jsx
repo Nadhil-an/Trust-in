@@ -239,36 +239,35 @@ export default function AppLayout() {
           })()}
         </div>
 
-        <DropdownMenu.Root>
-          <DropdownMenu.Trigger asChild>
-            <div className="sidebar-user" style={{ cursor: 'pointer' }}>
-              <div className="sidebar-user-avatar">
-                {user?.full_name?.charAt(0) || 'U'}
-              </div>
-              <div className="sidebar-user-info">
-                <div className="sidebar-user-name">{user?.full_name}</div>
-                <div className="sidebar-user-role">{user?.role}</div>
-              </div>
+        <div className="sidebar-user" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px' }}>
+          <div 
+            style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', flex: 1 }} 
+            onClick={() => { navigate('/slt/account/profile'); setMobileOpen(false); }}
+            title="View Profile"
+          >
+            <div className="sidebar-user-avatar">
+              {user?.full_name?.charAt(0) || 'U'}
             </div>
-          </DropdownMenu.Trigger>
+            <div className="sidebar-user-info" style={{ marginLeft: '12px' }}>
+              <div className="sidebar-user-name">{user?.full_name}</div>
+              <div className="sidebar-user-role">{user?.role}</div>
+            </div>
+          </div>
           
-          <DropdownMenu.Portal>
-            <DropdownMenu.Content 
-              className="sidebar-user-menu" 
-              sideOffset={10} 
-              side="top" 
-              align="center"
-              style={{ zIndex: 1000 }}
-            >
-              <DropdownMenu.Item className="sidebar-user-menu-item" onSelect={() => { navigate('/slt/account/profile'); setMobileOpen(false); }}>
-                <span className="nav-icon">👤</span> Profile
-              </DropdownMenu.Item>
-              <DropdownMenu.Item className="sidebar-user-menu-item" onSelect={handleLogout}>
-                <span className="nav-icon">🚪</span> Logout
-              </DropdownMenu.Item>
-            </DropdownMenu.Content>
-          </DropdownMenu.Portal>
-        </DropdownMenu.Root>
+          <button 
+            onClick={handleLogout} 
+            style={{ background: 'transparent', border: 'none', color: 'rgba(255, 255, 255, 0.7)', cursor: 'pointer', padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'color 0.2s' }}
+            onMouseEnter={e => e.currentTarget.style.color = '#ffffff'}
+            onMouseLeave={e => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)'}
+            title="Logout"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+          </button>
+        </div>
       </nav>
 
       {/* Main */}
