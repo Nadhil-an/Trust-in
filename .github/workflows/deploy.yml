@@ -10,7 +10,30 @@ env:
   IMAGE_NAME_GATEWAY: nadhil-an/trust-in-gateway
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          python -m pip install --upgrade pip
+          pip install -r requirment.txt
+
+      - name: Run Django Tests
+        run: |
+          cd backend
+          python manage.py test
+
   build-and-push:
+    needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: read

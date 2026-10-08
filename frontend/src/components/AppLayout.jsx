@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { useNotificationStore } from '../store/notificationStore'
@@ -136,7 +137,6 @@ export default function AppLayout() {
   const location = useLocation()
   const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [userMenuOpen, setUserMenuOpen] = useState(false)
 
   // Build nav items dynamically
   const navItems = React.useMemo(() => {
@@ -239,27 +239,36 @@ export default function AppLayout() {
           })()}
         </div>
 
-        <div style={{ position: 'relative' }}>
-          {userMenuOpen && (
-            <div className="sidebar-user-menu">
-              <div className="sidebar-user-menu-item" onClick={() => { navigate('/slt/account/profile'); setUserMenuOpen(false); setMobileOpen(false); }}>
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger asChild>
+            <div className="sidebar-user" style={{ cursor: 'pointer' }}>
+              <div className="sidebar-user-avatar">
+                {user?.full_name?.charAt(0) || 'U'}
+              </div>
+              <div className="sidebar-user-info">
+                <div className="sidebar-user-name">{user?.full_name}</div>
+                <div className="sidebar-user-role">{user?.role}</div>
+              </div>
+            </div>
+          </DropdownMenu.Trigger>
+          
+          <DropdownMenu.Portal>
+            <DropdownMenu.Content 
+              className="sidebar-user-menu" 
+              sideOffset={10} 
+              side="top" 
+              align="center"
+              style={{ zIndex: 1000 }}
+            >
+              <DropdownMenu.Item className="sidebar-user-menu-item" onSelect={() => { navigate('/slt/account/profile'); setMobileOpen(false); }}>
                 <span className="nav-icon">👤</span> Profile
-              </div>
-              <div className="sidebar-user-menu-item" onClick={handleLogout}>
+              </DropdownMenu.Item>
+              <DropdownMenu.Item className="sidebar-user-menu-item" onSelect={handleLogout}>
                 <span className="nav-icon">🚪</span> Logout
-              </div>
-            </div>
-          )}
-          <div className="sidebar-user" onClick={() => setUserMenuOpen(!userMenuOpen)} style={{ cursor: 'pointer' }}>
-            <div className="sidebar-user-avatar">
-              {user?.full_name?.charAt(0) || 'U'}
-            </div>
-            <div className="sidebar-user-info">
-              <div className="sidebar-user-name">{user?.full_name}</div>
-              <div className="sidebar-user-role">{user?.role}</div>
-            </div>
-          </div>
-        </div>
+              </DropdownMenu.Item>
+            </DropdownMenu.Content>
+          </DropdownMenu.Portal>
+        </DropdownMenu.Root>
       </nav>
 
       {/* Main */}
