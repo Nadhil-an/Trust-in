@@ -61,3 +61,42 @@ class UserModelTests(TestCase):
             role=Role.MEMBER
         )
         self.assertIsNone(member.staff_uid)
+
+class UserAPIIDORTests(TestCase):
+    def setUp(self):
+        self.hr_user = User.objects.create_user(
+            username="hr", email="hr@test.com", password="pwd", role=Role.HR
+        )
+        self.manager = User.objects.create_user(
+            username="mgr", email="mgr@test.com", password="pwd", role=Role.MANAGER
+        )
+        
+    def test_idor_user_detail_access(self):
+        """Test IDOR: A regular MANAGER should not be able to access another user's details via UserDetailView."""
+        from rest_framework.test import APIClient
+        from django.urls import reverse
+        
+        client = APIClient()
+        client.force_authenticate(user=self.manager)
+        
+        # Try to access HR's user detail page
+        url = reverse('user_detail', kwargs={'pk': self.hr_user.id})
+        response = client.get(url)
+        
+        # Manager should be forbidden (403) by the IsHR permission class
+        self.assertEqual(response.status_code, 403)
+
+    def test_hr_user_detail_access(self):
+        """Test that an HR user CAN access another user's details."""
+        from rest_framework.test import APIClient
+        from django.urls import reverse
+        
+        client = APIClient()
+        client.force_authenticate(user=self.hr_user)
+        
+        # Try to access Manager's user detail page
+        url = reverse('user_detail', kwargs={'pk': self.manager.id})
+        response = client.get(url)
+        
+        # HR should be allowed (200)
+        self.assertEqual(response.status_code, 200)
