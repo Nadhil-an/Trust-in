@@ -139,6 +139,39 @@ const MemberHomeScreen = ({ navigation }) => {
           </View>
         </TouchableOpacity>
 
+        {/* Donation & Monthly Autopay Hero Card */}
+        <View style={styles.donateHeroCard}>
+          <View style={styles.donateHeroLeft}>
+            <View style={styles.donateHeroBadge}>
+              <Ionicons name="sparkles" size={12} color="#0284c7" />
+              <Text style={styles.donateHeroBadgeText}>PAYMENT GATEWAY & AUTOPAY</Text>
+            </View>
+            <Text style={styles.donateHeroTitle}>Support Our Mission</Text>
+            <Text style={styles.donateHeroDesc}>
+              Make an instant one-time donation or setup monthly recurring autopay.
+            </Text>
+            <View style={styles.donateHeroBtns}>
+              <TouchableOpacity
+                style={styles.donateBtnPrimary}
+                onPress={() => navigation.navigate('Donate', { mode: 'ONETIME' })}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="heart" size={15} color={Colors.white} />
+                <Text style={styles.donateBtnPrimaryText}>Donate Now</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.donateBtnSecondary}
+                onPress={() => navigation.navigate('Donate', { mode: 'MONTHLY' })}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="repeat" size={15} color="#0284c7" />
+                <Text style={styles.donateBtnSecondaryText}>Monthly Autopay</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
         {/* Quick-Action Grid (4 equal rounded cards) */}
         <View style={styles.actionGrid}>
           {/* 1. My Donation */}
@@ -311,6 +344,84 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 5,
+  },
+  donateHeroCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1.5,
+    borderColor: '#bae6fd',
+    shadowColor: '#0284c7',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  donateHeroLeft: { flex: 1 },
+  donateHeroBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#f0f9ff',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+    marginBottom: 6,
+  },
+  donateHeroBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#0284c7',
+    letterSpacing: 0.5,
+  },
+  donateHeroTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+    marginBottom: 4,
+  },
+  donateHeroDesc: {
+    fontSize: 12,
+    color: Colors.gray600,
+    lineHeight: 17,
+    marginBottom: 12,
+  },
+  donateHeroBtns: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  donateBtnPrimary: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#0284c7',
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  donateBtnPrimaryText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: Colors.white,
+  },
+  donateBtnSecondary: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#f0f9ff',
+    borderWidth: 1.5,
+    borderColor: '#0284c7',
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  donateBtnSecondaryText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0284c7',
   },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   logoBadge: {
