@@ -229110,3 +229110,140 @@ Unauthorized: /api/auth/logout/
 [mHTTP POST /api/auth/refresh/ 200 [0.01, 10.162.176.21:11190][0m
 [mHTTP POST /api/auth/logout/ 200 [0.02, 10.162.176.21:59223][0m
 WebSocket DISCONNECT /ws/notify/ [10.162.176.21:64371]
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+[mHTTP POST /api/auth/login/ 200 [0.28, 10.162.176.21:62578][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:33831]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:33831]
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.162.176.21:33832][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 10.162.176.21:33833][0m
+[mHTTP GET /api/accounts/dashboard/?date=2026-10-20 200 [0.16, 10.162.176.21:33834][0m
+[mHTTP GET /api/accounts/dashboard/?date=2026-10-20 200 [0.03, 10.162.176.21:33835][0m
+[mHTTP POST /api/auth/logout/ 200 [0.02, 10.162.176.21:61385][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:33831]
+Unauthorized: /api/auth/login/
+[31;1mHTTP POST /api/auth/login/ 401 [0.21, 10.162.176.21:13455][0m
+Unauthorized: /api/auth/login/
+[31;1mHTTP POST /api/auth/login/ 401 [0.23, 10.162.176.21:6900][0m
+[mHTTP POST /api/auth/login/ 200 [0.22, 10.162.176.21:13934][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:58465]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:58465]
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.162.176.21:39314][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 10.162.176.21:39315][0m
+[mHTTP GET /api/accounts/dashboard/?date=2026-10-20 200 [0.05, 10.162.176.21:39313][0m
+[mHTTP GET /api/accounts/dashboard/?date=2026-10-20 200 [0.03, 10.162.176.21:38851][0m
+[mHTTP POST /api/auth/logout/ 200 [0.02, 10.162.176.21:64961][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:58465]
+[mHTTP POST /api/auth/login/ 200 [0.16, 10.162.176.21:42983][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:33916]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:33916]
+[mHTTP GET /api/core/features/ 200 [0.03, 10.162.176.21:49383][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.162.176.21:49382][0m
+[mHTTP GET /api/hr/dashboard/ 200 [0.05, 10.162.176.21:49384][0m
+[mHTTP GET /api/hr/dashboard/ 200 [0.03, 10.162.176.21:3047][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.02, 10.162.176.21:42375][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.01, 10.162.176.21:10519][0m
+[mHTTP GET /api/hr/members/?search= 200 [0.02, 10.162.176.21:6530][0m
+[mHTTP GET /api/hr/members/?search= 200 [0.02, 10.162.176.21:21963][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:33916]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:1322]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:1322]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:1322]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:32446]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:32446]
+[mHTTP GET /api/core/features/ 200 [0.03, 10.162.176.21:1324][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.162.176.21:1323][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 10.162.176.21:32447][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.162.176.21:32448][0m
+[mHTTP GET /api/hr/members/?search= 200 [0.04, 10.162.176.21:32449][0m
+[mHTTP GET /api/hr/members/?search= 200 [0.02, 10.162.176.21:32450][0m
+[mHTTP GET /api/core/notifications/ 200 [0.02, 10.162.176.21:28557][0m
+[mHTTP GET /api/core/notifications/ 200 [0.03, 10.162.176.21:37957][0m
+[mHTTP DELETE /api/core/notifications/all/read/ 200 [0.03, 10.162.176.21:53125][0m
+[mHTTP GET /api/core/notifications/ 200 [0.02, 10.162.176.21:19516][0m
+[mHTTP GET /api/core/notifications/ 200 [0.02, 10.162.176.21:22572][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:32446]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:20383]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:20383]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\hr_module\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\hr_module\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:48021]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:48021]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\hr_module\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:10301]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:10301]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\hr_module\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:29566]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:29566]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\hr_module\urls.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:47142]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:47142]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\hr_module\serializers.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:57392]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:57392]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:49082]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:49082]
+[mHTTP POST /api/auth/logout/ 200 [0.04, 10.162.176.21:17762][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:49082]
+[mHTTP POST /api/auth/login/ 200 [0.21, 10.162.176.21:22969][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:33374]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:33374]
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.162.176.21:33375][0m
+[mHTTP GET /api/core/features/ 200 [0.09, 10.162.176.21:33376][0m
+[mHTTP GET /api/accounts/dashboard/?date=2026-10-20 200 [0.11, 10.162.176.21:33377][0m
+[mHTTP GET /api/accounts/dashboard/?date=2026-10-20 200 [0.05, 10.162.176.21:33378][0m
+[mHTTP POST /api/auth/logout/ 200 [0.03, 10.162.176.21:62588][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:33374]
+[mHTTP POST /api/auth/login/ 200 [0.27, 10.162.176.21:26340][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:30291]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:30291]
+[mHTTP GET /api/core/features/ 200 [0.07, 10.162.176.21:10286][0m
+[mHTTP GET /api/auth/profile/ 200 [0.07, 10.162.176.21:10285][0m
+[mHTTP GET /api/manager/dashboard/ 200 [0.61, 10.162.176.21:31380][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.04, 10.162.176.21:39015][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.04, 10.162.176.21:44951][0m
+[mHTTP GET /api/manager/dashboard/ 200 [0.16, 10.162.176.21:65150][0m
+[mHTTP GET /api/hr/members/?search= 200 [0.03, 10.162.176.21:15767][0m
+[mHTTP GET /api/hr/members/?search= 200 [0.03, 10.162.176.21:19757][0m
+[mHTTP GET /api/hr/members/?search= 200 [0.01, 10.162.176.21:1147][0m
+Unauthorized: /api/auth/login/
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:30291]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:43491]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:43491]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:43491]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:51793]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:51793]
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.162.176.21:43492][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 10.162.176.21:43493][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.162.176.21:51794][0m
+[mHTTP GET /api/core/features/ 200 [0.05, 10.162.176.21:51795][0m
+[mHTTP GET /api/hr/members/?search= 200 [0.04, 10.162.176.21:51796][0m
+[mHTTP GET /api/hr/members/?search= 200 [0.03, 10.162.176.21:51797][0m

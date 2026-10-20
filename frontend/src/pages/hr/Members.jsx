@@ -5,7 +5,7 @@ import { format } from "date-fns"
 import toast from "react-hot-toast"
 import { isValidPhone, isValidEmail, isPositiveNumber } from "../../utils/validators"
 
-const init = { full_name:"", date_of_birth:"", gender:"MALE", phone:"", email:"", address:"", occupation:"", membership_type:"GENERAL", joining_date:format(new Date(),"yyyy-MM-dd"), monthly_fee:"100", status:"ACTIVE", blood_group:"", notes:"" }
+const init = { full_name:"", date_of_birth:"", gender:"MALE", phone:"", email:"", address:"", occupation:"", membership_type:"GENERAL", joining_date:format(new Date(),"yyyy-MM-dd"), monthly_fee:"100", status:"ACTIVE", blood_group:"", notes:"", password:"" }
 
 export default function Members() {
   const [items, setItems] = useState([])
@@ -16,6 +16,7 @@ export default function Members() {
   const [showViewModal, setShowViewModal] = useState(false)
   const [viewItem, setViewItem] = useState(null)
   const [form, setForm] = useState(init)
+  const [showPassword, setShowPassword] = useState(false)
   const [saving, setSaving] = useState(false)
 
   const load = useCallback(async () => {
@@ -40,19 +41,26 @@ export default function Members() {
     if (!isValidPhone(form.phone)) return toast.error("Enter a valid 10-digit phone number");
     if (form.email && !isValidEmail(form.email)) return toast.error("Enter a valid email");
     if (form.monthly_fee && !isPositiveNumber(form.monthly_fee)) return toast.error("Fee must be positive");
+    if (form.password && form.password.trim().length < 6) return toast.error("Password must be at least 6 characters");
     
     setSaving(true)
     try {
-      if (selected) await hrApi.members.update(selected.id, form)
-      else await hrApi.members.create(form)
-      toast.success("Saved."); setShowModal(false); load()
+      const payload = { ...form }
+      if (!payload.password || !payload.password.trim()) {
+        delete payload.password
+      }
+      if (selected) await hrApi.members.update(selected.id, payload)
+      else await hrApi.members.create(payload)
+      toast.success(selected ? (form.password ? "Member updated & password reset successfully!" : "Member updated successfully.") : "Member added successfully.");
+      setShowModal(false);
+      load()
     } catch (_) { toast.error("Save failed") } finally { setSaving(false) }
   }
 
   return (
     <div>
       <PageHeader title="Members" subtitle="Trust member management">
-        <button className="btn btn-primary" onClick={()=>{setSelected(null);setForm(init);setShowModal(true)}}>+ Add Member</button>
+        <button className="btn btn-primary" onClick={()=>{setSelected(null);setForm(init);setShowPassword(false);setShowModal(true)}}>+ Add Member</button>
       </PageHeader>
       <div className="data-card">
         <FilterBar search={search} onSearch={setSearch} />
@@ -70,7 +78,7 @@ export default function Members() {
                     <td><span className="badge badge-blue">{m.membership_type}</span></td>
                     <td>{m.joining_date ? format(new Date(m.joining_date),"dd MMM yyyy") : "-"}</td>
                     <td><span className={`badge ${m.status==="ACTIVE"?"badge-green":"badge-gray"}`}>{m.status}</span></td>
-                    <td><button className="btn btn-sm btn-secondary" onClick={(e)=>{e.stopPropagation(); setSelected(m);setForm({...m});setShowModal(true)}}>Edit</button></td>
+                    <td><button className="btn btn-sm btn-secondary" onClick={(e)=>{e.stopPropagation(); setSelected(m);setForm({...m, password:""});setShowPassword(false);setShowModal(true)}}>Edit</button></td>
                   </tr>
                 ))}
               </tbody>
@@ -95,6 +103,50 @@ export default function Members() {
               <div className="form-group"><label className="form-label">Monthly Fee (₹)</label><input className="form-control" type="number" value={form.monthly_fee} onChange={e=>F("monthly_fee",e.target.value)} /></div>
               <div className="form-group"><label className="form-label">Occupation</label><input className="form-control" value={form.occupation} onChange={e=>F("occupation",e.target.value)} /></div>
               <div className="form-group"><label className="form-label">Status</label><select className="form-control" value={form.status} onChange={e=>F("status",e.target.value)}>{["ACTIVE","INACTIVE","SUSPENDED","DECEASED"].map(s=><option key={s}>{s}</option>)}</select></div>
+              <div className="form-group">
+                <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>{selected ? "New Password" : "Login Password"}</span>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 500, color: '#6b7280' }}>
+                    {selected ? "(Leave blank to keep existing)" : "(Optional)"}
+                  </span>
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    className="form-control"
+                    type={showPassword ? "text" : "password"}
+                    value={form.password || ""}
+                    onChange={e => F("password", e.target.value)}
+                    placeholder={selected ? "Enter new password to reset login" : "Min 6 characters"}
+                    minLength={6}
+                    style={{ paddingRight: 40 }}
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(p => !p)}
+                    style={{
+                      position: 'absolute',
+                      right: '10px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: '#6b7280',
+                      fontSize: '14px',
+                      padding: '2px 4px',
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}
+                    title={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? '👁️' : '🔒'}
+                  </button>
+                </div>
+                <small style={{ color: '#6b7280', fontSize: '0.72rem', marginTop: '3px', display: 'block' }}>
+                  Sets password for membership login interface (mobile & web).
+                </small>
+              </div>
             </div>
             <div className="form-group"><label className="form-label">Address</label><textarea className="form-control" rows={2} value={form.address} onChange={e=>F("address",e.target.value)} /></div>
             <div className="form-group"><label className="form-label">Notes</label><textarea className="form-control" rows={2} value={form.notes} onChange={e=>F("notes",e.target.value)} /></div>
@@ -110,12 +162,13 @@ export default function Members() {
             <button className="btn btn-primary" onClick={() => {
               setShowViewModal(false);
               setSelected(viewItem);
-              setForm({...viewItem});
+              setForm({...viewItem, password: ""});
+              setShowPassword(false);
               setShowModal(true);
             }}>Edit Member</button>
           </>}>
           <div className="details-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div><strong style={{display:'block', fontSize:'0.75rem', color:'#6b7280', textTransform:'uppercase'}}>Member ID</strong><div>{viewItem.member_id || '-'}</div></div>
+            <div><strong style={{display:'block', fontSize:'0.75rem', color:'#6b7280', textTransform:'uppercase'}}>Member / Login ID</strong><div className="td-mono">{viewItem.member_id || viewItem.phone || '-'}</div></div>
             <div><strong style={{display:'block', fontSize:'0.75rem', color:'#6b7280', textTransform:'uppercase'}}>Full Name</strong><div>{viewItem.full_name || '-'}</div></div>
             <div><strong style={{display:'block', fontSize:'0.75rem', color:'#6b7280', textTransform:'uppercase'}}>Phone</strong><div>{viewItem.phone || '-'}</div></div>
             <div><strong style={{display:'block', fontSize:'0.75rem', color:'#6b7280', textTransform:'uppercase'}}>Email</strong><div>{viewItem.email || '-'}</div></div>

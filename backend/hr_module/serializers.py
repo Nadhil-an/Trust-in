@@ -9,6 +9,7 @@ from hr_module.models import (Member, MemberDocument, Volunteer, ExecutiveMember
 
 class MemberSerializer(serializers.ModelSerializer):
     document = serializers.FileField(required=False, write_only=True)
+    password = serializers.CharField(required=False, write_only=True, allow_blank=True, min_length=6)
 
     class Meta:
         model = Member
@@ -17,6 +18,7 @@ class MemberSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         document = validated_data.pop('document', None)
+        password = validated_data.pop('password', None)
         member = super().create(validated_data)
         if document:
             MemberDocument.objects.create(
@@ -25,10 +27,15 @@ class MemberSerializer(serializers.ModelSerializer):
                 file=document,
                 uploaded_by=validated_data.get('created_by')
             )
+        if password and str(password).strip():
+            from hr_module.views import sync_member_user_password
+            req_user = self.context['request'].user if 'request' in self.context else None
+            sync_member_user_password(member, str(password).strip(), request_user=req_user)
         return member
 
     def update(self, instance, validated_data):
         document = validated_data.pop('document', None)
+        password = validated_data.pop('password', None)
         member = super().update(instance, validated_data)
         if document:
             MemberDocument.objects.create(
@@ -37,6 +44,10 @@ class MemberSerializer(serializers.ModelSerializer):
                 file=document,
                 uploaded_by=self.context['request'].user if 'request' in self.context else None
             )
+        if password and str(password).strip():
+            from hr_module.views import sync_member_user_password
+            req_user = self.context['request'].user if 'request' in self.context else None
+            sync_member_user_password(member, str(password).strip(), request_user=req_user)
         return member
 
 

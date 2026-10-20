@@ -7,6 +7,7 @@ urlpatterns = [
     # Members
     path('members/', views.MemberListCreateView.as_view()),
     path('members/<uuid:pk>/', views.MemberDetailView.as_view()),
+    path('members/<uuid:pk>/reset-password/', views.MemberResetPasswordView.as_view()),
     path('members/<uuid:pk>/certificate/', views.MemberCertificateView.as_view()),
     path('members/<uuid:pk>/receipt-pdf/', views.MemberPdfView.as_view()),
     path('members/<uuid:pk>/receipt-image/', views.MemberImageView.as_view()),

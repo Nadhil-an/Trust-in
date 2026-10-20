@@ -51,14 +51,40 @@ class LoginView(APIView):
         if not username or not password:
             return Response({'error': 'Username and password are required.'}, status=400)
 
-        # Flexible user lookup by case-insensitive username, email, or encrypted phone number
+        # Flexible user lookup by case-insensitive username, email, staff_uid, or encrypted phone number
         clean_username = username.strip()
-        user_obj = User.objects.filter(Q(username__iexact=clean_username) | Q(email__iexact=clean_username)).first()
+        user_obj = User.objects.filter(
+            Q(username__iexact=clean_username) | Q(email__iexact=clean_username) | Q(staff_uid__iexact=clean_username)
+        ).first()
         if not user_obj:
             for u in User.objects.exclude(phone='').iterator():
                 if u.phone and u.phone.strip() == clean_username:
                     user_obj = u
                     break
+
+        if not user_obj:
+            # Check if clean_username matches a Member by member_id
+            from hr_module.models import Member
+            clean_mem_id = clean_username.replace('SLCT/MEM/', '').replace('MEM-', '').strip()
+            member_match = Member.objects.filter(
+                Q(member_id__iexact=clean_username) | Q(member_id__iexact=clean_mem_id)
+            ).first()
+            if member_match:
+                if member_match.created_by and getattr(member_match.created_by, 'role', None) == Role.MEMBER:
+                    user_obj = member_match.created_by
+                if not user_obj and member_match.phone:
+                    clean_mphone = member_match.phone.strip()
+                    for u in User.objects.filter(role=Role.MEMBER).iterator():
+                        if u.phone and u.phone.strip() == clean_mphone:
+                            user_obj = u
+                            break
+                if not user_obj and member_match.email:
+                    user_obj = User.objects.filter(role=Role.MEMBER, email__iexact=member_match.email.strip()).first()
+                if not user_obj:
+                    user_obj = User.objects.filter(
+                        role=Role.MEMBER
+                    ).filter(Q(username__iexact=member_match.member_id) | Q(username__iexact=clean_mem_id)).first()
+
 
         if user_obj and user_obj.is_account_locked():
             return Response({'error': 'Account is temporarily locked. Try again later.'}, status=403)
@@ -519,8 +545,10 @@ class RoleFeaturePermissionView(APIView):
                 mappings[perm.feature_key].append(perm.role)
             return Response(mappings)
             
-        perms = RoleFeaturePermission.objects.filter(role=request.user.role).values_list('feature_key', flat=True)
-        return Response(list(perms))
+        perms = list(RoleFeaturePermission.objects.filter(role=request.user.role).values_list('feature_key', flat=True))
+        if request.user.role == Role.MANAGER and 'hr_members' not in perms:
+            perms.append('hr_members')
+        return Response(perms)
 
     def post(self, request):
         """Update feature permissions (Admin only)"""

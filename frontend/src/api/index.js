@@ -211,6 +211,7 @@ export const hrApi = {
     create: (data) => api.post('/hr/members/', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
     get: (id) => api.get(`/hr/members/${id}/`),
     update: (id, data) => api.patch(`/hr/members/${id}/`, data),
+    resetPassword: (id, data) => api.post(`/hr/members/${id}/reset-password/`, data),
     delete: (id) => api.delete(`/hr/members/${id}/`),
     documents: (id) => api.get(`/hr/members/${id}/documents/`),
   },

@@ -44,6 +44,102 @@ def get_officer_for_user(user):
     return officer
 
 
+def sync_member_user_password(member, password, request_user=None):
+    """Finds or creates a User account with role MEMBER for the given Member, and sets the password."""
+    if not member or not password:
+        return None
+
+    import re
+    from core.models import User, Role, AuditLog
+    from django.db.models import Q
+
+    password = str(password).strip()
+    if not password:
+        return None
+
+    matched_users = []
+
+    # 1. By member.created_by if that user is a MEMBER
+    if member.created_by and getattr(member.created_by, 'role', None) == Role.MEMBER:
+        matched_users.append(member.created_by)
+
+    # 2. By phone number (check all MEMBER users since phone is EncryptedCharField)
+    if member.phone:
+        clean_phone = member.phone.strip()
+        for u in User.objects.filter(role=Role.MEMBER).iterator():
+            if u.phone and u.phone.strip() == clean_phone and u not in matched_users:
+                matched_users.append(u)
+
+    # 3. By email
+    if member.email:
+        for u in User.objects.filter(role=Role.MEMBER, email__iexact=member.email.strip()):
+            if u not in matched_users:
+                matched_users.append(u)
+
+    # 4. By username matching member_id or clean number
+    if member.member_id:
+        clean_mem_id = str(member.member_id).replace('MEM-', '').strip()
+        for u in User.objects.filter(role=Role.MEMBER).filter(Q(username__iexact=member.member_id) | Q(username__iexact=clean_mem_id)):
+            if u not in matched_users:
+                matched_users.append(u)
+
+    # 5. By full_name matching if unique
+    if not matched_users and member.full_name:
+        name_users = list(User.objects.filter(role=Role.MEMBER, full_name__iexact=member.full_name.strip()))
+        if len(name_users) == 1:
+            matched_users.append(name_users[0])
+
+    if matched_users:
+        for u in matched_users:
+            u.set_password(password)
+            u.failed_login_attempts = 0
+            u.locked_until = None
+            u.is_active = (member.status == 'ACTIVE')
+            if member.phone and not u.phone:
+                u.phone = member.phone
+            if member.full_name and u.full_name != member.full_name:
+                u.full_name = member.full_name
+            u.save()
+        primary_user = matched_users[0]
+    else:
+        # Create a new User account for this Member
+        base_username = (member.member_id or '').replace('MEM-', '').strip()
+        if not base_username:
+            base_username = re.sub(r'[^0-9]', '', member.phone)[-10:] if member.phone else member.full_name.lower().replace(' ', '_')
+
+        username = base_username
+        counter = 1
+        while User.objects.filter(username__iexact=username).exists():
+            username = f"{base_username}_{counter}"
+            counter += 1
+
+        email = (member.email or '').strip()
+        if not email or User.objects.filter(email__iexact=email).exists():
+            email = f"{username}@member.local"
+
+        primary_user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password,
+            full_name=member.full_name,
+            phone=member.phone or '',
+            role=Role.MEMBER,
+            is_active=(member.status == 'ACTIVE')
+        )
+
+    # Record Audit Log
+    operator_name = getattr(request_user, 'full_name', 'HR/Manager') if request_user else 'HR/Manager'
+    AuditLog.objects.create(
+        user=request_user if getattr(request_user, 'is_authenticated', False) else None,
+        action='MEMBER_PASSWORD_RESET',
+        module='HR',
+        record_type='Member',
+        record_id=str(member.id),
+        description=f"Login password set/reset for member {member.full_name} ({member.member_id}) by {operator_name}",
+    )
+
+    return primary_user
+
 
 class HRDashboardView(APIView):
     permission_classes = [IsHR]
@@ -187,6 +283,9 @@ class MemberListCreateView(generics.ListCreateAPIView):
         logger = logging.getLogger(__name__)
 
         member = serializer.save(created_by=self.request.user)
+        password = self.request.data.get('password')
+        if password and str(password).strip():
+            sync_member_user_password(member, str(password).strip(), request_user=self.request.user)
         push_dashboard_refresh(['HR', 'MANAGER', 'ADMIN', 'STAFF'])
 
         # Automated Membership Payment & Receipt Workflow
@@ -331,12 +430,32 @@ class MemberDetailView(generics.RetrieveUpdateDestroyAPIView):
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def perform_update(self, serializer):
-        serializer.save()
+        member = serializer.save()
+        password = self.request.data.get('password')
+        if password and str(password).strip():
+            sync_member_user_password(member, str(password).strip(), request_user=self.request.user)
         push_dashboard_refresh(['HR', 'MANAGER', 'ADMIN', 'STAFF'])
 
     def perform_destroy(self, instance):
         instance.delete()
         push_dashboard_refresh(['HR', 'MANAGER', 'ADMIN', 'STAFF'])
+
+
+class MemberResetPasswordView(APIView):
+    permission_classes = [IsAnyStaff, IsOwnerOrManagerOrHR]
+
+    def post(self, request, pk):
+        try:
+            member = Member.objects.get(pk=pk)
+        except Member.DoesNotExist:
+            return Response({'error': 'Member not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        password = request.data.get('password')
+        if not password or len(str(password).strip()) < 6:
+            return Response({'error': 'Password must be at least 6 characters.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        sync_member_user_password(member, str(password).strip(), request_user=request.user)
+        return Response({'message': f'Password for member "{member.full_name}" has been reset successfully.'})
 
 
 class MemberCertificateView(APIView):
