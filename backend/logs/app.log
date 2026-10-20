@@ -229253,3 +229253,6 @@ Unauthorized: /api/auth/profile/
 Forbidden: /api/core/users/3331e372-ef44-4448-9746-1318f0454da0/
 Unauthorized: /api/auth/profile/
 Forbidden: /api/core/users/5c9c8db8-979e-4682-af85-fa81d41ff7a7/
+Unauthorized: /api/auth/login/
+Unauthorized: /api/auth/login/
+Unauthorized: /api/auth/login/
