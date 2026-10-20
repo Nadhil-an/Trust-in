@@ -10,15 +10,42 @@ from hr_module.models import (Member, MemberDocument, Volunteer, ExecutiveMember
 class MemberSerializer(serializers.ModelSerializer):
     document = serializers.FileField(required=False, write_only=True)
     password = serializers.CharField(required=False, write_only=True, allow_blank=True, min_length=6)
+    username = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
         model = Member
         fields = '__all__'
         read_only_fields = ['id', 'member_id', 'created_by', 'created_at', 'updated_at']
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        from core.models import User, Role
+        import re
+        from django.db.models import Q
+        clean_phone = re.sub(r'[^0-9]', '', str(instance.phone or ''))[-10:]
+        clean_mem_id = str(instance.member_id or '').replace('MEM-', '').strip()
+        
+        user = None
+        if instance.created_by and getattr(instance.created_by, 'role', None) == Role.MEMBER:
+            user = instance.created_by
+        if not user and clean_phone:
+            user = User.objects.filter(role=Role.MEMBER).filter(
+                Q(username__iexact=clean_phone) | Q(username__iexact=str(instance.phone).strip())
+            ).first()
+        if not user and instance.member_id:
+            user = User.objects.filter(role=Role.MEMBER).filter(
+                Q(username__iexact=instance.member_id) | Q(username__iexact=clean_mem_id)
+            ).first()
+        if not user and instance.email:
+            user = User.objects.filter(role=Role.MEMBER, email__iexact=instance.email.strip()).first()
+        
+        data['username'] = user.username if user else (clean_phone or instance.member_id or '')
+        return data
+
     def create(self, validated_data):
         document = validated_data.pop('document', None)
         password = validated_data.pop('password', None)
+        username = validated_data.pop('username', None)
         member = super().create(validated_data)
         if document:
             MemberDocument.objects.create(
@@ -27,15 +54,15 @@ class MemberSerializer(serializers.ModelSerializer):
                 file=document,
                 uploaded_by=validated_data.get('created_by')
             )
-        if password and str(password).strip():
-            from hr_module.views import sync_member_user_password
-            req_user = self.context['request'].user if 'request' in self.context else None
-            sync_member_user_password(member, str(password).strip(), request_user=req_user)
+        from hr_module.views import sync_member_user_account
+        req_user = self.context['request'].user if 'request' in self.context else None
+        sync_member_user_account(member, password=password, username=username, request_user=req_user)
         return member
 
     def update(self, instance, validated_data):
         document = validated_data.pop('document', None)
         password = validated_data.pop('password', None)
+        username = validated_data.pop('username', None)
         member = super().update(instance, validated_data)
         if document:
             MemberDocument.objects.create(
@@ -44,10 +71,9 @@ class MemberSerializer(serializers.ModelSerializer):
                 file=document,
                 uploaded_by=self.context['request'].user if 'request' in self.context else None
             )
-        if password and str(password).strip():
-            from hr_module.views import sync_member_user_password
-            req_user = self.context['request'].user if 'request' in self.context else None
-            sync_member_user_password(member, str(password).strip(), request_user=req_user)
+        from hr_module.views import sync_member_user_account
+        req_user = self.context['request'].user if 'request' in self.context else None
+        sync_member_user_account(member, password=password, username=username, request_user=req_user)
         return member
 
 

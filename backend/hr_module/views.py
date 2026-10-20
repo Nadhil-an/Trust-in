@@ -44,18 +44,22 @@ def get_officer_for_user(user):
     return officer
 
 
-def sync_member_user_password(member, password, request_user=None):
-    """Finds or creates a User account with role MEMBER for the given Member, and sets the password."""
-    if not member or not password:
+def sync_member_user_account(member, password=None, username=None, request_user=None):
+    """
+    Finds or creates a User account with role MEMBER for the given Member in the database (PostgreSQL in prod).
+    Updates username if provided.
+    Updates password if provided.
+    """
+    if not member:
         return None
 
     import re
     from core.models import User, Role, AuditLog
     from django.db.models import Q
 
-    password = str(password).strip()
-    if not password:
-        return None
+    clean_phone = re.sub(r'[^0-9]', '', str(member.phone or ''))[-10:]
+    clean_mem_id = str(member.member_id or '').replace('MEM-', '').strip()
+    target_username = (username or '').strip()
 
     matched_users = []
 
@@ -63,37 +67,42 @@ def sync_member_user_password(member, password, request_user=None):
     if member.created_by and getattr(member.created_by, 'role', None) == Role.MEMBER:
         matched_users.append(member.created_by)
 
-    # 2. By phone number (check all MEMBER users since phone is EncryptedCharField)
-    if member.phone:
-        clean_phone = member.phone.strip()
-        for u in User.objects.filter(role=Role.MEMBER).iterator():
-            if u.phone and u.phone.strip() == clean_phone and u not in matched_users:
+    # 2. By target_username if provided
+    if target_username:
+        for u in User.objects.filter(role=Role.MEMBER, username__iexact=target_username):
+            if u not in matched_users:
                 matched_users.append(u)
 
-    # 3. By email
+    # 3. By phone number (check username or phone)
+    if clean_phone:
+        for u in User.objects.filter(role=Role.MEMBER).filter(Q(username__iexact=clean_phone) | Q(username__iexact=str(member.phone).strip())):
+            if u not in matched_users:
+                matched_users.append(u)
+        for u in User.objects.filter(role=Role.MEMBER).iterator():
+            if u.phone and u.phone.strip() in [clean_phone, str(member.phone).strip()] and u not in matched_users:
+                matched_users.append(u)
+
+    # 4. By member_id
+    if member.member_id:
+        for u in User.objects.filter(role=Role.MEMBER).filter(Q(username__iexact=member.member_id) | Q(username__iexact=clean_mem_id)):
+            if u not in matched_users:
+                matched_users.append(u)
+
+    # 5. By email
     if member.email:
         for u in User.objects.filter(role=Role.MEMBER, email__iexact=member.email.strip()):
             if u not in matched_users:
                 matched_users.append(u)
 
-    # 4. By username matching member_id or clean number
-    if member.member_id:
-        clean_mem_id = str(member.member_id).replace('MEM-', '').strip()
-        for u in User.objects.filter(role=Role.MEMBER).filter(Q(username__iexact=member.member_id) | Q(username__iexact=clean_mem_id)):
-            if u not in matched_users:
-                matched_users.append(u)
-
-    # 5. By full_name matching if unique
-    if not matched_users and member.full_name:
-        name_users = list(User.objects.filter(role=Role.MEMBER, full_name__iexact=member.full_name.strip()))
-        if len(name_users) == 1:
-            matched_users.append(name_users[0])
-
     if matched_users:
         for u in matched_users:
-            u.set_password(password)
-            u.failed_login_attempts = 0
-            u.locked_until = None
+            if password and str(password).strip():
+                u.set_password(str(password).strip())
+                u.failed_login_attempts = 0
+                u.locked_until = None
+            if target_username and target_username != u.username:
+                if not User.objects.filter(username__iexact=target_username).exclude(id=u.id).exists():
+                    u.username = target_username
             u.is_active = (member.status == 'ACTIVE')
             if member.phone and not u.phone:
                 u.phone = member.phone
@@ -102,25 +111,24 @@ def sync_member_user_password(member, password, request_user=None):
             u.save()
         primary_user = matched_users[0]
     else:
-        # Create a new User account for this Member
-        base_username = (member.member_id or '').replace('MEM-', '').strip()
-        if not base_username:
-            base_username = re.sub(r'[^0-9]', '', member.phone)[-10:] if member.phone else member.full_name.lower().replace(' ', '_')
-
-        username = base_username
+        # Create a new User account for this Member in database
+        base_username = target_username or clean_phone or clean_mem_id or (member.phone or member.full_name.lower().replace(' ', '_'))
+        username_val = base_username
         counter = 1
-        while User.objects.filter(username__iexact=username).exists():
-            username = f"{base_username}_{counter}"
+        while User.objects.filter(username__iexact=username_val).exists():
+            username_val = f"{base_username}_{counter}"
             counter += 1
 
-        email = (member.email or '').strip()
-        if not email or User.objects.filter(email__iexact=email).exists():
-            email = f"{username}@member.local"
+        email_val = (member.email or '').strip()
+        if not email_val or User.objects.filter(email__iexact=email_val).exists():
+            email_val = f"{username_val}@member.local"
+
+        pass_to_set = str(password).strip() if (password and str(password).strip()) else f"Member@{clean_phone[-4:] if len(clean_phone)>=4 else '1234'}"
 
         primary_user = User.objects.create_user(
-            username=username,
-            email=email,
-            password=password,
+            username=username_val,
+            email=email_val,
+            password=pass_to_set,
             full_name=member.full_name,
             phone=member.phone or '',
             role=Role.MEMBER,
@@ -131,14 +139,19 @@ def sync_member_user_password(member, password, request_user=None):
     operator_name = getattr(request_user, 'full_name', 'HR/Manager') if request_user else 'HR/Manager'
     AuditLog.objects.create(
         user=request_user if getattr(request_user, 'is_authenticated', False) else None,
-        action='MEMBER_PASSWORD_RESET',
+        action='RESET_PASSWORD' if (password and str(password).strip()) else 'UPDATE_MEMBER_USER',
         module='HR',
-        record_type='Member',
-        record_id=str(member.id),
-        description=f"Login password set/reset for member {member.full_name} ({member.member_id}) by {operator_name}",
+        record_type='User',
+        record_id=str(primary_user.id),
+        reference_number=member.member_id,
+        description=f"User {primary_user.username} synced for member {member.full_name} ({member.member_id}) by {operator_name}"
     )
-
     return primary_user
+
+
+def sync_member_user_password(member, password, request_user=None):
+    return sync_member_user_account(member, password=password, request_user=request_user)
+
 
 
 class HRDashboardView(APIView):

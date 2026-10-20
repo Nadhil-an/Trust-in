@@ -5,7 +5,7 @@ import { format } from "date-fns"
 import toast from "react-hot-toast"
 import { isValidPhone, isValidEmail, isPositiveNumber } from "../../utils/validators"
 
-const init = { full_name:"", date_of_birth:"", gender:"MALE", phone:"", email:"", address:"", occupation:"", membership_type:"GENERAL", joining_date:format(new Date(),"yyyy-MM-dd"), monthly_fee:"100", status:"ACTIVE", blood_group:"", notes:"", password:"" }
+const init = { full_name:"", date_of_birth:"", gender:"MALE", phone:"", email:"", address:"", occupation:"", membership_type:"GENERAL", joining_date:format(new Date(),"yyyy-MM-dd"), monthly_fee:"100", status:"ACTIVE", blood_group:"", notes:"", password:"", username:"" }
 
 export default function Members() {
   const [items, setItems] = useState([])
@@ -78,7 +78,7 @@ export default function Members() {
                     <td><span className="badge badge-blue">{m.membership_type}</span></td>
                     <td>{m.joining_date ? format(new Date(m.joining_date),"dd MMM yyyy") : "-"}</td>
                     <td><span className={`badge ${m.status==="ACTIVE"?"badge-green":"badge-gray"}`}>{m.status}</span></td>
-                    <td><button className="btn btn-sm btn-secondary" onClick={(e)=>{e.stopPropagation(); setSelected(m);setForm({...m, password:""});setShowPassword(false);setShowModal(true)}}>Edit</button></td>
+                    <td><button className="btn btn-sm btn-secondary" onClick={(e)=>{e.stopPropagation(); setSelected(m);setForm({...m, username: m.username || m.phone || m.member_id || "", password:""});setShowPassword(false);setShowModal(true)}}>Edit</button></td>
                   </tr>
                 ))}
               </tbody>
@@ -105,12 +105,29 @@ export default function Members() {
               <div className="form-group"><label className="form-label">Status</label><select className="form-control" value={form.status} onChange={e=>F("status",e.target.value)}>{["ACTIVE","INACTIVE","SUSPENDED","DECEASED"].map(s=><option key={s}>{s}</option>)}</select></div>
               <div className="form-group">
                 <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span>{selected ? "New Password" : "Login Password"}</span>
+                  <span>Username</span>
                   <span style={{ fontSize: '0.72rem', fontWeight: 500, color: '#6b7280' }}>
-                    {selected ? "(Leave blank to keep existing)" : "(Optional)"}
+                    (Login ID)
                   </span>
                 </label>
-                <div style={{ position: 'relative' }}>
+                <input
+                  className="form-control td-mono"
+                  value={form.username || ""}
+                  onChange={e => F("username", e.target.value.trim())}
+                  placeholder="e.g. 9400883082"
+                />
+                <small style={{ color: '#6b7280', fontSize: '0.72rem', marginTop: '3px', display: 'block' }}>
+                  Login ID for mobile & web dashboard.
+                </small>
+              </div>
+              <div className="form-group" style={{ gridColumn: 'span 3' }}>
+                <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontWeight: 600 }}>{selected ? "Reset Password" : "Login Password"}</span>
+                  <span style={{ fontSize: '0.72rem', fontWeight: 500, color: '#6b7280' }}>
+                    {selected ? "(Leave blank to keep existing password)" : "(Optional — min 6 chars)"}
+                  </span>
+                </label>
+                <div style={{ position: 'relative', maxWidth: '420px' }}>
                   <input
                     className="form-control"
                     type={showPassword ? "text" : "password"}
@@ -144,7 +161,7 @@ export default function Members() {
                   </button>
                 </div>
                 <small style={{ color: '#6b7280', fontSize: '0.72rem', marginTop: '3px', display: 'block' }}>
-                  Sets password for membership login interface (mobile & web).
+                  Once saved, the password will be securely updated in the database server for this member.
                 </small>
               </div>
             </div>
@@ -162,7 +179,7 @@ export default function Members() {
             <button className="btn btn-primary" onClick={() => {
               setShowViewModal(false);
               setSelected(viewItem);
-              setForm({...viewItem, password: ""});
+              setForm({...viewItem, username: viewItem.username || viewItem.phone || viewItem.member_id || "", password: ""});
               setShowPassword(false);
               setShowModal(true);
             }}>Edit Member</button>
