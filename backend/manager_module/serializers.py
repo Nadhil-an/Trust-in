@@ -22,6 +22,7 @@ class AssessmentPhotoSerializer(serializers.ModelSerializer):
 
 class AssessmentRequestListSerializer(serializers.ModelSerializer):
     requested_by_name = serializers.SerializerMethodField()
+    requested_by_role = serializers.SerializerMethodField()
     reviewed_by_name = serializers.SerializerMethodField()
     has_fao_report = serializers.SerializerMethodField()
     has_aco_calculation = serializers.SerializerMethodField()
@@ -35,9 +36,9 @@ class AssessmentRequestListSerializer(serializers.ModelSerializer):
             'id', 'request_number', 'request_type', 'category', 'priority', 'status',
             'source', 'purpose', 'description',
             'amount_requested', 'amount_approved', 'amount_disbursed',
-            'beneficiary_name', 'beneficiary_age', 'beneficiary_phone', 'beneficiary_address',
+            'manager_remarks', 'beneficiary_name', 'beneficiary_age', 'beneficiary_phone', 'beneficiary_address',
             'eligibility',
-            'requested_by_name', 'reviewed_by_name', 'required_date',
+            'requested_by_name', 'requested_by_role', 'reviewed_by_name', 'required_date',
             'has_fao_report', 'has_aco_calculation', 'has_geo_report',
             'recommended_amount',
             'created_at', 'submitted_at', 'approved_at', 'updated_at',
@@ -46,6 +47,9 @@ class AssessmentRequestListSerializer(serializers.ModelSerializer):
 
     def get_requested_by_name(self, obj):
         return obj.requested_by.full_name if obj.requested_by else ''
+
+    def get_requested_by_role(self, obj):
+        return obj.requested_by.role if obj.requested_by else ''
 
     def get_reviewed_by_name(self, obj):
         return obj.reviewed_by.full_name if obj.reviewed_by else ''

@@ -266,11 +266,37 @@ class AssessmentRequestListCreateView(generics.ListCreateAPIView):
         return qs.order_by('-created_at')
 
     def perform_create(self, serializer):
-        req = serializer.save(
-            requested_by=self.request.user,
-            status=RequestStatus.SUBMITTED,
-            submitted_at=timezone.now()
-        )
+        kwargs = {
+            'requested_by': self.request.user,
+            'status': RequestStatus.SUBMITTED,
+            'submitted_at': timezone.now()
+        }
+        custom_date = self.request.data.get('date') or self.request.data.get('created_at') or self.request.data.get('required_date')
+        if custom_date:
+            try:
+                from django.utils.dateparse import parse_date, parse_datetime
+                import datetime
+                parsed = parse_datetime(str(custom_date))
+                d = None
+                if not parsed:
+                    d = parse_date(str(custom_date))
+                    if d:
+                        now_time = timezone.now().time()
+                        combined = datetime.datetime.combine(d, now_time)
+                        parsed = timezone.make_aware(combined) if timezone.is_naive(combined) else combined
+                if parsed:
+                    kwargs['created_at'] = parsed
+                    kwargs['required_date'] = d if d else parsed.date()
+            except Exception:
+                pass
+
+        req = serializer.save(**kwargs)
+        if 'created_at' in kwargs:
+            AssessmentRequest.objects.filter(pk=req.pk).update(
+                created_at=kwargs['created_at'],
+                required_date=kwargs.get('required_date', req.required_date)
+            )
+            req.refresh_from_db()
         AuditLog.objects.create(
             user=self.request.user, action='CREATE_ASSESSMENT', module='MANAGER',
             record_type='AssessmentRequest', record_id=str(req.id),
@@ -301,6 +327,17 @@ class AssessmentRequestDetailView(generics.RetrieveUpdateDestroyAPIView):
         push_dashboard_refresh(['MANAGER', 'ADMIN', 'STAFF'])
 
     def perform_destroy(self, instance):
+        AuditLog.objects.create(
+            user=self.request.user,
+            action='DELETE_ASSESSMENT',
+            module='MANAGER',
+            record_type='AssessmentRequest',
+            record_id=str(instance.id),
+            reference_number=instance.request_number,
+            description=f'Permanently deleted assessment request {instance.request_number} ({instance.beneficiary_name})',
+        )
+        if hasattr(instance, 'disbursement'):
+            instance.disbursement.delete()
         instance.delete()
         push_dashboard_refresh(['MANAGER', 'ADMIN', 'STAFF'])
 

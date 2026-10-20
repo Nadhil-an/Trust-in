@@ -155,7 +155,7 @@ REST_FRAMEWORK = {
 # ── CORS ──────────────────────────────────────────────────────────
 CORS_ALLOWED_ORIGINS = os.getenv(
     'CORS_ALLOWED_ORIGINS',
-    'http://localhost:5173,http://127.0.0.1:5173,http://localhost:8081,http://192.168.1.34:8081,http://192.168.1.34:19000,http://192.168.1.34:19006,http://10.18.180.21:5173,http://10.18.180.21:5174,http://10.18.180.21:8081,http://10.18.180.21:19000,http://10.18.180.21:19006,https://dashboard.sreelakshmicharity.org'
+    'http://localhost:5173,http://127.0.0.1:5173,http://localhost:8081,http://192.168.1.34:8081,http://192.168.1.34:19000,http://192.168.1.34:19006,http://10.18.180.21:5173,http://10.18.180.21:5174,http://10.18.180.21:8081,http://10.18.180.21:19000,http://10.18.180.21:19006,https://dashboard.sreelakshmicharity.org,http://10.162.176.21:5173,http://10.162.176.21:5174,http://10.162.176.21:8081,http://10.162.176.21:19000,http://10.162.176.21:19006'
 ).split(',')
 
 CSRF_TRUSTED_ORIGINS = [

@@ -228747,3 +228747,303 @@ WebSocket CONNECT /ws/notify/ [10.246.183.21:6252]
 [mHTTP GET /api/hr/birthday-alerts/ 200 [0.05, 10.246.183.21:64101][0m
 [mHTTP POST /api/auth/logout/ 200 [0.03, 10.246.183.21:17297][0m
 WebSocket DISCONNECT /ws/notify/ [10.246.183.21:6252]
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\sreelakshmi_trust\settings.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+[mHTTP POST /api/auth/login/ 200 [0.27, 10.162.176.21:35311][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:43515]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:43515]
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.162.176.21:23430][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 10.162.176.21:23431][0m
+[mHTTP GET /api/manager/dashboard/ 200 [0.80, 10.162.176.21:23432][0m
+[mHTTP GET /api/manager/dashboard/ 200 [0.09, 10.162.176.21:63629][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.03, 10.162.176.21:3471][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.02, 10.162.176.21:22044][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date= 200 [0.05, 10.162.176.21:17701][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date= 200 [0.05, 10.162.176.21:39951][0m
+[mHTTP DELETE /api/manager/requests/51db2f31-1642-4cef-a5c9-382cf0b33d1a/ 204 [0.05, 10.162.176.21:6939][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date= 200 [0.05, 10.162.176.21:56371][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date= 200 [0.04, 10.162.176.21:2166][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date= 200 [0.05, 10.162.176.21:10965][0m
+[mHTTP DELETE /api/manager/requests/2df2189f-366a-4ddc-8736-99330b481802/ 204 [0.04, 10.162.176.21:13956][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date= 200 [0.04, 10.162.176.21:25433][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date= 200 [0.04, 10.162.176.21:9676][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date= 200 [0.05, 10.162.176.21:37196][0m
+[mHTTP DELETE /api/manager/requests/52a8879d-ec35-4a20-93d0-e25d0cbbc46d/ 204 [0.07, 10.162.176.21:46961][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date= 200 [0.04, 10.162.176.21:8656][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date= 200 [0.04, 10.162.176.21:59282][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date= 200 [0.04, 10.162.176.21:56754][0m
+[mHTTP POST /api/manager/requests/ 201 [0.06, 10.162.176.21:52864][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date= 200 [0.05, 10.162.176.21:10274][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date= 200 [0.04, 10.162.176.21:55188][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-07-20 200 [0.01, 10.162.176.21:7962][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-07-21 200 [0.01, 10.162.176.21:19280][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-05-21 200 [0.02, 10.162.176.21:56943][0m
+[mHTTP GET /api/core/notifications/ 200 [0.01, 10.162.176.21:43730][0m
+[mHTTP GET /api/core/notifications/ 200 [0.01, 10.162.176.21:64080][0m
+[mHTTP POST /api/auth/logout/ 200 [0.02, 10.162.176.21:18838][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:43515]
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+[mHTTP POST /api/auth/login/ 200 [0.19, 10.162.176.21:8380][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:29415]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:29415]
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.162.176.21:49936][0m
+[mHTTP GET /api/core/features/ 200 [0.15, 10.162.176.21:49937][0m
+[mHTTP GET /api/manager/partners/?date=2026-10-20 200 [0.13, 10.162.176.21:54221][0m
+[mHTTP GET /api/manager/requests/?date=2026-10-20 200 [0.14, 10.162.176.21:54220][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-20&source=DONATION 200 [0.19, 10.162.176.21:54218][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-20&source=MEMBERSHIP 200 [0.19, 10.162.176.21:54219][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-20&source=INWARD 200 [0.09, 10.162.176.21:4151][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-10-20&category=OUTWARD 200 [0.08, 10.162.176.21:7695][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-10-20&category=PURCHASE 200 [0.07, 10.162.176.21:5266][0m
+[mHTTP GET /api/manager/requests/?date=2026-10-20 200 [0.06, 10.162.176.21:24926][0m
+[mHTTP GET /api/manager/partners/?date=2026-10-20 200 [0.07, 10.162.176.21:59551][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-20&source=DONATION 200 [0.08, 10.162.176.21:35731][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-20&source=INWARD 200 [0.07, 10.162.176.21:25904][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-20&source=MEMBERSHIP 200 [0.08, 10.162.176.21:11808][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-10-20&category=OUTWARD 200 [0.06, 10.162.176.21:4034][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-10-20&category=PURCHASE 200 [0.05, 10.162.176.21:22665][0m
+[mHTTP GET /api/core/events/?date=2026-10-20 200 [0.32, 10.162.176.21:20056][0m
+[mHTTP GET /api/core/events/?date=2026-10-20 200 [0.01, 10.162.176.21:24019][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-05-21 200 [0.02, 10.162.176.21:35685][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-05-21 200 [0.02, 10.162.176.21:43760][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-10-21 200 [0.01, 10.162.176.21:40348][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-10-20 200 [0.01, 10.162.176.21:32137][0m
+[mHTTP POST /api/manager/requests/ 201 [0.06, 10.162.176.21:3353][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-10-20 200 [0.01, 10.162.176.21:5507][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-10-26 200 [0.02, 10.162.176.21:25185][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:29415]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:13893]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:13893]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\manager_module\serializers.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:61757]
+WebSocket REJECT /ws/notify/ [10.162.176.21:61757]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:61757]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:13674]
+WebSocket REJECT /ws/notify/ [10.162.176.21:13674]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:13674]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:2534]
+WebSocket REJECT /ws/notify/ [10.162.176.21:2534]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:2534]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:63208]
+WebSocket REJECT /ws/notify/ [10.162.176.21:63208]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:63208]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:24271]
+WebSocket REJECT /ws/notify/ [10.162.176.21:24271]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:24271]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:47932]
+WebSocket REJECT /ws/notify/ [10.162.176.21:47932]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:47932]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:9406]
+WebSocket REJECT /ws/notify/ [10.162.176.21:9406]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:9406]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:17732]
+WebSocket REJECT /ws/notify/ [10.162.176.21:17732]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:17732]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:1860]
+WebSocket REJECT /ws/notify/ [10.162.176.21:1860]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:1860]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:18032]
+WebSocket REJECT /ws/notify/ [10.162.176.21:18032]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:18032]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:30358]
+WebSocket REJECT /ws/notify/ [10.162.176.21:30358]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:30358]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:29281]
+WebSocket REJECT /ws/notify/ [10.162.176.21:29281]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:29281]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:47913]
+WebSocket REJECT /ws/notify/ [10.162.176.21:47913]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:47913]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:41864]
+WebSocket REJECT /ws/notify/ [10.162.176.21:41864]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:41864]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:58527]
+WebSocket REJECT /ws/notify/ [10.162.176.21:58527]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:58527]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:31982]
+WebSocket REJECT /ws/notify/ [10.162.176.21:31982]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:31982]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:33614]
+WebSocket REJECT /ws/notify/ [10.162.176.21:33614]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:33614]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:36485]
+WebSocket REJECT /ws/notify/ [10.162.176.21:36485]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:36485]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:8798]
+WebSocket REJECT /ws/notify/ [10.162.176.21:8798]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:8798]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:7925]
+WebSocket REJECT /ws/notify/ [10.162.176.21:7925]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:7925]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:44921]
+WebSocket REJECT /ws/notify/ [10.162.176.21:44921]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:44921]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:49234]
+WebSocket REJECT /ws/notify/ [10.162.176.21:49234]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:49234]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:33100]
+WebSocket REJECT /ws/notify/ [10.162.176.21:33100]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:33100]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:8527]
+WebSocket REJECT /ws/notify/ [10.162.176.21:8527]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:8527]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:26445]
+WebSocket REJECT /ws/notify/ [10.162.176.21:26445]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:26445]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:32258]
+WebSocket REJECT /ws/notify/ [10.162.176.21:32258]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:32258]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:31027]
+WebSocket REJECT /ws/notify/ [10.162.176.21:31027]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:31027]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:10090]
+WebSocket REJECT /ws/notify/ [10.162.176.21:10090]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:10090]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:22307]
+WebSocket REJECT /ws/notify/ [10.162.176.21:22307]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:22307]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:4343]
+WebSocket REJECT /ws/notify/ [10.162.176.21:4343]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:4343]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:13253]
+WebSocket REJECT /ws/notify/ [10.162.176.21:13253]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:13253]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:26648]
+WebSocket REJECT /ws/notify/ [10.162.176.21:26648]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:26648]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:37671]
+WebSocket REJECT /ws/notify/ [10.162.176.21:37671]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:37671]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:24886]
+WebSocket REJECT /ws/notify/ [10.162.176.21:24886]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:24886]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:20378]
+WebSocket REJECT /ws/notify/ [10.162.176.21:20378]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:20378]
+Unauthorized: /api/manager/requests/
+Unauthorized: /api/core/features/
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-10-26 401 [0.05, 10.162.176.21:24887][0m
+[31;1mHTTP GET /api/core/features/ 401 [0.04, 10.162.176.21:20376][0m
+[31;1mHTTP GET /api/auth/profile/ 401 [0.03, 10.162.176.21:20377][0m
+Unauthorized: /api/manager/requests/
+Unauthorized: /api/core/features/
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-10-26 401 [0.04, 10.162.176.21:20379][0m
+[31;1mHTTP GET /api/core/features/ 401 [0.04, 10.162.176.21:20380][0m
+[31;1mHTTP GET /api/auth/profile/ 401 [0.04, 10.162.176.21:20381][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.15, 10.162.176.21:48135][0m
+[mHTTP GET /api/core/features/ 200 [0.05, 10.162.176.21:43784][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.162.176.21:43785][0m
+[mHTTP GET /api/core/features/ 200 [0.07, 10.162.176.21:23199][0m
+[mHTTP GET /api/auth/profile/ 200 [0.07, 10.162.176.21:11830][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-10-26 200 [0.14, 10.162.176.21:43783][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-10-26 200 [0.02, 10.162.176.21:21041][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:64655]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:64655]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:64655]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:50993]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:50993]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:50993]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:21462]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:21462]
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.162.176.21:50998][0m
+[mHTTP GET /api/core/features/ 200 [0.07, 10.162.176.21:50996][0m
+[mHTTP GET /api/auth/profile/ 200 [0.07, 10.162.176.21:50995][0m
+[mHTTP GET /api/core/features/ 200 [0.06, 10.162.176.21:21463][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-10-26 200 [0.08, 10.162.176.21:50994][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-10-26 200 [0.08, 10.162.176.21:50997][0m
+[mHTTP GET /api/manager/requests/868edbbb-4586-4a85-a8fc-d2e5f326c0b8/history/ 200 [0.02, 10.162.176.21:16851][0m
+[mHTTP GET /api/manager/requests/868edbbb-4586-4a85-a8fc-d2e5f326c0b8/ 200 [0.03, 10.162.176.21:56414][0m
+[mHTTP GET /api/manager/requests/868edbbb-4586-4a85-a8fc-d2e5f326c0b8/history/ 200 [0.03, 10.162.176.21:10888][0m
+[mHTTP GET /api/manager/requests/868edbbb-4586-4a85-a8fc-d2e5f326c0b8/ 200 [0.03, 10.162.176.21:52427][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-10-26 200 [0.02, 10.162.176.21:3019][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-10-26 200 [0.02, 10.162.176.21:57499][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-10-20 200 [0.01, 10.162.176.21:49005][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-10-19 200 [0.01, 10.162.176.21:50280][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-10-20 200 [0.01, 10.162.176.21:15248][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-10-14 200 [0.01, 10.162.176.21:44185][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:21462]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:37620]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:37620]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:37620]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:41840]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:41840]
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-10-14 200 [0.03, 10.162.176.21:37621][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 10.162.176.21:37623][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.162.176.21:37622][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-10-14 200 [0.04, 10.162.176.21:41841][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 10.162.176.21:41842][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.162.176.21:41843][0m
+[mHTTP GET /api/manager/partners/?search= 200 [0.02, 10.162.176.21:52773][0m
+[mHTTP GET /api/manager/partners/?search= 200 [0.01, 10.162.176.21:7678][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-10-14 200 [0.01, 10.162.176.21:30707][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-10-14 200 [0.01, 10.162.176.21:20618][0m
+[mHTTP GET /api/accounts/income/?search=&source=MEMBERSHIP&page=1&page_size=10 200 [0.49, 10.162.176.21:9161][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.50, 10.162.176.21:14247][0m
+[mHTTP GET /api/accounts/income/?search=&source=MEMBERSHIP&page=1&page_size=10 200 [0.04, 10.162.176.21:52131][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.04, 10.162.176.21:14826][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-10-14 200 [0.01, 10.162.176.21:23570][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-10-14 200 [0.01, 10.162.176.21:44073][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-10-20 200 [0.02, 10.162.176.21:5125][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-10-19 200 [0.02, 10.162.176.21:22871][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-10-13 200 [0.01, 10.162.176.21:16491][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date= 200 [0.04, 10.162.176.21:20158][0m
+[mHTTP POST /api/manager/requests/ 201 [0.09, 10.162.176.21:61060][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date= 200 [0.05, 10.162.176.21:60144][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-10-20 200 [0.02, 10.162.176.21:3612][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:41840]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:56611]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:56611]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:56611]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:53885]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:53885]
+[mHTTP GET /api/core/features/ 200 [0.04, 10.162.176.21:56614][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.162.176.21:56613][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-10-20 200 [0.05, 10.162.176.21:56612][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.162.176.21:53887][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 10.162.176.21:53886][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-10-20 200 [0.04, 10.162.176.21:53888][0m
+[mHTTP GET /api/manager/requests/2858281f-7266-4f8a-be34-01ba808a7aba/history/ 200 [0.05, 10.162.176.21:20839][0m
+[mHTTP GET /api/manager/requests/2858281f-7266-4f8a-be34-01ba808a7aba/ 200 [0.05, 10.162.176.21:20838][0m
+[mHTTP GET /api/manager/requests/2858281f-7266-4f8a-be34-01ba808a7aba/history/ 200 [0.02, 10.162.176.21:49684][0m
+[mHTTP GET /api/manager/requests/2858281f-7266-4f8a-be34-01ba808a7aba/ 200 [0.02, 10.162.176.21:10866][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-10-20 200 [0.02, 10.162.176.21:24923][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-10-20 200 [0.02, 10.162.176.21:22074][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=STAFF&date=2026-10-20 200 [0.01, 10.162.176.21:35384][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=STAFF&date= 200 [0.03, 10.162.176.21:37861][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date= 200 [0.05, 10.162.176.21:1092][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date= 200 [0.03, 10.162.176.21:36934][0m
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\permissions.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:41324]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:41324]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:41324]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:34050]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:34050]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:34050]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:19238]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:19238]
+[mHTTP GET /api/core/features/ 200 [0.06, 10.162.176.21:34053][0m
+[mHTTP GET /api/auth/profile/ 200 [0.08, 10.162.176.21:34052][0m
+[mHTTP GET /api/core/features/ 200 [0.03, 10.162.176.21:19239][0m
+[mHTTP GET /api/auth/profile/ 200 [0.02, 10.162.176.21:19240][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date= 200 [0.34, 10.162.176.21:34051][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date= 200 [0.04, 10.162.176.21:19241][0m

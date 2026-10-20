@@ -11,26 +11,78 @@ const CATEGORIES = ['MEDICAL','EDUCATION','FOOD','CHARITY','TRANSPORT','OFFICE',
 const PRIORITIES = ['LOW','NORMAL','HIGH','URGENT']
 const STATUSES = ['SUBMITTED','APPROVED','REJECTED']
 
-function RequestForm({ onClose, onSaved, initial = null }) {
-  const [form, setForm] = useState(initial || {
-    request_type: '', category: 'OTHER', priority: 'NORMAL',
-    purpose: '', description: '', amount_requested: '',
-    required_date: '', beneficiary_name: '', beneficiary_phone: '',
-    manager_remarks: '',
-  })
+export function RequestForm({ onClose, onSaved, initial = null }) {
+  const getTodayStr = () => {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
+  const buildFormValues = (data) => {
+    if (!data) {
+      return {
+        beneficiary_name: '',
+        category: 'OTHER',
+        amount_requested: '',
+        priority: 'NORMAL',
+        beneficiary_phone: '',
+        date: getTodayStr(),
+        purpose: '',
+        description: '',
+        manager_remarks: '',
+      }
+    }
+    return {
+      beneficiary_name: data.beneficiary_name || '',
+      category: data.category || 'OTHER',
+      amount_requested: data.amount_requested !== null && data.amount_requested !== undefined ? String(data.amount_requested) : '',
+      priority: data.priority || 'NORMAL',
+      beneficiary_phone: data.beneficiary_phone || '',
+      date: data.created_at ? data.created_at.split('T')[0] : (data.required_date ? String(data.required_date).split('T')[0] : getTodayStr()),
+      purpose: data.purpose || '',
+      description: data.description || '',
+      manager_remarks: data.manager_remarks || '',
+    }
+  }
+
+  const [form, setForm] = useState(() => buildFormValues(initial))
   const [file, setFile] = useState(null)
   const [saving, setSaving] = useState(false)
 
+  useEffect(() => {
+    if (initial) {
+      setForm(buildFormValues(initial))
+    }
+  }, [initial])
+
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (form.beneficiary_phone && !isValidPhone(form.beneficiary_phone)) return toast.error("Enter a valid 10-digit phone number");
-    if (!isPositiveNumber(form.amount_requested)) return toast.error("Amount must be a positive number");
+    if (!form.beneficiary_name || !form.beneficiary_name.trim()) {
+      return toast.error("Beneficiary name is required");
+    }
+    if (form.beneficiary_phone && !isValidPhone(form.beneficiary_phone)) {
+      return toast.error("Enter a valid 10-digit phone number");
+    }
+    if (!isPositiveNumber(form.amount_requested)) {
+      return toast.error("Amount must be a positive number");
+    }
     
     if (saving) return;
     setSaving(true)
     try {
       const fd = new FormData()
-      Object.entries(form).forEach(([k, v]) => { if (v) fd.append(k, v) })
+      const payload = {
+        ...form,
+        purpose: form.purpose?.trim() || `${form.category} assistance for ${form.beneficiary_name?.trim() || 'Beneficiary'}`,
+        required_date: form.date,
+        created_at: form.date,
+        date: form.date,
+      }
+      Object.entries(payload).forEach(([k, v]) => {
+        if (v !== null && v !== undefined && v !== '') fd.append(k, v)
+      })
       if (file) fd.append('document', file)
 
       if (initial) {
@@ -62,63 +114,104 @@ function RequestForm({ onClose, onSaved, initial = null }) {
     <form onSubmit={handleSubmit}>
       <div className="form-grid-2">
         <div className="form-group">
-          <label className="form-label required">Request Type</label>
-          <input className="form-control" value={form.request_type} required
-            onChange={e => setForm(f => ({ ...f, request_type: e.target.value }))} />
+          <label className="form-label required">Beneficiary Name</label>
+          <input
+            className="form-control"
+            required
+            placeholder="Enter beneficiary full name"
+            value={form.beneficiary_name}
+            onChange={e => setForm(f => ({ ...f, beneficiary_name: e.target.value }))}
+          />
         </div>
         <div className="form-group">
           <label className="form-label required">Category</label>
-          <select className="form-control" value={form.category}
-            onChange={e => setForm(f => ({ ...f, category: e.target.value }))}>
+          <select
+            className="form-control"
+            value={form.category}
+            onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
+          >
             {CATEGORIES.map(c => <option key={c} value={c}>{c.replace(/_/g, ' ')}</option>)}
           </select>
         </div>
         <div className="form-group">
           <label className="form-label required">Amount Requested (₹)</label>
-          <input className="form-control" type="number" min="1" step="0.01" required
+          <input
+            className="form-control"
+            type="number"
+            min="1"
+            step="0.01"
+            required
+            placeholder="0.00"
             value={form.amount_requested}
-            onChange={e => setForm(f => ({ ...f, amount_requested: e.target.value }))} />
+            onChange={e => setForm(f => ({ ...f, amount_requested: e.target.value }))}
+          />
         </div>
         <div className="form-group">
           <label className="form-label">Priority</label>
-          <select className="form-control" value={form.priority}
-            onChange={e => setForm(f => ({ ...f, priority: e.target.value }))}>
+          <select
+            className="form-control"
+            value={form.priority}
+            onChange={e => setForm(f => ({ ...f, priority: e.target.value }))}
+          >
             {PRIORITIES.map(p => <option key={p} value={p}>{p}</option>)}
           </select>
         </div>
         <div className="form-group">
-          <label className="form-label required">Purpose</label>
-          <input className="form-control" required value={form.purpose}
-            onChange={e => setForm(f => ({ ...f, purpose: e.target.value }))} />
-        </div>
-        <div className="form-group">
-          <label className="form-label">Required Date</label>
-          <input className="form-control" type="date" value={form.required_date}
-            onChange={e => setForm(f => ({ ...f, required_date: e.target.value }))} />
-        </div>
-        <div className="form-group">
-          <label className="form-label">Beneficiary Name</label>
-          <input className="form-control" value={form.beneficiary_name}
-            onChange={e => setForm(f => ({ ...f, beneficiary_name: e.target.value }))} />
-        </div>
-        <div className="form-group">
           <label className="form-label">Beneficiary Contact</label>
-          <input className="form-control" value={form.beneficiary_phone}
-            onChange={e => setForm(f => ({ ...f, beneficiary_phone: e.target.value }))} />
+          <input
+            className="form-control"
+            placeholder="10-digit mobile number"
+            value={form.beneficiary_phone}
+            onChange={e => setForm(f => ({ ...f, beneficiary_phone: e.target.value }))}
+          />
         </div>
+        <div className="form-group">
+          <label className="form-label required">Date</label>
+          <input
+            className="form-control"
+            type="date"
+            required
+            value={form.date}
+            onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
+          />
+        </div>
+      </div>
+      <div className="form-group">
+        <label className="form-label">Purpose</label>
+        <input
+          className="form-control"
+          placeholder="Purpose / Reason for assistance"
+          value={form.purpose}
+          onChange={e => setForm(f => ({ ...f, purpose: e.target.value }))}
+        />
       </div>
       <div className="form-group">
         <label className="form-label">Description</label>
-        <textarea className="form-control" rows={3} value={form.description}
-          onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
+        <textarea
+          className="form-control"
+          rows={3}
+          placeholder="Additional details..."
+          value={form.description}
+          onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+        />
       </div>
       <div className="form-group">
         <label className="form-label">Remarks</label>
-        <textarea className="form-control" rows={2} value={form.manager_remarks}
-          onChange={e => setForm(f => ({ ...f, manager_remarks: e.target.value }))} />
+        <textarea
+          className="form-control"
+          rows={2}
+          placeholder="Manager remarks (optional)"
+          value={form.manager_remarks}
+          onChange={e => setForm(f => ({ ...f, manager_remarks: e.target.value }))}
+        />
       </div>
       <div className="form-group">
         <label className="form-label">Supporting Document</label>
+        {initial?.document && (
+          <div style={{ fontSize: 12, color: 'var(--gray-600)', marginBottom: 6 }}>
+            Current file: <a href={initial.document} target="_blank" rel="noreferrer" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>View existing document</a>
+          </div>
+        )}
         <input className="form-control" type="file" onChange={e => setFile(e.target.files[0])} />
       </div>
       <div className="modal-footer" style={{ padding: 0, marginTop: 8 }}>
@@ -143,6 +236,7 @@ export default function Requests() {
   })
   const [totalPendingCount, setTotalPendingCount] = useState(0)
   const [showModal, setShowModal] = useState(false)
+  const [editingRequest, setEditingRequest] = useState(null)
 
   useEffect(() => {
     sessionStorage.setItem('req_search', search)
@@ -190,26 +284,46 @@ export default function Requests() {
     return () => window.removeEventListener('request-update', handler)
   }, [load])
 
+  const handleEdit = async (r) => {
+    setEditingRequest(r)
+    try {
+      const res = await managerApi.requests.get(r.id)
+      if (res?.data) {
+        setEditingRequest(res.data)
+      }
+    } catch (_) {}
+  }
+
   const handleAction = async () => {
     if (!actionModal) return
     setActionLoading(true)
     try {
-      await managerApi.requests.action(actionModal.req.id, actionModal.action, {
-        remarks: actionRemarks,
-      })
-      toast.success(`Request ${actionModal.action}d successfully.`)
+      if (actionModal.action === 'cancel') {
+        await managerApi.requests.delete(actionModal.req.id)
+        toast.success(`Assessment ${actionModal.req.request_number} deleted permanently.`)
+        window.dispatchEvent(new CustomEvent('dashboard-refresh'))
+      } else {
+        await managerApi.requests.action(actionModal.req.id, actionModal.action, {
+          remarks: actionRemarks,
+        })
+        toast.success(`Request ${actionModal.action}d successfully.`)
+      }
       setActionModal(null)
       setActionRemarks('')
       load()
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Action failed.')
+      toast.error(err.response?.data?.error || err.response?.data?.detail || 'Action failed.')
     } finally {
       setActionLoading(false)
     }
   }
 
+  const isDataEntrySection = location.pathname.includes('/entry/') || user?.role === 'DATA_ENTRY'
+  const canDataEntryEdit = (r) => {
+    return isDataEntrySection && user?.role === 'DATA_ENTRY' && r.requested_by_role === 'STAFF'
+  }
   const canSubmit = (req) => user?.role === 'MANAGER' && req.status === 'DRAFT'
-  const canCancel = (req) => user?.role === 'MANAGER' && ['DRAFT', 'SUBMITTED', 'ON_HOLD'].includes(req.status)
+  const canCancel = (req) => ['MANAGER', 'ADMIN'].includes(user?.role) && ['DRAFT', 'SUBMITTED', 'ON_HOLD'].includes(req.status)
 
   return (
     <div>
@@ -285,6 +399,8 @@ export default function Requests() {
                       <div style={{ display: 'flex', gap: 4 }}>
                         <button className="btn btn-sm btn-secondary"
                           onClick={() => handleView(r.id)}>View</button>
+                        <button className="btn btn-sm btn-primary"
+                          onClick={() => handleEdit(r)}>Edit</button>
                         {canSubmit(r) && (
                           <button className="btn btn-sm btn-primary"
                             onClick={() => setActionModal({ req: r, action: 'submit' })}>Submit</button>
@@ -308,30 +424,108 @@ export default function Requests() {
         <RequestForm onClose={() => setShowModal(false)} onSaved={load} />
       </Modal>
 
-      {/* Action Confirm Modal */}
-      {actionModal && (
-        <Modal isOpen={true} onClose={() => setActionModal(null)}
-          title={`${actionModal.action.charAt(0).toUpperCase() + actionModal.action.slice(1)} Request`}
-          footer={
-            <>
-              <button className="btn btn-secondary" onClick={() => setActionModal(null)}>Cancel</button>
-              <button className={`btn ${actionModal.action === 'cancel' || actionModal.action === 'reject' ? 'btn-danger' : 'btn-primary'}`}
-                onClick={handleAction} disabled={actionLoading}>
-                {actionLoading ? 'Processing...' : 'Confirm'}
-              </button>
-            </>
-          }>
-          <p style={{ marginBottom: 12, fontSize: 13, color: 'var(--gray-600)' }}>
-            Request: <strong>{actionModal.req.request_number}</strong> — {actionModal.req.purpose}
-          </p>
-          <div className="form-group">
-            <label className="form-label">Remarks</label>
-            <textarea className="form-control" rows={3}
-              placeholder="Add remarks (optional)"
-              value={actionRemarks}
-              onChange={e => setActionRemarks(e.target.value)} />
-          </div>
+      {/* Edit Modal for Data Entry */}
+      {editingRequest && (
+        <Modal isOpen={true} onClose={() => setEditingRequest(null)} title={`Edit Assessment Request: ${editingRequest.request_number}`} size="modal-lg">
+          <RequestForm key={editingRequest.id + (editingRequest.updated_at || '')} onClose={() => setEditingRequest(null)} onSaved={load} initial={editingRequest} />
         </Modal>
+      )}
+
+      {/* Action / Delete Confirm Modal */}
+      {actionModal && (
+        actionModal.action === 'cancel' ? (
+          <Modal isOpen={true} onClose={() => !actionLoading && setActionModal(null)}
+            title="Delete Assessment Request"
+            footer={
+              <>
+                <button className="btn btn-secondary" onClick={() => setActionModal(null)} disabled={actionLoading}>
+                  Cancel
+                </button>
+                <button className="btn btn-danger" onClick={handleAction} disabled={actionLoading} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  {actionLoading ? 'Deleting...' : 'Yes, Delete Permanently'}
+                </button>
+              </>
+            }>
+            <div style={{ padding: '8px 4px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
+                <div style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: '50%',
+                  backgroundColor: '#FEE2E2',
+                  color: '#DC2626',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: 22,
+                  fontWeight: 700,
+                  flexShrink: 0
+                }}>
+                  !
+                </div>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--gray-900)' }}>
+                    Are you ready to delete this assessment?
+                  </h4>
+                  <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--gray-600)' }}>
+                    This will <strong style={{ color: '#DC2626' }}>permanently delete</strong> request <strong style={{ color: 'var(--gray-900)' }}>{actionModal.req.request_number}</strong>. This action cannot be undone.
+                  </p>
+                </div>
+              </div>
+
+              <div style={{
+                background: 'var(--gray-50)',
+                borderRadius: 8,
+                padding: '12px 16px',
+                fontSize: 13,
+                color: 'var(--gray-700)',
+                border: '1px solid var(--gray-200)',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <span style={{ color: 'var(--gray-500)' }}>Request No:</span>
+                  <strong style={{ fontFamily: 'monospace', color: 'var(--gray-900)' }}>{actionModal.req.request_number}</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <span style={{ color: 'var(--gray-500)' }}>Beneficiary:</span>
+                  <span style={{ fontWeight: 600 }}>{actionModal.req.beneficiary_name || '-'}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <span style={{ color: 'var(--gray-500)' }}>Category:</span>
+                  <span className="badge badge-blue">{actionModal.req.category}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--gray-500)' }}>Amount:</span>
+                  <strong style={{ color: 'var(--gray-900)' }}>
+                    {formatINR ? formatINR(actionModal.req.amount_requested) : `₹${actionModal.req.amount_requested || 0}`}
+                  </strong>
+                </div>
+              </div>
+            </div>
+          </Modal>
+        ) : (
+          <Modal isOpen={true} onClose={() => setActionModal(null)}
+            title={`${actionModal.action.charAt(0).toUpperCase() + actionModal.action.slice(1)} Request`}
+            footer={
+              <>
+                <button className="btn btn-secondary" onClick={() => setActionModal(null)}>Cancel</button>
+                <button className="btn btn-primary"
+                  onClick={handleAction} disabled={actionLoading}>
+                  {actionLoading ? 'Processing...' : 'Confirm'}
+                </button>
+              </>
+            }>
+            <p style={{ marginBottom: 12, fontSize: 13, color: 'var(--gray-600)' }}>
+              Request: <strong>{actionModal.req.request_number}</strong> — {actionModal.req.purpose}
+            </p>
+            <div className="form-group">
+              <label className="form-label">Remarks</label>
+              <textarea className="form-control" rows={3}
+                placeholder="Add remarks (optional)"
+                value={actionRemarks}
+                onChange={e => setActionRemarks(e.target.value)} />
+            </div>
+          </Modal>
+        )
       )}
     </div>
   )

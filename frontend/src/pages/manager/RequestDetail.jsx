@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from "react"
-import { useParams, useNavigate } from "react-router-dom"
+import { useParams, useNavigate, useLocation } from "react-router-dom"
 import { managerApi } from "../../api"
 import { useAuthStore } from "../../store/authStore"
 import { StatusBadge, AmountDisplay, LoadingState, Modal, formatINR } from "../../components/shared"
+import { RequestForm } from "./Requests"
 import { format } from "date-fns"
 import toast from "react-hot-toast"
 
 export default function RequestDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
+  const [showEditModal, setShowEditModal] = useState(false)
   const { user } = useAuthStore()
   const [req, setReq] = useState(null)
   const [history, setHistory] = useState([])
@@ -75,6 +78,7 @@ export default function RequestDetail() {
         </div>
         <div className="page-header-actions">
           <button className="btn btn-secondary" onClick={() => navigate(-1)}>← Back</button>
+          <button className="btn btn-primary" onClick={() => setShowEditModal(true)}>✏ Edit</button>
           {isManager && req.status === "SUBMITTED" && (
             <button className="btn btn-primary" onClick={() => handleActionDirect("assign_fao")}>Assign FAO</button>
           )}
@@ -200,6 +204,12 @@ export default function RequestDetail() {
             <textarea className="form-control" rows={2} value={actionData.remarks}
               onChange={e => setActionData(d => ({...d, remarks:e.target.value}))} />
           </div>
+        </Modal>
+      )}
+
+      {showEditModal && (
+        <Modal isOpen={true} onClose={() => setShowEditModal(false)} title={`Edit Assessment: ${req.request_number}`} size="modal-lg">
+          <RequestForm onClose={() => setShowEditModal(false)} onSaved={load} initial={req} />
         </Modal>
       )}
 

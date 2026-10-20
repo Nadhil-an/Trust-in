@@ -152,10 +152,14 @@ class AssessmentRequest(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.request_number:
-            year = timezone.now().year
+            year = self.created_at.year if self.created_at else timezone.now().year
             count = AssessmentRequest.objects.filter(
                 created_at__year=year).count() + 1
-            self.request_number = f"ASM-{year}-{count:05d}"
+            candidate = f"ASM-{year}-{count:05d}"
+            while AssessmentRequest.objects.filter(request_number=candidate).exists():
+                count += 1
+                candidate = f"ASM-{year}-{count:05d}"
+            self.request_number = candidate
         super().save(*args, **kwargs)
 
 

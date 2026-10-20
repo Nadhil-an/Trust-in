@@ -81,7 +81,8 @@ export const managerApi = {
     list: (params) => api.get('/manager/requests/', { params }),
     create: (data) => api.post('/manager/requests/', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
     get: (id) => api.get(`/manager/requests/${id}/`),
-    update: (id, data) => api.patch(`/manager/requests/${id}/`, data),
+    update: (id, data) => api.patch(`/manager/requests/${id}/`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+    delete: (id) => api.delete(`/manager/requests/${id}/`),
     // action now takes action in the body
     action: (id, action, data) => api.post(`/manager/requests/${id}/action/`, { action, ...data }),
     history: (id) => api.get(`/manager/requests/${id}/history/`),
