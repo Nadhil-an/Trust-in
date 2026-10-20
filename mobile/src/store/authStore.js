@@ -30,12 +30,10 @@ export const useAuthStore = create((set, get) => ({
 
         set({ user, accessToken, isAuthenticated: true, isLoading: false });
 
-        // Validate account status with server asynchronously
+        // Validate account status with server asynchronously (don't logout on network error)
         try {
           const { authApi } = require('../api');
-          authApi.profile().catch(() => {
-            get().logout();
-          });
+          authApi.getProfile().catch(() => {});
         } catch (_) {}
       } else {
         set({ isLoading: false });

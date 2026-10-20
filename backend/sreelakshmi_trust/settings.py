@@ -255,3 +255,9 @@ WHATSAPP_ENABLED = os.getenv('WHATSAPP_ENABLED', 'True') == 'True'
 WHATSAPP_GATEWAY_URL = os.getenv('WHATSAPP_GATEWAY_URL', 'http://localhost:3001/send-message')
 WHATSAPP_GATEWAY_TOKEN = os.getenv('WHATSAPP_GATEWAY_TOKEN', 'trust_secret_token_123')
 
+
+# ── Razorpay Payment Gateway Settings ────────────────────────────
+RAZORPAY_KEY_ID = os.getenv('RAZORPAY_KEY_ID', 'rzp_test_51Abcdefghijk')
+RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET', 'test_secret_key_123456789')
+RAZORPAY_WEBHOOK_SECRET = os.getenv('RAZORPAY_WEBHOOK_SECRET', 'rzp_webhook_secret_test')
+RAZORPAY_CURRENCY = 'INR'

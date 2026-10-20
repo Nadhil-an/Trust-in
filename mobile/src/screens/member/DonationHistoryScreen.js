@@ -24,20 +24,16 @@ const DonationHistoryScreen = ({ navigation }) => {
     try {
       setLoading(true);
       const res = await donationApi.list({ page_size: 1000 });
-      if (res.data && res.data.results) {
-        // Map backend response if available
-        setDonations(res.data.results);
-        if (res.data.total_amount !== undefined) setTotalAmount(res.data.total_amount);
-        if (res.data.total_cash !== undefined) setTotalCash(res.data.total_cash);
-        if (res.data.total_online !== undefined) setTotalOnline(res.data.total_online);
-      } else {
-        setDonations(res.data || []);
-      }
+      const list = res.data?.results || res.data || [];
+      setDonations(list);
       
-      const totalRes = await donationApi.myTotal();
-      if (totalRes.data && totalRes.data.total_amount && !res.data?.total_amount) {
-        setTotalAmount(totalRes.data.total_amount);
-      }
+      const computedTotal = list.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+      const computedCash = list.filter(item => item.payment_method === 'CASH').reduce((sum, item) => sum + Number(item.amount || 0), 0);
+      const computedOnline = list.filter(item => item.payment_method !== 'CASH').reduce((sum, item) => sum + Number(item.amount || 0), 0);
+
+      setTotalAmount(res.data?.total_amount !== undefined ? res.data.total_amount : computedTotal);
+      setTotalCash(res.data?.total_cash !== undefined ? res.data.total_cash : computedCash);
+      setTotalOnline(res.data?.total_online !== undefined ? res.data.total_online : computedOnline);
     } catch (error) {
       console.log('Error fetching donations:', error);
     } finally {

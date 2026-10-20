@@ -230,8 +230,15 @@ class IncomeListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         qs = Income.objects.select_related('created_by').all()
-        if self.request.user.role == Role.STAFF:
-            qs = qs.filter(created_by=self.request.user)
+        user = self.request.user
+        if user.role == Role.STAFF:
+            qs = qs.filter(created_by=user)
+        elif user.role == Role.MEMBER:
+            from django.db.models import Q
+            q = Q(created_by=user)
+            if user.full_name:
+                q |= Q(donor_name__iexact=user.full_name)
+            qs = qs.filter(q)
         return qs
 
     def create(self, request, *args, **kwargs):

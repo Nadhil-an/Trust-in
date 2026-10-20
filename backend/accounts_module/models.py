@@ -346,3 +346,82 @@ class Transaction(models.Model):
                 candidate = f"TXN-{year}-{count:06d}"
             self.transaction_id = candidate
         super().save(*args, **kwargs)
+
+
+# ── Online Donations & Monthly Autopay Subscriptions ─────────────
+
+class PaymentType(models.TextChoices):
+    ONE_TIME = 'ONE_TIME', 'One-Time Donation'
+    MONTHLY_AUTOPAY = 'MONTHLY_AUTOPAY', 'Monthly Autopay'
+
+
+class PaymentGatewayStatus(models.TextChoices):
+    INITIATED = 'INITIATED', 'Initiated'
+    PENDING = 'PENDING', 'Pending'
+    SUCCESS = 'SUCCESS', 'Success'
+    FAILED = 'FAILED', 'Failed'
+    CANCELLED = 'CANCELLED', 'Cancelled'
+
+
+class SubscriptionStatus(models.TextChoices):
+    ACTIVE = 'ACTIVE', 'Active'
+    PAUSED = 'PAUSED', 'Paused'
+    CANCELLED = 'CANCELLED', 'Cancelled'
+    COMPLETED = 'COMPLETED', 'Completed'
+
+
+class DonationPayment(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    donor_user = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='donation_payments')
+    donor_name = models.CharField(max_length=255)
+    donor_phone = models.CharField(max_length=20, blank=True)
+    donor_email = models.EmailField(blank=True)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    payment_type = models.CharField(max_length=20, choices=PaymentType.choices, default=PaymentType.ONE_TIME)
+    purpose = models.CharField(max_length=255, default='General Donation')
+    notes = models.TextField(blank=True)
+
+    # Razorpay attributes
+    razorpay_order_id = models.CharField(max_length=100, blank=True, db_index=True)
+    razorpay_payment_id = models.CharField(max_length=100, blank=True, db_index=True)
+    razorpay_signature = models.CharField(max_length=255, blank=True)
+    razorpay_subscription_id = models.CharField(max_length=100, blank=True, db_index=True)
+
+    status = models.CharField(max_length=20, choices=PaymentGatewayStatus.choices, default=PaymentGatewayStatus.INITIATED)
+    income = models.OneToOneField(Income, null=True, blank=True, on_delete=models.SET_NULL, related_name='online_payment')
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'accounts_donation_payments'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.donor_name} — ₹{self.amount} ({self.status})"
+
+
+class DonationSubscription(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='donation_subscriptions')
+    donor_name = models.CharField(max_length=255)
+    donor_phone = models.CharField(max_length=20, blank=True)
+    donor_email = models.EmailField(blank=True)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    purpose = models.CharField(max_length=255, default='Monthly Donation Autopay')
+
+    razorpay_plan_id = models.CharField(max_length=100, blank=True)
+    razorpay_subscription_id = models.CharField(max_length=100, unique=True, db_index=True)
+    status = models.CharField(max_length=20, choices=SubscriptionStatus.choices, default=SubscriptionStatus.ACTIVE)
+
+    total_cycles_paid = models.PositiveIntegerField(default=0)
+    next_charge_date = models.DateField(null=True, blank=True)
+    last_charged_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'accounts_donation_subscriptions'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.donor_name} — ₹{self.amount}/month ({self.status})"

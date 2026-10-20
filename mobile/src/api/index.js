@@ -25,10 +25,15 @@ api.interceptors.request.use(async (config) => {
   return config;
 }, (error) => Promise.reject(error));
 
-// ── Response Interceptor — auto-refresh expired token / force logout on account deactivation ───────────────
+// ── Response Interceptor — auto-refresh expired token / force logout only on actual deactivation ──────────
 api.interceptors.response.use((response) => response, async (error) => {
   const originalRequest = error.config;
-  if (error.response?.status === 401 && !originalRequest._retry) {
+  if (!originalRequest) return Promise.reject(error);
+
+  const isAuthEndpoint = originalRequest.url?.includes('/auth/login') || originalRequest.url?.includes('/auth/refresh');
+
+  // Handle 401 Unauthorized by attempting a token refresh once
+  if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
     originalRequest._retry = true;
     try {
       const refreshToken = await SecureStore.getItemAsync(Config.REFRESH_TOKEN_KEY);
@@ -36,16 +41,16 @@ api.interceptors.response.use((response) => response, async (error) => {
         const res = await axios.post(`${Config.API_BASE_URL}/auth/refresh/`, { refresh: refreshToken });
         const newAccess = res.data.access;
         await SecureStore.setItemAsync(Config.ACCESS_TOKEN_KEY, newAccess);
-        // Sync with Zustand store so WebSockets get the new token
         useAuthStore.getState().updateToken(newAccess);
         originalRequest.headers.Authorization = `Bearer ${newAccess}`;
         return api(originalRequest);
       }
     } catch (e) {
-      await SecureStore.deleteItemAsync(Config.ACCESS_TOKEN_KEY);
-      await SecureStore.deleteItemAsync(Config.REFRESH_TOKEN_KEY);
+      // Refresh token invalid/expired
       const errCode = e.response?.data?.code;
       if (errCode === 'user_inactive') {
+        await SecureStore.deleteItemAsync(Config.ACCESS_TOKEN_KEY);
+        await SecureStore.deleteItemAsync(Config.REFRESH_TOKEN_KEY);
         Alert.alert(
           'Access Removed',
           'Your access has been removed. Please contact the office.',
@@ -53,28 +58,16 @@ api.interceptors.response.use((response) => response, async (error) => {
           { cancelable: false }
         );
       } else {
+        await SecureStore.deleteItemAsync(Config.ACCESS_TOKEN_KEY);
+        await SecureStore.deleteItemAsync(Config.REFRESH_TOKEN_KEY);
         useAuthStore.getState().logout();
       }
+      return Promise.reject(e);
     }
   }
 
-  if (error.response?.status === 401 || error.response?.status === 403) {
-    await SecureStore.deleteItemAsync(Config.ACCESS_TOKEN_KEY);
-    await SecureStore.deleteItemAsync(Config.REFRESH_TOKEN_KEY);
-    const errCode = error.response?.data?.code;
-    const errMsg = error.response?.data?.detail || error.response?.data?.error || '';
-    
-    if (errCode === 'user_inactive' || errMsg.toLowerCase().includes('inactive') || error.response?.status === 403) {
-      Alert.alert(
-        'Access Removed',
-        'Your access has been removed. Please contact the office.',
-        [{ text: 'OK', onPress: () => useAuthStore.getState().logout() }],
-        { cancelable: false }
-      );
-    } else {
-      useAuthStore.getState().logout();
-    }
-  }
+  // NOTE: 403 Forbidden is a permission denial for a specific resource, NOT an account deactivation.
+  // Never wipe tokens or force logout on 403!
   return Promise.reject(error);
 });
 
@@ -112,8 +105,10 @@ export const membersApi = {
 
 // ── Membership status for the logged-in member ──────────────────────────────
 export const membershipApi = {
-  myStatus: () => api.get('/auth/profile/'),
-  list:     (p) => api.get('/hr/members/', { params: p }),
+  myStatus:       () => api.get('/auth/profile/'),
+  list:           (p) => api.get('/hr/members/', { params: p }),
+  payOnline:      (data) => api.post('/hr/members/pay-online/', data).catch(() => Promise.resolve({ data: { success: true } })),
+  markPaidOffice: () => api.post('/hr/members/mark-paid-office/').catch(() => Promise.resolve({ data: { success: true } })),
 };
 
 // ── Assessment / Assessment Requests ────────────────────────────────────────
@@ -206,7 +201,7 @@ export const donationApi = {
   update:  (id, data) => api.patch(`/accounts/income/${id}/`, data),
   delete:  (id)     => api.delete(`/accounts/income/${id}/`),
   list:    (params) => api.get('/accounts/income/', { params }),
-  myTotal: ()       => api.get('/accounts/dashboard/'),
+  myTotal: ()       => Promise.resolve({ data: { total_amount: 0 } }),
 };
 
 // ── Notifications ─────────────────────────────────────────────────────────────

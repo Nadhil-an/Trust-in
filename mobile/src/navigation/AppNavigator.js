@@ -208,14 +208,13 @@ export const AppNavigator = () => {
       if (nextAppState === 'active' && useAuthStore.getState().isAuthenticated) {
         try {
           const { authApi } = require('../api');
-          authApi.getProfile().catch(() => {
-            logout();
-          });
+          // Re-fetch profile to sync fresh data, but never logout on background network errors
+          authApi.getProfile().catch(() => {});
         } catch (_) {}
       }
     });
     return () => subscription.remove();
-  }, [logout]);
+  }, []);
 
   if (!init || isLoading) {
     return <LoadingScreen message="Initializing App..." />;
