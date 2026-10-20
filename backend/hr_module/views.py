@@ -94,6 +94,12 @@ def sync_member_user_account(member, password=None, username=None, request_user=
             if u not in matched_users:
                 matched_users.append(u)
 
+    # 6. By full_name (Name)
+    if member.full_name:
+        for u in User.objects.filter(role=Role.MEMBER, full_name__iexact=member.full_name.strip()):
+            if u not in matched_users:
+                matched_users.append(u)
+
     if matched_users:
         for u in matched_users:
             if password and str(password).strip():
@@ -108,6 +114,9 @@ def sync_member_user_account(member, password=None, username=None, request_user=
                 u.phone = member.phone
             if member.full_name and u.full_name != member.full_name:
                 u.full_name = member.full_name
+            if member.email and str(member.email).strip() and u.email != str(member.email).strip():
+                if not User.objects.filter(email__iexact=str(member.email).strip()).exclude(id=u.id).exists():
+                    u.email = str(member.email).strip()
             u.save()
         primary_user = matched_users[0]
     else:

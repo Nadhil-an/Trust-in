@@ -75,10 +75,10 @@ const LoginScreen = ({ navigation }) => {
         {/* Login Form Card */}
         <View style={styles.card}>
           <Input
-            label="Username / Member ID"
+            label="Name / Email / Member ID"
             value={form.username}
             onChangeText={(v) => { setForm(f => ({ ...f, username: v })); setErrors(e => ({ ...e, username: '' })); }}
-            placeholder="Enter your username or member ID"
+            placeholder="Enter your Name, Email or Member ID"
             leftIcon={<Ionicons name="person-outline" size={20} color={Colors.gray400} />}
             error={errors.username}
             autoCapitalize="none"

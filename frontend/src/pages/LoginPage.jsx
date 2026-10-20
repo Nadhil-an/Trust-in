@@ -64,7 +64,7 @@ export default function LoginPage() {
                 className="login-input"
                 type="text"
                 name="username"
-                placeholder="Username"
+                placeholder="Name, Email, or Member ID"
                 value={form.username}
                 onChange={handleChange}
                 required

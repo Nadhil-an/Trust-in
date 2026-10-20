@@ -57,9 +57,12 @@ class LoginView(APIView):
         clean_digits = re.sub(r'[^0-9]', '', clean_username)[-10:]
         candidates = []
 
-        # 1. Exact match by username, email, staff_uid
+        # 1. Exact match by username, email, staff_uid, or full_name (Name)
         for u in User.objects.filter(
-            Q(username__iexact=clean_username) | Q(email__iexact=clean_username) | Q(staff_uid__iexact=clean_username)
+            Q(username__iexact=clean_username) |
+            Q(email__iexact=clean_username) |
+            Q(staff_uid__iexact=clean_username) |
+            Q(full_name__iexact=clean_username)
         ):
             if u not in candidates:
                 candidates.append(u)
@@ -74,12 +77,14 @@ class LoginView(APIView):
                     if u not in candidates:
                         candidates.append(u)
 
-        # 3. Check if clean_username matches a Member by member_id, phone, or email
+        # 3. Check if clean_username matches a Member by Name (full_name), Email, member_id, or phone
         from hr_module.models import Member
         clean_mem_id = clean_username.replace('SLCT/MEM/', '').replace('MEM-', '').strip()
         member_matches = list(Member.objects.filter(
-            Q(member_id__iexact=clean_username) | Q(member_id__iexact=clean_mem_id) |
-            Q(email__iexact=clean_username)
+            Q(full_name__iexact=clean_username) |
+            Q(email__iexact=clean_username) |
+            Q(member_id__iexact=clean_username) |
+            Q(member_id__iexact=clean_mem_id)
         ))
         if len(clean_digits) >= 10:
             for m in Member.objects.all():
@@ -90,10 +95,19 @@ class LoginView(APIView):
             if m.created_by and m.created_by not in candidates:
                 candidates.append(m.created_by)
             for u in User.objects.filter(role=Role.MEMBER).filter(
-                Q(username__iexact=m.member_id) | Q(username__iexact=clean_digits) | Q(username__iexact=clean_mem_id)
+                Q(full_name__iexact=m.full_name) |
+                Q(email__iexact=m.email) |
+                Q(username__iexact=m.member_id) |
+                Q(username__iexact=clean_digits) |
+                Q(username__iexact=clean_mem_id)
             ):
                 if u not in candidates:
                     candidates.append(u)
+            if m.phone:
+                clean_mphone = m.phone.strip()
+                for u in User.objects.filter(role=Role.MEMBER).iterator():
+                    if u.phone and u.phone.strip() == clean_mphone and u not in candidates:
+                        candidates.append(u)
 
         # Authenticate against all matching candidates
         user = None

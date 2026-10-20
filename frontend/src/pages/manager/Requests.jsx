@@ -235,6 +235,10 @@ export default function Requests() {
     return saved !== null ? saved : ''
   })
   const [totalPendingCount, setTotalPendingCount] = useState(0)
+  const [page, setPage] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
+  const [totalPages, setTotalPages] = useState(1)
+  const PAGE_SIZE = 15
   const [showModal, setShowModal] = useState(false)
   const [editingRequest, setEditingRequest] = useState(null)
 
@@ -243,6 +247,7 @@ export default function Requests() {
     sessionStorage.setItem('req_statusFilter', statusFilter)
     sessionStorage.setItem('req_roleFilter', roleFilter)
     sessionStorage.setItem('req_dateFilter', dateFilter)
+    setPage(1)
   }, [search, statusFilter, roleFilter, dateFilter])
   const [actionModal, setActionModal] = useState(null) // { req, action }
   const [actionRemarks, setActionRemarks] = useState('')
@@ -263,12 +268,50 @@ export default function Requests() {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await managerApi.requests.list({ search, status: statusFilter, requested_by_role: roleFilter, date: dateFilter })
-      setRequests(res.data.results || res.data)
+      const res = await managerApi.requests.list({
+        search,
+        status: statusFilter,
+        requested_by_role: roleFilter,
+        date: dateFilter,
+        page,
+        page_size: PAGE_SIZE,
+      })
+      const dataList = res.data.results || res.data || []
+      setRequests(dataList)
+      const count = res.data.count !== undefined ? res.data.count : dataList.length
+      setTotalCount(count)
+      setTotalPages(Math.max(1, Math.ceil(count / PAGE_SIZE)))
       setTotalPendingCount(res.data.all_time_pending || 0)
     } catch (_) { toast.error('Failed to load requests') }
     finally { setLoading(false) }
-  }, [search, statusFilter, roleFilter, dateFilter])
+  }, [search, statusFilter, roleFilter, dateFilter, page])
+
+  const getPageNumbers = () => {
+    if (totalPages <= 7) {
+      const pages = []
+      for (let i = 1; i <= totalPages; i++) pages.push(i)
+      return pages
+    }
+    const pages = []
+    if (page <= 4) {
+      for (let i = 1; i <= 5; i++) pages.push(i)
+      pages.push('...')
+      pages.push(totalPages)
+    } else if (page >= totalPages - 3) {
+      pages.push(1)
+      pages.push('...')
+      for (let i = totalPages - 4; i <= totalPages; i++) pages.push(i)
+    } else {
+      pages.push(1)
+      pages.push('...')
+      pages.push(page - 1)
+      pages.push(page)
+      pages.push(page + 1)
+      pages.push('...')
+      pages.push(totalPages)
+    }
+    return pages
+  }
 
   useEffect(() => { load() }, [load])
 
@@ -447,6 +490,68 @@ export default function Requests() {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* Pagination Footer */}
+        {!loading && totalCount > 0 && (
+          <div style={{
+            padding: '14px 20px',
+            borderTop: '1px solid #e2e8f0',
+            background: '#f8fafc',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: 12,
+            borderBottomLeftRadius: 12,
+            borderBottomRightRadius: 12
+          }}>
+            <div style={{ fontSize: 13, color: '#64748b' }}>
+              Showing <span style={{ fontWeight: 600, color: '#0f172a' }}>{Math.min((page - 1) * PAGE_SIZE + 1, totalCount)}</span> to <span style={{ fontWeight: 600, color: '#0f172a' }}>{Math.min(page * PAGE_SIZE, totalCount)}</span> of <span style={{ fontWeight: 600, color: '#0f172a' }}>{totalCount}</span> applications
+            </div>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <button
+                className="btn btn-secondary btn-sm"
+                disabled={page <= 1}
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                style={{ padding: '6px 12px', fontSize: 13, cursor: page <= 1 ? 'not-allowed' : 'pointer' }}
+              >
+                Previous
+              </button>
+
+              {getPageNumbers().map((p, idx) => (
+                p === '...' ? (
+                  <span key={`ellipsis-${idx}`} style={{ padding: '0 6px', color: '#94a3b8', fontSize: 14 }}>...</span>
+                ) : (
+                  <button
+                    key={p}
+                    className={`btn btn-sm ${p === page ? 'btn-primary' : 'btn-secondary'}`}
+                    onClick={() => setPage(p)}
+                    style={{
+                      minWidth: 34,
+                      height: 32,
+                      padding: '0 8px',
+                      fontSize: 13,
+                      fontWeight: p === page ? 700 : 500,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {p}
+                  </button>
+                )
+              ))}
+
+              <button
+                className="btn btn-secondary btn-sm"
+                disabled={page >= totalPages}
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                style={{ padding: '6px 12px', fontSize: 13, cursor: page >= totalPages ? 'not-allowed' : 'pointer' }}
+              >
+                Next
+              </button>
+            </div>
           </div>
         )}
       </div>
