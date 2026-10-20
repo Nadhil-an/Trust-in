@@ -615,7 +615,7 @@ class MoneyRequestListView(APIView):
         from manager_module.models import AssessmentRequest
         from manager_module.serializers import AssessmentRequestListSerializer
         requests = AssessmentRequest.objects.filter(
-            status__in=['SUBMITTED', 'UNDER_REVIEW', 'ON_HOLD']
+            status__in=['SUBMITTED', 'UNDER_REVIEW', 'ON_HOLD', RequestStatus.PENDING_DISBURSEMENT, RequestStatus.APPROVED]
         ).select_related('requested_by').order_by('-created_at')
         return Response(AssessmentRequestListSerializer(requests, many=True).data)
 

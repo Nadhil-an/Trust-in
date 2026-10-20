@@ -163,19 +163,19 @@ export default function AccountsDashboard() {
             📖 Day Book
           </button>
           {(acc.pending_money_requests || 0) > 0 && (
-            <button onClick={() => navigate('/accounts/money-requests')}
+            <button onClick={() => navigate('/slt/finance/fund-requests')}
               style={{ background: '#EEF2FF', color: '#6366F1', border: '1px solid #C7D2FE', borderRadius: 10, padding: '8px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
               💰 {acc.pending_money_requests} Pending Requests
             </button>
           )}
           {(acc.cashier_pending || 0) > 0 && (
-            <button onClick={() => navigate('/cashier/pending')}
+            <button onClick={() => navigate('/slt/disburse/pending')}
               style={{ background: '#ECFDF5', color: '#059669', border: '1px solid #A7F3D0', borderRadius: 10, padding: '8px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
               💸 {acc.cashier_pending} Pending Payouts
             </button>
           )}
           {(acc.pending_salaries || 0) > 0 && (
-            <button onClick={() => navigate('/accounts/pending-salaries')}
+            <button onClick={() => navigate('/slt/finance/salary-review')}
               style={{ background: '#FEF9C3', color: '#CA8A04', border: '1px solid #FDE047', borderRadius: 10, padding: '8px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
               👤 {acc.pending_salaries} Salaries to Pay
             </button>
@@ -265,7 +265,7 @@ export default function AccountsDashboard() {
                 ))
               }
               <div style={{ marginTop: 12 }}>
-                <button className="btn btn-sm btn-secondary" onClick={() => navigate('/accounts/bank')}>Manage Banks →</button>
+                <button className="btn btn-sm btn-secondary" onClick={() => navigate('/slt/finance/bank-ledger')}>Manage Banks →</button>
               </div>
             </div>
           </div>
@@ -310,7 +310,7 @@ export default function AccountsDashboard() {
             </div>
           </div>
           <div style={{ marginTop: 16 }}>
-            <button className="btn btn-sm btn-primary" onClick={() => navigate('/accounts/income')}>View All Income →</button>
+            <button className="btn btn-sm btn-primary" onClick={() => navigate('/slt/finance/income')}>View All Income →</button>
           </div>
         </Panel>
       )}
@@ -336,7 +336,7 @@ export default function AccountsDashboard() {
             </ResponsiveContainer>
           </div>
           <div style={{ marginTop: 12 }}>
-            <button className="btn btn-sm btn-primary" onClick={() => navigate('/accounts/expenses')}>View All Expenses →</button>
+            <button className="btn btn-sm btn-primary" onClick={() => navigate('/slt/finance/expenditure')}>View All Expenses →</button>
           </div>
         </Panel>
       )}
@@ -348,7 +348,7 @@ export default function AccountsDashboard() {
             <div style={{ fontSize: 15, fontWeight: 700, color: '#111827' }}>Income vs Expenses — Last 6 Months</div>
             <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>Monthly money flow at a glance</div>
           </div>
-          <button className="btn btn-secondary btn-sm" onClick={() => navigate('/accounts/transactions')}>All Transactions →</button>
+          <button className="btn btn-secondary btn-sm" onClick={() => navigate('/slt/finance/transactions')}>All Transactions →</button>
         </div>
         <ResponsiveContainer width="100%" height={180}>
           <LineChart data={trend}>

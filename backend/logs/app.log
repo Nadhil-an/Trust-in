@@ -229087,3 +229087,26 @@ WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:53200]
 WebSocket CONNECT /ws/notify/ [10.162.176.21:53200]
 [mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-04-20 200 [0.04, 10.162.176.21:28342][0m
 [mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-04-27 200 [0.08, 10.162.176.21:55371][0m
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:37171]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:37171]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:37171]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:44218]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:44218]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:44218]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:64371]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:64371]
+[mHTTP GET /api/core/features/ 200 [0.07, 10.162.176.21:44220][0m
+[mHTTP GET /api/auth/profile/ 200 [0.09, 10.162.176.21:44221][0m
+[mHTTP GET /api/core/features/ 200 [0.05, 10.162.176.21:64372][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-04-27 200 [0.14, 10.162.176.21:44219][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.162.176.21:64373][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-04-27 200 [0.03, 10.162.176.21:64374][0m
+Unauthorized: /api/auth/logout/
+[31;1mHTTP POST /api/auth/logout/ 401 [0.01, 10.162.176.21:58022][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.01, 10.162.176.21:11190][0m
+[mHTTP POST /api/auth/logout/ 200 [0.02, 10.162.176.21:59223][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:64371]

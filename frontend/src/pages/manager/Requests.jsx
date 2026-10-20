@@ -301,7 +301,7 @@ export default function Requests() {
     try {
       if (actionModal.action === 'cancel') {
         await managerApi.requests.delete(actionModal.req.id)
-        toast.success(\Assessment \ deleted permanently.\)
+        toast.success(`Assessment ${actionModal.req.request_number} deleted permanently.`)
         window.dispatchEvent(new CustomEvent('dashboard-refresh'))
       } else {
         const payload = { remarks: actionRemarks }
@@ -314,7 +314,7 @@ export default function Requests() {
           payload.amount_approved = parseFloat(actionAmount)
         }
         await managerApi.requests.action(actionModal.req.id, actionModal.action, payload)
-        toast.success(\Request \d successfully.\)
+        toast.success(`Request ${actionModal.action} successful.`)
       }
       setActionModal(null)
       setActionRemarks('')
@@ -423,7 +423,7 @@ export default function Requests() {
                         )}
                         {canManagerApprove(r) && (
                           <button className="btn btn-sm btn-success"
-                            onClick={() => { setActionAmount(''); setActionModal({ req: r, action: 'approve' }) }}>
+                            onClick={() => { setActionAmount(r.amount_requested ? String(r.amount_requested) : ''); setActionModal({ req: r, action: 'approve' }) }}>
                             ✓ Approve
                           </button>
                         )}
@@ -536,13 +536,23 @@ export default function Requests() {
           </Modal>
         ) : (
           <Modal isOpen={true} onClose={() => setActionModal(null)}
-            title={`${actionModal.action.charAt(0).toUpperCase() + actionModal.action.slice(1)} Request`}
+            title={
+              actionModal.action === 'forward_to_fao' ? 'Forward to FAO' :
+              actionModal.action === 'approve' ? 'Approve Assessment Request' :
+              actionModal.action === 'reject' ? 'Reject Assessment Request' :
+              `${actionModal.action.charAt(0).toUpperCase() + actionModal.action.slice(1).replace(/_/g, ' ')} Request`
+            }
             footer={
               <>
                 <button className="btn btn-secondary" onClick={() => setActionModal(null)}>Cancel</button>
-                <button className="btn btn-primary"
+                <button className={`btn ${actionModal.action === 'reject' ? 'btn-danger' : actionModal.action === 'approve' ? 'btn-success' : 'btn-primary'}`}
                   onClick={handleAction} disabled={actionLoading}>
-                  {actionLoading ? 'Processing...' : 'Confirm'}
+                  {actionLoading ? 'Processing...' : (
+                    actionModal.action === 'approve' ? 'Approve & Send to Accountant' :
+                    actionModal.action === 'forward_to_fao' ? 'Forward to FAO' :
+                    actionModal.action === 'reject' ? 'Reject Request' :
+                    'Confirm'
+                  )}
                 </button>
               </>
             }>

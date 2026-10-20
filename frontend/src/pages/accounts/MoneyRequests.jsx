@@ -63,6 +63,11 @@ export default function MoneyRequests() {
                           <button className="btn btn-sm btn-warning" onClick={() => setActionModal({req:r,action:"hold"})}>Hold</button>
                           <button className="btn btn-sm btn-danger" onClick={() => setActionModal({req:r,action:"reject"})}>✕ Reject</button>
                         </>}
+                        {['PENDING_DISBURSEMENT', 'APPROVED'].includes(r.status) && (
+                          <button className="btn btn-sm btn-primary" onClick={() => navigate('/slt/disburse/pending')}>
+                            Pay / Disburse &rarr;
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

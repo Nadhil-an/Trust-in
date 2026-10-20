@@ -226,7 +226,7 @@ const ACOCalculationScreen = ({ route, navigation }) => {
       Toast.show({
         type: 'success',
         text1: 'ACO Calculation Submitted ✅',
-        text2: `Recommended ₹${recommendedAmount} — forwarded to Manager`,
+        text2: `Recommended ₹${recommendedAmount} — forwarded to GEO`,
       });
       navigation.goBack();
     } catch (err) {

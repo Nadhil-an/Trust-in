@@ -79,12 +79,12 @@ class ManagerDashboardView(APIView):
 
         data = {
             'requests': {
-                'pending': reqs.filter(status=RequestStatus.SUBMITTED).count(),
+                'pending': reqs.filter(status__in=[RequestStatus.UNDER_REVIEW, RequestStatus.SUBMITTED]).count(),
                 'with_fao': reqs.filter(status=RequestStatus.WITH_FAO).count(),
                 'with_aco': reqs.filter(status=RequestStatus.WITH_ACO).count(),
                 'with_geo': reqs.filter(status=RequestStatus.WITH_GEO).count(),
                 'under_review': reqs.filter(status=RequestStatus.UNDER_REVIEW).count(),
-                'approved': reqs.filter(status=RequestStatus.APPROVED).count(),
+                'approved': reqs.filter(status__in=[RequestStatus.APPROVED, RequestStatus.PENDING_DISBURSEMENT, RequestStatus.COMPLETED]).count(),
                 'rejected': reqs.filter(status=RequestStatus.REJECTED).count(),
                 'on_hold': reqs.filter(status=RequestStatus.ON_HOLD).count(),
                 'cashier_pending': reqs.filter(status=RequestStatus.PENDING_DISBURSEMENT).count(),
@@ -430,6 +430,11 @@ class RequestActionView(APIView):
                       Role.GENERAL_ENQUIRY_OFFICER, Role.MANAGER, Role.ADMIN],
         },
         # ACO actions
+        'forward_to_geo': {
+            'from': [RequestStatus.WITH_ACO],
+            'to': RequestStatus.WITH_GEO,
+            'roles': [Role.ASSESSMENT_CALCULATION_OFFICER, Role.MANAGER, Role.ADMIN],
+        },
         'forward_to_manager': {
             'from': [RequestStatus.WITH_ACO],
             'to': RequestStatus.UNDER_REVIEW,
@@ -613,7 +618,7 @@ class RequestActionView(APIView):
             push_to_role(Role.MANAGER,
                          f'ACO Report Ready: {num}',
                          f'Cost estimation submitted for {name}', 'ACO_SUBMITTED', num)
-        elif action == 'assign_geo':
+        elif action in ['assign_geo', 'forward_to_geo']:
             push_to_role(Role.GENERAL_ENQUIRY_OFFICER,
                          f'Verification Required: {num}',
                          f'{name} — Advanced enquiry needed', 'GEO_ASSIGNED', num)
@@ -783,28 +788,32 @@ class ACOCalculationView(APIView):
 
         # Auto-forward to Manager
         old_status = assessment.status
-        assessment.status = RequestStatus.UNDER_REVIEW
+        assessment.status = RequestStatus.WITH_GEO
         assessment.amount_requested = calc.recommended_amount
         assessment.save()
 
         RequestStatusHistory.objects.create(
             request=assessment, from_status=old_status, to_status=assessment.status,
             changed_by=request.user,
-            remarks=f'ACO calculation submitted. Recommended: ₹{calc.recommended_amount}'
+            remarks=f'ACO calculation submitted. Forwarded to GEO. Recommended: ₹{calc.recommended_amount}'
         )
         AuditLog.objects.create(
             user=request.user, action='SUBMIT_ACO_CALCULATION', module='MANAGER',
             record_type='ACOCalculation', record_id=str(calc.id),
             reference_number=assessment.request_number,
             previous_status=old_status, new_status=assessment.status,
-            description=f"ACO Calculation submitted. Recommended ₹{calc.recommended_amount}",
+            description=f"ACO Calculation submitted. Forwarded to GEO. Recommended ₹{calc.recommended_amount}",
         )
 
+        push_to_role(Role.GENERAL_ENQUIRY_OFFICER,
+                     f'Verification Required: {assessment.request_number}',
+                     f'ACO calculation completed for {assessment.beneficiary_name or assessment.request_number} – GEO enquiry needed',
+                     'GEO_ASSIGNED', assessment.request_number)
         push_to_role(Role.MANAGER,
                      f'ACO Report Ready: {assessment.request_number}',
-                     f'Cost: ₹{calc.total_estimated_cost} | Recommended: ₹{calc.recommended_amount}',
+                     f'Cost: ₹{calc.total_estimated_cost} | Recommended: ₹{calc.recommended_amount} – forwarded to GEO',
                      'ACO_SUBMITTED', assessment.request_number)
-        push_dashboard_refresh([Role.MANAGER, Role.ADMIN])
+        push_dashboard_refresh([Role.MANAGER, Role.ADMIN, Role.GENERAL_ENQUIRY_OFFICER, Role.ASSESSMENT_CALCULATION_OFFICER])
 
         return Response(ACOCalculationSerializer(calc).data, status=201)
 
