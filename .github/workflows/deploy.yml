@@ -92,7 +92,10 @@ jobs:
             echo "5. Pulling pre-built images..."
             docker compose pull
             
-            echo "6. Restarting the server with docker..."
-            docker compose up -d
+            echo "6. Restarting the server with docker (force-recreate)..."
+            docker compose up -d --force-recreate
             
-            echo "7. Deployment Complete!"
+            echo "7. Running database migrations on EC2..."
+            docker compose exec -T backend python manage.py migrate --noinput
+            
+            echo "8. Deployment Complete!"

@@ -146,6 +146,9 @@ export default function AppLayout() {
     return MASTER_NAV_CONFIG.filter(item => {
       // If the item specifies a hardcoded role (like the main dashboards), enforce it
       if (item.roles && !item.roles.includes(user?.role)) return false
+
+      // Manager always has access to hr_members (Members Directory)
+      if (user?.role === 'MANAGER' && item.key === 'hr_members') return true
       
       // Check feature access
       return hasFeature(item.key)

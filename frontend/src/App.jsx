@@ -76,6 +76,11 @@ function ProtectedRoute({ children, roles = [], featureKey = null }) {
   if (roles.length > 0 && !roles.includes(user?.role)) return <Navigate to="/" replace />
   
   if (featureKey) {
+    // Manager always has access to hr_members
+    if (user?.role === 'MANAGER' && featureKey === 'hr_members') {
+      return children
+    }
+
     if (loading) {
       return (
         <div className="h-screen w-screen flex items-center justify-center bg-gray-50">
