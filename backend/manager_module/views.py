@@ -260,6 +260,11 @@ class AssessmentRequestListCreateView(generics.ListCreateAPIView):
                 qs = qs.filter(status=RequestStatus.WITH_ACO)
         elif role == Role.GENERAL_ENQUIRY_OFFICER:
             qs = qs.filter(status=RequestStatus.WITH_GEO)
+        elif role == Role.DATA_ENTRY:
+            # Data entry sees all SUBMITTED assessments to forward to FAO
+            qs = qs.filter(status__in=['SUBMITTED', 'WITH_FAO', 'WITH_ACO', 'WITH_GEO', 'UNDER_REVIEW',
+                                        'FAO_REJECTED', 'ON_HOLD', 'APPROVED', 'REJECTED',
+                                        'PENDING_DISBURSEMENT', 'DISBURSED', 'COMPLETED', 'CANCELLED'])
         elif role in [Role.STAFF, Role.MEMBER]:
             qs = qs.filter(requested_by=user)
             
@@ -357,6 +362,12 @@ class RequestActionView(APIView):
     permission_classes = [IsAuthenticated]
 
     ALLOWED_TRANSITIONS = {
+        # Data Entry action - forward to FAO
+        'forward_to_fao': {
+            'from': [RequestStatus.SUBMITTED],
+            'to': RequestStatus.WITH_FAO,
+            'roles': [Role.DATA_ENTRY, Role.MANAGER, Role.ADMIN],
+        },
         # Manager actions
         'assign_fao': {
             'from': [RequestStatus.SUBMITTED, RequestStatus.UNDER_REVIEW],
@@ -371,12 +382,12 @@ class RequestActionView(APIView):
         'approve': {
             'from': [RequestStatus.SUBMITTED, RequestStatus.UNDER_REVIEW, RequestStatus.WITH_ACO,
                      RequestStatus.WITH_GEO, RequestStatus.ON_HOLD],
-            'to': RequestStatus.APPROVED,
+            'to': RequestStatus.PENDING_DISBURSEMENT,
             'roles': [Role.MANAGER, Role.ADMIN],
         },
         'approve_partial': {
             'from': [RequestStatus.WITH_ACO, RequestStatus.WITH_GEO, RequestStatus.UNDER_REVIEW],
-            'to': RequestStatus.APPROVED,
+            'to': RequestStatus.PENDING_DISBURSEMENT,
             'roles': [Role.MANAGER, Role.ADMIN],
         },
         'reject': {
@@ -509,7 +520,7 @@ class RequestActionView(APIView):
             if amount_approved:
                 req.amount_approved = amount_approved
             req.manager_remarks = remarks
-            req.status = RequestStatus.APPROVED
+            req.status = RequestStatus.PENDING_DISBURSEMENT
         elif action == 'hold':
             req.hold_reason = request.data.get('hold_reason', remarks)
         elif action in ['reject', 'fao_reject', 'geo_reject', 'accountant_reject']:
@@ -571,7 +582,8 @@ class RequestActionView(APIView):
         push_dashboard_refresh([Role.MANAGER, Role.ADMIN,
                                  Role.FIELD_ASSESSMENT_OFFICER,
                                  Role.ASSESSMENT_CALCULATION_OFFICER,
-                                 Role.GENERAL_ENQUIRY_OFFICER])
+                                 Role.GENERAL_ENQUIRY_OFFICER,
+                                 Role.ACCOUNTANT, Role.DATA_ENTRY])
 
         return Response({
             'message': f'Action "{action}" completed.',
@@ -582,7 +594,7 @@ class RequestActionView(APIView):
     def _send_notifications(self, action, req, actor, remarks):
         num = req.request_number
         name = req.beneficiary_name or num
-        if action == 'assign_fao':
+        if action in ['assign_fao', 'forward_to_fao']:
             push_to_role(Role.FIELD_ASSESSMENT_OFFICER,
                          f'New Assessment Assigned: {num}',
                          f'{name} — Field visit required', 'ASSESSMENT_ASSIGNED', num)
@@ -609,7 +621,7 @@ class RequestActionView(APIView):
             push_to_role(Role.MANAGER,
                          f'GEO Verification Done: {num}',
                          f'GEO recommends approval for {name}', 'GEO_APPROVED', num)
-        elif action == 'approve':
+        elif action in ['approve', 'approve_partial']:
             push_to_role(Role.ACCOUNTANT,
                          f'Ready for Disbursement: {num}',
                          f'₹{req.amount_approved or req.amount_requested} for {name}',

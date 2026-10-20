@@ -246,6 +246,7 @@ export default function Requests() {
   }, [search, statusFilter, roleFilter, dateFilter])
   const [actionModal, setActionModal] = useState(null) // { req, action }
   const [actionRemarks, setActionRemarks] = useState('')
+  const [actionAmount, setActionAmount] = useState('')
   const [actionLoading, setActionLoading] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
@@ -300,16 +301,24 @@ export default function Requests() {
     try {
       if (actionModal.action === 'cancel') {
         await managerApi.requests.delete(actionModal.req.id)
-        toast.success(`Assessment ${actionModal.req.request_number} deleted permanently.`)
+        toast.success(\Assessment \ deleted permanently.\)
         window.dispatchEvent(new CustomEvent('dashboard-refresh'))
       } else {
-        await managerApi.requests.action(actionModal.req.id, actionModal.action, {
-          remarks: actionRemarks,
-        })
-        toast.success(`Request ${actionModal.action}d successfully.`)
+        const payload = { remarks: actionRemarks }
+        if (actionModal.action === 'approve' || actionModal.action === 'approve_partial') {
+          if (!actionAmount || isNaN(parseFloat(actionAmount)) || parseFloat(actionAmount) <= 0) {
+            toast.error('Please enter a valid approved amount.')
+            setActionLoading(false)
+            return
+          }
+          payload.amount_approved = parseFloat(actionAmount)
+        }
+        await managerApi.requests.action(actionModal.req.id, actionModal.action, payload)
+        toast.success(\Request \d successfully.\)
       }
       setActionModal(null)
       setActionRemarks('')
+      setActionAmount('')
       load()
     } catch (err) {
       toast.error(err.response?.data?.error || err.response?.data?.detail || 'Action failed.')
@@ -324,6 +333,9 @@ export default function Requests() {
   }
   const canSubmit = (req) => user?.role === 'MANAGER' && req.status === 'DRAFT'
   const canCancel = (req) => ['MANAGER', 'ADMIN'].includes(user?.role) && ['DRAFT', 'SUBMITTED', 'ON_HOLD'].includes(req.status)
+  const canForwardToFAO = (req) => user?.role === 'DATA_ENTRY' && req.status === 'SUBMITTED'
+  const canManagerApprove = (req) => ['MANAGER', 'ADMIN'].includes(user?.role) && ['UNDER_REVIEW', 'WITH_GEO', 'WITH_ACO', 'SUBMITTED'].includes(req.status)
+  const canManagerReject = (req) => ['MANAGER', 'ADMIN'].includes(user?.role) && ['UNDER_REVIEW', 'SUBMITTED', 'WITH_GEO', 'WITH_ACO', 'WITH_FAO', 'ON_HOLD'].includes(req.status)
 
   return (
     <div>
@@ -399,15 +411,35 @@ export default function Requests() {
                       <div style={{ display: 'flex', gap: 4 }}>
                         <button className="btn btn-sm btn-secondary"
                           onClick={() => handleView(r.id)}>View</button>
-                        <button className="btn btn-sm btn-primary"
-                          onClick={() => handleEdit(r)}>Edit</button>
+                        {(isDataEntrySection ? canDataEntryEdit(r) : ['MANAGER','ADMIN'].includes(user?.role)) && (
+                          <button className="btn btn-sm btn-primary"
+                            onClick={() => handleEdit(r)}>Edit</button>
+                        )}
+                        {canForwardToFAO(r) && (
+                          <button className="btn btn-sm" style={{ background: '#7C3AED', color: 'white' }}
+                            onClick={() => setActionModal({ req: r, action: 'forward_to_fao' })}>
+                            Forward to FAO
+                          </button>
+                        )}
+                        {canManagerApprove(r) && (
+                          <button className="btn btn-sm btn-success"
+                            onClick={() => { setActionAmount(''); setActionModal({ req: r, action: 'approve' }) }}>
+                            ✓ Approve
+                          </button>
+                        )}
+                        {canManagerReject(r) && (
+                          <button className="btn btn-sm btn-danger"
+                            onClick={() => setActionModal({ req: r, action: 'reject' })}>
+                            ✗ Reject
+                          </button>
+                        )}
                         {canSubmit(r) && (
                           <button className="btn btn-sm btn-primary"
                             onClick={() => setActionModal({ req: r, action: 'submit' })}>Submit</button>
                         )}
                         {canCancel(r) && (
                           <button className="btn btn-sm btn-danger"
-                            onClick={() => setActionModal({ req: r, action: 'cancel' })}>Cancel</button>
+                            onClick={() => setActionModal({ req: r, action: 'cancel' })}>Delete</button>
                         )}
                       </div>
                     </td>
@@ -515,8 +547,21 @@ export default function Requests() {
               </>
             }>
             <p style={{ marginBottom: 12, fontSize: 13, color: 'var(--gray-600)' }}>
-              Request: <strong>{actionModal.req.request_number}</strong> — {actionModal.req.purpose}
+              Request: <strong>{actionModal.req.request_number}</strong> &ndash; {actionModal.req.purpose}
             </p>
+            {(actionModal.action === 'approve' || actionModal.action === 'approve_partial') && (
+              <div className="form-group">
+                <label className="form-label" style={{ fontWeight: 700, color: 'var(--gray-800)' }}>Amount Approved (₹) <span style={{ color: 'red' }}>*</span></label>
+                <input className="form-control" type="number" min="1" step="0.01"
+                  placeholder="Enter the approved amount"
+                  value={actionAmount}
+                  onChange={e => setActionAmount(e.target.value)}
+                  autoFocus />
+                <div style={{ fontSize: 12, color: 'var(--gray-500)', marginTop: 4 }}>
+                  Requested amount: <strong>₹{Number(actionModal.req.amount_requested || 0).toLocaleString('en-IN')}</strong>. Once approved, this request will move to the Accountant for disbursement.
+                </div>
+              </div>
+            )}
             <div className="form-group">
               <label className="form-label">Remarks</label>
               <textarea className="form-control" rows={3}

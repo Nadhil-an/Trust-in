@@ -229047,3 +229047,43 @@ WebSocket CONNECT /ws/notify/ [10.162.176.21:19238]
 [mHTTP GET /api/auth/profile/ 200 [0.02, 10.162.176.21:19240][0m
 [mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date= 200 [0.34, 10.162.176.21:34051][0m
 [mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date= 200 [0.04, 10.162.176.21:19241][0m
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:24509]
+WebSocket REJECT /ws/notify/ [10.162.176.21:24509]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:24509]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:19529]
+WebSocket REJECT /ws/notify/ [10.162.176.21:19529]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:19529]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:44507]
+WebSocket REJECT /ws/notify/ [10.162.176.21:44507]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:44507]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:32266]
+WebSocket REJECT /ws/notify/ [10.162.176.21:32266]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:32266]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:59916]
+WebSocket REJECT /ws/notify/ [10.162.176.21:59916]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:59916]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:49798]
+WebSocket REJECT /ws/notify/ [10.162.176.21:49798]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:49798]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:22871]
+WebSocket REJECT /ws/notify/ [10.162.176.21:22871]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:22871]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:53226]
+WebSocket REJECT /ws/notify/ [10.162.176.21:53226]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:53226]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:52585]
+WebSocket REJECT /ws/notify/ [10.162.176.21:52585]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:52585]
+Unauthorized: /api/manager/requests/
+[31;1mHTTP POST /api/manager/requests/ 401 [0.03, 10.162.176.21:17666][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.10, 10.162.176.21:36270][0m
+[mHTTP POST /api/manager/requests/ 201 [0.28, 10.162.176.21:53610][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date= 200 [1.04, 10.162.176.21:37250][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:53200]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:53200]
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-04-20 200 [0.04, 10.162.176.21:28342][0m
+[mHTTP GET /api/manager/requests/?search=&status=&requested_by_role=&date=2026-04-27 200 [0.08, 10.162.176.21:55371][0m
