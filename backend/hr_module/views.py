@@ -135,6 +135,11 @@ def sync_member_user_account(member, password=None, username=None, request_user=
             is_active=(member.status == 'ACTIVE')
         )
 
+    # Link member.created_by directly to primary_user
+    if member.created_by != primary_user:
+        member.created_by = primary_user
+        member.save(update_fields=['created_by'])
+
     # Record Audit Log
     operator_name = getattr(request_user, 'full_name', 'HR/Manager') if request_user else 'HR/Manager'
     AuditLog.objects.create(

@@ -51,59 +51,83 @@ class LoginView(APIView):
         if not username or not password:
             return Response({'error': 'Username and password are required.'}, status=400)
 
-        # Flexible user lookup by case-insensitive username, email, staff_uid, or encrypted phone number
+        # Flexible multi-identifier candidate search
         clean_username = username.strip()
-        user_obj = User.objects.filter(
+        import re
+        clean_digits = re.sub(r'[^0-9]', '', clean_username)[-10:]
+        candidates = []
+
+        # 1. Exact match by username, email, staff_uid
+        for u in User.objects.filter(
             Q(username__iexact=clean_username) | Q(email__iexact=clean_username) | Q(staff_uid__iexact=clean_username)
-        ).first()
-        if not user_obj:
+        ):
+            if u not in candidates:
+                candidates.append(u)
+
+        # 2. Match by phone digits (last 10 digits)
+        if len(clean_digits) >= 10:
+            for u in User.objects.filter(username__iexact=clean_digits):
+                if u not in candidates:
+                    candidates.append(u)
             for u in User.objects.exclude(phone='').iterator():
-                if u.phone and u.phone.strip() == clean_username:
-                    user_obj = u
-                    break
+                if u.phone and u.phone.strip() in [clean_username, clean_digits]:
+                    if u not in candidates:
+                        candidates.append(u)
 
-        if not user_obj:
-            # Check if clean_username matches a Member by member_id
-            from hr_module.models import Member
-            clean_mem_id = clean_username.replace('SLCT/MEM/', '').replace('MEM-', '').strip()
-            member_match = Member.objects.filter(
-                Q(member_id__iexact=clean_username) | Q(member_id__iexact=clean_mem_id)
-            ).first()
-            if member_match:
-                if member_match.created_by and getattr(member_match.created_by, 'role', None) == Role.MEMBER:
-                    user_obj = member_match.created_by
-                if not user_obj and member_match.phone:
-                    clean_mphone = member_match.phone.strip()
-                    for u in User.objects.filter(role=Role.MEMBER).iterator():
-                        if u.phone and u.phone.strip() == clean_mphone:
-                            user_obj = u
-                            break
-                if not user_obj and member_match.email:
-                    user_obj = User.objects.filter(role=Role.MEMBER, email__iexact=member_match.email.strip()).first()
-                if not user_obj:
-                    user_obj = User.objects.filter(
-                        role=Role.MEMBER
-                    ).filter(Q(username__iexact=member_match.member_id) | Q(username__iexact=clean_mem_id)).first()
+        # 3. Check if clean_username matches a Member by member_id, phone, or email
+        from hr_module.models import Member
+        clean_mem_id = clean_username.replace('SLCT/MEM/', '').replace('MEM-', '').strip()
+        member_matches = list(Member.objects.filter(
+            Q(member_id__iexact=clean_username) | Q(member_id__iexact=clean_mem_id) |
+            Q(email__iexact=clean_username)
+        ))
+        if len(clean_digits) >= 10:
+            for m in Member.objects.all():
+                if m.phone and m.phone.strip() in [clean_username, clean_digits] and m not in member_matches:
+                    member_matches.append(m)
 
+        for m in member_matches:
+            if m.created_by and m.created_by not in candidates:
+                candidates.append(m.created_by)
+            for u in User.objects.filter(role=Role.MEMBER).filter(
+                Q(username__iexact=m.member_id) | Q(username__iexact=clean_digits) | Q(username__iexact=clean_mem_id)
+            ):
+                if u not in candidates:
+                    candidates.append(u)
 
-        if user_obj and user_obj.is_account_locked():
-            return Response({'error': 'Account is temporarily locked. Try again later.'}, status=403)
+        # Authenticate against all matching candidates
+        user = None
+        user_obj = None
 
-        target_username = user_obj.username if user_obj else clean_username
-        user = authenticate(request, username=target_username, password=password)
+        for candidate in candidates:
+            if candidate.is_account_locked():
+                continue
+            u_auth = authenticate(request, username=candidate.username, password=password)
+            if u_auth:
+                user = u_auth
+                user_obj = candidate
+                break
+
+        # Fallback to direct username authentication
         if not user:
-            if user_obj:
-                user_obj.failed_login_attempts += 1
-                if user_obj.failed_login_attempts >= 5:
-                    user_obj.locked_until = timezone.now() + timedelta(minutes=1)
-                user_obj.save(update_fields=['failed_login_attempts', 'locked_until'])
-                # Log failed attempt
-                AuditLog.objects.create(
-                    user=None, action='LOGIN_FAILED', module='AUTH',
-                    record_type='User', record_id=str(user_obj.id),
-                    description=f"Failed login for {username}",
-                    ip_address=getattr(request, 'audit_ip', None)
-                )
+            user = authenticate(request, username=clean_username, password=password)
+            if user:
+                user_obj = user
+
+        if not user:
+            if candidates:
+                for candidate in candidates:
+                    candidate.failed_login_attempts += 1
+                    if candidate.failed_login_attempts >= 5:
+                        candidate.locked_until = timezone.now() + timedelta(minutes=1)
+                    candidate.save(update_fields=['failed_login_attempts', 'locked_until'])
+                user_obj = candidates[0]
+            AuditLog.objects.create(
+                user=None, action='LOGIN_FAILED', module='AUTH',
+                record_type='User', record_id=str(user_obj.id) if user_obj else '',
+                description=f"Failed login for {username}",
+                ip_address=getattr(request, 'audit_ip', None)
+            )
             return Response({'error': 'Invalid credentials.'}, status=401)
 
         if not user.is_active:
