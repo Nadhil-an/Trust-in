@@ -65,12 +65,12 @@ class VerifyDonationPaymentView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        payment_id = request.data.get('payment_id')
-        razorpay_order_id = request.data.get('razorpay_order_id', '')
-        razorpay_payment_id = request.data.get('razorpay_payment_id', '')
-        razorpay_signature = request.data.get('razorpay_signature', '')
+        payment_id = request.data.get('payment_id') or request.data.get('internal_payment_id') or ''
+        razorpay_order_id = request.data.get('razorpay_order_id') or request.data.get('order_id') or ''
+        razorpay_payment_id = request.data.get('razorpay_payment_id') or request.data.get('payment_id') or ''
+        razorpay_signature = request.data.get('razorpay_signature') or request.data.get('signature') or ''
 
-        if not payment_id or not razorpay_payment_id:
+        if not payment_id and not razorpay_order_id:
             return Response({'error': 'Missing payment verification details.'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
@@ -127,9 +127,9 @@ class VerifySubscriptionView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        subscription_id = request.data.get('subscription_id')
-        razorpay_payment_id = request.data.get('razorpay_payment_id', '')
-        razorpay_signature = request.data.get('razorpay_signature', '')
+        subscription_id = request.data.get('subscription_id') or request.data.get('razorpay_subscription_id', '')
+        razorpay_payment_id = request.data.get('razorpay_payment_id') or request.data.get('payment_id', '')
+        razorpay_signature = request.data.get('razorpay_signature') or request.data.get('signature', '')
 
         if not subscription_id:
             return Response({'error': 'Missing subscription ID.'}, status=status.HTTP_400_BAD_REQUEST)
