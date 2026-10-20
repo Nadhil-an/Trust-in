@@ -188,7 +188,20 @@ def verify_donation_payment(payment_id, razorpay_order_id, razorpay_payment_id, 
     """
     Verifies Razorpay payment signature and records the donation.
     """
-    payment = DonationPayment.objects.get(id=payment_id)
+    from django.db.models import Q
+    payment = None
+    if payment_id:
+        try:
+            payment = DonationPayment.objects.filter(id=payment_id).first()
+        except Exception:
+            pass
+    if not payment and razorpay_order_id:
+        payment = DonationPayment.objects.filter(razorpay_order_id=razorpay_order_id).first()
+    if not payment:
+        payment = DonationPayment.objects.filter(razorpay_order_id=payment_id).first()
+    if not payment:
+        raise DonationPayment.DoesNotExist("Payment record not found.")
+
     client = get_razorpay_client()
 
     # Verify signature

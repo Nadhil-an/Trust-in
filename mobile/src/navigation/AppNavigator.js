@@ -31,6 +31,7 @@ import ManagerHomeScreen from '../screens/manager/ManagerHomeScreen';
 
 // Member Screens
 import MemberHomeScreen from '../screens/member/MemberHomeScreen';
+import DonateScreen from '../screens/member/DonateScreen';
 import MembershipPaymentScreen from '../screens/member/MembershipPaymentScreen';
 import MembershipCardScreen from '../screens/member/MembershipCardScreen';
 import DonationHistoryScreen from '../screens/member/DonationHistoryScreen';
@@ -167,6 +168,7 @@ const MainStack = () => {
 
       
       {/* Member Actions */}
+      <Stack.Screen name="Donate" component={DonateScreen} />
       <Stack.Screen name="MembershipPayment" component={MembershipPaymentScreen} />
       <Stack.Screen name="MembershipCard" component={MembershipCardScreen} />
       <Stack.Screen name="DonationHistory" component={DonationHistoryScreen} />

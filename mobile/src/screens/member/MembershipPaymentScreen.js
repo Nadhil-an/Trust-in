@@ -75,6 +75,27 @@ const MembershipPaymentScreen = ({ navigation }) => {
 
         {method === 'ONLINE' ? (
           <Card style={styles.detailsCard}>
+            <TouchableOpacity
+              style={styles.gatewayInstantBtn}
+              onPress={() => navigation.navigate('Donate', { mode: 'MONTHLY', amount: amount })}
+              activeOpacity={0.85}
+            >
+              <View style={styles.gatewayInstantIcon}>
+                <Ionicons name="card" size={22} color={Colors.white} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.gatewayInstantTitle}>Pay Online with Razorpay / Autopay</Text>
+                <Text style={styles.gatewayInstantSub}>Instant UPI, GPay, PhonePe, Cards & Monthly Autopay</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color="#0284c7" />
+            </TouchableOpacity>
+
+            <View style={styles.orDividerRow}>
+              <View style={styles.orLine} />
+              <Text style={styles.orText}>OR MANUAL UPI</Text>
+              <View style={styles.orLine} />
+            </View>
+
             <View style={styles.upiBox}>
               <Text style={styles.upiTitle}>{t('member.our_upi_details', 'Our UPI Details')}</Text>
               <Text style={styles.upiValue}>sreelakshmitrust@okicici</Text>
@@ -128,6 +149,52 @@ const styles = StyleSheet.create({
   methodLabel: { fontSize: 14, fontWeight: '700', color: Colors.primary },
   methodLabelActive: { color: Colors.white },
   detailsCard: { marginTop: 8 },
+  gatewayInstantBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#f0f9ff',
+    borderWidth: 1.5,
+    borderColor: '#7dd3fc',
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 16,
+  },
+  gatewayInstantIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: '#0284c7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  gatewayInstantTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#0369a1',
+  },
+  gatewayInstantSub: {
+    fontSize: 11,
+    color: Colors.gray600,
+    marginTop: 2,
+  },
+  orDividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 16,
+  },
+  orLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: Colors.gray200,
+  },
+  orText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: Colors.gray400,
+    letterSpacing: 0.8,
+  },
   upiBox: { backgroundColor: Colors.gray50, padding: 16, borderRadius: 12, marginBottom: 16 },
   upiTitle: { fontSize: 12, color: Colors.gray500, fontWeight: '700', textTransform: 'uppercase', marginBottom: 6 },
   upiValue: { fontSize: 16, color: Colors.textPrimary, fontWeight: '600', marginBottom: 2 },

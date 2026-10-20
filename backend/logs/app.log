@@ -229256,3 +229256,15 @@ Forbidden: /api/core/users/5c9c8db8-979e-4682-af85-fa81d41ff7a7/
 Unauthorized: /api/auth/login/
 Unauthorized: /api/auth/login/
 Unauthorized: /api/auth/login/
+[Razorpay Order Create] Gateway returned error (fallback to sandbox ID): Authentication failed
+[Signature Verification Error]: Razorpay Signature Verification Failed
+[Razorpay Subscription Create] Gateway returned error (fallback to sandbox ID): Authentication failed
+[Subscription Verification Error]: Razorpay Signature Verification Failed
+Unauthorized: /api/auth/profile/
+Forbidden: /api/core/users/bfdc22b3-4eb1-41e3-b919-232b698d5cb2/
+[Razorpay Order Create] Gateway returned error (fallback to sandbox ID): Authentication failed
+Bad Request: /api/payments/verify-payment/
+Unauthorized: /api/payments/create-subscription/
+Unauthorized: /api/payments/verify-subscription/
+Unauthorized: /api/payments/my-subscription/
+Unauthorized: /api/payments/my-subscription/

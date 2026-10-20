@@ -204,6 +204,23 @@ export const donationApi = {
   myTotal: ()       => Promise.resolve({ data: { total_amount: 0 } }),
 };
 
+// ── Payment Gateway & Autopay (api/payments/) ────────────────────────────────
+export const paymentApi = {
+  createDonationOrder:   (data) => api.post('/payments/create-order/', data),
+  verifyDonationPayment: (data) => api.post('/payments/verify-payment/', data),
+  createSubscription:    (data) => api.post('/payments/create-subscription/', data),
+  verifySubscription:    (data) => api.post('/payments/verify-subscription/', data),
+  getMySubscription:     ()     => api.get('/payments/my-subscription/'),
+  cancelSubscription:    ()     => api.delete('/payments/my-subscription/'),
+  getCheckoutUrl: (params) => {
+    const qs = Object.entries(params || {})
+      .filter(([_, v]) => v !== undefined && v !== null && v !== '')
+      .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+      .join('&');
+    return `${Config.API_BASE_URL}/payments/checkout-page/?${qs}`;
+  },
+};
+
 // ── Notifications ─────────────────────────────────────────────────────────────
 export const notifyApi = {
   list:           (params) => api.get('/core/notifications/', { params }),

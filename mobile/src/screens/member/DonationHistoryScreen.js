@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Modal
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
 import { donationApi } from '../../api';
@@ -41,9 +42,11 @@ const DonationHistoryScreen = ({ navigation }) => {
     }
   };
 
-  useEffect(() => {
-    fetchDonations();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchDonations();
+    }, [])
+  );
 
   return (
     <View style={styles.container}>
@@ -53,7 +56,14 @@ const DonationHistoryScreen = ({ navigation }) => {
           <Ionicons name="arrow-back" size={24} color={Colors.white} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Donation</Text>
-        <View style={{ width: 24 }} />
+        <TouchableOpacity
+          style={styles.headerDonateBtn}
+          onPress={() => navigation.navigate('Donate')}
+          activeOpacity={0.85}
+        >
+          <Ionicons name="heart" size={14} color="#0284c7" />
+          <Text style={styles.headerDonateBtnText}>+ Donate</Text>
+        </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
@@ -74,6 +84,16 @@ const DonationHistoryScreen = ({ navigation }) => {
               <Text style={{ fontSize: 16, fontWeight: '800', color: '#0284c7' }}>₹{totalOnline.toLocaleString()}</Text>
             </View>
           </View>
+
+          {/* Quick Donate / Autopay CTA */}
+          <TouchableOpacity
+            style={styles.summaryDonateCta}
+            onPress={() => navigation.navigate('Donate')}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="add-circle-outline" size={18} color={Colors.white} />
+            <Text style={styles.summaryDonateCtaText}>Donate Online / Setup Autopay</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Section Header with Filter */}
@@ -184,6 +204,20 @@ const styles = StyleSheet.create({
   },
   backBtn: { padding: 4 },
   headerTitle: { fontSize: 18, fontWeight: '700', color: Colors.white },
+  headerDonateBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: Colors.white,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+  },
+  headerDonateBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0284c7',
+  },
   scroll: { padding: 16, gap: 16 },
 
   summaryCard: {
@@ -193,6 +227,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#bae6fd',
+  },
+  summaryDonateCta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#0284c7',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginTop: 14,
+    width: '100%',
+    justifyContent: 'center',
+  },
+  summaryDonateCtaText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: Colors.white,
   },
   summaryIconCircle: {
     width: 52,
