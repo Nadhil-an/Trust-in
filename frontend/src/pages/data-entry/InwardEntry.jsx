@@ -56,7 +56,7 @@ export default function InwardEntry() {
       const fd = new FormData()
       Object.entries(form).forEach(([k, v]) => fd.append(k, v))
       await accountsApi.income.create(fd)
-      toast.success('Inward entry recorded!')
+      toast.success('Inward / Purchase entry recorded!')
       setShowModal(false)
       setForm(EMPTY_FORM)
       load()
@@ -88,9 +88,9 @@ export default function InwardEntry() {
 
   return (
     <div>
-      <PageHeader title="📥 Inward Entry" subtitle="Record incoming goods, materials and receipts">
+      <PageHeader title="📥 Inward / Purchase Entry" subtitle="Record incoming stock, goods purchases, materials and receipts">
         <span className="badge badge-blue" style={{ fontSize: 13, padding: '6px 14px' }}>Total: {formatINR(total)}</span>
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ New Inward Entry</button>
+        <button className="btn btn-primary" onClick={() => setShowModal(true)}>+ New Inward / Purchase Entry</button>
       </PageHeader>
 
       <div className="data-card">
@@ -107,12 +107,12 @@ export default function InwardEntry() {
           <div className="table-wrap">
             <table>
               <thead><tr>
-                <th>Date</th><th>Received From</th><th>Description / Goods</th>
-                <th>Payment</th><th>Reference</th><th>Amount</th>
+                <th>Date</th><th>Received From / Supplier</th><th>Description / Goods</th>
+                <th>Payment</th><th>Reference / Bill No.</th><th>Amount</th>
               </tr></thead>
               <tbody>
                 {items.length === 0
-                  ? <tr><td colSpan={6}><EmptyState icon="📥" title="No inward entries yet" subtitle="Click '+ New Inward Entry' to record one" /></td></tr>
+                  ? <tr><td colSpan={6}><EmptyState icon="📥" title="No inward / purchase entries yet" subtitle="Click '+ New Inward / Purchase Entry' to record one" /></td></tr>
                   : items.map(i => (
                     <tr key={i.id}>
                       <td style={{ fontSize: 12 }}>{format(new Date(i.date), 'dd MMM yyyy')}</td>
@@ -132,7 +132,7 @@ export default function InwardEntry() {
         )}
       </div>
 
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="New Inward Entry" size="modal-md">
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="New Inward / Purchase Entry" size="modal-md">
         <form onSubmit={handleSave} onKeyDown={handleKeyDown}>
           <div className="form-grid-2">
             <div className="form-group">
@@ -144,16 +144,16 @@ export default function InwardEntry() {
               <input className="form-control" type="number" min="0.01" step="0.01" required value={form.amount} onChange={e => setF('amount', e.target.value)} placeholder="0.00" />
             </div>
             <div className="form-group">
-              <label className="form-label">Received From</label>
-              <input className="form-control" value={form.donor_name} onChange={e => setF('donor_name', e.target.value)} placeholder="Supplier / Donor name" />
+              <label className="form-label">Received From / Supplier</label>
+              <input className="form-control" value={form.donor_name} onChange={e => setF('donor_name', e.target.value)} placeholder="Supplier / Vendor / Donor name" />
             </div>
             <div className="form-group">
               <label className="form-label">Phone</label>
               <input className="form-control" value={form.phone} onChange={e => setF('phone', e.target.value.replace(/\D/g,'').slice(0,10))} placeholder="10-digit number" />
             </div>
             <div className="form-group" style={{ gridColumn: 'span 2' }}>
-              <label className="form-label required">Goods / Item Description</label>
-              <input className="form-control" required value={form.purpose} onChange={e => setF('purpose', e.target.value)} placeholder="e.g. 50 kg Rice, 20 Wheelchairs..." />
+              <label className="form-label required">Goods / Stock Description</label>
+              <input className="form-control" required value={form.purpose} onChange={e => setF('purpose', e.target.value)} placeholder="e.g. 50 kg Rice, 20 Wheelchairs, Office Supplies..." />
             </div>
             <div className="form-group" style={{ gridColumn: 'span 2' }}>
               <label className="form-label">Payment Method</label>
@@ -164,8 +164,8 @@ export default function InwardEntry() {
               />
             </div>
             <div className="form-group">
-              <label className="form-label">Reference / Receipt No.</label>
-              <input className="form-control" value={form.reference_number} onChange={e => setF('reference_number', e.target.value)} placeholder="INV-0001 / GRN-001" />
+              <label className="form-label">Reference / Bill / Invoice No.</label>
+              <input className="form-control" value={form.reference_number} onChange={e => setF('reference_number', e.target.value)} placeholder="INV-0001 / GRN-001 / Bill No" />
             </div>
             <div className="form-group" style={{ gridColumn: 'span 2' }}>
               <label className="form-label">Remarks</label>
@@ -174,7 +174,7 @@ export default function InwardEntry() {
           </div>
           <div className="modal-footer" style={{ padding: 0, marginTop: 12 }}>
             <button type="button" className="btn btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
-            <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Saving...' : 'Save Inward Entry'}</button>
+            <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Saving...' : 'Save Inward / Purchase Entry'}</button>
           </div>
         </form>
       </Modal>

@@ -27,9 +27,9 @@ export const MASTER_NAV_CONFIG = [
   { key: 'partners_entry', label: 'Partners Entry', icon: '🤝', path: '/slt/entry/partners', category: 'PEOPLE & RELATIONS' },
   { key: 'events_entry', label: 'Events & News', icon: '📢', path: '/slt/entry/events', category: 'PEOPLE & RELATIONS' },
 
-  // ── CHARITY ASSETS
-  { key: 'inward_entry', label: 'Inward Entry', icon: '📥', path: '/slt/entry/inward', category: 'CHARITY ASSETS' },
-  { key: 'outward_entry', label: 'Outward Entry', icon: '📤', path: '/slt/entry/outward', category: 'CHARITY ASSETS' },
+  // ── STOCK MANAGEMENT
+  { key: 'inward_entry', label: 'Inward / Purchase Entry', icon: '📥', path: '/slt/entry/inward', category: 'STOCK MANAGEMENT' },
+  { key: 'outward_entry', label: 'Outward Entry', icon: '📤', path: '/slt/entry/outward', category: 'STOCK MANAGEMENT' },
 
   // ── MATERIAL INVENTORY
   { key: 'material_inward', label: 'Material Inward', icon: '📦', path: '/slt/entry/material-inward', category: 'MATERIAL INVENTORY' },

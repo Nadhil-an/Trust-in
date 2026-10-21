@@ -31,8 +31,8 @@ const ENTRIES = [
     color: '#6366F1', bg: '#EEF2FF', border: '#C7D2FE',
   },
   {
-    icon: '📥', label: 'Inward Entry',
-    desc: 'Record incoming goods, materials & receipts',
+    icon: '📥', label: 'Inward / Purchase Entry',
+    desc: 'Record incoming stock, goods purchases, materials & receipts',
     path: '/slt/entry/inward',
     color: '#1E4DB7', bg: '#EFF6FF', border: '#BFDBFE',
   },
