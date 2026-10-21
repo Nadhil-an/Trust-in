@@ -86,6 +86,7 @@ export const SideDrawer = ({ visible, onClose, navigation, currentRoute = 'Home'
     { name: 'Events', label: 'Events', icon: 'calendar', route: 'Events' },
     { name: 'Attendance', label: 'Attendance', icon: 'calendar', route: 'StaffAttendance' },
     { name: 'SalaryAdvance', label: 'Salary Advance', icon: 'cash', route: 'StaffPaymentAdvance' },
+    { name: 'StockInventory', label: 'Stock / Inventory', icon: 'cube', route: 'StockInventory' },
     { name: 'UploadReport', label: 'Upload Report', icon: 'cloud-upload', route: 'UploadEvent' },
   ];
 

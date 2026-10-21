@@ -537,6 +537,11 @@ const StaffHomeScreen = ({ navigation, route }) => {
             onPress={() => navigation.navigate('StaffDonationsList')}
           />
           <QuickActionCard
+            title={t('nav.stock_inventory', 'Stock Inventory')}
+            icon="cube-outline"
+            onPress={() => navigation.navigate('StockInventory')}
+          />
+          <QuickActionCard
             title={t('staff.leaderboard', 'Leaderboard')}
             icon="trophy-outline"
             onPress={() => navigation.navigate('StaffLeaderboard')}

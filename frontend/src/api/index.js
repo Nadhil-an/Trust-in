@@ -111,6 +111,13 @@ export const managerApi = {
     update: (id, data) => api.patch(`/manager/inventory-transactions/${id}/`, data),
     delete: (id) => api.delete(`/manager/inventory-transactions/${id}/`),
   },
+  stockInwardPurchase: {
+    list: (params) => api.get('/manager/stock-inward-purchase/', { params }),
+    create: (data) => {
+      const headers = data instanceof FormData ? { 'Content-Type': 'multipart/form-data' } : {};
+      return api.post('/manager/stock-inward-purchase/', data, { headers });
+    },
+  },
   minutes: {
     list: (params) => api.get('/manager/minutes/', { params }),
     create: (data) => api.post('/manager/minutes/', data),

@@ -26,6 +26,7 @@ urlpatterns = [
     path('inventory/<uuid:pk>/', views.CharityInventoryDetailView.as_view(), name='inventory_detail'),
     path('inventory-transactions/', views.InventoryTransactionListCreateView.as_view(), name='inventory_transaction_list'),
     path('inventory-transactions/<uuid:pk>/', views.InventoryTransactionDetailView.as_view(), name='inventory_transaction_detail'),
+    path('stock-inward-purchase/', views.StockInwardPurchaseView.as_view(), name='stock_inward_purchase'),
 
     # Minutes
     path('minutes/', views.MinutesListCreateView.as_view(), name='minutes_list'),

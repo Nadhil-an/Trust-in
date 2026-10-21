@@ -1,4 +1,5 @@
 """Manager Module Views — Assessment Requests, FAO/ACO/GEO Reports, Inventory, Dashboard"""
+from decimal import Decimal
 from django.utils import timezone
 from django.db.models import Count, Sum, Q
 from rest_framework import generics, status
@@ -909,12 +910,17 @@ class GEOReportView(APIView):
 class CharityInventoryListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = CharityInventorySerializer
-    filterset_fields = ['category', 'is_active']
-    search_fields = ['item_name', 'item_code', 'description']
-    ordering_fields = ['category', 'item_name', 'quantity_available']
+    filterset_fields = ['category', 'is_active', 'source_type']
+    search_fields = ['item_name', 'item_code', 'description', 'donor_name', 'vendor_name']
+    ordering_fields = ['category', 'item_name', 'quantity_available', 'expiry_date']
 
     def get_queryset(self):
-        return CharityInventory.objects.filter(is_active=True)
+        qs = CharityInventory.objects.filter(is_active=True)
+        show_expired = self.request.query_params.get('show_expired', 'false').lower() == 'true'
+        if not show_expired:
+            today = timezone.now().date()
+            qs = qs.exclude(expiry_date__isnull=False, expiry_date__lt=today)
+        return qs
 
     def perform_create(self, serializer):
         serializer.save(updated_by=self.request.user)
@@ -980,6 +986,183 @@ class InventoryTransactionDetailView(generics.RetrieveUpdateDestroyAPIView):
             old_item.quantity_available += old_qty
         old_item.save(update_fields=['quantity_available'])
         instance.delete()
+
+
+class StockInwardPurchaseView(APIView):
+    """
+    Handles Inward (Donation) and Purchase entries for Stock Management.
+    Increases stock in CharityInventory, creates an InventoryTransaction,
+    and synchronizes with accounting ledgers (Income/Expense).
+    """
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def get(self, request):
+        entry_type = request.query_params.get('type')
+        search = request.query_params.get('search', '').strip()
+        date_str = request.query_params.get('date')
+
+        qs = InventoryTransaction.objects.select_related('item', 'created_by').all()
+        if entry_type:
+            qs = qs.filter(source_type=entry_type)
+        else:
+            qs = qs.filter(transaction_type='INWARD')
+
+        if date_str:
+            qs = qs.filter(date=date_str)
+
+        if search:
+            qs = qs.filter(
+                Q(transaction_id__icontains=search) |
+                Q(reference_number__icontains=search) |
+                Q(item__item_name__icontains=search) |
+                Q(donor_name__icontains=search) |
+                Q(vendor_name__icontains=search) |
+                Q(item__category__icontains=search)
+            )
+
+        serializer = InventoryTransactionSerializer(qs, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        entry_type = (request.data.get('entry_type') or 'INWARD').upper()
+        date_str = request.data.get('date')
+        selected_date = date_str if date_str else timezone.now().date()
+
+        item_name = (request.data.get('item_name') or '').strip()
+        if not item_name:
+            item_name = (request.data.get('purpose') or 'Stock Item').strip()
+
+        category = (request.data.get('category') or 'General').strip()
+        unit = (request.data.get('unit') or 'pcs').strip()
+
+        try:
+            qty = int(float(request.data.get('quantity', 1)))
+        except (ValueError, TypeError):
+            qty = 1
+
+        try:
+            unit_val = Decimal(str(request.data.get('unit_value', '0')))
+        except Exception:
+            unit_val = Decimal('0')
+
+        try:
+            total_amount = Decimal(str(request.data.get('total_amount') or request.data.get('amount') or '0'))
+        except Exception:
+            total_amount = Decimal(str(qty)) * unit_val
+
+        remarks = request.data.get('remarks', '')
+        ref_no = request.data.get('reference_number', '')
+        expiry_date = request.data.get('expiry_date') or None
+        if expiry_date in ('', 'null', 'undefined'):
+            expiry_date = None
+
+        photo = request.FILES.get('image') or request.FILES.get('item_photo')
+
+        donor_name = request.data.get('donor_name', '')
+        donor_phone = request.data.get('donor_phone') or request.data.get('phone', '')
+        donor_address = request.data.get('donor_address') or request.data.get('address', '')
+        donor_member = request.data.get('donor_member') or request.data.get('member', '')
+        donor_job = request.data.get('donor_job') or request.data.get('job', '')
+
+        vendor_name = request.data.get('vendor_name') or request.data.get('payee', '')
+        vendor_phone = request.data.get('vendor_phone', '')
+        vendor_address = request.data.get('vendor_address', '')
+
+        # 1. Update or create CharityInventory item
+        inv_item = CharityInventory.objects.filter(item_name__iexact=item_name, category__iexact=category, is_active=True).first()
+        if not inv_item:
+            inv_item = CharityInventory.objects.create(
+                item_name=item_name,
+                category=category,
+                unit=unit,
+                quantity_available=0,
+                unit_value=unit_val,
+                expiry_date=expiry_date,
+                source_type=entry_type,
+                donor_name=donor_name,
+                donor_phone=donor_phone,
+                donor_address=donor_address,
+                donor_member=donor_member,
+                donor_job=donor_job,
+                vendor_name=vendor_name,
+                vendor_phone=vendor_phone,
+                vendor_address=vendor_address,
+                image=photo if photo else None,
+                updated_by=request.user,
+                notes=remarks
+            )
+        else:
+            if photo:
+                inv_item.image = photo
+            if expiry_date:
+                inv_item.expiry_date = expiry_date
+            if unit_val > 0:
+                inv_item.unit_value = unit_val
+            inv_item.save()
+
+        # 2. Log transaction (automatically increments inv_item.quantity_available)
+        txn = InventoryTransaction(
+            item=inv_item,
+            transaction_type='INWARD',
+            source_type=entry_type,
+            quantity=qty,
+            unit_value=unit_val,
+            total_amount=total_amount,
+            date=selected_date,
+            reference_number=ref_no,
+            donor_name=donor_name,
+            donor_phone=donor_phone,
+            donor_address=donor_address,
+            donor_member=donor_member,
+            donor_job=donor_job,
+            vendor_name=vendor_name,
+            vendor_phone=vendor_phone,
+            vendor_address=vendor_address,
+            image=photo if photo else None,
+            expiry_date=expiry_date,
+            remarks=remarks,
+            created_by=request.user
+        )
+        txn.save()
+
+        # 3. Synchronize with Financial Accounts
+        payment_method = request.data.get('payment_method', 'CASH')
+        account_type = request.data.get('account_type', 'CASH')
+        try:
+            from accounts_module.models import Income, Expense
+            if entry_type == 'INWARD':
+                Income.objects.create(
+                    date=selected_date,
+                    amount=total_amount if total_amount > 0 else Decimal('1.00'),
+                    source='INWARD',
+                    donor_name=donor_name or 'Anonymous Donor',
+                    phone=donor_phone,
+                    purpose=f"{item_name} ({qty} {unit}) [Donation Inward]",
+                    payment_method=payment_method,
+                    account_type=account_type,
+                    reference_number=ref_no or txn.transaction_id,
+                    remarks=remarks,
+                    created_by=request.user
+                )
+            elif entry_type == 'PURCHASE':
+                Expense.objects.create(
+                    date=selected_date,
+                    amount=total_amount if total_amount > 0 else Decimal('1.00'),
+                    category='PURCHASE',
+                    payee=vendor_name or 'Vendor',
+                    purpose=f"{item_name} ({qty} {unit}) [Stock Purchase]",
+                    payment_method=payment_method,
+                    account_type=account_type,
+                    reference_number=ref_no or txn.transaction_id,
+                    remarks=remarks,
+                    created_by=request.user
+                )
+        except Exception:
+            pass
+
+        serializer = InventoryTransactionSerializer(txn, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 # ── Minutes Registry ───────────────────────────────────────────────

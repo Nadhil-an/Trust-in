@@ -25,6 +25,7 @@ import AttendanceScreen from '../screens/staff/AttendanceScreen';
 import PaymentAdvanceScreen from '../screens/staff/PaymentAdvanceScreen';
 import AchievedPointsScreen from '../screens/staff/AchievedPointsScreen';
 import StaffLeaderboardScreen from '../screens/staff/StaffLeaderboardScreen';
+import StockInventoryScreen from '../screens/staff/StockInventoryScreen';
 
 // Manager Screens
 import ManagerHomeScreen from '../screens/manager/ManagerHomeScreen';
@@ -165,6 +166,7 @@ const MainStack = () => {
       <Stack.Screen name="StaffAttendance" component={AttendanceScreen} />
       <Stack.Screen name="StaffPaymentAdvance" component={PaymentAdvanceScreen} />
       <Stack.Screen name="StaffAchievedPoints" component={AchievedPointsScreen} />
+      <Stack.Screen name="StockInventory" component={StockInventoryScreen} />
 
       
       {/* Member Actions */}

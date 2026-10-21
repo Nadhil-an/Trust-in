@@ -371,6 +371,18 @@ class CharityInventory(models.Model):
     unit = models.CharField(max_length=50, default='unit')  # e.g. kg, pcs, box
     quantity_available = models.PositiveIntegerField(default=0)
     unit_value = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_value = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    image = models.ImageField(upload_to='inventory/', blank=True, null=True)
+    expiry_date = models.DateField(blank=True, null=True, db_index=True)
+    source_type = models.CharField(max_length=20, default='INWARD', choices=[('INWARD', 'Inward Donation'), ('PURCHASE', 'Purchase')])
+    donor_name = models.CharField(max_length=255, blank=True)
+    donor_phone = models.CharField(max_length=50, blank=True)
+    donor_address = models.TextField(blank=True)
+    donor_member = models.CharField(max_length=100, blank=True)
+    donor_job = models.CharField(max_length=100, blank=True)
+    vendor_name = models.CharField(max_length=255, blank=True)
+    vendor_phone = models.CharField(max_length=50, blank=True)
+    vendor_address = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
     last_updated = models.DateTimeField(auto_now=True)
     updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
@@ -389,6 +401,8 @@ class CharityInventory(models.Model):
         if not self.item_code:
             count = CharityInventory.objects.count() + 1
             self.item_code = f"INV-{count:04d}"
+        from decimal import Decimal
+        self.total_value = Decimal(str(self.quantity_available)) * (self.unit_value or Decimal('0'))
         super().save(*args, **kwargs)
 
 
@@ -398,9 +412,23 @@ class InventoryTransaction(models.Model):
     transaction_id = models.CharField(max_length=20, unique=True, db_index=True)
     item = models.ForeignKey(CharityInventory, on_delete=models.CASCADE, related_name='transactions')
     transaction_type = models.CharField(max_length=10, choices=[('INWARD', 'Inward'), ('OUTWARD', 'Outward')])
+    source_type = models.CharField(max_length=20, default='INWARD', choices=[('INWARD', 'Inward Donation'), ('PURCHASE', 'Purchase'), ('OUTWARD', 'Outward')])
     quantity = models.PositiveIntegerField()
+    unit_value = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    date = models.DateField(default=timezone.now)
     reference_number = models.CharField(max_length=100, blank=True)
     dispatched_to = models.CharField(max_length=255, blank=True)
+    donor_name = models.CharField(max_length=255, blank=True)
+    donor_phone = models.CharField(max_length=50, blank=True)
+    donor_address = models.TextField(blank=True)
+    donor_member = models.CharField(max_length=100, blank=True)
+    donor_job = models.CharField(max_length=100, blank=True)
+    vendor_name = models.CharField(max_length=255, blank=True)
+    vendor_phone = models.CharField(max_length=50, blank=True)
+    vendor_address = models.TextField(blank=True)
+    image = models.ImageField(upload_to='inventory_txns/', blank=True, null=True)
+    expiry_date = models.DateField(blank=True, null=True)
     remarks = models.TextField(blank=True)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(default=timezone.now)
@@ -421,9 +449,11 @@ class InventoryTransaction(models.Model):
             # Update inventory quantity
             if self.transaction_type == 'INWARD':
                 self.item.quantity_available += self.quantity
+                if self.unit_value and self.unit_value > 0:
+                    self.item.unit_value = self.unit_value
             elif self.transaction_type == 'OUTWARD':
-                self.item.quantity_available -= self.quantity
-            self.item.save(update_fields=['quantity_available'])
+                self.item.quantity_available = max(0, self.item.quantity_available - self.quantity)
+            self.item.save()
             
         super().save(*args, **kwargs)
 
