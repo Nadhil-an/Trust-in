@@ -37,10 +37,17 @@ const ENTRIES = [
     color: '#1E4DB7', bg: '#EFF6FF', border: '#BFDBFE',
   },
   {
-    icon: '📤', label: 'Outward Entry',
-    desc: 'Record outgoing goods & disbursements',
-    path: '/slt/entry/outward',
+    icon: '📤', label: 'Material Outward Entry',
+    desc: 'Record outgoing stock distribution & disbursements',
+    path: '/slt/entry/material-outward',
     color: '#8B5CF6', bg: '#F5F3FF', border: '#DDD6FE',
+  },
+  {
+    icon: '📦', label: 'Assets in Stock',
+    desc: 'View active warehouse stock, available inventory & product details',
+    path: '/slt/entry/assets-in-stock',
+    color: '#059669', bg: '#ECFDF5', border: '#A7F3D0',
+    noStats: true,
   },
   {
     icon: '🛒', label: 'Purchase / Orders Entry',
@@ -176,7 +183,7 @@ export default function DataEntryDashboard() {
         '/slt/entry/assessment': results[2],
         '/slt/entry/partners': results[3],
         '/slt/entry/inward': results[4],
-        '/slt/entry/outward': results[5],
+        '/slt/entry/material-outward': results[5],
         '/slt/entry/purchase': results[6],
         '/slt/entry/events': results[7]
       })

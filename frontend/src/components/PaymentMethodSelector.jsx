@@ -1,6 +1,6 @@
 import React from 'react';
 
-const defaultOptions = ['CASH', 'CHEQUE', 'BANK_TRANSFER', 'UPI'];
+const defaultOptions = ['CASH', 'CHEQUE', 'SPONSOR', 'UPI'];
 
 export default function PaymentMethodSelector({ value, onChange, options = defaultOptions, className }) {
   return (
@@ -34,6 +34,8 @@ export default function PaymentMethodSelector({ value, onChange, options = defau
                 alt="GPay" 
                 style={{ height: '18px', objectFit: 'contain' }} 
               />
+            ) : m === 'SPONSOR' || m === 'SPONSER' ? (
+              'SPONSOR'
             ) : (
               m.replace('_', ' ')
             )}

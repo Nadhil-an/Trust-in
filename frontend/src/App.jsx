@@ -61,6 +61,7 @@ import MembershipEntry from './pages/data-entry/MembershipEntry'
 import PartnersEntry from './pages/data-entry/PartnersEntry'
 import MaterialInward from './pages/data-entry/MaterialInward'
 import MaterialOutward from './pages/data-entry/MaterialOutward'
+import AssetsInStock from './pages/data-entry/AssetsInStock'
 import EventEntry from './pages/data-entry/EventEntry'
 import ScheduledPayouts from './pages/shared/ScheduledPayouts'
 
@@ -225,6 +226,7 @@ export default function App() {
           <Route path="slt/entry/partners"           element={<ProtectedRoute featureKey="partners_entry"><PartnersEntry /></ProtectedRoute>} />
           <Route path="slt/entry/material-inward"    element={<ProtectedRoute featureKey="material_inward"><MaterialInward /></ProtectedRoute>} />
           <Route path="slt/entry/material-outward"   element={<ProtectedRoute featureKey="material_outward"><MaterialOutward /></ProtectedRoute>} />
+          <Route path="slt/entry/assets-in-stock"    element={<ProtectedRoute featureKey="assets_in_stock"><AssetsInStock /></ProtectedRoute>} />
           <Route path="slt/entry/events"             element={<ProtectedRoute featureKey="events_entry"><EventEntry /></ProtectedRoute>} />
 
           <Route path="*" element={<NotFoundPage />} />

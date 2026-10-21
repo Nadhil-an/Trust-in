@@ -229268,3 +229268,443 @@ Unauthorized: /api/payments/create-subscription/
 Unauthorized: /api/payments/verify-subscription/
 Unauthorized: /api/payments/my-subscription/
 Unauthorized: /api/payments/my-subscription/
+[Razorpay Order Create] Gateway returned error (fallback to sandbox ID): Authentication failed
+[Signature Verification Error]: Razorpay Signature Verification Failed
+[Razorpay Subscription Create] Gateway returned error (fallback to sandbox ID): Authentication failed
+[Subscription Verification Error]: Razorpay Signature Verification Failed
+[Razorpay Subscription Cancel Error]: Authentication failed
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:27106]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:43179]
+WebSocket REJECT /ws/notify/ [10.162.176.21:27106]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:27106]
+WebSocket REJECT /ws/notify/ [10.162.176.21:43179]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:43179]
+Unauthorized: /api/auth/profile/
+Unauthorized: /api/core/features/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.38, 10.162.176.21:27107][0m
+[31;1mHTTP GET /api/core/features/ 401 [0.35, 10.162.176.21:27108][0m
+Unauthorized: /api/core/features/
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/core/features/ 401 [0.05, 10.162.176.21:43181][0m
+[31;1mHTTP GET /api/auth/profile/ 401 [0.05, 10.162.176.21:43180][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.46, 10.162.176.21:43182][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 10.162.176.21:18371][0m
+[mHTTP GET /api/auth/profile/ 200 [0.09, 10.162.176.21:18370][0m
+[mHTTP GET /api/core/features/ 200 [0.05, 10.162.176.21:9810][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.162.176.21:19621][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:36132]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:36132]
+[mHTTP POST /api/auth/logout/ 200 [0.04, 10.162.176.21:21419][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:36132]
+[mHTTP POST /api/auth/login/ 200 [0.25, 10.162.176.21:44163][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:31446]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:31446]
+[mHTTP GET /api/core/features/ 200 [0.04, 10.162.176.21:33450][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.162.176.21:33449][0m
+[mHTTP GET /api/manager/partners/?date=2026-10-21 200 [0.06, 10.162.176.21:63557][0m
+[mHTTP GET /api/manager/requests/?date=2026-10-21 200 [0.06, 10.162.176.21:63556][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-21&source=MEMBERSHIP 200 [0.13, 10.162.176.21:52583][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-10-21&category=OUTWARD 200 [0.13, 10.162.176.21:63559][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-21&source=INWARD 200 [0.13, 10.162.176.21:63558][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-10-21&category=PURCHASE 200 [0.07, 10.162.176.21:19047][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-21&source=DONATION 200 [0.16, 10.162.176.21:41459][0m
+[mHTTP GET /api/manager/partners/?date=2026-10-21 200 [0.06, 10.162.176.21:32283][0m
+[mHTTP GET /api/manager/requests/?date=2026-10-21 200 [0.06, 10.162.176.21:27836][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-10-21&category=OUTWARD 200 [0.07, 10.162.176.21:30383][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-21&source=MEMBERSHIP 200 [0.08, 10.162.176.21:30382][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-10-21&category=PURCHASE 200 [0.05, 10.162.176.21:37943][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-21&source=INWARD 200 [0.04, 10.162.176.21:41764][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-21&source=DONATION 200 [0.03, 10.162.176.21:41765][0m
+[mHTTP GET /api/core/events/?date=2026-10-21 200 [0.88, 10.162.176.21:19048][0m
+[mHTTP GET /api/core/events/?date=2026-10-21 200 [0.02, 10.162.176.21:42783][0m
+[mHTTP GET /api/accounts/income/?search=&source=INWARD&date=2026-10-21 200 [0.01, 10.162.176.21:29808][0m
+[mHTTP GET /api/accounts/income/?search=&source=INWARD&date=2026-10-21 200 [0.01, 10.162.176.21:22343][0m
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\manager_module\models.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:51067]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:51067]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\manager_module\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:54501]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:54501]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\manager_module\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:42685]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:42685]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\manager_module\urls.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:56254]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:56254]
+[mHTTP GET /api/accounts/expenses/?search=&category=OUTWARD&date=2026-10-21 200 [0.03, 10.162.176.21:57643][0m
+[mHTTP GET /api/accounts/expenses/?search=&category=OUTWARD&date=2026-10-21 200 [0.02, 10.162.176.21:28804][0m
+[mHTTP GET /api/manager/inventory-transactions/?search=&transaction_type=OUTWARD 200 [0.06, 10.162.176.21:63224][0m
+[mHTTP GET /api/manager/inventory/?is_active=true 200 [0.06, 10.162.176.21:62275][0m
+[mHTTP GET /api/manager/inventory-transactions/?search=&transaction_type=OUTWARD 200 [0.02, 10.162.176.21:13637][0m
+[mHTTP GET /api/manager/inventory/?is_active=true 200 [0.02, 10.162.176.21:49081][0m
+[mHTTP GET /api/manager/inventory-transactions/?search=&transaction_type=INWARD 200 [0.05, 10.162.176.21:16312][0m
+[mHTTP GET /api/manager/inventory/?is_active=true 200 [0.06, 10.162.176.21:16313][0m
+[mHTTP GET /api/manager/inventory-transactions/?search=&transaction_type=INWARD 200 [0.03, 10.162.176.21:50061][0m
+[mHTTP GET /api/manager/inventory/?is_active=true 200 [0.03, 10.162.176.21:36247][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:56254]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:48262]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:48262]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:48262]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:48685]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:48685]
+[mHTTP GET /api/core/features/ 200 [0.03, 10.162.176.21:48264][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.162.176.21:48263][0m
+[mHTTP GET /api/core/features/ 200 [0.02, 10.162.176.21:48686][0m
+[mHTTP GET /api/auth/profile/ 200 [0.02, 10.162.176.21:48687][0m
+[mHTTP GET /api/manager/inventory-transactions/?search=&transaction_type=INWARD 200 [0.03, 10.162.176.21:48688][0m
+[mHTTP GET /api/manager/inventory/?is_active=true 200 [0.03, 10.162.176.21:48689][0m
+[mHTTP GET /api/manager/inventory-transactions/?search=&transaction_type=INWARD 200 [0.02, 10.162.176.21:18622][0m
+[mHTTP GET /api/manager/inventory/?is_active=true 200 [0.02, 10.162.176.21:18623][0m
+[mHTTP GET /api/accounts/income/?search=&source=INWARD&date=2026-10-21 200 [0.02, 10.162.176.21:63850][0m
+[mHTTP GET /api/accounts/income/?search=&source=INWARD&date=2026-10-21 200 [0.01, 10.162.176.21:32515][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.01, 10.162.176.21:23866][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:48685]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:12793]
+WebSocket REJECT /ws/notify/ [10.162.176.21:12793]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:12793]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:17691]
+WebSocket REJECT /ws/notify/ [10.162.176.21:17691]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:17691]
+Unauthorized: /api/core/features/
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/core/features/ 401 [0.02, 10.162.176.21:12795][0m
+[31;1mHTTP GET /api/auth/profile/ 401 [0.02, 10.162.176.21:12794][0m
+Unauthorized: /api/auth/profile/
+Unauthorized: /api/core/features/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.01, 10.162.176.21:17692][0m
+[31;1mHTTP GET /api/core/features/ 401 [0.02, 10.162.176.21:17693][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.02, 10.162.176.21:17694][0m
+[mHTTP GET /api/auth/profile/ 200 [0.01, 10.162.176.21:9810][0m
+[mHTTP GET /api/core/features/ 200 [0.01, 10.162.176.21:9811][0m
+[mHTTP GET /api/core/features/ 200 [0.05, 10.162.176.21:5342][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.162.176.21:5343][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.06, 10.162.176.21:59422][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.01, 10.162.176.21:33296][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:7864]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:7864]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:7864]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:62362]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:62362]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:62362]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:27083]
+[mHTTP GET /api/core/features/ 200 [0.02, 10.162.176.21:62364][0m
+[mHTTP GET /api/auth/profile/ 200 [0.02, 10.162.176.21:62363][0m
+WebSocket CONNECT /ws/notify/ [10.162.176.21:27083]
+[mHTTP GET /api/auth/profile/ 200 [0.02, 10.162.176.21:27084][0m
+[mHTTP GET /api/core/features/ 200 [0.02, 10.162.176.21:27085][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.02, 10.162.176.21:27086][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.01, 10.162.176.21:27087][0m
+[mHTTP POST /api/auth/logout/ 200 [0.02, 10.162.176.21:10038][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:27083]
+Unauthorized: /api/auth/login/
+[31;1mHTTP POST /api/auth/login/ 401 [0.23, 10.162.176.21:6276][0m
+[mHTTP POST /api/auth/login/ 200 [0.18, 10.162.176.21:45920][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:43691]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:43691]
+[mHTTP GET /api/core/features/ 200 [0.03, 10.162.176.21:58351][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.162.176.21:58350][0m
+[mHTTP GET /api/hr/dashboard/ 200 [0.07, 10.162.176.21:58352][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.03, 10.162.176.21:18333][0m
+[mHTTP GET /api/hr/dashboard/ 200 [0.06, 10.162.176.21:16036][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.01, 10.162.176.21:37250][0m
+[mHTTP GET /api/hr/members/?search= 200 [0.06, 10.162.176.21:27769][0m
+[mHTTP GET /api/hr/members/?search= 200 [0.05, 10.162.176.21:29723][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.02, 10.162.176.21:60139][0m
+[mHTTP GET /api/hr/staff-vouchers/ 200 [0.05, 10.162.176.21:60140][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.03, 10.162.176.21:25536][0m
+[mHTTP GET /api/hr/staff-vouchers/ 200 [0.06, 10.162.176.21:34122][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE 200 [0.12, 10.162.176.21:60138][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE 200 [0.06, 10.162.176.21:50610][0m
+[mHTTP GET /api/hr/officers/designations/ 200 [0.04, 10.162.176.21:54962][0m
+[mHTTP GET /api/hr/staff-vouchers/ 200 [0.05, 10.162.176.21:54963][0m
+[mHTTP GET /api/hr/officers/?search=&status=ACTIVE&designation=STAFF 200 [0.06, 10.162.176.21:54961][0m
+[mHTTP POST /api/hr/officers/cb16f5af-3910-4b1b-8e1f-4d00a2803474/reset-password/ 200 [0.11, 10.162.176.21:4757][0m
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\manager_module\models.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+[mHTTP POST /api/auth/login/ 200 [0.22, 10.162.176.130:46100][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:59235]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:59235]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:50120]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:50120]
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.02, 10.162.176.130:50136][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.03, 10.162.176.130:46100][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.03, 10.162.176.130:46100][0m
+[mHTTP GET /api/core/events/ 200 [0.28, 10.162.176.130:46100][0m
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\manager_module\serializers.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+[mHTTP POST /api/core/update-push-token/ 200 [0.02, 10.162.176.130:50162][0m
+[mHTTP GET /api/auth/profile/ 200 [0.02, 10.162.176.130:50142][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.01, 10.162.176.130:50158][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:50957]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:50957]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:50178]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:50178]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.162.176.130:50162][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.162.176.130:50162][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.03, 10.162.176.130:50162][0m
+[mHTTP GET /api/core/events/ 200 [0.26, 10.162.176.130:50162][0m
+[mHTTP POST /api/auth/logout/ 200 [0.02, 10.162.176.21:61268][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:50957]
+[mHTTP POST /api/auth/login/ 200 [0.19, 10.162.176.21:44727][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:30086]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:30086]
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.162.176.21:4340][0m
+[mHTTP GET /api/manager/partners/?date=2026-10-21 200 [0.05, 10.162.176.21:28845][0m
+[mHTTP GET /api/core/features/ 200 [0.07, 10.162.176.21:4341][0m
+[mHTTP GET /api/manager/requests/?date=2026-10-21 200 [0.07, 10.162.176.21:28844][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-21&source=DONATION 200 [0.12, 10.162.176.21:28842][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-21&source=MEMBERSHIP 200 [0.13, 10.162.176.21:28843][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-21&source=INWARD 200 [0.10, 10.162.176.21:33117][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-10-21&category=OUTWARD 200 [0.10, 10.162.176.21:54657][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-10-21&category=PURCHASE 200 [0.09, 10.162.176.21:8583][0m
+[mHTTP GET /api/core/events/?date=2026-10-21 200 [0.09, 10.162.176.21:9995][0m
+[mHTTP GET /api/manager/partners/?date=2026-10-21 200 [0.08, 10.162.176.21:50684][0m
+[mHTTP GET /api/manager/requests/?date=2026-10-21 200 [0.08, 10.162.176.21:26185][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-21&source=MEMBERSHIP 200 [0.08, 10.162.176.21:5311][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-21&source=DONATION 200 [0.08, 10.162.176.21:11172][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-10-21&category=OUTWARD 200 [0.08, 10.162.176.21:47654][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-21&source=INWARD 200 [0.08, 10.162.176.21:46565][0m
+[mHTTP GET /api/core/events/?date=2026-10-21 200 [0.04, 10.162.176.21:64308][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-10-21&category=PURCHASE 200 [0.07, 10.162.176.21:12430][0m
+[mHTTP GET /api/core/events/?search= 200 [0.01, 10.162.176.21:10509][0m
+[mHTTP GET /api/core/events/?search= 200 [0.01, 10.162.176.21:7805][0m
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\manager_module\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:43748]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:43748]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.03, 10.162.176.130:43760][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.162.176.130:43776][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.04, 10.162.176.130:43760][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:46130]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:46130]
+[mHTTP GET /api/core/events/ 200 [0.27, 10.162.176.130:43760][0m
+[mHTTP POST /api/core/events/ 201 [6.96, 10.162.176.21:58179][0m
+[mHTTP GET /api/core/events/?search= 200 [0.01, 10.162.176.21:51178][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:46130]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:8897]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:8897]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:8897]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:32860]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:32860]
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.162.176.21:8898][0m
+[mHTTP GET /api/core/features/ 200 [0.03, 10.162.176.21:8899][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.162.176.21:32861][0m
+[mHTTP GET /api/core/features/ 200 [0.08, 10.162.176.21:32862][0m
+[mHTTP GET /api/core/events/?search= 200 [0.07, 10.162.176.21:32863][0m
+[mHTTP GET /api/core/events/?search= 200 [0.01, 10.162.176.21:32864][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.01, 10.162.176.130:43760][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.162.176.130:43760][0m
+[mHTTP GET /api/core/events/ 200 [0.01, 10.162.176.130:43760][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.04, 10.162.176.130:43776][0m
+[mHTTP GET /api/core/notifications/?limit=100 200 [0.04, 10.162.176.130:43760][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.03, 10.162.176.130:43760][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.02, 10.162.176.130:43776][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.162.176.130:43760][0m
+[mHTTP GET /api/core/events/ 200 [0.02, 10.162.176.130:43760][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.02, 10.162.176.130:43760][0m
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.01, 10.162.176.130:43760][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.01, 10.162.176.130:43760][0m
+[mHTTP GET /api/core/events/ 200 [0.02, 10.162.176.130:43760][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.162.176.130:43760][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:43748]
+[mHTTP GET /api/auth/profile/ 200 [0.01, 10.162.176.130:47296][0m
+[mHTTP GET /api/auth/profile/ 200 [0.01, 10.162.176.130:47296][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:45248]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:45248]
+[mHTTP GET /api/hr/staff-dashboard/ 200 [0.02, 10.162.176.130:47296][0m
+[mHTTP GET /api/core/notifications/unread_count/ 200 [0.01, 10.162.176.130:45254][0m
+[mHTTP GET /api/hr/leaderboard/?limit=3 200 [0.02, 10.162.176.130:47296][0m
+[mHTTP GET /api/core/events/ 200 [0.02, 10.162.176.130:47296][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.01, 10.162.176.130:47296][0m
+[mHTTP POST /api/core/update-push-token/ 200 [0.03, 10.162.176.130:47296][0m
+[mHTTP GET /api/core/events/ 200 [0.01, 10.162.176.130:47296][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:45248]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:32860]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:21108]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:21108]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:21108]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:38402]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:38402]
+[mHTTP GET /api/core/features/ 200 [0.06, 10.162.176.21:21110][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.162.176.21:21109][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.162.176.21:38404][0m
+[mHTTP GET /api/core/features/ 200 [0.05, 10.162.176.21:38403][0m
+[mHTTP GET /api/core/events/?search= 200 [0.04, 10.162.176.21:38405][0m
+[mHTTP GET /api/core/events/?search= 200 [0.02, 10.162.176.21:38406][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.01, 10.162.176.21:48580][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.01, 10.162.176.21:23756][0m
+[mHTTP POST /api/manager/stock-inward-purchase/ 201 [0.05, 10.162.176.21:26329][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.02, 10.162.176.21:55185][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.01, 10.162.176.21:13652][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search=&type=INWARD 200 [0.02, 10.162.176.21:30170][0m
+[mHTTP POST /api/manager/stock-inward-purchase/ 201 [0.05, 10.162.176.21:7621][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search=&type=INWARD 200 [0.02, 10.162.176.21:9049][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search=&type=INWARD 200 [0.01, 10.162.176.21:25587][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search=&type=PURCHASE 200 [0.02, 10.162.176.21:9393][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.02, 10.162.176.21:26343][0m
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\accounts_module\models.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:43331]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:43331]
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.02, 10.162.176.21:38745][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:43331]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:33900]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:33900]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:33900]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:8046]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:8046]
+[mHTTP GET /api/core/features/ 200 [0.03, 10.162.176.21:33902][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.162.176.21:33901][0m
+[mHTTP GET /api/core/features/ 200 [0.02, 10.162.176.21:8047][0m
+[mHTTP GET /api/auth/profile/ 200 [0.02, 10.162.176.21:8048][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.03, 10.162.176.21:8049][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.01, 10.162.176.21:8050][0m
+[mHTTP GET /api/manager/inventory-transactions/?transaction_type=OUTWARD 200 [0.02, 10.162.176.21:5708][0m
+[mHTTP GET /api/manager/inventory/?is_active=true 200 [0.02, 10.162.176.21:45379][0m
+[mHTTP GET /api/manager/inventory-transactions/?transaction_type=OUTWARD 200 [0.02, 10.162.176.21:62403][0m
+[mHTTP GET /api/manager/inventory/?is_active=true 200 [0.02, 10.162.176.21:7154][0m
+[mHTTP POST /api/manager/inventory-transactions/ 201 [0.03, 10.162.176.21:46316][0m
+[mHTTP GET /api/manager/inventory-transactions/?transaction_type=OUTWARD 200 [0.02, 10.162.176.21:18848][0m
+[mHTTP GET /api/manager/inventory/?is_active=true 200 [0.03, 10.162.176.21:18849][0m
+[mHTTP GET /api/manager/inventory-transactions/?transaction_type=OUTWARD 200 [0.02, 10.162.176.21:22874][0m
+[mHTTP GET /api/manager/inventory/?is_active=true 200 [0.02, 10.162.176.21:62778][0m
+[mHTTP POST /api/manager/inventory-transactions/ 201 [0.03, 10.162.176.21:22649][0m
+[mHTTP GET /api/manager/inventory/?is_active=true 200 [0.02, 10.162.176.21:50932][0m
+[mHTTP GET /api/manager/inventory-transactions/?transaction_type=OUTWARD 200 [0.03, 10.162.176.21:50931][0m
+[mHTTP GET /api/manager/inventory/?is_active=true 200 [0.03, 10.162.176.21:23035][0m
+[mHTTP GET /api/manager/inventory-transactions/?transaction_type=OUTWARD 200 [0.03, 10.162.176.21:15996][0m
+Unauthorized: /api/manager/stock-inward-purchase/
+[31;1mHTTP GET /api/manager/stock-inward-purchase/?search= 401 [0.01, 10.162.176.21:53325][0m
+Unauthorized: /api/manager/stock-inward-purchase/
+[31;1mHTTP GET /api/manager/stock-inward-purchase/?search= 401 [0.01, 10.162.176.21:44452][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.01, 10.162.176.21:7958][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.02, 10.162.176.21:42121][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.02, 10.162.176.21:42017][0m
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\manager_module\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:29422]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:29422]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:30448]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:30448]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:30448]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:31065]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:31065]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:31065]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:59300]
+[mHTTP GET /api/core/features/ 200 [0.03, 10.162.176.21:31067][0m
+WebSocket CONNECT /ws/notify/ [10.162.176.21:59300]
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.162.176.21:31066][0m
+[mHTTP GET /api/core/features/ 200 [0.03, 10.162.176.21:59301][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.05, 10.162.176.21:59302][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.162.176.21:59303][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.02, 10.162.176.21:59304][0m
+[mHTTP GET /api/manager/inventory/?show_expired=true 200 [0.02, 10.162.176.21:13028][0m
+[mHTTP GET /api/manager/inventory/?show_expired=true 200 [0.02, 10.162.176.21:17932][0m
+[mHTTP GET /api/manager/inventory-transactions/?transaction_type=OUTWARD 200 [0.05, 10.162.176.21:8748][0m
+[mHTTP GET /api/manager/inventory/?is_active=true 200 [0.06, 10.162.176.21:8749][0m
+[mHTTP GET /api/manager/inventory/?is_active=true 200 [0.03, 10.162.176.21:39539][0m
+[mHTTP GET /api/manager/inventory-transactions/?transaction_type=OUTWARD 200 [0.04, 10.162.176.21:14328][0m
+[mHTTP GET /api/manager/inventory/?show_expired=true 200 [0.02, 10.162.176.21:7819][0m
+[mHTTP GET /api/manager/inventory/?show_expired=true 200 [0.02, 10.162.176.21:32864][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:59300]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:51140]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:51140]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:34719]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:34719]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:51140]
+[mHTTP GET /api/core/features/ 200 [0.02, 10.162.176.21:20175][0m
+[mHTTP GET /api/manager/inventory/?show_expired=true 200 [0.02, 10.162.176.21:34720][0m
+[mHTTP GET /api/auth/profile/ 200 [0.02, 10.162.176.21:53381][0m
+[mHTTP GET /api/core/features/ 200 [0.02, 10.162.176.21:60878][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:34719]
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.162.176.21:53160][0m
+[mHTTP GET /api/manager/inventory/?show_expired=true 200 [0.04, 10.162.176.21:53159][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:20786]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:20786]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:20786]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:41731]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:41731]
+[mHTTP GET /api/manager/inventory/?show_expired=true 200 [0.03, 10.162.176.21:20787][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 10.162.176.21:1797][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.162.176.21:1796][0m
+[mHTTP GET /api/manager/inventory/?show_expired=true 200 [0.02, 10.162.176.21:58480][0m
+[mHTTP GET /api/core/features/ 200 [0.02, 10.162.176.21:30837][0m
+[mHTTP GET /api/auth/profile/ 200 [0.01, 10.162.176.21:31962][0m
+Unauthorized: /api/accounts/expenses/
+[31;1mHTTP GET /api/accounts/expenses/?search=&category=PURCHASE&page=1&page_size=10 401 [0.02, 10.162.176.21:31340][0m
+Unauthorized: /api/accounts/expenses/
+[31;1mHTTP GET /api/accounts/expenses/?search=&category=PURCHASE&page=1&page_size=10 401 [0.03, 10.162.176.21:53545][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.04, 10.162.176.21:42494][0m
+[mHTTP GET /api/accounts/expenses/?search=&category=PURCHASE&page=1&page_size=10 200 [0.03, 10.162.176.21:29167][0m
+[mHTTP GET /api/accounts/expenses/?search=&category=PURCHASE&page=1&page_size=10 200 [0.03, 10.162.176.21:18765][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.02, 10.162.176.21:5514][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.02, 10.162.176.21:16600][0m
+[mHTTP GET /api/manager/inventory/?show_expired=true 200 [0.03, 10.162.176.21:28121][0m
+[mHTTP GET /api/manager/inventory/?show_expired=true 200 [0.03, 10.162.176.21:63385][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.02, 10.162.176.21:12579][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.02, 10.162.176.21:20466][0m
+[mHTTP GET /api/manager/inventory/?show_expired=true 200 [0.03, 10.162.176.21:21501][0m
+[mHTTP GET /api/manager/inventory/?show_expired=true 200 [0.04, 10.162.176.21:17553][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.03, 10.162.176.21:63094][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.03, 10.162.176.21:55640][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search=&type=INWARD 200 [0.04, 10.162.176.21:19125][0m
+[mHTTP GET /api/manager/inventory/?show_expired=true 200 [0.03, 10.162.176.21:6700][0m
+[mHTTP GET /api/manager/inventory/?show_expired=true 200 [0.03, 10.162.176.21:22475][0m
+[mHTTP GET /api/manager/inventory/?category=FOOD&show_expired=true 200 [0.02, 10.162.176.21:17811][0m
+[mHTTP GET /api/manager/inventory/?show_expired=true 200 [0.04, 10.162.176.21:22423][0m
+[mHTTP GET /api/manager/inventory/?category=EDUCATION&show_expired=true 200 [0.03, 10.162.176.21:11554][0m
+[mHTTP GET /api/manager/inventory/?show_expired=true 200 [0.03, 10.162.176.21:8088][0m
+[mHTTP GET /api/manager/inventory/?category=Disability+Aids+%26+Wheelchairs&show_expired=true 200 [0.02, 10.162.176.21:4060][0m
+[mHTTP GET /api/manager/inventory/?show_expired=true 200 [0.03, 10.162.176.21:42740][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:41731]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:58872]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:58872]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:18156]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:58872]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:18156]
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.162.176.21:11764][0m
+[mHTTP GET /api/core/features/ 200 [0.03, 10.162.176.21:11765][0m
+[mHTTP GET /api/manager/inventory/?show_expired=true 200 [0.04, 10.162.176.21:38559][0m
+[mHTTP GET /api/auth/profile/ 200 [0.02, 10.162.176.21:14474][0m
+[mHTTP GET /api/core/features/ 200 [0.02, 10.162.176.21:58789][0m
+[mHTTP GET /api/manager/inventory/?show_expired=true 200 [0.02, 10.162.176.21:15396][0m

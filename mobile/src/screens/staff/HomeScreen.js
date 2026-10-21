@@ -18,7 +18,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTranslation } from 'react-i18next';
 import { usePushNotifications } from '../../hooks/usePushNotifications';
 import { useOfflineStore } from '../../store/offlineStore';
-import { OfflineBar } from '../../components/shared';
+import { OfflineBar, EventBanner } from '../../components/shared';
 import { verifyAttendanceMarked } from '../../utils/attendanceGuard';
 
 const { width } = Dimensions.get('window');
@@ -241,7 +241,7 @@ const StaffHomeScreen = ({ navigation, route }) => {
         const evRes = await eventsApi.list();
         if(evRes.data && evRes.data.results) {
           const upcoming = evRes.data.results.filter(e => e.category === 'Upcoming' || !e.category);
-          setUpcomingEvents(upcoming.slice(0, 2));
+          setUpcomingEvents(upcoming.length > 0 ? upcoming : evRes.data.results);
         }
       } catch (err) {}
     } catch (_) {}
@@ -564,38 +564,12 @@ const StaffHomeScreen = ({ navigation, route }) => {
           </TouchableOpacity>
         </View>
 
-        {upcomingEvents.length === 0 ? (
-          <View style={[styles.eventCard, { justifyContent: 'center', alignItems: 'center', paddingVertical: 24, marginBottom: 20 }]}>
-            <Text style={{ color: '#64748B', fontSize: 13 }}>{t('events.no_events', 'No upcoming events at the moment.')}</Text>
-          </View>
-        ) : (
-          upcomingEvents.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              style={styles.eventCard}
-              activeOpacity={0.85}
-              onPress={() => navigation.navigate('EventDetail', { event: item })}
-            >
-              <Image source={{ uri: item.image }} style={styles.eventImage} resizeMode="cover" />
-              <View style={styles.eventContent}>
-                <Text style={styles.eventTitle}>{item.title}</Text>
-                <Text style={styles.eventDesc} numberOfLines={2}>
-                  {item.short_description || item.description}
-                </Text>
-                <View style={{ flexDirection: 'row', gap: 14, alignItems: 'center' }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                    <Ionicons name="calendar-outline" size={12} color="#0284c7" />
-                    <Text style={{ fontSize: 10, color: '#64748B', fontWeight: '500' }}>{item.date}</Text>
-                  </View>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                    <Ionicons name="location-outline" size={12} color="#0284c7" />
-                    <Text style={{ fontSize: 10, color: '#64748B', fontWeight: '500' }}>{item.location}</Text>
-                  </View>
-                </View>
-              </View>
-            </TouchableOpacity>
-          ))
-        )}
+        <EventBanner
+          events={upcomingEvents}
+          navigation={navigation}
+          autoPlayInterval={4000}
+          noEventsText={t('events.no_events', 'No upcoming events at the moment.')}
+        />
 
       </ScrollView>
 

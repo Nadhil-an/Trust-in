@@ -911,8 +911,9 @@ class CharityInventoryListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = CharityInventorySerializer
     filterset_fields = ['category', 'is_active', 'source_type']
-    search_fields = ['item_name', 'item_code', 'description', 'donor_name', 'vendor_name']
-    ordering_fields = ['category', 'item_name', 'quantity_available', 'expiry_date']
+    search_fields = ['item_name', 'item_code', 'category', 'description', 'donor_name', 'vendor_name', 'notes']
+    ordering_fields = ['category', 'item_name', 'quantity_available', 'unit_value', 'total_value', 'expiry_date', 'last_updated']
+    ordering = ['-quantity_available', 'item_name']
 
     def get_queryset(self):
         qs = CharityInventory.objects.filter(is_active=True)
@@ -927,7 +928,7 @@ class CharityInventoryListCreateView(generics.ListCreateAPIView):
 
 
 class CharityInventoryDetailView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsManager]
+    permission_classes = [IsAuthenticated]
     serializer_class = CharityInventorySerializer
     queryset = CharityInventory.objects.all()
 
@@ -938,9 +939,10 @@ class CharityInventoryDetailView(generics.RetrieveUpdateDestroyAPIView):
 class InventoryTransactionListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = InventoryTransactionSerializer
-    filterset_fields = ['transaction_type', 'item']
-    search_fields = ['transaction_id', 'reference_number', 'item__item_name']
-    ordering_fields = ['-created_at']
+    filterset_fields = ['transaction_type', 'item', 'date']
+    search_fields = ['transaction_id', 'reference_number', 'item__item_name', 'dispatched_to', 'remarks', 'item__category']
+    ordering_fields = ['date', 'created_at']
+    ordering = ['-date', '-created_at']
 
     def get_queryset(self):
         return InventoryTransaction.objects.select_related('item', 'created_by').all()

@@ -29,11 +29,9 @@ export const MASTER_NAV_CONFIG = [
 
   // ── STOCK MANAGEMENT
   { key: 'inward_entry', label: 'Inward / Purchase Entry', icon: '📥', path: '/slt/entry/inward', category: 'STOCK MANAGEMENT' },
-  { key: 'outward_entry', label: 'Outward Entry', icon: '📤', path: '/slt/entry/outward', category: 'STOCK MANAGEMENT' },
+  { key: 'material_outward', label: 'Material Outward Entry', icon: '📤', path: '/slt/entry/material-outward', category: 'STOCK MANAGEMENT' },
+  { key: 'assets_in_stock', label: 'Assets in Stock', icon: '📦', path: '/slt/entry/assets-in-stock', category: 'STOCK MANAGEMENT' },
 
-  // ── MATERIAL INVENTORY
-  { key: 'material_inward', label: 'Material Inward', icon: '📦', path: '/slt/entry/material-inward', category: 'MATERIAL INVENTORY' },
-  { key: 'material_outward', label: 'Material Outward', icon: '📤', path: '/slt/entry/material-outward', category: 'MATERIAL INVENTORY' },
 
   // ── FINANCE ACCOUNTING
   { key: 'donations_view', label: 'Donations', icon: '💝', path: '/slt/finance/donations', category: 'LEDGERS' },

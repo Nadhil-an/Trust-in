@@ -1,120 +1,230 @@
 // components/shared/EventBanner.js
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Dimensions, ActivityIndicator, Image,
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Dimensions,
+  ActivityIndicator,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '../../constants/Colors';
 import { eventsApi } from '../../api';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const CARD_WIDTH = SCREEN_WIDTH - 32;
 
-const typeConfig = {
-  UPCOMING: { color: Colors.primary, bg: Colors.primaryLight, icon: 'calendar' },
-  COMPLETED: { color: Colors.success, bg: Colors.successLight, icon: 'checkmark-circle' },
-  ANNOUNCEMENT: { color: Colors.warning, bg: Colors.warningLight, icon: 'megaphone' },
-  DRIVE: { color: Colors.purple, bg: Colors.purpleLight, icon: 'heart' },
-};
-
-const EventBanner = () => {
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
+const EventBanner = ({
+  events: eventsProp,
+  navigation,
+  autoPlayInterval = 4000,
+  noEventsText,
+}) => {
+  const [internalEvents, setInternalEvents] = useState([]);
+  const [loading, setLoading] = useState(eventsProp === undefined);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [containerWidth, setContainerWidth] = useState(SCREEN_WIDTH - 36);
+
   const scrollRef = useRef(null);
   const timerRef = useRef(null);
+  const currentIndexRef = useRef(0);
+  currentIndexRef.current = currentIndex;
 
   useEffect(() => {
-    fetchEvents();
-  }, []);
-
-  useEffect(() => {
-    if (events.length > 1) {
-      timerRef.current = setInterval(() => {
-        setCurrentIndex((prev) => {
-          const next = (prev + 1) % events.length;
-          scrollRef.current?.scrollTo({ x: next * CARD_WIDTH, animated: true });
-          return next;
-        });
-      }, 4000);
+    if (eventsProp !== undefined) {
+      setInternalEvents(eventsProp || []);
+      setLoading(false);
+    } else {
+      fetchEvents();
     }
-    return () => clearInterval(timerRef.current);
-  }, [events]);
+  }, [eventsProp]);
 
   const fetchEvents = async () => {
     try {
+      setLoading(true);
       const res = await eventsApi.list();
-      setEvents(res.data.results || res.data || []);
+      if (res.data && res.data.results) {
+        const upcoming = res.data.results.filter(
+          (e) => e.category === 'Upcoming' || !e.category
+        );
+        setInternalEvents(upcoming.length > 0 ? upcoming : res.data.results);
+      } else if (Array.isArray(res.data)) {
+        setInternalEvents(res.data);
+      }
     } catch (_) {
-      // Silently fail — banner is optional
+      // Silently catch error
     } finally {
       setLoading(false);
     }
   };
 
+  const events = eventsProp !== undefined ? eventsProp : internalEvents;
+
+  // Auto-scroll timer every 4 seconds
+  const startTimer = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    if (!events || events.length <= 1) return;
+
+    timerRef.current = setInterval(() => {
+      const nextIndex = (currentIndexRef.current + 1) % events.length;
+      if (scrollRef.current && containerWidth > 0) {
+        scrollRef.current.scrollTo({
+          x: nextIndex * containerWidth,
+          animated: true,
+        });
+        setCurrentIndex(nextIndex);
+      }
+    }, autoPlayInterval);
+  }, [events, containerWidth, autoPlayInterval]);
+
+  useEffect(() => {
+    startTimer();
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [startTimer]);
+
+  const onMomentumScrollEnd = (e) => {
+    const offset = e.nativeEvent.contentOffset.x;
+    const newIdx = Math.round(offset / (containerWidth || 1));
+    if (newIdx >= 0 && newIdx < events.length) {
+      setCurrentIndex(newIdx);
+    }
+    startTimer();
+  };
+
+  const onScrollBeginDrag = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+  };
+
+  const goToSlide = (index) => {
+    if (scrollRef.current && containerWidth > 0) {
+      scrollRef.current.scrollTo({
+        x: index * containerWidth,
+        animated: true,
+      });
+      setCurrentIndex(index);
+      startTimer();
+    }
+  };
+
+  const onLayout = (e) => {
+    const w = e.nativeEvent.layout.width;
+    if (w > 0 && Math.abs(w - containerWidth) > 1) {
+      setContainerWidth(w);
+    }
+  };
+
   if (loading) {
     return (
-      <View style={styles.loading}>
-        <ActivityIndicator size="small" color={Colors.primary} />
+      <View style={[styles.emptyCard, { paddingVertical: 30 }]}>
+        <ActivityIndicator size="small" color="#0284c7" />
       </View>
     );
   }
 
-  if (events.length === 0) return null;
+  if (!events || events.length === 0) {
+    return (
+      <View style={styles.emptyCard}>
+        <Text style={styles.emptyText}>
+          {noEventsText || 'No upcoming events at the moment.'}
+        </Text>
+      </View>
+    );
+  }
 
   return (
-    <View style={styles.wrapper}>
-      <ScrollView
-        ref={scrollRef}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        scrollEventThrottle={16}
-        onMomentumScrollEnd={(e) => {
-          const idx = Math.round(e.nativeEvent.contentOffset.x / CARD_WIDTH);
-          setCurrentIndex(idx);
-        }}
-        decelerationRate="fast"
-        snapToInterval={CARD_WIDTH}
-      >
-        {events.map((event, index) => {
-          const config = typeConfig[event.type] || typeConfig.ANNOUNCEMENT;
-          return (
-            <View key={event.id || index} style={[styles.card, { width: CARD_WIDTH, backgroundColor: config.bg }]}>
-              <View style={styles.cardContent}>
-                <View style={[styles.iconCircle, { backgroundColor: config.color }]}>
-                  <Ionicons name={config.icon} size={20} color={Colors.white} />
-                </View>
-                <View style={styles.textArea}>
-                  <View style={styles.typeRow}>
-                    <View style={[styles.typePill, { backgroundColor: config.color }]}>
-                      <Text style={styles.typeText}>{event.type || 'ANNOUNCEMENT'}</Text>
+    <View style={styles.container} onLayout={onLayout}>
+      <View style={styles.carouselWrapper}>
+        <ScrollView
+          ref={scrollRef}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          decelerationRate="fast"
+          snapToInterval={containerWidth}
+          snapToAlignment="center"
+          bounces={false}
+          scrollEventThrottle={16}
+          onMomentumScrollEnd={onMomentumScrollEnd}
+          onScrollBeginDrag={onScrollBeginDrag}
+        >
+          {events.map((item, index) => (
+            <View key={item.id || index} style={{ width: containerWidth }}>
+              <TouchableOpacity
+                style={styles.eventCard}
+                activeOpacity={0.9}
+                onPress={() => navigation?.navigate('EventDetail', { event: item })}
+              >
+                <View style={styles.imageWrapper}>
+                  {item.image ? (
+                    <Image
+                      source={{ uri: item.image }}
+                      style={styles.eventImage}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View style={[styles.eventImage, styles.placeholderImage]}>
+                      <Ionicons name="calendar" size={44} color="#93C5FD" />
                     </View>
-                    {event.date && (
-                      <Text style={[styles.date, { color: config.color }]}>
-                        <Ionicons name="calendar-outline" size={11} /> {event.date}
+                  )}
+                  {events.length > 1 && (
+                    <View style={styles.counterBadge}>
+                      <Text style={styles.counterText}>
+                        {index + 1} / {events.length}
                       </Text>
-                    )}
-                  </View>
-                  <Text style={[styles.title, { color: config.color }]} numberOfLines={1}>{event.title}</Text>
-                  {event.description && (
-                    <Text style={styles.desc} numberOfLines={2}>{event.description}</Text>
+                    </View>
                   )}
                 </View>
-              </View>
+
+                <View style={styles.eventContent}>
+                  <Text style={styles.eventTitle} numberOfLines={2}>
+                    {item.title}
+                  </Text>
+                  {Boolean(item.short_description || item.description) && (
+                    <Text style={styles.eventDesc} numberOfLines={2}>
+                      {item.short_description || item.description}
+                    </Text>
+                  )}
+
+                  <View style={styles.metaRow}>
+                    {Boolean(item.date) && (
+                      <View style={styles.metaItem}>
+                        <Ionicons name="calendar-outline" size={12} color="#0284c7" />
+                        <Text style={styles.metaText}>{item.date}</Text>
+                      </View>
+                    )}
+                    {Boolean(item.location) && (
+                      <View style={styles.metaItem}>
+                        <Ionicons name="location-outline" size={12} color="#0284c7" />
+                        <Text style={styles.metaText}>{item.location}</Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+              </TouchableOpacity>
             </View>
-          );
-        })}
-      </ScrollView>
-      {/* Dot indicators */}
+          ))}
+        </ScrollView>
+      </View>
+
+      {/* Modern pagination dot indicators */}
       {events.length > 1 && (
-        <View style={styles.dots}>
+        <View style={styles.dotsContainer}>
           {events.map((_, i) => (
-            <View
+            <TouchableOpacity
               key={i}
-              style={[styles.dot, i === currentIndex && styles.dotActive]}
-            />
+              onPress={() => goToSlide(i)}
+              hitSlop={{ top: 8, bottom: 8, left: 6, right: 6 }}
+            >
+              <View
+                style={[
+                  styles.dot,
+                  i === currentIndex && styles.activeDot,
+                ]}
+              />
+            </TouchableOpacity>
           ))}
         </View>
       )}
@@ -123,30 +233,124 @@ const EventBanner = () => {
 };
 
 const styles = StyleSheet.create({
-  wrapper: { marginBottom: 4 },
-  loading: { height: 80, justifyContent: 'center', alignItems: 'center' },
-  card: {
+  container: {
+    width: '100%',
+    marginBottom: 6,
+  },
+  carouselWrapper: {
+    width: '100%',
+    overflow: 'hidden',
+    borderRadius: 14,
+  },
+  eventCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
     marginHorizontal: 0,
-    borderRadius: 16,
+  },
+  imageWrapper: {
+    width: '100%',
+    position: 'relative',
+    backgroundColor: '#f1f5f9',
+  },
+  eventImage: {
+    width: '100%',
+    aspectRatio: 3 / 2,
+    backgroundColor: '#f1f5f9',
+  },
+  placeholderImage: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#EFF6FF',
+  },
+  counterBadge: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: 'rgba(15, 23, 42, 0.7)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+  },
+  counterText: {
+    color: '#ffffff',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  eventContent: {
     padding: 14,
-    minHeight: 90,
+    minHeight: 85,
+    justifyContent: 'center',
   },
-  cardContent: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
-  iconCircle: {
-    width: 40, height: 40, borderRadius: 20,
-    alignItems: 'center', justifyContent: 'center',
-    flexShrink: 0,
+  eventTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 4,
   },
-  textArea: { flex: 1 },
-  typeRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
-  typePill: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 20 },
-  typeText: { fontSize: 10, color: Colors.white, fontWeight: '700', textTransform: 'uppercase' },
-  date: { fontSize: 11 },
-  title: { fontSize: 14, fontWeight: '700', marginBottom: 2 },
-  desc: { fontSize: 12, color: Colors.gray600, lineHeight: 16 },
-  dots: { flexDirection: 'row', justifyContent: 'center', gap: 6, marginTop: 8 },
-  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: Colors.gray300 },
-  dotActive: { backgroundColor: Colors.primary, width: 18 },
+  eventDesc: {
+    fontSize: 12,
+    color: '#64748B',
+    lineHeight: 16,
+    marginBottom: 8,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    gap: 14,
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  metaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  metaText: {
+    fontSize: 11,
+    color: '#64748B',
+    fontWeight: '500',
+  },
+  dotsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#CBD5E1',
+  },
+  activeDot: {
+    width: 20,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#0284c7',
+  },
+  emptyCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    paddingVertical: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  emptyText: {
+    color: '#64748B',
+    fontSize: 13,
+  },
 });
 
 export default EventBanner;

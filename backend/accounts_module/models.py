@@ -16,6 +16,7 @@ class PaymentMethod(models.TextChoices):
     IMPS = 'IMPS', 'IMPS'
     UPI = 'UPI', 'UPI'
     DD = 'DD', 'Demand Draft'
+    SPONSOR = 'SPONSOR', 'Sponsor'
     OTHER = 'OTHER', 'Other'
 
 

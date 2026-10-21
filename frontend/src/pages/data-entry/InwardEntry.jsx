@@ -269,6 +269,7 @@ export default function InwardEntry() {
           : 'Stock Purchase entry recorded & inventory increased!'
       )
       setShowModal(false)
+      window.dispatchEvent(new Event('dashboard-refresh'))
       load()
     } catch (err) {
       const data = err.response?.data
@@ -891,8 +892,11 @@ export default function InwardEntry() {
               <label className="form-label">Payment Method</label>
               <PaymentMethodSelector
                 value={form.payment_method}
-                onChange={(v) => setF('payment_method', v)}
-                options={['CASH', 'CHEQUE', 'BANK_TRANSFER', 'ONLINE', 'UPI']}
+                onChange={(v) => {
+                  setF('payment_method', v)
+                  setF('account_type', v === 'CASH' ? 'CASH' : 'BANK')
+                }}
+                options={['CASH', 'CHEQUE', 'SPONSOR', 'UPI']}
               />
             </div>
 

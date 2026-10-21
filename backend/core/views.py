@@ -586,6 +586,8 @@ class RoleFeaturePermissionView(APIView):
         perms = list(RoleFeaturePermission.objects.filter(role=request.user.role).values_list('feature_key', flat=True))
         if request.user.role == Role.MANAGER and 'hr_members' not in perms:
             perms.append('hr_members')
+        if ('inward_entry' in perms or request.user.role in [Role.DATA_ENTRY, Role.MANAGER, Role.ADMIN]) and 'assets_in_stock' not in perms:
+            perms.append('assets_in_stock')
         return Response(perms)
 
     def post(self, request):

@@ -453,6 +453,10 @@ class InventoryTransaction(models.Model):
                     self.item.unit_value = self.unit_value
             elif self.transaction_type == 'OUTWARD':
                 self.item.quantity_available = max(0, self.item.quantity_available - self.quantity)
+                if (not self.unit_value or self.unit_value == 0) and self.item.unit_value:
+                    self.unit_value = self.item.unit_value
+                if (not self.total_amount or self.total_amount == 0) and self.unit_value:
+                    self.total_amount = self.unit_value * self.quantity
             self.item.save()
             
         super().save(*args, **kwargs)

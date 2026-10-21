@@ -277,6 +277,8 @@ class InventoryTransactionSerializer(serializers.ModelSerializer):
     item_name = serializers.CharField(source='item.item_name', read_only=True)
     item_unit = serializers.CharField(source='item.unit', read_only=True)
     item_code = serializers.CharField(source='item.item_code', read_only=True)
+    item_category = serializers.CharField(source='item.category', read_only=True)
+    item_quantity_available = serializers.IntegerField(source='item.quantity_available', read_only=True)
     created_by_name = serializers.SerializerMethodField()
 
     class Meta:

@@ -14,6 +14,7 @@ import { Colors } from '../../constants/Colors';
 import { useAuthStore } from '../../store/authStore';
 import { eventsApi } from '../../api';
 import SideDrawer from '../../components/SideDrawer';
+import { EventBanner } from '../../components/shared';
 
 const MemberHomeScreen = ({ navigation }) => {
   const { user } = useAuthStore();
@@ -40,7 +41,7 @@ const MemberHomeScreen = ({ navigation }) => {
       const res = await eventsApi.list();
       if (res.data && res.data.results) {
         const upcoming = res.data.results.filter(e => e.category === 'Upcoming' || !e.category);
-        setUpcomingEvents(upcoming.slice(0, 2));
+        setUpcomingEvents(upcoming.length > 0 ? upcoming : res.data.results);
       }
     } catch (err) {}
   };
@@ -231,38 +232,11 @@ const MemberHomeScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
-        {upcomingEvents.length === 0 ? (
-          <View style={[styles.eventCard, { justifyContent: 'center', alignItems: 'center', paddingVertical: 24 }]}>
-            <Text style={{ color: Colors.gray500, fontSize: 13 }}>No upcoming events at the moment.</Text>
-          </View>
-        ) : (
-          upcomingEvents.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              style={[styles.eventCard, { marginBottom: 14 }]}
-              activeOpacity={0.85}
-              onPress={() => navigation.navigate('EventDetail', { event: item })}
-            >
-              <Image source={{ uri: item.image }} style={{ width: '100%', aspectRatio: 3/2, backgroundColor: '#f1f5f9' }} resizeMode="cover" />
-              <View style={{ padding: 14 }}>
-                <Text style={styles.eventCardTitle}>{item.title}</Text>
-                <Text style={styles.eventCardDesc} numberOfLines={2}>
-                  {item.short_description || item.description}
-                </Text>
-                <View style={{ flexDirection: 'row', gap: 14, alignItems: 'center' }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                    <Ionicons name="calendar-outline" size={12} color="#0284c7" />
-                    <Text style={{ fontSize: 10, color: Colors.gray600, fontWeight: '500' }}>{item.date}</Text>
-                  </View>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                    <Ionicons name="location-outline" size={12} color="#0284c7" />
-                    <Text style={{ fontSize: 10, color: Colors.gray600, fontWeight: '500' }}>{item.location}</Text>
-                  </View>
-                </View>
-              </View>
-            </TouchableOpacity>
-          ))
-        )}
+        <EventBanner
+          events={upcomingEvents}
+          navigation={navigation}
+          autoPlayInterval={4000}
+        />
       </ScrollView>
 
       {/* Side Drawer Component */}
