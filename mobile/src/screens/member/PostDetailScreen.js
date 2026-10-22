@@ -8,7 +8,6 @@ import {
   Image,
   Dimensions,
   Modal,
-  SafeAreaView,
   TextInput,
   ActivityIndicator,
   Share,
@@ -19,6 +18,7 @@ import {
   StatusBar,
   KeyboardAvoidingView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
@@ -39,7 +39,7 @@ const PostDetailScreen = ({ route, navigation }) => {
 
   const [post, setPost] = useState(initialPost);
   const [loading, setLoading] = useState(!initialPost.description);
-  const [currentPhotoIdx, setCurrentPhotoIdx] = useState(0);
+  const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [viewerImage, setViewerImage] = useState(null);
 
   // Likes state
@@ -426,7 +426,7 @@ const PostDetailScreen = ({ route, navigation }) => {
                 onMomentumScrollEnd={(e) => {
                   const idx = Math.round(e.nativeEvent.contentOffset.x / (SCREEN_WIDTH - 32));
                   if (idx >= 0 && idx < images.length) {
-                    setCurrentPhotoIdx(idx);
+                    setActivePhotoIndex(idx);
                   }
                 }}
               >
@@ -450,7 +450,7 @@ const PostDetailScreen = ({ route, navigation }) => {
               {images.length > 1 && (
                 <View style={styles.counterBadge}>
                   <Text style={styles.counterText}>
-                    {currentPhotoIdx + 1} / {images.length}
+                    {activePhotoIndex + 1} / {images.length}
                   </Text>
                 </View>
               )}
@@ -463,7 +463,7 @@ const PostDetailScreen = ({ route, navigation }) => {
                       key={i}
                       style={[
                         styles.dot,
-                        i === currentPhotoIdx && styles.activeDot,
+                        i === activePhotoIndex && styles.activeDot,
                       ]}
                     />
                   ))}

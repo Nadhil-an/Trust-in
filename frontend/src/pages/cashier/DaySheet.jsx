@@ -365,6 +365,25 @@ export default function DaySheet() {
     }
   }
 
+  const handleAddCreditRow = () => {
+    const donIdx = debits.findIndex(r => r.particular === 'DONATION' || r.isDonationHeader)
+    const insertIdx = donIdx !== -1 ? donIdx : debits.length
+    const newRow = { particular: '', amount: '', sc: 'CASH', isExtra: true }
+    const nextDebits = [...debits]
+    nextDebits.splice(insertIdx, 0, newRow)
+    setDebits(nextDebits)
+    saveExtraDebits(date, nextDebits.filter(r => r.isExtra))
+    scheduleAutoSave()
+  }
+
+  const handleAddDebitRow = () => {
+    const newRow = { particular: '', amount: '', sc: 'CASH', isExtra: true }
+    const nextCredits = [...credits, newRow]
+    setCredits(nextCredits)
+    saveExtraCredits(date, nextCredits.filter(r => r.isExtra))
+    scheduleAutoSave()
+  }
+
   const load = useCallback(async (isBackground = false) => {
     if (!isBackground) setLoading(true)
     try {
@@ -397,18 +416,13 @@ export default function DaySheet() {
       obBank,
       { particular: '', amount: '', sc: 'CASH' },
       { particular: '', amount: '', sc: 'CASH' },
-      { particular: 'DONATION', amount: '', sc: 'CASH' },
+      { particular: 'DONATION', amount: '', sc: 'CASH', isDonationHeader: true },
       { particular: 'BY CASH', amount: (data.mobile_totals && data.mobile_totals.cash > 0) ? data.mobile_totals.cash : '', sc: 'CASH' },
       { particular: 'BY ONLINE', amount: (data.mobile_totals && data.mobile_totals.online > 0) ? data.mobile_totals.online : '', sc: 'BANK' },
-      { particular: '', amount: '', sc: 'CASH' },
+      { particular: 'TOTAL DONATION', amount: '', sc: 'CASH', isTotalDonation: true },
     ]
 
-    const dRows = [...fixedRows, ...incomes].map(r => ({ ...r, amount: r.amount != null ? r.amount : '' }))
-    while (dRows.length < 11) dRows.push({ particular: '', amount: '', sc: 'CASH' })
-
     // ── Clean stale localStorage extras ──────────────────────────────────────
-    // Remove any cached "extra" rows that are actually auto-computed or
-    // are now properly tracked by the backend (have an id).
     const AUTO_PARTICULARS = new Set(['BY CASH', 'BY ONLINE', 'DONATION', 'TOTAL DONATION', 'OB CASH', 'OB BANK'])
     const backendIncomeIds = new Set(incomes.filter(r => r.id).map(r => String(r.id)))
     const backendExpenseIds = new Set(savedCredits.filter(r => r.id).map(r => String(r.id)))
@@ -425,18 +439,28 @@ export default function DaySheet() {
 
     const rawDExtras = loadExtraDebits(date)
     const cleanDExtras = cleanExtras(rawDExtras)
-    if (cleanDExtras.length !== rawDExtras.length) saveExtraDebits(date, cleanDExtras)  // purge stale
+    if (cleanDExtras.length !== rawDExtras.length) saveExtraDebits(date, cleanDExtras)
     const dExtras = cleanDExtras.map(r => ({ ...r, isExtra: true }))
-    setDebits([...dRows, ...dExtras])
+
+    // Place extra credit fields before DONATION
+    const dRows = [...fixedRows]
+    const donIdx = dRows.findIndex(r => r.particular === 'DONATION' || r.isDonationHeader)
+    const allCreditExtras = [...incomes, ...dExtras]
+    if (donIdx !== -1 && allCreditExtras.length > 0) {
+      dRows.splice(donIdx, 0, ...allCreditExtras)
+    } else if (allCreditExtras.length > 0) {
+      dRows.push(...allCreditExtras)
+    }
+    setDebits(dRows.map(r => ({ ...r, amount: r.amount != null ? r.amount : '' })))
 
     const rawCExtras = loadExtraCredits(date)
     const cleanCExtras = cleanExtras(rawCExtras)
-    if (cleanCExtras.length !== rawCExtras.length) saveExtraCredits(date, cleanCExtras)  // purge stale
+    if (cleanCExtras.length !== rawCExtras.length) saveExtraCredits(date, cleanCExtras)
     const cExtras = cleanCExtras.map(r => ({ ...r, isExtra: true }))
 
-    // Build credit rows — always from server data
+    // Build debit/expense rows — start with min 4 rows
     const cRows = savedCredits.map(r => ({ ...r, amount: r.amount != null ? r.amount : '' }))
-    while (cRows.length < 11) cRows.push({ particular: '', amount: '', sc: 'CASH' })
+    while (cRows.length < 4) cRows.push({ particular: '', amount: '', sc: 'CASH' })
     setCredits([...cRows, ...cExtras])
 
     // Restore closing balances
