@@ -486,11 +486,11 @@ export default function DaySheet() {
 
       tableHtml += `
         <tr>
-          ${i === 4 
+          ${(d.isDonationHeader || d.particular === 'DONATION')
             ? `<td colspan="3" class="bold" style="text-align: left; padding-left: 12px; color: #15803d; font-size: 14px; letter-spacing: 2px; background-color: #dcfce7;">DONATION</td>`
-            : i === 7
+            : (d.isTotalDonation || d.particular === 'TOTAL DONATION')
             ? `<td class="bold right" style="color: #0369a1; padding-right: 12px;">TOTAL DONATION</td>
-               <td class="bold right" style="color: #0369a1;">${formatAmt(Number(debits[5]?.amount || 0) + Number(debits[6]?.amount || 0))}</td>
+               <td class="bold right" style="color: #0369a1;">${formatAmt(Number(debits.find(r => r.particular === 'BY CASH')?.amount || 0) + Number(debits.find(r => r.particular === 'BY ONLINE')?.amount || 0))}</td>
                <td></td>`
             : `<td>${d.particular || ''}</td>
                <td class="right">${formatAmt(d.amount)}</td>
@@ -616,23 +616,18 @@ export default function DaySheet() {
       const rawDebits = overrideDebits ?? debits
       const rawCredits = overrideCredits ?? credits
 
-      // Only skip truly structural header/summary rows:
-      // Index 4 (DONATION) is a section header
-      // Index 7 (TOTAL DONATION) is an auto-summed row
-      const SKIP_INDICES = new Set([4, 7])
       const AUTO_PARTICULARS = new Set(['DONATION', 'TOTAL DONATION'])
 
       const payloadDebits = rawDebits
-        .map((d, i) => ({ ...d, _origIdx: i }))
         .filter((d) => {
-          // Always skip auto-computed header rows
-          if (SKIP_INDICES.has(d._origIdx)) return false
+          // Always skip auto-computed header and summary rows
+          if (d.isDonationHeader || d.isTotalDonation) return false
           const p = (d.particular || '').trim().toUpperCase()
           if (AUTO_PARTICULARS.has(p)) return false
           // Keep rows even if they have an ID so they don't get deleted by the backend
           return true
         })
-        .map(({ _origIdx, isExtra, ...d }) => d) // strip internal flags
+        .map(({ isExtra, ...d }) => d) // strip internal flags
 
       const payloadCredits = rawCredits
         .filter((c) => {
@@ -685,13 +680,16 @@ export default function DaySheet() {
     rows.push(['CREDIT', '', '', '', 'DEBIT', '', ''])
     rows.push(['SL', 'Particular', 'Amount (₹)', 'SC', 'SL', 'Particular', 'Amount (₹)', 'SC'])
     const maxLen = Math.max(debits.length, credits.length)
+    const totalDonAmt = Number(debits.find(r => r.particular === 'BY CASH')?.amount || 0) + Number(debits.find(r => r.particular === 'BY ONLINE')?.amount || 0)
     for (let i = 0; i < maxLen; i++) {
       const d = debits[i]
       const c = credits[i]
-      const creditRow = i === 4 
+      const isDonHeader = d?.isDonationHeader || d?.particular === 'DONATION'
+      const isTotalDon = d?.isTotalDonation || d?.particular === 'TOTAL DONATION'
+      const creditRow = isDonHeader 
         ? [i + 1, 'DONATION', '', '']
-        : i === 7
-        ? [i + 1, 'TOTAL DONATION', Number(debits[5]?.amount || 0) + Number(debits[6]?.amount || 0), '']
+        : isTotalDon
+        ? [i + 1, 'TOTAL DONATION', totalDonAmt, '']
         : [i + 1, d ? d.particular : '', d ? d.amount : '', d ? d.sc : '']
 
       rows.push([
@@ -803,123 +801,172 @@ export default function DaySheet() {
 
               {/* ── CREDIT column (left) ── */}
               <div style={{ borderRight: '1px solid var(--gray-200)' }}>
-                {debits.map((d, i) => {
-                  const bg = i % 2 === 0 ? 'var(--white)' : 'var(--gray-50)'
-                  const hasContent = Boolean(d.id || (d.particular && d.particular.trim()) || (d.amount !== '' && d.amount != null && Number(d.amount) !== 0))
+                {(() => {
+                  let creditSlCounter = 0
+                  const donIdx = debits.findIndex(r => r.particular === 'DONATION' || r.isDonationHeader)
+                  const totalDonationVal = Number(debits.find(r => r.particular === 'BY CASH')?.amount || 0) + Number(debits.find(r => r.particular === 'BY ONLINE')?.amount || 0)
+
                   return (
-                    <div key={`d-${i}`} style={{ display: 'grid', gridTemplateColumns: '36px 1fr 110px 75px 64px', background: bg, minHeight: 42 }}>
-                      {/* SL cell */}
-                      <div style={{ ...SH.td, color: 'var(--gray-400)', padding: '4px 2px', fontSize: 11, fontWeight: 600 }}>
-                        {i + 1}
-                      </div>
-                      {/* Content */}
-                      {i === 4 ? (
-                        <div style={{ gridColumn: '2 / 6', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', paddingLeft: '8px', fontWeight: 800, fontSize: 16, color: 'var(--success)', letterSpacing: '2px', borderBottom: '1px solid var(--gray-100)', background: 'var(--success-light)' }}>
-                          DONATION
-                        </div>
-                      ) : i === 7 ? (
-                        <>
-                          <div style={{ ...SH.tdL, justifyContent: 'flex-end', paddingRight: '12px', background: 'var(--primary-50)' }}>
-                            <span style={{ fontWeight: 800, color: 'var(--primary-700)', fontSize: 12, letterSpacing: '0.5px' }}>TOTAL DONATION</span>
-                          </div>
-                          <div style={{ ...SH.tdR, background: 'var(--primary-50)' }}>
-                            <span style={{ fontWeight: 800, color: 'var(--primary-700)', fontSize: 15 }}>
-                              {(Number(debits[5]?.amount || 0) + Number(debits[6]?.amount || 0)).toLocaleString('en-IN')}
-                            </span>
-                          </div>
-                          <div style={{ ...SH.td, background: 'var(--primary-50)' }}></div>
-                          <div style={{ ...SH.td, background: 'var(--primary-50)' }}></div>
-                        </>
-                      ) : (
-                        <>
-                          <div style={{ ...SH.tdL }}>
-                            <TableInput
-                              value={d.particular || ''}
-                              onChange={(val) => {
-                                if (i === 0 || i === 1 || i === 5 || i === 6) return;
-                                const next = [...debits];
-                                next[i] = { ...next[i], particular: val };
-                                setDebits(next);
-                                scheduleAutoSave();
-                              }}
-                              onBlur={() => scheduleAutoSave()}
-                              readOnly={i === 0 || i === 1 || i === 5 || i === 6}
-                              highlighted={i === 5 || i === 6}
-                              placeholder=""
-                            />
-                          </div>
-                          <div style={{ ...SH.tdR }}>
-                            <TableInput
-                              type="number" align="right"
-                              value={d.amount != null ? d.amount : ''}
-                              onChange={(val) => {
-                                const next = [...debits];
-                                next[i] = { ...next[i], amount: val };
-                                setDebits(next);
-                                scheduleAutoSave();
-                              }}
-                              onBlur={() => scheduleAutoSave()}
-                              readOnly={false}
-                              placeholder=""
-                            />
-                          </div>
-                          <div style={{ ...SH.td, padding: '4px' }}>
-                            <div style={{ position: 'relative', width: '100%' }}>
-                              <select
-                                value={d.sc || 'CASH'}
-                                disabled={false}
-                                onChange={(e) => {
-                                  const next = [...debits];
-                                  next[i] = { ...next[i], sc: e.target.value };
-                                  setDebits(next);
-                                  scheduleAutoSave();
+                    <>
+                      {debits.map((d, i) => {
+                        const bg = i % 2 === 0 ? 'var(--white)' : 'var(--gray-50)'
+                        const isDonHeader = d.isDonationHeader || d.particular === 'DONATION'
+                        const isTotalDon = d.isTotalDonation || d.particular === 'TOTAL DONATION'
+                        const hasContent = Boolean(d.id || (d.particular && d.particular.trim()) || (d.amount !== '' && d.amount != null && Number(d.amount) !== 0))
+
+                        let currentSl = null
+                        if (!isDonHeader && !isTotalDon) {
+                          creditSlCounter++
+                          currentSl = creditSlCounter
+                        }
+
+                        return (
+                          <React.Fragment key={`d-frag-${i}`}>
+                            {i === donIdx && (
+                              <button
+                                type="button"
+                                onClick={handleAddCreditRow}
+                                style={{
+                                  width: '100%',
+                                  padding: '8px 12px',
+                                  background: 'var(--success-light)',
+                                  border: 'none',
+                                  borderTop: '1px dashed var(--success)',
+                                  borderBottom: '1px dashed var(--success)',
+                                  color: 'var(--success)',
+                                  fontWeight: 700,
+                                  fontSize: 12,
+                                  cursor: 'pointer',
+                                  textAlign: 'center',
+                                  transition: 'background 0.15s ease',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: 6
                                 }}
-                                style={{ background: d.sc === 'BANK' ? 'var(--primary-100)' : 'var(--success-light)', color: d.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)', border: 'none', borderRadius: '12px', padding: '4px 8px', fontSize: 10, fontWeight: 700, outline: 'none', cursor: 'pointer', appearance: 'none', width: '100%', textAlign: 'center' }}
+                                onMouseEnter={e => e.currentTarget.style.background = '#bbf7d0'}
+                                onMouseLeave={e => e.currentTarget.style.background = 'var(--success-light)'}
                               >
-                                <option value="CASH">CASH</option>
-                                <option value="BANK">BANK</option>
-                              </select>
-                            </div>
-                          </div>
-                          <div style={{ ...SH.td, padding: '2px', gap: '2px' }}>
-                            {hasContent && (
-                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                                <button
-                                  type="button"
-                                  onClick={() => handleOpenEdit(d, 'CREDIT', i)}
-                                  title="Edit entry"
-                                  style={{
-                                    border: 'none', background: 'transparent', cursor: 'pointer',
-                                    padding: '3px 5px', borderRadius: '4px', fontSize: '13px', lineHeight: 1,
-                                    color: 'var(--primary-600)', transition: 'all 0.15s ease'
-                                  }}
-                                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary-50)'; e.currentTarget.style.transform = 'scale(1.15)'; }}
-                                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.transform = 'scale(1)'; }}
-                                >
-                                  ✏️
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => handlePromptDelete(d, 'CREDIT', i)}
-                                  title="Delete entry"
-                                  style={{
-                                    border: 'none', background: 'transparent', cursor: 'pointer',
-                                    padding: '3px 5px', borderRadius: '4px', fontSize: '13px', lineHeight: 1,
-                                    color: 'var(--danger)', transition: 'all 0.15s ease'
-                                  }}
-                                  onMouseEnter={e => { e.currentTarget.style.background = '#fee2e2'; e.currentTarget.style.transform = 'scale(1.15)'; }}
-                                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.transform = 'scale(1)'; }}
-                                >
-                                  🗑️
-                                </button>
-                              </div>
+                                ＋ Add Credit Field
+                              </button>
                             )}
-                          </div>
-                        </>
-                      )}
-                    </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '36px 1fr 110px 75px 64px', background: bg, minHeight: 42 }}>
+                              {/* SL cell */}
+                              <div style={{ ...SH.td, color: 'var(--gray-400)', padding: '4px 2px', fontSize: 11, fontWeight: 600 }}>
+                                {currentSl}
+                              </div>
+                              {/* Content */}
+                              {isDonHeader ? (
+                                <div style={{ gridColumn: '2 / 6', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', paddingLeft: '8px', fontWeight: 800, fontSize: 16, color: 'var(--success)', letterSpacing: '2px', borderBottom: '1px solid var(--gray-100)', background: 'var(--success-light)' }}>
+                                  DONATION
+                                </div>
+                              ) : isTotalDon ? (
+                                <>
+                                  <div style={{ ...SH.tdL, justifyContent: 'flex-end', paddingRight: '12px', background: 'var(--primary-50)' }}>
+                                    <span style={{ fontWeight: 800, color: 'var(--primary-700)', fontSize: 12, letterSpacing: '0.5px' }}>TOTAL DONATION</span>
+                                  </div>
+                                  <div style={{ ...SH.tdR, background: 'var(--primary-50)' }}>
+                                    <span style={{ fontWeight: 800, color: 'var(--primary-700)', fontSize: 15 }}>
+                                      {totalDonationVal.toLocaleString('en-IN')}
+                                    </span>
+                                  </div>
+                                  <div style={{ ...SH.td, background: 'var(--primary-50)' }}></div>
+                                  <div style={{ ...SH.td, background: 'var(--primary-50)' }}></div>
+                                </>
+                              ) : (
+                                <>
+                                  <div style={{ ...SH.tdL }}>
+                                    <TableInput
+                                      value={d.particular || ''}
+                                      onChange={(val) => {
+                                        if (d.particular === 'OB CASH' || d.particular === 'OB BANK' || d.particular === 'BY CASH' || d.particular === 'BY ONLINE') return;
+                                        const next = [...debits];
+                                        next[i] = { ...next[i], particular: val };
+                                        setDebits(next);
+                                        scheduleAutoSave();
+                                      }}
+                                      onBlur={() => scheduleAutoSave()}
+                                      readOnly={d.particular === 'OB CASH' || d.particular === 'OB BANK' || d.particular === 'BY CASH' || d.particular === 'BY ONLINE'}
+                                      highlighted={d.particular === 'BY CASH' || d.particular === 'BY ONLINE'}
+                                      placeholder=""
+                                    />
+                                  </div>
+                                  <div style={{ ...SH.tdR }}>
+                                    <TableInput
+                                      type="number" align="right"
+                                      value={d.amount != null ? d.amount : ''}
+                                      onChange={(val) => {
+                                        const next = [...debits];
+                                        next[i] = { ...next[i], amount: val };
+                                        setDebits(next);
+                                        scheduleAutoSave();
+                                      }}
+                                      onBlur={() => scheduleAutoSave()}
+                                      readOnly={false}
+                                      placeholder=""
+                                    />
+                                  </div>
+                                  <div style={{ ...SH.td, padding: '4px' }}>
+                                    <div style={{ position: 'relative', width: '100%' }}>
+                                      <select
+                                        value={d.sc || 'CASH'}
+                                        disabled={false}
+                                        onChange={(e) => {
+                                          const next = [...debits];
+                                          next[i] = { ...next[i], sc: e.target.value };
+                                          setDebits(next);
+                                          scheduleAutoSave();
+                                        }}
+                                        style={{ background: d.sc === 'BANK' ? 'var(--primary-100)' : 'var(--success-light)', color: d.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)', border: 'none', borderRadius: '12px', padding: '4px 8px', fontSize: 10, fontWeight: 700, outline: 'none', cursor: 'pointer', appearance: 'none', width: '100%', textAlign: 'center' }}
+                                      >
+                                        <option value="CASH">CASH</option>
+                                        <option value="BANK">BANK</option>
+                                      </select>
+                                    </div>
+                                  </div>
+                                  <div style={{ ...SH.td, padding: '2px', gap: '2px' }}>
+                                    {hasContent && (
+                                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                                        <button
+                                          type="button"
+                                          onClick={() => handleOpenEdit(d, 'CREDIT', i)}
+                                          title="Edit entry"
+                                          style={{
+                                            border: 'none', background: 'transparent', cursor: 'pointer',
+                                            padding: '3px 5px', borderRadius: '4px', fontSize: '13px', lineHeight: 1,
+                                            color: 'var(--primary-600)', transition: 'all 0.15s ease'
+                                          }}
+                                          onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary-50)'; e.currentTarget.style.transform = 'scale(1.15)'; }}
+                                          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.transform = 'scale(1)'; }}
+                                        >
+                                          ✏️
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => handlePromptDelete(d, 'CREDIT', i)}
+                                          title="Delete entry"
+                                          style={{
+                                            border: 'none', background: 'transparent', cursor: 'pointer',
+                                            padding: '3px 5px', borderRadius: '4px', fontSize: '13px', lineHeight: 1,
+                                            color: 'var(--danger)', transition: 'all 0.15s ease'
+                                          }}
+                                          onMouseEnter={e => { e.currentTarget.style.background = '#fee2e2'; e.currentTarget.style.transform = 'scale(1.15)'; }}
+                                          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.transform = 'scale(1)'; }}
+                                        >
+                                          🗑️
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          </React.Fragment>
+                        )
+                      })}
+                    </>
                   )
-                })}
+                })()}
               </div>
 
               {/* ── DEBIT column (right) ── */}
@@ -1016,6 +1063,33 @@ export default function DaySheet() {
                     </div>
                   )
                 })}
+                {/* ── Add Debit Field Button ── */}
+                <button
+                  type="button"
+                  onClick={handleAddDebitRow}
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    background: 'var(--info-light)',
+                    border: 'none',
+                    borderTop: '1px dashed var(--info)',
+                    borderBottom: '1px dashed var(--info)',
+                    color: 'var(--info)',
+                    fontWeight: 700,
+                    fontSize: 12,
+                    cursor: 'pointer',
+                    textAlign: 'center',
+                    transition: 'background 0.15s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#bae6fd'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'var(--info-light)'}
+                >
+                  ＋ Add Debit Field
+                </button>
               </div>
 
             </div>
