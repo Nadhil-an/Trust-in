@@ -62,11 +62,11 @@ const MemberHomeScreen = ({ navigation }) => {
         onPress: () => navigation.navigate('MembershipPayment'),
       });
     } else if (status === 'EXPIRING_SOON' || (typeof daysLeft === 'number' && daysLeft <= 2 && daysLeft >= 0)) {
-      const dayText = daysLeft === 0 ? 'today' : daysLeft === 1 ? 'in 1 day' : in  days;
+      const dayText = daysLeft === 0 ? 'today' : daysLeft === 1 ? 'in 1 day' : ('in ' + daysLeft + ' days');
       Toast.show({
         type: 'error',
         text1: '⏰ Membership Expiring Soon',
-        text2: Expires  (). Tap here to renew payment.,
+        text2: 'Expires ' + dayText + ' (' + vDate + '). Tap here to renew payment.',
         visibilityTime: 6000,
         onPress: () => navigation.navigate('MembershipPayment'),
       });
@@ -74,7 +74,7 @@ const MemberHomeScreen = ({ navigation }) => {
       Toast.show({
         type: 'error',
         text1: '⚠️ Membership Expired',
-        text2: Your membership expired (). Tap here to update payment.,
+        text2: 'Your membership expired (' + vDate + '). Tap here to update payment.',
         visibilityTime: 6000,
         onPress: () => navigation.navigate('MembershipPayment'),
       });
@@ -210,12 +210,12 @@ const MemberHomeScreen = ({ navigation }) => {
                   <Text style={styles.notifBannerTitleOrange}>Membership Expiring Soon</Text>
                   <View style={styles.actionPillOrange}>
                     <Text style={styles.actionPillOrangeText}>
-                      {daysLeftToExpire === 0 ? 'Today' : ${daysLeftToExpire}d left}
+                      {daysLeftToExpire === 0 ? 'Today' : (daysLeftToExpire + 'd left')}
                     </Text>
                   </View>
                 </View>
                 <Text style={styles.notifBannerDescOrange}>
-                  Your Trust membership expires {daysLeftToExpire === 0 ? 'today' : daysLeftToExpire === 1 ? 'in 1 day' : in  days} ({validUpto}). Please update your payment to maintain active privileges.
+                  Your Trust membership expires {daysLeftToExpire === 0 ? 'today' : daysLeftToExpire === 1 ? 'in 1 day' : ('in ' + daysLeftToExpire + ' days')} ({validUpto}). Please update your payment to maintain active privileges.
                 </Text>
                 <View style={styles.notifBannerActionRow}>
                   <Text style={styles.notifBannerActionOrange}>Renew Payment (₹{monthlyFee}/mo)</Text>

@@ -157,7 +157,7 @@ const MembershipCardScreen = ({ navigation }) => {
               >
                 <Ionicons name="refresh" size={14} color="#0284c7" />
                 <Text style={styles.cardRenewBtnText}>
-                  {isExpired ? Renew Subscription (₹/mo) : Renew Payment Early (₹/mo)}
+                  {isExpired ? ('Renew Subscription (₹' + monthlyFee + '/mo)') : ('Renew Payment Early (₹' + monthlyFee + '/mo)')}
                 </Text>
               </TouchableOpacity>
             )}
