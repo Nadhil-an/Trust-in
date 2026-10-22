@@ -10,7 +10,6 @@ import {
   Modal,
   TextInput,
   ActivityIndicator,
-  Share,
   Linking,
   Alert,
   Animated,
@@ -20,15 +19,12 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import * as FileSystem from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
-import * as Clipboard from 'expo-clipboard';
 import Toast from 'react-native-toast-message';
-import ActionSheet from '../../components/shared/ActionSheet';
 import { Colors } from '../../constants/Colors';
 import { memberPostsApi } from '../../api';
 import { useAuthStore } from '../../store/authStore';
 import { resolveImageUrl } from '../../utils/imageUrl';
+import { formatDistrictKerala } from '../../utils/location';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -53,8 +49,6 @@ const PostDetailScreen = ({ route, navigation }) => {
   const [loadingComments, setLoadingComments] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
-  const [shareSheetVisible, setShareSheetVisible] = useState(false);
-  const [sharingLoading, setSharingLoading] = useState(false);
 
   const fetchPostDetails = async () => {
     if (!postId) return;
@@ -160,155 +154,6 @@ const PostDetailScreen = ({ route, navigation }) => {
     }
   };
 
-  const buildShareContent = () => {
-    if (!post) return '';
-    const authorName = post.author?.full_name || post.author?.username || 'Community Member';
-    const statusText =
-      post.status === 'FORWARDED_TO_FAO'
-        ? 'In Assessment'
-        : post.status === 'RESOLVED'
-        ? 'Resolved'
-        : 'Open';
-
-    const dateStr = post.created_at ? formatDate(post.created_at) : '';
-    const resolvedImages = (post.images || [])
-      .map((img) => resolveImageUrl(img.image))
-      .filter(Boolean);
-
-    let shareText = `📢 *SREE LAKSHMI CHARITABLE TRUST*\n`;
-    shareText += `🤝 *Community Help & Problem Request*\n`;
-    shareText += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
-    shareText += `👤 *Posted by:* ${authorName}\n`;
-    shareText += `🛡️ *Status:* ${statusText}\n`;
-    if (dateStr) shareText += `📅 *Date:* ${dateStr}\n`;
-    if (post.contact_number) shareText += `📞 *Contact Phone:* ${post.contact_number}\n`;
-    if (post.address) shareText += `📍 *Location:* ${post.address}\n`;
-    shareText += `\n📝 *Issue Description:*\n"${post.description || ''}"\n\n`;
-
-    if (resolvedImages.length > 0) {
-      shareText += `📸 *Attached Photos (${resolvedImages.length}):*\n`;
-      resolvedImages.forEach((url, idx) => {
-        shareText += `• Photo ${idx + 1}: ${url}\n`;
-      });
-      shareText += `\n`;
-    }
-
-    shareText += `━━━━━━━━━━━━━━━━━━━━━\n`;
-    shareText += `📲 *Shared via Sree Lakshmi Charitable Trust App*`;
-    return shareText;
-  };
-
-  const handleShareClick = () => {
-    const resolvedImages = (post?.images || [])
-      .map((img) => resolveImageUrl(img.image))
-      .filter(Boolean);
-    if (resolvedImages.length > 0) {
-      setShareSheetVisible(true);
-    } else {
-      handleShareAll();
-    }
-  };
-
-  const handleShareWhatsApp = async () => {
-    try {
-      const shareText = buildShareContent();
-      const whatsappUrl = `whatsapp://send?text=${encodeURIComponent(shareText)}`;
-      const canOpen = await Linking.canOpenURL(whatsappUrl);
-      if (canOpen) {
-        await Linking.openURL(whatsappUrl);
-      } else {
-        await Share.share({
-          message: shareText,
-          title: 'Sree Lakshmi Trust - Community Issue',
-        });
-      }
-    } catch (_) {
-      await Share.share({
-        message: buildShareContent(),
-        title: 'Sree Lakshmi Trust - Community Issue',
-      });
-    }
-  };
-
-  const handleSharePhotoFile = async () => {
-    const resolvedImages = (post?.images || [])
-      .map((img) => resolveImageUrl(img.image))
-      .filter(Boolean);
-    const targetUrl = resolvedImages[activePhotoIndex] || resolvedImages[0];
-    if (!targetUrl) return;
-
-    try {
-      setSharingLoading(true);
-      Toast.show({
-        type: 'info',
-        text1: 'Preparing Photo...',
-        text2: 'Downloading photo and copying post information.',
-        visibilityTime: 2500,
-      });
-
-      const textContent = buildShareContent();
-      await Clipboard.setStringAsync(textContent);
-
-      const extension = targetUrl.split('.').pop()?.split('?')[0] || 'jpg';
-      const cleanExt = ['jpg', 'jpeg', 'png', 'webp'].includes(extension.toLowerCase())
-        ? extension.toLowerCase()
-        : 'jpg';
-      const localUri = `${FileSystem.cacheDirectory}slt_detail_${post.id}_${activePhotoIndex}.${cleanExt}`;
-
-      const downloadRes = await FileSystem.downloadAsync(targetUrl, localUri);
-
-      const isAvailable = await Sharing.isAvailableAsync();
-      if (isAvailable && downloadRes?.uri) {
-        Toast.show({
-          type: 'success',
-          text1: 'Details Copied!',
-          text2: 'Select an app to share photo with caption.',
-          visibilityTime: 3500,
-        });
-        await Sharing.shareAsync(downloadRes.uri, {
-          mimeType: `image/${cleanExt === 'png' ? 'png' : 'jpeg'}`,
-          dialogTitle: 'Share Community Issue Photo',
-        });
-      } else {
-        await Share.share({
-          message: textContent,
-          title: 'Sree Lakshmi Trust - Community Issue',
-        });
-      }
-    } catch (err) {
-      console.warn('Error sharing photo file:', err);
-      await Share.share({
-        message: buildShareContent(),
-        title: 'Sree Lakshmi Trust - Community Issue',
-      });
-    } finally {
-      setSharingLoading(false);
-    }
-  };
-
-  const handleShareAll = async () => {
-    try {
-      const shareText = buildShareContent();
-      await Share.share({
-        message: shareText,
-        title: 'Sree Lakshmi Trust - Community Issue',
-      });
-    } catch (_) {}
-  };
-
-  const handleCopyDetails = async () => {
-    try {
-      const shareText = buildShareContent();
-      await Clipboard.setStringAsync(shareText);
-      Toast.show({
-        type: 'success',
-        text1: 'Copied to Clipboard!',
-        text2: 'Post details and photo links are ready to paste.',
-        visibilityTime: 2500,
-      });
-    } catch (_) {}
-  };
-
   const handleCall = () => {
     if (!post.contact_number) return;
     Linking.openURL(`tel:${post.contact_number}`).catch(() => {
@@ -340,9 +185,7 @@ const PostDetailScreen = ({ route, navigation }) => {
           <Ionicons name="arrow-back" size={24} color="#ffffff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Issue Details</Text>
-        <TouchableOpacity style={styles.shareHeaderBtn} onPress={handleShareClick}>
-          <Ionicons name="share-social-outline" size={22} color="#ffffff" />
-        </TouchableOpacity>
+        <View style={{ width: 40 }} />
       </View>
 
       {loading ? (
@@ -484,7 +327,7 @@ const PostDetailScreen = ({ route, navigation }) => {
               <Text style={styles.sectionLabel}>Location / Address</Text>
               <View style={styles.infoRow}>
                 <Ionicons name="location" size={18} color="#0284c7" />
-                <Text style={styles.infoValue}>{post.address}</Text>
+                <Text style={styles.infoValue}>{formatDistrictKerala(post.address)}</Text>
               </View>
             </View>
           )}
@@ -495,8 +338,8 @@ const PostDetailScreen = ({ route, navigation }) => {
               <Text style={styles.sectionLabel}>Contact Information</Text>
               <View style={styles.contactRow}>
                 <View style={styles.contactPhone}>
-                  <Ionicons name="call-outline" size={16} color="#0284c7" />
-                  <Text style={styles.phoneText}>{post.contact_number}</Text>
+                  <Ionicons name="location-sharp" size={16} color="#0284c7" />
+                  <Text style={styles.phoneText}>{formatDistrictKerala(post.address)}</Text>
                 </View>
                 <View style={styles.contactButtons}>
                   <TouchableOpacity style={styles.callBtn} onPress={handleCall} activeOpacity={0.85}>
@@ -531,10 +374,7 @@ const PostDetailScreen = ({ route, navigation }) => {
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.actionBtn} onPress={handleShareClick} activeOpacity={0.7} disabled={sharingLoading}>
-              <Ionicons name="share-social-outline" size={20} color="#64748B" />
-              <Text style={styles.actionBtnText}>{sharingLoading ? 'Preparing...' : 'Share'}</Text>
-            </TouchableOpacity>
+            
           </View>
 
           {/* 8. Live Comments Section */}

@@ -18,6 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { Colors } from '../../constants/Colors';
 import { memberPostsApi } from '../../api';
+import { KERALA_DISTRICTS } from '../../utils/location';
 import { useAuthStore } from '../../store/authStore';
 import PostCard from '../../components/feed/PostCard';
 import CommentsModal from '../../components/feed/CommentsModal';
@@ -253,6 +254,45 @@ export default function MyPostsScreen({ navigation }) {
               <Text style={styles.fieldLabel}>
                 Location / Address <Text style={{ color: '#EF4444' }}>*</Text>
               </Text>
+              <Text style={{ fontSize: 11, fontWeight: '600', color: '#64748B', marginBottom: 6 }}>
+                Select District (Kerala):
+              </Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ flexDirection: 'row', gap: 6, marginBottom: 8 }}
+              >
+                {KERALA_DISTRICTS.map((d) => {
+                  const isSelected = editAddress.toLowerCase().includes(d.toLowerCase());
+                  return (
+                    <TouchableOpacity
+                      key={d}
+                      style={{
+                        backgroundColor: isSelected ? '#0284c7' : '#EFF6FF',
+                        paddingHorizontal: 10,
+                        paddingVertical: 5,
+                        borderRadius: 14,
+                        borderWidth: 1,
+                        borderColor: isSelected ? '#0284c7' : '#BFDBFE',
+                      }}
+                      onPress={() => {
+                        setEditAddress(`${d}, Kerala`);
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 11,
+                          fontWeight: '700',
+                          color: isSelected ? '#ffffff' : '#0284c7',
+                        }}
+                      >
+                        {d}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
               <TextInput
                 style={styles.textInput}
                 value={editAddress}

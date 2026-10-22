@@ -7,20 +7,16 @@ import {
   ScrollView,
   Image,
   Dimensions,
-  Share,
   Linking,
   Alert,
   Animated,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import * as FileSystem from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
-import * as Clipboard from 'expo-clipboard';
 import Toast from 'react-native-toast-message';
-import ActionSheet from '../shared/ActionSheet';
 import { memberPostsApi } from '../../api';
 import { resolveImageUrl } from '../../utils/imageUrl';
+import { formatDistrictKerala } from '../../utils/location';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -37,8 +33,6 @@ export default function PostCard({
   const [currentPhotoIdx, setCurrentPhotoIdx] = useState(0);
   const [cardWidth, setCardWidth] = useState(SCREEN_WIDTH - 32);
   const [expanded, setExpanded] = useState(false);
-  const [shareSheetVisible, setShareSheetVisible] = useState(false);
-  const [sharingLoading, setSharingLoading] = useState(false);
 
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const isLikingRef = useRef(false);
@@ -92,148 +86,6 @@ export default function PostCard({
     } finally {
       isLikingRef.current = false;
     }
-  };
-
-  const buildShareContent = () => {
-    const authorName = post.author?.full_name || post.author?.username || 'Community Member';
-    const statusText =
-      post.status === 'FORWARDED_TO_FAO'
-        ? 'In Assessment'
-        : post.status === 'RESOLVED'
-        ? 'Resolved'
-        : 'Open';
-
-    const dateStr = post.created_at ? formatDate(post.created_at) : '';
-
-    let shareText = `📢 *SREE LAKSHMI CHARITABLE TRUST*\n`;
-    shareText += `🤝 *Community Help & Problem Request*\n`;
-    shareText += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
-    shareText += `👤 *Posted by:* ${authorName}\n`;
-    shareText += `🛡️ *Status:* ${statusText}\n`;
-    if (dateStr) shareText += `📅 *Date:* ${dateStr}\n`;
-    if (post.contact_number) shareText += `📞 *Contact Phone:* ${post.contact_number}\n`;
-    if (post.address) shareText += `📍 *Location:* ${post.address}\n`;
-    shareText += `\n📝 *Issue Description:*\n"${post.description || ''}"\n\n`;
-
-    if (images.length > 0) {
-      shareText += `📸 *Attached Photos (${images.length}):*\n`;
-      images.forEach((img, idx) => {
-        shareText += `• Photo ${idx + 1}: ${img.resolvedUrl}\n`;
-      });
-      shareText += `\n`;
-    }
-
-    shareText += `━━━━━━━━━━━━━━━━━━━━━\n`;
-    shareText += `📲 *Shared via Sree Lakshmi Charitable Trust App*`;
-    return shareText;
-  };
-
-  const handleShareClick = () => {
-    if (images.length > 0) {
-      setShareSheetVisible(true);
-    } else {
-      handleShareAll();
-    }
-  };
-
-  const handleShareWhatsApp = async () => {
-    try {
-      const shareText = buildShareContent();
-      const whatsappUrl = `whatsapp://send?text=${encodeURIComponent(shareText)}`;
-      const canOpen = await Linking.canOpenURL(whatsappUrl);
-      if (canOpen) {
-        await Linking.openURL(whatsappUrl);
-      } else {
-        await Share.share({
-          message: shareText,
-          title: 'Sree Lakshmi Trust - Community Issue',
-        });
-      }
-    } catch (_) {
-      await Share.share({
-        message: buildShareContent(),
-        title: 'Sree Lakshmi Trust - Community Issue',
-      });
-    }
-  };
-
-  const handleSharePhotoFile = async () => {
-    const targetUrl = images[currentPhotoIdx]?.resolvedUrl || images[0]?.resolvedUrl;
-    if (!targetUrl) return;
-
-    try {
-      setSharingLoading(true);
-      Toast.show({
-        type: 'info',
-        text1: 'Preparing Photo...',
-        text2: 'Downloading photo and copying post information.',
-        visibilityTime: 2500,
-      });
-
-      // 1. Copy full post content to clipboard so user can easily paste it as caption
-      const textContent = buildShareContent();
-      await Clipboard.setStringAsync(textContent);
-
-      // 2. Download the photo to local cache
-      const extension = targetUrl.split('.').pop()?.split('?')[0] || 'jpg';
-      const cleanExt = ['jpg', 'jpeg', 'png', 'webp'].includes(extension.toLowerCase())
-        ? extension.toLowerCase()
-        : 'jpg';
-      const localUri = `${FileSystem.cacheDirectory}slt_post_${post.id}_${currentPhotoIdx}.${cleanExt}`;
-
-      const downloadRes = await FileSystem.downloadAsync(targetUrl, localUri);
-
-      // 3. Share the file via native share sheet
-      const isAvailable = await Sharing.isAvailableAsync();
-      if (isAvailable && downloadRes?.uri) {
-        Toast.show({
-          type: 'success',
-          text1: 'Details Copied!',
-          text2: 'Select an app to share photo with caption.',
-          visibilityTime: 3500,
-        });
-        await Sharing.shareAsync(downloadRes.uri, {
-          mimeType: `image/${cleanExt === 'png' ? 'png' : 'jpeg'}`,
-          dialogTitle: 'Share Community Issue Photo',
-        });
-      } else {
-        await Share.share({
-          message: textContent,
-          title: 'Sree Lakshmi Trust - Community Issue',
-        });
-      }
-    } catch (err) {
-      console.warn('Error sharing photo file:', err);
-      await Share.share({
-        message: buildShareContent(),
-        title: 'Sree Lakshmi Trust - Community Issue',
-      });
-    } finally {
-      setSharingLoading(false);
-    }
-  };
-
-  const handleShareAll = async () => {
-    try {
-      const shareText = buildShareContent();
-      await Share.share({
-        message: shareText,
-        title: 'Sree Lakshmi Trust - Community Issue',
-      });
-    } catch (_) {}
-  };
-
-  const handleCopyDetails = async () => {
-    try {
-      const shareText = buildShareContent();
-      await Clipboard.setStringAsync(shareText);
-      Toast.show({
-        type: 'success',
-        text1: 'Copied to Clipboard!',
-        text2: 'Post details and photo links are ready to paste.',
-        visibilityTime: 2500,
-      });
-    } catch (_) {}
   };
 
   const handleCall = () => {
@@ -453,46 +305,27 @@ export default function PostCard({
           )}
         </TouchableOpacity>
 
-        {/* Meta Row: Date, Location, Contact (Identical to Event Card Icons) */}
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={handleOpenDetail}
-          style={styles.metaRow}
-        >
-          {Boolean(post.created_at) && (
-            <View style={styles.metaItem}>
-              <Ionicons name="calendar-outline" size={13} color="#0284c7" />
-              <Text style={styles.metaText}>{formatDate(post.created_at)}</Text>
-            </View>
-          )}
-
-          {Boolean(post.address) && (
-            <View style={[styles.metaItem, { flex: 1 }]}>
-              <Ionicons name="location-outline" size={13} color="#0284c7" />
-              <Text style={styles.metaText} numberOfLines={1}>{post.address}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
-
-        {/* Contact Actions (Call / WhatsApp buttons if phone exists) */}
-        {Boolean(post.contact_number) && (
-          <View style={styles.contactBar}>
-            <View style={styles.contactPhoneWrap}>
-              <Ionicons name="call-outline" size={12} color="#64748B" />
-              <Text style={styles.contactPhoneText}>{post.contact_number}</Text>
-            </View>
+        {/* Contact & Location Bar: District, Kerala (Number is NOT directly exposed) */}
+        <View style={styles.contactBar}>
+          <View style={[styles.contactPhoneWrap, { flex: 1, marginRight: 8 }]}>
+            <Ionicons name="location-sharp" size={13} color="#0284c7" />
+            <Text style={styles.contactPhoneText} numberOfLines={1}>
+              {formatDistrictKerala(post.address)}
+            </Text>
+          </View>
+          {Boolean(post.contact_number) && (
             <View style={styles.contactBtnGroup}>
-              <TouchableOpacity style={styles.contactPill} onPress={handleCall}>
-                <Ionicons name="call" size={12} color="#0284c7" />
+              <TouchableOpacity style={styles.contactPill} onPress={handleCall} activeOpacity={0.8}>
+                <Ionicons name="call" size={11} color="#0284c7" />
                 <Text style={styles.contactPillText}>Call</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.contactPill, styles.whatsappPill]} onPress={handleWhatsApp}>
-                <Ionicons name="logo-whatsapp" size={12} color="#16A34A" />
+              <TouchableOpacity style={[styles.contactPill, styles.whatsappPill]} onPress={handleWhatsApp} activeOpacity={0.8}>
+                <Ionicons name="logo-whatsapp" size={11} color="#16A34A" />
                 <Text style={[styles.contactPillText, { color: '#16A34A' }]}>WhatsApp</Text>
               </TouchableOpacity>
             </View>
-          </View>
-        )}
+          )}
+        </View>
 
         {/* ── 3. Bottom Action Bar: Like, Comment, Share ───────────────────── */}
         <View style={styles.actionBar}>
@@ -527,18 +360,6 @@ export default function PostCard({
             </Text>
           </TouchableOpacity>
 
-          {/* Share Button */}
-          <TouchableOpacity
-            style={styles.actionBtn}
-            onPress={handleShareClick}
-            activeOpacity={0.7}
-            disabled={sharingLoading}
-          >
-            <Ionicons name="share-social-outline" size={20} color="#475569" />
-            <Text style={styles.actionBtnText}>
-              {sharingLoading ? 'Preparing...' : 'Share'}
-            </Text>
-          </TouchableOpacity>
         </View>
       </View>
 
