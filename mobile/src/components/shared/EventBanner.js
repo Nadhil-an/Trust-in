@@ -60,20 +60,36 @@ const EventBanner = ({
   };
 
   const events = eventsProp !== undefined ? eventsProp : internalEvents;
+  const displayEvents = events.length > 1 ? [...events, events[0]] : events;
 
-  // Auto-scroll timer every 4 seconds
+  // Auto-scroll timer - ALWAYS moves from right to left only (seamless infinite loop)
   const startTimer = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
     if (!events || events.length <= 1) return;
 
     timerRef.current = setInterval(() => {
-      const nextIndex = (currentIndexRef.current + 1) % events.length;
+      const nextIndex = currentIndexRef.current + 1;
       if (scrollRef.current && containerWidth > 0) {
         scrollRef.current.scrollTo({
           x: nextIndex * containerWidth,
           animated: true,
         });
-        setCurrentIndex(nextIndex);
+        currentIndexRef.current = nextIndex;
+        setCurrentIndex(nextIndex % events.length);
+
+        // When reaching cloned first card, seamlessly reset offset to 0 without animation
+        if (nextIndex >= events.length) {
+          setTimeout(() => {
+            if (scrollRef.current) {
+              scrollRef.current.scrollTo({
+                x: 0,
+                animated: false,
+              });
+              currentIndexRef.current = 0;
+              setCurrentIndex(0);
+            }
+          }, 350);
+        }
       }
     }, autoPlayInterval);
   }, [events, containerWidth, autoPlayInterval]);
@@ -87,10 +103,15 @@ const EventBanner = ({
 
   const onMomentumScrollEnd = (e) => {
     const offset = e.nativeEvent.contentOffset.x;
-    const newIdx = Math.round(offset / (containerWidth || 1));
-    if (newIdx >= 0 && newIdx < events.length) {
-      setCurrentIndex(newIdx);
+    let newIdx = Math.round(offset / (containerWidth || 1));
+    if (newIdx >= events.length) {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTo({ x: 0, animated: false });
+      }
+      newIdx = 0;
     }
+    currentIndexRef.current = newIdx;
+    setCurrentIndex(newIdx);
     startTimer();
   };
 
@@ -104,6 +125,7 @@ const EventBanner = ({
         x: index * containerWidth,
         animated: true,
       });
+      currentIndexRef.current = index;
       setCurrentIndex(index);
       startTimer();
     }
@@ -150,8 +172,10 @@ const EventBanner = ({
           onMomentumScrollEnd={onMomentumScrollEnd}
           onScrollBeginDrag={onScrollBeginDrag}
         >
-          {events.map((item, index) => (
-            <View key={item.id || index} style={{ width: containerWidth }}>
+          {displayEvents.map((item, index) => {
+            const displayIdx = index % events.length;
+            return (
+            <View key={`${item.id || displayIdx}-${index}`} style={{ width: containerWidth }}>
               <TouchableOpacity
                 style={styles.eventCard}
                 activeOpacity={0.9}
@@ -172,7 +196,7 @@ const EventBanner = ({
                   {events.length > 1 && (
                     <View style={styles.counterBadge}>
                       <Text style={styles.counterText}>
-                        {index + 1} / {events.length}
+                        {displayIdx + 1} / {events.length}
                       </Text>
                     </View>
                   )}
@@ -205,7 +229,8 @@ const EventBanner = ({
                 </View>
               </TouchableOpacity>
             </View>
-          ))}
+          );
+          })}
         </ScrollView>
       </View>
 

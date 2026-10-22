@@ -36,6 +36,7 @@ export default function PublicIssuesPage() {
   const [forwardCategory, setForwardCategory] = useState('OTHER')
   const [forwardPriority, setForwardPriority] = useState('NORMAL')
   const [forwarding, setForwarding] = useState(false)
+  const [deletingId, setDeletingId] = useState(null)
 
   const loadData = useCallback(async () => {
     setLoading(true)
@@ -58,6 +59,30 @@ export default function PublicIssuesPage() {
   useEffect(() => {
     loadData()
   }, [loadData])
+
+  const handleDeletePost = async (id, e) => {
+    if (e) e.stopPropagation()
+    const confirmed = window.confirm(
+      'Are you sure you want to delete this community post?\n\nThis will immediately remove the post, its photos, and comments from all member mobile applications.'
+    )
+    if (!confirmed) return
+
+    setDeletingId(id)
+    try {
+      await coreApi.memberPosts.delete(id)
+      toast.success('Post deleted and removed from all mobile applications.')
+      setItems(prev => prev.filter(item => item.id !== id))
+      if (selectedItem?.id === id) {
+        setSelectedItem(null)
+      }
+    } catch (err) {
+      console.error('Delete post error:', err)
+      const errorMsg = err.response?.data?.detail || err.response?.data?.message || 'Failed to delete post. Please try again.'
+      toast.error(errorMsg)
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   const handleForwardToFao = async (targetPost = selectedItem) => {
     if (!targetPost || forwarding) return
@@ -270,16 +295,39 @@ export default function PublicIssuesPage() {
                       )}
                     </td>
                     <td style={{ padding: '14px 16px', textAlign: 'right' }}>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setSelectedItem(item)
-                        }}
-                        className="btn btn-primary btn-sm"
-                        style={{ padding: '6px 12px', fontSize: '12px', borderRadius: '6px', fontWeight: '600' }}
-                      >
-                        {isOpen ? 'View & Forward ➜' : 'View Details ➜'}
-                      </button>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-end' }}>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSelectedItem(item)
+                          }}
+                          className="btn btn-primary btn-sm"
+                          style={{ padding: '6px 12px', fontSize: '12px', borderRadius: '6px', fontWeight: '600' }}
+                        >
+                          {isOpen ? 'View & Forward ➜' : 'View Details ➜'}
+                        </button>
+                        <button
+                          onClick={(e) => handleDeletePost(item.id, e)}
+                          disabled={deletingId === item.id}
+                          className="btn btn-sm"
+                          style={{
+                            padding: '6px 10px',
+                            fontSize: '12px',
+                            borderRadius: '6px',
+                            fontWeight: '600',
+                            backgroundColor: '#FEE2E2',
+                            color: '#DC2626',
+                            border: '1px solid #FECACA',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                          title="Delete post and remove from all mobile applications"
+                        >
+                          {deletingId === item.id ? 'Deleting...' : '🗑️ Delete'}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 )
@@ -485,6 +533,36 @@ export default function PublicIssuesPage() {
                   </button>
                 </div>
               )}
+
+              {/* Delete / Violation Control Bar */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: '#FEF2F2', borderRadius: '8px', border: '1px solid #FECACA', flexWrap: 'wrap', gap: '10px' }}>
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: '700', color: '#991B1B' }}>Content Violation / Deletion Control</div>
+                  <div style={{ fontSize: '12px', color: '#B91C1C' }}>
+                    Deleting this post will immediately wipe it from all member mobile applications and feeds.
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleDeletePost(selectedItem.id)}
+                  disabled={deletingId === selectedItem.id}
+                  className="btn btn-sm"
+                  style={{
+                    padding: '8px 14px',
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    backgroundColor: '#DC2626',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  {deletingId === selectedItem.id ? 'Deleting...' : '🗑️ Delete Post from Mobile App'}
+                </button>
+              </div>
             </div>
           </div>
         </Modal>

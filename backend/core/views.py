@@ -679,7 +679,8 @@ class MemberPostViewSet(ModelViewSet):
         super().check_object_permissions(request, obj)
         if self.action in ['update', 'partial_update', 'destroy']:
             user_role = getattr(request.user, 'role', '')
-            if obj.author != request.user and user_role not in ['ADMIN', 'MANAGER']:
+            is_staff_user = getattr(request.user, 'is_staff', False) or getattr(request.user, 'is_superuser', False)
+            if obj.author != request.user and user_role not in ['ADMIN', 'MANAGER', 'DATA_ENTRY', 'HR'] and not is_staff_user:
                 from rest_framework.exceptions import PermissionDenied
                 raise PermissionDenied("You can only edit or delete your own posts.")
 

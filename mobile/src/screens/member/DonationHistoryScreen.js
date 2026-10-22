@@ -70,7 +70,69 @@ const DonationHistoryScreen = ({ navigation }) => {
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-        {/* Prominent Digital Membership Card */}
+        {/* 1. Total Donation Summary Card */}
+        <View style={styles.summaryCard}>
+          <View style={styles.summaryIconCircle}>
+            <Ionicons name="heart-dislike-outline" size={28} color="#0284c7" />
+          </View>
+          <Text style={styles.summaryLabel}>Total Donation</Text>
+          <Text style={styles.summaryAmount}>₹{totalAmount.toLocaleString()}</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%', paddingHorizontal: 20, marginTop: 8 }}>
+            <View style={{ alignItems: 'center' }}>
+              <Text style={{ fontSize: 12, color: Colors.gray600, fontWeight: '600' }}>Cash</Text>
+              <Text style={{ fontSize: 16, fontWeight: '800', color: '#16a34a' }}>₹{totalCash.toLocaleString()}</Text>
+            </View>
+            <View style={{ alignItems: 'center' }}>
+              <Text style={{ fontSize: 12, color: Colors.gray600, fontWeight: '600' }}>Online</Text>
+              <Text style={{ fontSize: 16, fontWeight: '800', color: '#0284c7' }}>₹{totalOnline.toLocaleString()}</Text>
+            </View>
+          </View>
+
+          {/* Quick Donate / Autopay CTA */}
+          <TouchableOpacity
+            style={styles.summaryDonateCta}
+            onPress={() => navigation.navigate('Donate')}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="add-circle-outline" size={18} color={Colors.white} />
+            <Text style={styles.summaryDonateCtaText}>Donate Online / Setup Autopay</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* 2. Donation & Monthly Autopay Hero Card (Support Our Mission) */}
+        <View style={styles.donateHeroCard}>
+          <View style={styles.donateHeroLeft}>
+            <View style={styles.donateHeroBadge}>
+              <Ionicons name="sparkles" size={12} color="#0284c7" />
+              <Text style={styles.donateHeroBadgeText}>PAYMENT GATEWAY & AUTOPAY</Text>
+            </View>
+            <Text style={styles.donateHeroTitle}>Support Our Mission</Text>
+            <Text style={styles.donateHeroDesc}>
+              Make an instant one-time donation or setup monthly recurring autopay.
+            </Text>
+            <View style={styles.donateHeroBtns}>
+              <TouchableOpacity
+                style={styles.donateBtnPrimary}
+                onPress={() => navigation.navigate('Donate', { mode: 'ONETIME' })}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="heart" size={15} color={Colors.white} />
+                <Text style={styles.donateBtnPrimaryText}>Donate Now</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.donateBtnSecondary}
+                onPress={() => navigation.navigate('Donate', { mode: 'MONTHLY' })}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="repeat" size={15} color="#0284c7" />
+                <Text style={styles.donateBtnSecondaryText}>Monthly Autopay</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
+        {/* 3. Prominent Digital Membership Card */}
         <TouchableOpacity
           activeOpacity={0.9}
           onPress={() => navigation.navigate('MembershipCard')}
@@ -108,119 +170,6 @@ const DonationHistoryScreen = ({ navigation }) => {
             </View>
           </View>
         </TouchableOpacity>
-
-        {/* Donation & Monthly Autopay Hero Card */}
-        <View style={styles.donateHeroCard}>
-          <View style={styles.donateHeroLeft}>
-            <View style={styles.donateHeroBadge}>
-              <Ionicons name="sparkles" size={12} color="#0284c7" />
-              <Text style={styles.donateHeroBadgeText}>PAYMENT GATEWAY & AUTOPAY</Text>
-            </View>
-            <Text style={styles.donateHeroTitle}>Support Our Mission</Text>
-            <Text style={styles.donateHeroDesc}>
-              Make an instant one-time donation or setup monthly recurring autopay.
-            </Text>
-            <View style={styles.donateHeroBtns}>
-              <TouchableOpacity
-                style={styles.donateBtnPrimary}
-                onPress={() => navigation.navigate('Donate', { mode: 'ONETIME' })}
-                activeOpacity={0.85}
-              >
-                <Ionicons name="heart" size={15} color={Colors.white} />
-                <Text style={styles.donateBtnPrimaryText}>Donate Now</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.donateBtnSecondary}
-                onPress={() => navigation.navigate('Donate', { mode: 'MONTHLY' })}
-                activeOpacity={0.85}
-              >
-                <Ionicons name="repeat" size={15} color="#0284c7" />
-                <Text style={styles.donateBtnSecondaryText}>Monthly Autopay</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-
-        {/* Quick-Action Grid (4 equal rounded cards) */}
-        <View style={styles.actionGrid}>
-          {/* 1. My Donation */}
-          <TouchableOpacity
-            style={styles.actionCard}
-            onPress={() => fetchDonations()}
-          >
-            <View style={styles.actionIconCircle}>
-              <Ionicons name="heart" size={24} color="#0284c7" />
-            </View>
-            <Text style={styles.actionTitle}>My Donation</Text>
-            <Text style={styles.actionSub}>View your donation history</Text>
-          </TouchableOpacity>
-
-          {/* 2. Report a Problem */}
-          <TouchableOpacity
-            style={styles.actionCard}
-            onPress={() => navigation.navigate('ReportProblem')}
-          >
-            <View style={styles.actionIconCircle}>
-              <Ionicons name="warning" size={24} color="#0284c7" />
-            </View>
-            <Text style={styles.actionTitle}>Report a Problem</Text>
-            <Text style={styles.actionSub}>Help us improve by reporting issues</Text>
-          </TouchableOpacity>
-
-          {/* 3. Events */}
-          <TouchableOpacity
-            style={styles.actionCard}
-            onPress={() => navigation.navigate('Events')}
-          >
-            <View style={styles.actionIconCircle}>
-              <Ionicons name="calendar" size={24} color="#0284c7" />
-            </View>
-            <Text style={styles.actionTitle}>Events</Text>
-            <Text style={styles.actionSub}>View upcoming events & activities</Text>
-          </TouchableOpacity>
-
-          {/* 4. My Profile */}
-          <TouchableOpacity
-            style={styles.actionCard}
-            onPress={() => navigation.navigate('Profile')}
-          >
-            <View style={styles.actionIconCircle}>
-              <Ionicons name="person" size={24} color="#0284c7" />
-            </View>
-            <Text style={styles.actionTitle}>My Profile</Text>
-            <Text style={styles.actionSub}>View and manage your profile</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Total Donation Summary Card */}
-        <View style={styles.summaryCard}>
-          <View style={styles.summaryIconCircle}>
-            <Ionicons name="heart-dislike-outline" size={28} color="#0284c7" />
-          </View>
-          <Text style={styles.summaryLabel}>Total Donation</Text>
-          <Text style={styles.summaryAmount}>₹{totalAmount.toLocaleString()}</Text>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%', paddingHorizontal: 20, marginTop: 8 }}>
-            <View style={{ alignItems: 'center' }}>
-              <Text style={{ fontSize: 12, color: Colors.gray600, fontWeight: '600' }}>Cash</Text>
-              <Text style={{ fontSize: 16, fontWeight: '800', color: '#16a34a' }}>₹{totalCash.toLocaleString()}</Text>
-            </View>
-            <View style={{ alignItems: 'center' }}>
-              <Text style={{ fontSize: 12, color: Colors.gray600, fontWeight: '600' }}>Online</Text>
-              <Text style={{ fontSize: 16, fontWeight: '800', color: '#0284c7' }}>₹{totalOnline.toLocaleString()}</Text>
-            </View>
-          </View>
-
-          {/* Quick Donate / Autopay CTA */}
-          <TouchableOpacity
-            style={styles.summaryDonateCta}
-            onPress={() => navigation.navigate('Donate')}
-            activeOpacity={0.85}
-          >
-            <Ionicons name="add-circle-outline" size={18} color={Colors.white} />
-            <Text style={styles.summaryDonateCtaText}>Donate Online / Setup Autopay</Text>
-          </TouchableOpacity>
-        </View>
 
         {/* Section Header with Filter */}
         <View style={styles.sectionHeader}>

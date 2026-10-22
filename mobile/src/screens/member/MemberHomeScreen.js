@@ -103,20 +103,6 @@ const MemberHomeScreen = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
       >
 
-        {/* Upcoming Events Section */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Upcoming Events</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Events')}>
-            <Text style={styles.viewAllText}>View All</Text>
-          </TouchableOpacity>
-        </View>
-
-        <EventBanner
-          events={upcomingEvents}
-          navigation={navigation}
-          autoPlayInterval={4000}
-        />
-
         {/* Community Problem & Help Feed (Instagram-Style) */}
         <View style={styles.feedHeaderRow}>
           <View>
@@ -188,6 +174,20 @@ const MemberHomeScreen = ({ navigation }) => {
             />
           ))
         )}
+
+        {/* Upcoming Events Section (Placed below community feed) */}
+        <View style={[styles.sectionHeader, { marginTop: 22, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#E2E8F0' }]}>
+          <Text style={styles.sectionTitle}>Upcoming Events</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Events')}>
+            <Text style={styles.viewAllText}>View All</Text>
+          </TouchableOpacity>
+        </View>
+
+        <EventBanner
+          events={upcomingEvents}
+          navigation={navigation}
+          autoPlayInterval={4000}
+        />
       </ScrollView>
 
       {/* Comments Bottom Sheet Modal */}
