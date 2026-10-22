@@ -592,11 +592,11 @@ export default function DaySheet() {
       const rawDebits = overrideDebits ?? debits
       const rawCredits = overrideCredits ?? credits
 
-      // Only skip the truly auto-computed fixed rows.
-      // Fixed rows: 2, 3 (blank padding), 4 (DONATION), 5 (BY CASH), 6 (BY ONLINE), 7 (total-donation)
-      // We allow indices 0 (OB CASH) and 1 (OB BANK) so users can manually override them.
-      const SKIP_INDICES = new Set([2, 3, 4, 5, 6, 7])
-      const AUTO_PARTICULARS = new Set(['BY CASH', 'BY ONLINE', 'DONATION', 'TOTAL DONATION'])
+      // Only skip truly structural header/summary rows:
+      // Index 4 (DONATION) is a section header
+      // Index 7 (TOTAL DONATION) is an auto-summed row
+      const SKIP_INDICES = new Set([4, 7])
+      const AUTO_PARTICULARS = new Set(['DONATION', 'TOTAL DONATION'])
 
       const payloadDebits = rawDebits
         .map((d, i) => ({ ...d, _origIdx: i }))
@@ -708,6 +708,21 @@ export default function DaySheet() {
               style={{ border: 'none', outline: 'none', fontSize: 13, fontWeight: 600, color: 'var(--gray-800)', background: 'transparent' }}
             />
           </div>
+          {autoSaveStatus === 'saving' && (
+            <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--primary-600)', background: 'var(--primary-50)', padding: '6px 12px', borderRadius: '16px', border: '1px solid var(--primary-200)', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <span className="spinner" style={{ width: 12, height: 12, borderWidth: 2 }} /> Saving...
+            </span>
+          )}
+          {autoSaveStatus === 'saved' && (
+            <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--success)', background: 'var(--success-light)', padding: '6px 12px', borderRadius: '16px', border: '1px solid #bbf7d0', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              ✔ Auto Saved
+            </span>
+          )}
+          {autoSaveStatus === 'pending' && (
+            <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--danger)', background: '#fee2e2', padding: '6px 12px', borderRadius: '16px', border: '1px solid #fecaca', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              ⚠️ Unsaved
+            </span>
+          )}
           <button onClick={handleOpenIncome} className="btn btn-secondary" style={{ color: 'var(--success)', fontWeight: 600 }}>+ Add Income</button>
           <button onClick={handleOpenExpense} className="btn btn-secondary" style={{ color: 'var(--danger)', fontWeight: 600 }}>+ Add Expense</button>
           <button onClick={load} className="btn btn-secondary">↺ Refresh</button>
@@ -796,8 +811,15 @@ export default function DaySheet() {
                           <div style={{ ...SH.tdL }}>
                             <TableInput
                               value={d.particular || ''}
-                              onChange={() => {}}
-                              readOnly={true}
+                              onChange={(val) => {
+                                if (i === 0 || i === 1 || i === 5 || i === 6) return;
+                                const next = [...debits];
+                                next[i] = { ...next[i], particular: val };
+                                setDebits(next);
+                                scheduleAutoSave();
+                              }}
+                              onBlur={() => scheduleAutoSave()}
+                              readOnly={i === 0 || i === 1 || i === 5 || i === 6}
                               highlighted={i === 5 || i === 6}
                               placeholder=""
                             />
@@ -805,19 +827,30 @@ export default function DaySheet() {
                           <div style={{ ...SH.tdR }}>
                             <TableInput
                               type="number" align="right"
-                              value={d.amount || ''}
-                              onChange={() => {}}
-                              readOnly={true}
+                              value={d.amount != null ? d.amount : ''}
+                              onChange={(val) => {
+                                const next = [...debits];
+                                next[i] = { ...next[i], amount: val };
+                                setDebits(next);
+                                scheduleAutoSave();
+                              }}
+                              onBlur={() => scheduleAutoSave()}
+                              readOnly={false}
                               placeholder=""
                             />
                           </div>
                           <div style={{ ...SH.td, padding: '4px' }}>
-                            <div style={{ position: 'relative', width: '100%', opacity: 0.85 }}>
+                            <div style={{ position: 'relative', width: '100%' }}>
                               <select
                                 value={d.sc || 'CASH'}
-                                disabled={true}
-                                onChange={() => {}}
-                                style={{ background: d.sc === 'BANK' ? 'var(--primary-100)' : 'var(--success-light)', color: d.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)', border: 'none', borderRadius: '12px', padding: '4px 8px', fontSize: 10, fontWeight: 700, outline: 'none', cursor: 'default', appearance: 'none', width: '100%', textAlign: 'center' }}
+                                disabled={false}
+                                onChange={(e) => {
+                                  const next = [...debits];
+                                  next[i] = { ...next[i], sc: e.target.value };
+                                  setDebits(next);
+                                  scheduleAutoSave();
+                                }}
+                                style={{ background: d.sc === 'BANK' ? 'var(--primary-100)' : 'var(--success-light)', color: d.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)', border: 'none', borderRadius: '12px', padding: '4px 8px', fontSize: 10, fontWeight: 700, outline: 'none', cursor: 'pointer', appearance: 'none', width: '100%', textAlign: 'center' }}
                               >
                                 <option value="CASH">CASH</option>
                                 <option value="BANK">BANK</option>
@@ -878,27 +911,44 @@ export default function DaySheet() {
                       <div style={{ ...SH.tdL }}>
                         <TableInput
                           value={c.particular || ''}
-                          onChange={() => {}}
-                          readOnly={true}
+                          onChange={(val) => {
+                            const next = [...credits];
+                            next[i] = { ...next[i], particular: val };
+                            setCredits(next);
+                            scheduleAutoSave();
+                          }}
+                          onBlur={() => scheduleAutoSave()}
+                          readOnly={false}
                           placeholder=""
                         />
                       </div>
                       <div style={{ ...SH.tdR }}>
                         <TableInput
                           type="number" align="right"
-                          value={c.amount || ''}
-                          onChange={() => {}}
-                          readOnly={true}
+                          value={c.amount != null ? c.amount : ''}
+                          onChange={(val) => {
+                            const next = [...credits];
+                            next[i] = { ...next[i], amount: val };
+                            setCredits(next);
+                            scheduleAutoSave();
+                          }}
+                          onBlur={() => scheduleAutoSave()}
+                          readOnly={false}
                           placeholder=""
                         />
                       </div>
                       <div style={{ ...SH.td, padding: '4px' }}>
-                        <div style={{ position: 'relative', width: '100%', opacity: 0.85 }}>
+                        <div style={{ position: 'relative', width: '100%' }}>
                           <select
                             value={c.sc || 'CASH'}
-                            disabled={true}
-                            onChange={() => {}}
-                            style={{ background: c.sc === 'BANK' ? 'var(--primary-100)' : 'var(--success-light)', color: c.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)', border: 'none', borderRadius: '12px', padding: '4px 8px', fontSize: 10, fontWeight: 700, outline: 'none', cursor: 'default', appearance: 'none', width: '100%', textAlign: 'center' }}
+                            disabled={false}
+                            onChange={(e) => {
+                              const next = [...credits];
+                              next[i] = { ...next[i], sc: e.target.value };
+                              setCredits(next);
+                              scheduleAutoSave();
+                            }}
+                            style={{ background: c.sc === 'BANK' ? 'var(--primary-100)' : 'var(--success-light)', color: c.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)', border: 'none', borderRadius: '12px', padding: '4px 8px', fontSize: 10, fontWeight: 700, outline: 'none', cursor: 'pointer', appearance: 'none', width: '100%', textAlign: 'center' }}
                           >
                             <option value="CASH">CASH</option>
                             <option value="BANK">BANK</option>

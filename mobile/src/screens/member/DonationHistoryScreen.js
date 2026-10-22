@@ -12,8 +12,11 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
 import { donationApi } from '../../api';
+import { useAuthStore } from '../../store/authStore';
 
 const DonationHistoryScreen = ({ navigation }) => {
+  const { user } = useAuthStore();
+  const memberId = user?.username || '';
   const [totalAmount, setTotalAmount] = useState(0);
   const [totalCash, setTotalCash] = useState(0);
   const [totalOnline, setTotalOnline] = useState(0);
@@ -67,6 +70,129 @@ const DonationHistoryScreen = ({ navigation }) => {
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        {/* Prominent Digital Membership Card */}
+        <TouchableOpacity
+          activeOpacity={0.9}
+          onPress={() => navigation.navigate('MembershipCard')}
+        >
+          <View style={[styles.membershipCard, { backgroundColor: '#0284c7' }]}>
+            <View style={styles.cardHeader}>
+              <View style={styles.logoBadge}>
+                <Ionicons name="flower-outline" size={20} color="#0284c7" />
+                <View>
+                  <Text style={styles.trustLogoTitle}>SREELAKSHMI</Text>
+                  <Text style={styles.trustLogoSub}>CHARITABLE TRUST</Text>
+                </View>
+              </View>
+
+              <View style={styles.memberIdContainer}>
+                <Text style={styles.memberIdLabel}>MEMBER ID</Text>
+                <Text style={styles.memberIdValue}>{memberId}</Text>
+              </View>
+            </View>
+
+            <View style={styles.cardCenter}>
+              <Text style={styles.cardTitle}>MEMBERSHIP CARD</Text>
+            </View>
+
+            <View style={styles.cardFooter}>
+              <View>
+                <Text style={styles.footerLabel}>Member Since</Text>
+                <Text style={styles.footerValue}>{user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', {month: 'short', year: 'numeric'}) : 'N/A'}</Text>
+              </View>
+
+              <View style={{ alignItems: 'flex-end' }}>
+                <Text style={styles.footerLabel}>Valid Upto</Text>
+                <Text style={styles.footerValue}>{user?.valid_upto ? new Date(user.valid_upto).toLocaleDateString('en-US', {month: 'short', year: 'numeric'}) : 'N/A'}</Text>
+              </View>
+            </View>
+          </View>
+        </TouchableOpacity>
+
+        {/* Donation & Monthly Autopay Hero Card */}
+        <View style={styles.donateHeroCard}>
+          <View style={styles.donateHeroLeft}>
+            <View style={styles.donateHeroBadge}>
+              <Ionicons name="sparkles" size={12} color="#0284c7" />
+              <Text style={styles.donateHeroBadgeText}>PAYMENT GATEWAY & AUTOPAY</Text>
+            </View>
+            <Text style={styles.donateHeroTitle}>Support Our Mission</Text>
+            <Text style={styles.donateHeroDesc}>
+              Make an instant one-time donation or setup monthly recurring autopay.
+            </Text>
+            <View style={styles.donateHeroBtns}>
+              <TouchableOpacity
+                style={styles.donateBtnPrimary}
+                onPress={() => navigation.navigate('Donate', { mode: 'ONETIME' })}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="heart" size={15} color={Colors.white} />
+                <Text style={styles.donateBtnPrimaryText}>Donate Now</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.donateBtnSecondary}
+                onPress={() => navigation.navigate('Donate', { mode: 'MONTHLY' })}
+                activeOpacity={0.85}
+              >
+                <Ionicons name="repeat" size={15} color="#0284c7" />
+                <Text style={styles.donateBtnSecondaryText}>Monthly Autopay</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
+        {/* Quick-Action Grid (4 equal rounded cards) */}
+        <View style={styles.actionGrid}>
+          {/* 1. My Donation */}
+          <TouchableOpacity
+            style={styles.actionCard}
+            onPress={() => fetchDonations()}
+          >
+            <View style={styles.actionIconCircle}>
+              <Ionicons name="heart" size={24} color="#0284c7" />
+            </View>
+            <Text style={styles.actionTitle}>My Donation</Text>
+            <Text style={styles.actionSub}>View your donation history</Text>
+          </TouchableOpacity>
+
+          {/* 2. Report a Problem */}
+          <TouchableOpacity
+            style={styles.actionCard}
+            onPress={() => navigation.navigate('ReportProblem')}
+          >
+            <View style={styles.actionIconCircle}>
+              <Ionicons name="warning" size={24} color="#0284c7" />
+            </View>
+            <Text style={styles.actionTitle}>Report a Problem</Text>
+            <Text style={styles.actionSub}>Help us improve by reporting issues</Text>
+          </TouchableOpacity>
+
+          {/* 3. Events */}
+          <TouchableOpacity
+            style={styles.actionCard}
+            onPress={() => navigation.navigate('Events')}
+          >
+            <View style={styles.actionIconCircle}>
+              <Ionicons name="calendar" size={24} color="#0284c7" />
+            </View>
+            <Text style={styles.actionTitle}>Events</Text>
+            <Text style={styles.actionSub}>View upcoming events & activities</Text>
+          </TouchableOpacity>
+
+          {/* 4. My Profile */}
+          <TouchableOpacity
+            style={styles.actionCard}
+            onPress={() => navigation.navigate('Profile')}
+          >
+            <View style={styles.actionIconCircle}>
+              <Ionicons name="person" size={24} color="#0284c7" />
+            </View>
+            <Text style={styles.actionTitle}>My Profile</Text>
+            <Text style={styles.actionSub}>View and manage your profile</Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Total Donation Summary Card */}
         <View style={styles.summaryCard}>
           <View style={styles.summaryIconCircle}>
@@ -338,6 +464,150 @@ const styles = StyleSheet.create({
   previewRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 },
   previewLabel: { fontSize: 13, color: '#64748B', fontWeight: '500', width: '35%' },
   previewValue: { fontSize: 13, color: '#0F172A', fontWeight: '700', textAlign: 'right', flex: 1 },
+
+  membershipCard: {
+    borderRadius: 16,
+    padding: 18,
+    minHeight: 180,
+    justifyContent: 'space-between',
+    shadowColor: '#0284c7',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  logoBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.white,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 16,
+    gap: 4,
+  },
+  trustLogoTitle: { fontSize: 7, fontWeight: '900', color: '#0284c7' },
+  trustLogoSub: { fontSize: 5, fontWeight: '700', color: Colors.gray600 },
+  memberIdContainer: { alignItems: 'flex-end' },
+  memberIdLabel: { fontSize: 8, color: 'rgba(255, 255, 255, 0.8)', fontWeight: '700' },
+  memberIdValue: { fontSize: 12, fontWeight: '800', color: Colors.white },
+
+  cardCenter: { alignItems: 'center', marginVertical: 10 },
+  cardTitle: { fontSize: 14, fontWeight: '900', color: Colors.white, letterSpacing: 2 },
+
+  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
+  footerLabel: { fontSize: 9, color: 'rgba(255, 255, 255, 0.75)', textTransform: 'uppercase' },
+  footerValue: { fontSize: 13, fontWeight: '800', color: Colors.white, marginTop: 1 },
+
+  donateHeroCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1.5,
+    borderColor: '#bae6fd',
+    shadowColor: '#0284c7',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  donateHeroLeft: { flex: 1 },
+  donateHeroBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#f0f9ff',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+    marginBottom: 6,
+  },
+  donateHeroBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#0284c7',
+    letterSpacing: 0.5,
+  },
+  donateHeroTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+    marginBottom: 4,
+  },
+  donateHeroDesc: {
+    fontSize: 12,
+    color: Colors.gray600,
+    lineHeight: 17,
+    marginBottom: 12,
+  },
+  donateHeroBtns: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  donateBtnPrimary: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#0284c7',
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  donateBtnPrimaryText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: Colors.white,
+  },
+  donateBtnSecondary: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#f0f9ff',
+    borderWidth: 1.5,
+    borderColor: '#0284c7',
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  donateBtnSecondaryText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0284c7',
+  },
+
+  actionGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  actionCard: {
+    width: '48%',
+    backgroundColor: Colors.white,
+    borderRadius: 14,
+    padding: 14,
+    alignItems: 'flex-start',
+    borderWidth: 1,
+    borderColor: Colors.gray100,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  actionIconCircle: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: '#f0f9ff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  actionTitle: { fontSize: 14, fontWeight: '700', color: Colors.textPrimary, marginBottom: 2 },
+  actionSub: { fontSize: 11, color: Colors.gray500 },
 });
 
 export default DonationHistoryScreen;

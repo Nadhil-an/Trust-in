@@ -37,6 +37,9 @@ import MembershipPaymentScreen from '../screens/member/MembershipPaymentScreen';
 import MembershipCardScreen from '../screens/member/MembershipCardScreen';
 import DonationHistoryScreen from '../screens/member/DonationHistoryScreen';
 import ReportProblemScreen from '../screens/member/ReportProblemScreen';
+import CreatePostScreen from '../screens/member/CreatePostScreen';
+import MyPostsScreen from '../screens/member/MyPostsScreen';
+import PostDetailScreen from '../screens/member/PostDetailScreen';
 import EventsScreen from '../screens/member/EventsScreen';
 import EventDetailScreen from '../screens/member/EventDetailScreen';
 import UploadEventScreen from '../screens/staff/UploadEventScreen';
@@ -76,6 +79,7 @@ const sharedTabOptions = ({ route }) => ({
       Home: focused ? 'home' : 'home-outline',
       Leaderboard: focused ? 'trophy' : 'trophy-outline',
       Donation: focused ? 'heart' : 'heart-outline',
+      MyPosts: focused ? 'newspaper' : 'newspaper-outline',
       Events: focused ? 'calendar' : 'calendar-outline',
       Members: focused ? 'people' : 'people-outline',
       Assessments: focused ? 'clipboard' : 'clipboard-outline',
@@ -112,6 +116,11 @@ const MemberTabs = () => (
   <Tab.Navigator screenOptions={sharedTabOptions}>
     <Tab.Screen name="Home" component={MemberHomeScreen} />
     <Tab.Screen name="Donation" component={DonationHistoryScreen} />
+    <Tab.Screen
+      name="MyPosts"
+      component={MyPostsScreen}
+      options={{ tabBarLabel: 'My Posts' }}
+    />
     <Tab.Screen name="Events" component={EventsScreen} />
     <Tab.Screen name="Profile" component={ProfileScreen} />
   </Tab.Navigator>
@@ -174,7 +183,10 @@ const MainStack = () => {
       <Stack.Screen name="MembershipPayment" component={MembershipPaymentScreen} />
       <Stack.Screen name="MembershipCard" component={MembershipCardScreen} />
       <Stack.Screen name="DonationHistory" component={DonationHistoryScreen} />
-      <Stack.Screen name="ReportProblem" component={ReportProblemScreen} />
+      <Stack.Screen name="ReportProblem" component={CreatePostScreen} />
+      <Stack.Screen name="CreatePost" component={CreatePostScreen} />
+      <Stack.Screen name="MyPosts" component={MyPostsScreen} />
+      <Stack.Screen name="PostDetail" component={PostDetailScreen} />
       <Stack.Screen name="Events" component={EventsScreen} />
       <Stack.Screen name="EventDetail" component={EventDetailScreen} />
 
