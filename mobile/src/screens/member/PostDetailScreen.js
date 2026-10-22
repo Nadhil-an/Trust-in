@@ -447,37 +447,6 @@ const PostDetailScreen = ({ route, navigation }) => {
         </SafeAreaView>
       </Modal>
 
-      {/* Share Options ActionSheet */}
-      {Boolean(post) && (
-        <ActionSheet
-          visible={shareSheetVisible}
-          onClose={() => setShareSheetVisible(false)}
-          title="Share Community Issue & Photos"
-          options={[
-            {
-              label: 'Share to WhatsApp (Photos & Details)',
-              icon: 'logo-whatsapp',
-              onPress: handleShareWhatsApp,
-            },
-            {
-              label: `Share Photo File ${(post?.images?.length || 0) > 1 ? `(${activePhotoIndex + 1}/${post.images.length})` : ''} + Caption`,
-              icon: 'image-outline',
-              onPress: handleSharePhotoFile,
-            },
-            {
-              label: 'Share via Other Apps (System Share)',
-              icon: 'share-social-outline',
-              onPress: handleShareAll,
-            },
-            {
-              label: 'Copy Full Details & Photo Links',
-              icon: 'copy-outline',
-              onPress: handleCopyDetails,
-            },
-          ]}
-        />
-      )}
-
       <Toast />
     </KeyboardAvoidingView>
   );

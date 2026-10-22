@@ -362,35 +362,6 @@ export default function PostCard({
 
         </View>
       </View>
-
-      {/* Share Options ActionSheet */}
-      <ActionSheet
-        visible={shareSheetVisible}
-        onClose={() => setShareSheetVisible(false)}
-        title="Share Community Issue & Photos"
-        options={[
-          {
-            label: 'Share to WhatsApp (Photos & Details)',
-            icon: 'logo-whatsapp',
-            onPress: handleShareWhatsApp,
-          },
-          {
-            label: `Share Photo File ${images.length > 1 ? `(${currentPhotoIdx + 1}/${images.length})` : ''} + Caption`,
-            icon: 'image-outline',
-            onPress: handleSharePhotoFile,
-          },
-          {
-            label: 'Share via Other Apps (System Share)',
-            icon: 'share-social-outline',
-            onPress: handleShareAll,
-          },
-          {
-            label: 'Copy Full Details & Photo Links',
-            icon: 'copy-outline',
-            onPress: handleCopyDetails,
-          },
-        ]}
-      />
     </View>
   );
 }
