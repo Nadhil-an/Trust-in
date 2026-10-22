@@ -8,11 +8,168 @@ from core.models import (
 
 class UserSerializer(serializers.ModelSerializer):
     photo = serializers.SerializerMethodField()
+    member_id = serializers.SerializerMethodField()
+    member_name = serializers.SerializerMethodField()
+    member_since = serializers.SerializerMethodField()
+    valid_upto = serializers.SerializerMethodField()
+    is_subscription_expired = serializers.SerializerMethodField()
+    has_active_subscription = serializers.SerializerMethodField()
+    is_paid_member = serializers.SerializerMethodField()
+    subscription_status = serializers.SerializerMethodField()
+    days_left_to_expire = serializers.SerializerMethodField()
+    monthly_fee = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'full_name', 'role', 'phone', 'photo', 'is_active', 'date_joined']
+        fields = [
+            'id', 'username', 'email', 'full_name', 'role', 'phone', 'photo',
+            'is_active', 'date_joined',
+            'member_id', 'member_name', 'member_since', 'valid_upto',
+            'is_subscription_expired', 'has_active_subscription', 'is_paid_member',
+            'subscription_status', 'days_left_to_expire', 'monthly_fee'
+        ]
         read_only_fields = ['id', 'date_joined']
+
+    def _get_member(self, obj):
+        if hasattr(obj, '_cached_member'):
+            return obj._cached_member
+        from hr_module.models import Member
+        target_username = (obj.username or '').strip()
+        target_phone = str(getattr(obj, 'phone', '') or '').strip()
+        target_name = (obj.full_name or '').strip().lower()
+
+        member = None
+        if target_username:
+            member = Member.objects.filter(member_id__iexact=target_username).first()
+        if not member and target_name:
+            member = Member.objects.filter(full_name__iexact=obj.full_name.strip()).first()
+        if not member:
+            for m in Member.objects.all():
+                m_phone = str(m.phone or '').strip()
+                if m_phone and (m_phone == target_username or (target_phone and m_phone == target_phone)):
+                    member = m
+                    break
+        obj._cached_member = member
+        return member
+
+    def get_member_id(self, obj):
+        member = self._get_member(obj)
+        if member and member.member_id:
+            return member.member_id
+        return obj.username or ''
+
+    def get_member_name(self, obj):
+        return obj.full_name or (self._get_member(obj).full_name if self._get_member(obj) else '')
+
+    def _get_subscription_info(self, obj):
+        if hasattr(obj, '_cached_subscription_info'):
+            return obj._cached_subscription_info
+
+        from accounts_module.models import Income
+        from django.db import models
+        from django.utils import timezone
+        from dateutil.relativedelta import relativedelta
+
+        today = timezone.localdate()
+        member = self._get_member(obj)
+
+        q = models.Q(created_by=obj)
+        if obj.full_name and obj.full_name.strip():
+            q |= models.Q(donor_name__iexact=obj.full_name.strip())
+        if member and member.full_name and member.full_name.strip():
+            q |= models.Q(donor_name__iexact=member.full_name.strip())
+        if member and getattr(member, 'phone', None):
+            q |= models.Q(donor_phone__iexact=str(member.phone).strip())
+        if getattr(obj, 'phone', None):
+            q |= models.Q(donor_phone__iexact=str(obj.phone).strip())
+
+        latest_income = Income.objects.filter(source='MEMBERSHIP').filter(q).order_by('-date', '-created_at').first()
+
+        if not latest_income:
+            info = {
+                'has_active_subscription': False,
+                'is_paid_member': False,
+                'subscription_status': 'NOT_SUBSCRIBED',
+                'valid_upto': None,
+                'days_left_to_expire': None,
+                'is_subscription_expired': True,
+                'latest_payment_date': None,
+            }
+        else:
+            base_date = latest_income.date or (latest_income.created_at.date() if latest_income.created_at else None)
+            if not base_date:
+                base_date = today
+
+            valid_date = base_date + relativedelta(months=1)
+            days_left = (valid_date - today).days
+
+            if days_left < 0:
+                status = 'EXPIRED'
+                is_expired = True
+                is_active = False
+            elif days_left <= 2:
+                status = 'EXPIRING_SOON'
+                is_expired = False
+                is_active = True
+            else:
+                status = 'ACTIVE'
+                is_expired = False
+                is_active = True
+
+            info = {
+                'has_active_subscription': is_active,
+                'is_paid_member': True,
+                'subscription_status': status,
+                'valid_upto': valid_date.strftime('%d %b %Y'),
+                'days_left_to_expire': days_left,
+                'is_subscription_expired': is_expired,
+                'latest_payment_date': base_date.strftime('%d %b %Y') if base_date else None,
+            }
+
+        obj._cached_subscription_info = info
+        return info
+
+    def get_member_since(self, obj):
+        info = self._get_subscription_info(obj)
+        if not info['is_paid_member']:
+            return 'Not Subscribed'
+        from accounts_module.models import Income
+        from django.db import models
+        member = self._get_member(obj)
+        q = models.Q(created_by=obj)
+        if obj.full_name and obj.full_name.strip():
+            q |= models.Q(donor_name__iexact=obj.full_name.strip())
+        if member and member.full_name and member.full_name.strip():
+            q |= models.Q(donor_name__iexact=member.full_name.strip())
+        earliest_income = Income.objects.filter(source='MEMBERSHIP').filter(q).order_by('date', 'created_at').first()
+        if earliest_income:
+            d = earliest_income.date or earliest_income.created_at
+            return d.strftime('%B %Y')
+        return 'Not Subscribed'
+
+    def get_valid_upto(self, obj):
+        return self._get_subscription_info(obj)['valid_upto']
+
+    def get_is_subscription_expired(self, obj):
+        return self._get_subscription_info(obj)['is_subscription_expired']
+
+    def get_has_active_subscription(self, obj):
+        return self._get_subscription_info(obj)['has_active_subscription']
+
+    def get_is_paid_member(self, obj):
+        return self._get_subscription_info(obj)['is_paid_member']
+
+    def get_subscription_status(self, obj):
+        return self._get_subscription_info(obj)['subscription_status']
+
+    def get_days_left_to_expire(self, obj):
+        return self._get_subscription_info(obj)['days_left_to_expire']
+
+    def get_monthly_fee(self, obj):
+        member = self._get_member(obj)
+        if member and member.monthly_fee is not None:
+            return float(member.monthly_fee)
+        return 100.00
 
     def get_photo(self, obj):
         request = self.context.get('request')

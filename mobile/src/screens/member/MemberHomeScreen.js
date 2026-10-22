@@ -13,7 +13,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { Colors } from '../../constants/Colors';
 import { useAuthStore } from '../../store/authStore';
-import { eventsApi, memberPostsApi } from '../../api';
+import { authApi, eventsApi, memberPostsApi } from '../../api';
+import Toast from 'react-native-toast-message';
 import SideDrawer from '../../components/SideDrawer';
 import { EventBanner } from '../../components/shared';
 import PostCard from '../../components/feed/PostCard';
@@ -29,9 +30,71 @@ const MemberHomeScreen = ({ navigation }) => {
   const [postsLoading, setPostsLoading] = useState(false);
   const [commentsModalVisible, setCommentsModalVisible] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState(null);
+  const [userProfile, setUserProfile] = useState(user);
 
-  const memberName = user?.full_name || '';
-  const memberId = user?.username || '';
+  const memberName = userProfile?.full_name || user?.full_name || '';
+  const memberId = userProfile?.username || user?.username || '';
+
+  const activeUser = userProfile || user;
+  const isPaidMember = Boolean(activeUser?.is_paid_member);
+  const hasActiveSubscription = Boolean(activeUser?.has_active_subscription);
+  const subscriptionStatus = activeUser?.subscription_status || (hasActiveSubscription ? 'ACTIVE' : 'NOT_SUBSCRIBED');
+  const isNotSubscribed = subscriptionStatus === 'NOT_SUBSCRIBED' || (!hasActiveSubscription && !isPaidMember);
+  const daysLeftToExpire = activeUser?.days_left_to_expire;
+  const isExpiringSoon = subscriptionStatus === 'EXPIRING_SOON' || (typeof daysLeftToExpire === 'number' && daysLeftToExpire <= 2 && daysLeftToExpire >= 0);
+  const isExpired = Boolean(activeUser?.is_subscription_expired) || subscriptionStatus === 'EXPIRED';
+  const validUpto = activeUser?.valid_upto || '';
+  const monthlyFee = activeUser?.monthly_fee || 100;
+
+  const showSubscriptionToastAlert = (profile) => {
+    const isPaid = Boolean(profile?.is_paid_member);
+    const hasActive = Boolean(profile?.has_active_subscription);
+    const status = profile?.subscription_status || (hasActive ? 'ACTIVE' : 'NOT_SUBSCRIBED');
+    const daysLeft = profile?.days_left_to_expire;
+    const vDate = profile?.valid_upto || '';
+
+    if (status === 'NOT_SUBSCRIBED' || (!hasActive && !isPaid)) {
+      Toast.show({
+        type: 'info',
+        text1: '⚠️ Trust Membership Required',
+        text2: 'Tap here to activate monthly membership (₹100/mo) & unlock digital ID.',
+        visibilityTime: 6000,
+        onPress: () => navigation.navigate('MembershipPayment'),
+      });
+    } else if (status === 'EXPIRING_SOON' || (typeof daysLeft === 'number' && daysLeft <= 2 && daysLeft >= 0)) {
+      const dayText = daysLeft === 0 ? 'today' : daysLeft === 1 ? 'in 1 day' : in  days;
+      Toast.show({
+        type: 'error',
+        text1: '⏰ Membership Expiring Soon',
+        text2: Expires  (). Tap here to renew payment.,
+        visibilityTime: 6000,
+        onPress: () => navigation.navigate('MembershipPayment'),
+      });
+    } else if (status === 'EXPIRED' || profile?.is_subscription_expired) {
+      Toast.show({
+        type: 'error',
+        text1: '⚠️ Membership Expired',
+        text2: Your membership expired (). Tap here to update payment.,
+        visibilityTime: 6000,
+        onPress: () => navigation.navigate('MembershipPayment'),
+      });
+    }
+  };
+
+  const fetchProfileAndCheck = async () => {
+    try {
+      const res = await authApi.getProfile();
+      if (res.data) {
+        setUserProfile(res.data);
+        useAuthStore.getState().updateUser(res.data);
+        showSubscriptionToastAlert(res.data);
+      }
+    } catch (_) {
+      if (user) {
+        showSubscriptionToastAlert(user);
+      }
+    }
+  };
 
   const fetchUpcomingEvents = async () => {
     try {
@@ -57,17 +120,19 @@ const MemberHomeScreen = ({ navigation }) => {
   useEffect(() => {
     fetchUpcomingEvents();
     fetchPosts();
+    fetchProfileAndCheck();
   }, []);
 
   useFocusEffect(
     useCallback(() => {
       fetchPosts();
+      fetchProfileAndCheck();
     }, [])
   );
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await Promise.all([fetchUpcomingEvents(), fetchPosts()]);
+    await Promise.all([fetchUpcomingEvents(), fetchPosts(), fetchProfileAndCheck()]);
     setTimeout(() => setRefreshing(false), 800);
   }, []);
 
@@ -102,6 +167,91 @@ const MemberHomeScreen = ({ navigation }) => {
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
+        {/* Subscription Hover / Attention Banner on App Open */}
+        {isNotSubscribed ? (
+          <TouchableOpacity
+            style={styles.notifBannerAmber}
+            activeOpacity={0.88}
+            onPress={() => navigation.navigate('MembershipPayment')}
+          >
+            <View style={styles.notifBannerRow}>
+              <View style={styles.notifIconBadgeAmber}>
+                <Ionicons name="card-outline" size={20} color="#b45309" />
+              </View>
+              <View style={styles.notifBannerContent}>
+                <View style={styles.notifTitleRow}>
+                  <Text style={styles.notifBannerTitleAmber}>Trust Membership Required</Text>
+                  <View style={styles.actionPillAmber}>
+                    <Text style={styles.actionPillAmberText}>₹100/mo</Text>
+                  </View>
+                </View>
+                <Text style={styles.notifBannerDescAmber}>
+                  You have not activated your monthly membership yet. Activate now to unlock your digital ID card, member voting, and full benefits.
+                </Text>
+                <View style={styles.notifBannerActionRow}>
+                  <Text style={styles.notifBannerActionAmber}>Activate Membership Now</Text>
+                  <Ionicons name="arrow-forward" size={13} color="#b45309" />
+                </View>
+              </View>
+            </View>
+          </TouchableOpacity>
+        ) : isExpiringSoon ? (
+          <TouchableOpacity
+            style={styles.notifBannerOrange}
+            activeOpacity={0.88}
+            onPress={() => navigation.navigate('MembershipPayment')}
+          >
+            <View style={styles.notifBannerRow}>
+              <View style={styles.notifIconBadgeOrange}>
+                <Ionicons name="time-outline" size={20} color="#c2410c" />
+              </View>
+              <View style={styles.notifBannerContent}>
+                <View style={styles.notifTitleRow}>
+                  <Text style={styles.notifBannerTitleOrange}>Membership Expiring Soon</Text>
+                  <View style={styles.actionPillOrange}>
+                    <Text style={styles.actionPillOrangeText}>
+                      {daysLeftToExpire === 0 ? 'Today' : ${daysLeftToExpire}d left}
+                    </Text>
+                  </View>
+                </View>
+                <Text style={styles.notifBannerDescOrange}>
+                  Your Trust membership expires {daysLeftToExpire === 0 ? 'today' : daysLeftToExpire === 1 ? 'in 1 day' : in  days} ({validUpto}). Please update your payment to maintain active privileges.
+                </Text>
+                <View style={styles.notifBannerActionRow}>
+                  <Text style={styles.notifBannerActionOrange}>Renew Payment (₹{monthlyFee}/mo)</Text>
+                  <Ionicons name="arrow-forward" size={13} color="#c2410c" />
+                </View>
+              </View>
+            </View>
+          </TouchableOpacity>
+        ) : isExpired ? (
+          <TouchableOpacity
+            style={styles.notifBannerRed}
+            activeOpacity={0.88}
+            onPress={() => navigation.navigate('MembershipPayment')}
+          >
+            <View style={styles.notifBannerRow}>
+              <View style={styles.notifIconBadgeRed}>
+                <Ionicons name="warning-outline" size={20} color="#b91c1c" />
+              </View>
+              <View style={styles.notifBannerContent}>
+                <View style={styles.notifTitleRow}>
+                  <Text style={styles.notifBannerTitleRed}>Membership Expired</Text>
+                  <View style={styles.actionPillRed}>
+                    <Text style={styles.actionPillRedText}>EXPIRED</Text>
+                  </View>
+                </View>
+                <Text style={styles.notifBannerDescRed}>
+                  Your membership expired on {validUpto || 'recently'}. Please renew your payment to restore your digital card & member benefits.
+                </Text>
+                <View style={styles.notifBannerActionRow}>
+                  <Text style={styles.notifBannerActionRed}>Renew Membership (₹{monthlyFee}/mo)</Text>
+                  <Ionicons name="arrow-forward" size={13} color="#b91c1c" />
+                </View>
+              </View>
+            </View>
+          </TouchableOpacity>
+        ) : null}
 
         {/* Community Problem & Help Feed (Instagram-Style) */}
         <View style={styles.feedHeaderRow}>
@@ -215,6 +365,170 @@ const MemberHomeScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  // Hover / Attention Banner Styles
+  notifBannerAmber: {
+    backgroundColor: '#fffbeb',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#fcd34d',
+    padding: 12,
+    marginBottom: 8,
+    shadowColor: '#d97706',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  notifBannerOrange: {
+    backgroundColor: '#fff7ed',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#fdba74',
+    padding: 12,
+    marginBottom: 8,
+    shadowColor: '#ea580c',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  notifBannerRed: {
+    backgroundColor: '#fef2f2',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#fca5a5',
+    padding: 12,
+    marginBottom: 8,
+    shadowColor: '#dc2626',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  notifBannerRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+  },
+  notifIconBadgeAmber: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: '#fef3c7',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  notifIconBadgeOrange: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: '#ffedd5',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  notifIconBadgeRed: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: '#fee2e2',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  notifBannerContent: {
+    flex: 1,
+  },
+  notifTitleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 3,
+  },
+  notifBannerTitleAmber: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#92400e',
+  },
+  notifBannerTitleOrange: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#9a3412',
+  },
+  notifBannerTitleRed: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#991b1b',
+  },
+  actionPillAmber: {
+    backgroundColor: '#fde68a',
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: 6,
+  },
+  actionPillAmberText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#b45309',
+  },
+  actionPillOrange: {
+    backgroundColor: '#fed7aa',
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: 6,
+  },
+  actionPillOrangeText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#c2410c',
+  },
+  actionPillRed: {
+    backgroundColor: '#fecaca',
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: 6,
+  },
+  actionPillRedText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#b91c1c',
+  },
+  notifBannerDescAmber: {
+    fontSize: 11,
+    color: '#78350f',
+    lineHeight: 16,
+    marginBottom: 6,
+  },
+  notifBannerDescOrange: {
+    fontSize: 11,
+    color: '#7c2d12',
+    lineHeight: 16,
+    marginBottom: 6,
+  },
+  notifBannerDescRed: {
+    fontSize: 11,
+    color: '#7f1d1d',
+    lineHeight: 16,
+    marginBottom: 6,
+  },
+  notifBannerActionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  notifBannerActionAmber: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#b45309',
+  },
+  notifBannerActionOrange: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#c2410c',
+  },
+  notifBannerActionRed: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#b91c1c',
+  },
   container: { flex: 1, backgroundColor: Colors.background },
   topBar: {
     flexDirection: 'row',

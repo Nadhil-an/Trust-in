@@ -17,6 +17,7 @@ import {
   StatusBar,
   KeyboardAvoidingView,
 } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
@@ -49,6 +50,9 @@ const PostDetailScreen = ({ route, navigation }) => {
   const [loadingComments, setLoadingComments] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
+  const [showCommentInput, setShowCommentInput] = useState(false);
+  const commentInputRef = useRef(null);
+  const scrollViewRef = useRef(null);
 
   const fetchPostDetails = async () => {
     if (!postId) return;
@@ -154,6 +158,17 @@ const PostDetailScreen = ({ route, navigation }) => {
     }
   };
 
+  const handleCommentPress = () => {
+    setShowCommentInput((prev) => {
+      const next = true;
+      setTimeout(() => {
+        commentInputRef.current?.focus();
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 150);
+      return next;
+    });
+  };
+
   const handleCall = () => {
     if (!post.contact_number) return;
     Linking.openURL(`tel:${post.contact_number}`).catch(() => {
@@ -194,7 +209,17 @@ const PostDetailScreen = ({ route, navigation }) => {
           <Text style={styles.loadingText}>Loading post details...</Text>
         </View>
       ) : (
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <KeyboardAwareScrollView
+          ref={scrollViewRef}
+          enableOnAndroid={true}
+          enableAutomaticScroll={true}
+          extraScrollHeight={Platform.OS === 'ios' ? 40 : 130}
+          extraHeight={130}
+          enableResetScrollToCoords={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
           {/* 1. Author Header Card */}
           <View style={styles.authorCard}>
             <View style={styles.authorLeft}>
@@ -336,27 +361,28 @@ const PostDetailScreen = ({ route, navigation }) => {
           {Boolean(post.contact_number) && (
             <View style={styles.detailCard}>
               <Text style={styles.sectionLabel}>Contact Information</Text>
-              <View style={styles.contactRow}>
-                <View style={styles.contactPhone}>
-                  <Ionicons name="location-sharp" size={16} color="#0284c7" />
-                  <Text style={styles.phoneText}>{formatDistrictKerala(post.address)}</Text>
+              <View style={styles.contactPhoneRow}>
+                <View style={styles.contactPhoneIconBox}>
+                  <Ionicons name="call" size={15} color="#0284c7" />
                 </View>
-                <View style={styles.contactButtons}>
-                  <TouchableOpacity style={styles.callBtn} onPress={handleCall} activeOpacity={0.85}>
-                    <Ionicons name="call" size={13} color="#ffffff" />
-                    <Text style={styles.callBtnText}>Call</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.whatsappBtn} onPress={handleWhatsApp} activeOpacity={0.85}>
-                    <Ionicons name="logo-whatsapp" size={14} color="#ffffff" />
-                    <Text style={styles.whatsappBtnText}>WhatsApp</Text>
-                  </TouchableOpacity>
-                </View>
+                <Text style={styles.phoneText}>{post.contact_number}</Text>
+              </View>
+              <View style={styles.contactButtonsLevelRow}>
+                <TouchableOpacity style={styles.callBtn} onPress={handleCall} activeOpacity={0.85}>
+                  <Ionicons name="call" size={15} color="#ffffff" />
+                  <Text style={styles.callBtnText}>Call</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.whatsappBtn} onPress={handleWhatsApp} activeOpacity={0.85}>
+                  <Ionicons name="logo-whatsapp" size={16} color="#ffffff" />
+                  <Text style={styles.whatsappBtnText}>WhatsApp</Text>
+                </TouchableOpacity>
               </View>
             </View>
           )}
 
-          {/* 7. Engagement Actions (Like, Share) */}
+          {/* 7. Engagement Actions (Like, Comment on same level) */}
           <View style={styles.actionBarCard}>
+            {/* Like Button */}
             <TouchableOpacity
               style={[styles.actionBtn, styles.likeBtn, isLiked && styles.likeBtnActive]}
               onPress={handleLike}
@@ -374,7 +400,21 @@ const PostDetailScreen = ({ route, navigation }) => {
               </Text>
             </TouchableOpacity>
 
-            
+            {/* Comment Button — Same Level */}
+            <TouchableOpacity
+              style={[styles.actionBtn, styles.commentBtn, showCommentInput && styles.commentBtnActive]}
+              onPress={handleCommentPress}
+              activeOpacity={0.7}
+            >
+              <Ionicons
+                name={showCommentInput ? 'chatbubble' : 'chatbubble-outline'}
+                size={19}
+                color={showCommentInput ? '#0284c7' : '#64748B'}
+              />
+              <Text style={[styles.actionBtnText, showCommentInput && styles.commentTextActive]}>
+                {comments.length > 0 ? `${comments.length} Comments` : 'Comment'}
+              </Text>
+            </TouchableOpacity>
           </View>
 
           {/* 8. Live Comments Section */}
@@ -409,30 +449,43 @@ const PostDetailScreen = ({ route, navigation }) => {
               ))
             )}
 
-            {/* Add Comment Input */}
-            <View style={styles.inputWrap}>
-              <TextInput
-                style={styles.commentInput}
-                placeholder="Write a supportive comment..."
-                placeholderTextColor="#94A3B8"
-                value={commentText}
-                onChangeText={setCommentText}
-                multiline
-              />
+            {/* Add Comment Input — Displayed when clicking comment icon */}
+            {showCommentInput ? (
+              <View style={styles.inputWrap}>
+                <TextInput
+                  ref={commentInputRef}
+                  style={styles.commentInput}
+                  placeholder="Write a supportive comment..."
+                  placeholderTextColor="#94A3B8"
+                  value={commentText}
+                  onChangeText={setCommentText}
+                  multiline
+                  autoFocus={true}
+                />
+                <TouchableOpacity
+                  style={[styles.sendBtn, (!commentText.trim() || submittingComment) && styles.sendBtnDisabled]}
+                  onPress={handleAddComment}
+                  disabled={!commentText.trim() || submittingComment}
+                >
+                  {submittingComment ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <Ionicons name="send" size={16} color="#ffffff" />
+                  )}
+                </TouchableOpacity>
+              </View>
+            ) : (
               <TouchableOpacity
-                style={[styles.sendBtn, (!commentText.trim() || submittingComment) && styles.sendBtnDisabled]}
-                onPress={handleAddComment}
-                disabled={!commentText.trim() || submittingComment}
+                style={styles.addCommentTrigger}
+                onPress={handleCommentPress}
+                activeOpacity={0.7}
               >
-                {submittingComment ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Ionicons name="send" size={16} color="#ffffff" />
-                )}
+                <Ionicons name="create-outline" size={16} color="#0284c7" />
+                <Text style={styles.addCommentTriggerText}>Write a supportive comment...</Text>
               </TouchableOpacity>
-            </View>
+            )}
           </View>
-        </ScrollView>
+        </KeyboardAwareScrollView>
       )}
 
       {/* Full Screen Image Lightbox Modal */}
@@ -472,7 +525,7 @@ const styles = StyleSheet.create({
   shareHeaderBtn: { padding: 4 },
   centerLoading: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12 },
   loadingText: { fontSize: 14, color: '#64748B', fontWeight: '500' },
-  scrollContent: { padding: 16, gap: 14 },
+  scrollContent: { padding: 16, gap: 14, paddingBottom: 60 },
 
   authorCard: {
     backgroundColor: '#ffffff',
@@ -572,30 +625,49 @@ const styles = StyleSheet.create({
   infoRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
   infoValue: { fontSize: 14, fontWeight: '600', color: '#334155', flex: 1, lineHeight: 20 },
 
-  contactRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 },
-  contactPhone: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  contactPhoneRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 12,
+  },
+  contactPhoneIconBox: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: '#F0F9FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   phoneText: { fontSize: 15, fontWeight: '700', color: '#0F172A' },
-  contactButtons: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  contactButtonsLevelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    width: '100%',
+  },
   callBtn: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    justifyContent: 'center',
+    gap: 6,
     backgroundColor: '#0284c7',
-    paddingVertical: 7,
-    paddingHorizontal: 12,
-    borderRadius: 8,
+    paddingVertical: 10,
+    borderRadius: 10,
   },
-  callBtnText: { color: '#ffffff', fontSize: 12, fontWeight: '700' },
+  callBtnText: { color: '#ffffff', fontSize: 13, fontWeight: '700' },
   whatsappBtn: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    justifyContent: 'center',
+    gap: 6,
     backgroundColor: '#16A34A',
-    paddingVertical: 7,
-    paddingHorizontal: 12,
-    borderRadius: 8,
+    paddingVertical: 10,
+    borderRadius: 10,
   },
-  whatsappBtnText: { color: '#ffffff', fontSize: 12, fontWeight: '700' },
+  whatsappBtnText: { color: '#ffffff', fontSize: 13, fontWeight: '700' },
 
   actionBarCard: {
     backgroundColor: '#ffffff',
@@ -620,8 +692,29 @@ const styles = StyleSheet.create({
   },
   likeBtn: { backgroundColor: '#F8FAFC' },
   likeBtnActive: { backgroundColor: '#FEF2F2', borderColor: '#FECACA' },
+  commentBtn: { backgroundColor: '#F8FAFC' },
+  commentBtnActive: { backgroundColor: '#F0F9FF', borderColor: '#BAE6FD' },
   actionBtnText: { fontSize: 13, fontWeight: '700', color: '#64748B' },
   likedText: { color: '#EF4444' },
+  commentTextActive: { color: '#0284C7' },
+
+  addCommentTrigger: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginTop: 4,
+  },
+  addCommentTriggerText: {
+    fontSize: 13,
+    color: '#64748B',
+    fontWeight: '500',
+  },
 
   commentsSection: {
     backgroundColor: '#ffffff',

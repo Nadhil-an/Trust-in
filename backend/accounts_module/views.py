@@ -237,7 +237,15 @@ class IncomeListCreateView(generics.ListCreateAPIView):
             from django.db.models import Q
             q = Q(created_by=user)
             if user.full_name:
-                q |= Q(donor_name__iexact=user.full_name)
+                q |= Q(donor_name__iexact=user.full_name.strip())
+            phone = str(getattr(user, 'phone', '') or '').strip()
+            if phone:
+                q |= Q(donor_phone__iexact=phone)
+                if len(phone) >= 10:
+                    q |= Q(donor_phone__endswith=phone[-10:])
+            username = str(getattr(user, 'username', '') or '').strip()
+            if username and username.isdigit() and len(username) >= 10:
+                q |= Q(donor_phone__endswith=username[-10:])
             qs = qs.filter(q)
         return qs
 

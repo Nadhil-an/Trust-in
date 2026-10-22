@@ -49,10 +49,11 @@ def record_successful_donation(payment, razorpay_payment_id=None, razorpay_signa
     # Find the primary active bank account to credit
     bank_acc = BankAccount.objects.filter(is_active=True).first()
 
+    is_membership = 'membership' in (payment.purpose or '').lower()
     income = Income.objects.create(
         donor_name=payment.donor_name,
         donor_phone=payment.donor_phone,
-        source='DONATION',
+        source='MEMBERSHIP' if is_membership else 'DONATION',
         amount=payment.amount,
         payment_method='UPI',
         purpose=f"{payment.purpose} ({'Monthly Autopay' if payment.payment_type == PaymentType.MONTHLY_AUTOPAY else 'Online'})",

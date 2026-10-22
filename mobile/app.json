@@ -27,6 +27,7 @@
       },
       "package": "com.sreelakshmiappsteam.mobile",
       "versionCode": 54,
+      "softwareKeyboardLayoutMode": "resize",
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
