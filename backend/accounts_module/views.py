@@ -373,7 +373,7 @@ class IncomeListCreateView(generics.ListCreateAPIView):
         push_dashboard_refresh(['ACCOUNTANT', 'MANAGER', 'ADMIN', 'STAFF'])
 
 class IncomeDetailView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsAnyStaff, IsOwnerOrManager]
+    permission_classes = [IsFinanceOrDataEntry]
     serializer_class = IncomeSerializer
     queryset = Income.objects.all()
     parser_classes = [MultiPartParser, FormParser, JSONParser]
@@ -498,7 +498,7 @@ class ExpenseListCreateView(generics.ListCreateAPIView):
 
 
 class ExpenseDetailView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsAccountant]
+    permission_classes = [IsFinanceOrDataEntry]
     serializer_class = ExpenseSerializer
     queryset = Expense.objects.all()
     parser_classes = [MultiPartParser, FormParser, JSONParser]
@@ -526,10 +526,12 @@ class ExpenseDetailView(generics.RetrieveUpdateDestroyAPIView):
                 account_type=expense.account_type, debit=expense.amount,
                 payment_method=expense.payment_method
             )
+        push_dashboard_refresh(['ACCOUNTANT', 'MANAGER', 'ADMIN', 'STAFF'])
 
     def perform_destroy(self, instance):
         Transaction.objects.filter(reference_id=instance.expense_id, transaction_type='EXPENSE').delete()
         instance.delete()
+        push_dashboard_refresh(['ACCOUNTANT', 'MANAGER', 'ADMIN', 'STAFF'])
 
 
 # ── Cheques ───────────────────────────────────────────────────────
@@ -884,6 +886,13 @@ class DaySheetView(APIView):
                 'sc': 'BANK' if inc.account_type == 'BANK' else 'CASH',
                 'source': inc.source,
                 'id': str(inc.id),
+                'donor_name': inc.donor_name or '',
+                'phone': inc.donor_phone or '',
+                'purpose': inc.purpose or '',
+                'payment_method': inc.payment_method or 'CASH',
+                'account_type': inc.account_type or 'CASH',
+                'reference_number': inc.reference_number or '',
+                'date': inc.date.strftime('%Y-%m-%d') if inc.date else str(target_date),
             })
 
         # ── Expense entries for the day (CREDIT side)
@@ -903,8 +912,14 @@ class DaySheetView(APIView):
                 'particular': part.upper(),
                 'amount': float(exp.amount),
                 'sc': 'BANK' if exp.account_type == 'BANK' else 'CASH',
-                'category': exp.category,
+                'category': exp.category or '',
                 'id': str(exp.id),
+                'payee': exp.payee or '',
+                'purpose': exp.purpose or '',
+                'payment_method': exp.payment_method or 'CASH',
+                'account_type': exp.account_type or 'CASH',
+                'expense_id': exp.expense_id or '',
+                'date': exp.date.strftime('%Y-%m-%d') if exp.date else str(target_date),
             })
 
         # ── Totals

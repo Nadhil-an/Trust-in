@@ -588,6 +588,8 @@ class RoleFeaturePermissionView(APIView):
             perms.append('hr_members')
         if ('inward_entry' in perms or request.user.role in [Role.DATA_ENTRY, Role.MANAGER, Role.ADMIN]) and 'assets_in_stock' not in perms:
             perms.append('assets_in_stock')
+        if request.user.role in [Role.DATA_ENTRY, Role.MANAGER, Role.ADMIN] and 'public_issues' not in perms:
+            perms.append('public_issues')
         return Response(perms)
 
     def post(self, request):
@@ -621,3 +623,169 @@ class ExpoPushTokenView(APIView):
             )
             return Response({'status': 'ok'})
         return Response({'error': 'Token required'}, status=400)
+
+
+from rest_framework.decorators import action
+from rest_framework.parsers import JSONParser
+from core.models import MemberPost, MemberPostImage, MemberPostLike, MemberPostComment, MemberPostStatus
+from core.serializers import MemberPostSerializer, MemberPostCommentSerializer
+
+class MemberPostViewSet(ModelViewSet):
+    queryset = MemberPost.objects.filter(is_active=True).select_related('author', 'assessment_request').prefetch_related('images', 'likes', 'comments')
+    serializer_class = MemberPostSerializer
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def get_queryset(self):
+        qs = MemberPost.objects.filter(is_active=True).select_related('author', 'assessment_request').prefetch_related('images', 'likes', 'comments')
+        my_posts = self.request.query_params.get('my_posts')
+        if my_posts in ['true', '1', True]:
+            qs = qs.filter(author=self.request.user)
+
+        status_param = (self.request.query_params.get('status') or '').strip()
+        if status_param and status_param != 'ALL':
+            qs = qs.filter(status=status_param)
+        search = (self.request.query_params.get('search') or '').strip()
+        if search:
+            qs = qs.filter(
+                models.Q(description__icontains=search) |
+                models.Q(contact_number__icontains=search) |
+                models.Q(address__icontains=search) |
+                models.Q(author__full_name__icontains=search) |
+                models.Q(author__username__icontains=search)
+            )
+        return qs
+
+    def perform_create(self, serializer):
+        post = serializer.save(author=self.request.user, is_active=True)
+        images = self.request.FILES.getlist('images') or self.request.FILES.getlist('photos')
+        for idx, img in enumerate(images[:10]):
+            MemberPostImage.objects.create(post=post, image=img, order=idx)
+
+    def perform_update(self, serializer):
+        post = serializer.save()
+        images = self.request.FILES.getlist('images') or self.request.FILES.getlist('photos')
+        if images:
+            start_order = post.images.count()
+            for idx, img in enumerate(images[:10]):
+                MemberPostImage.objects.create(post=post, image=img, order=start_order + idx)
+
+    def perform_destroy(self, instance):
+        # Soft delete post so historical relationships remain safe
+        instance.is_active = False
+        instance.save(update_fields=['is_active', 'updated_at'])
+
+    def check_object_permissions(self, request, obj):
+        super().check_object_permissions(request, obj)
+        if self.action in ['update', 'partial_update', 'destroy']:
+            user_role = getattr(request.user, 'role', '')
+            if obj.author != request.user and user_role not in ['ADMIN', 'MANAGER']:
+                from rest_framework.exceptions import PermissionDenied
+                raise PermissionDenied("You can only edit or delete your own posts.")
+
+    @action(detail=True, methods=['post'], url_path='toggle-like')
+    def toggle_like(self, request, pk=None):
+        post = self.get_object()
+        like = MemberPostLike.objects.filter(post=post, user=request.user).first()
+        if like:
+            like.delete()
+            is_liked = False
+        else:
+            MemberPostLike.objects.get_or_create(post=post, user=request.user)
+            is_liked = True
+        
+        # Always query the database directly for accurate likes count
+        current_count = MemberPostLike.objects.filter(post=post).count()
+        return Response({
+            'is_liked': is_liked,
+            'likes_count': current_count,
+            'post_id': str(post.id),
+        })
+
+    @action(detail=True, methods=['get', 'post'], url_path='comments')
+    def comments(self, request, pk=None):
+        post = self.get_object()
+        if request.method == 'GET':
+            comments = post.comments.select_related('user').order_by('created_at')
+            serializer = MemberPostCommentSerializer(comments, many=True, context={'request': request})
+            return Response(serializer.data)
+        elif request.method == 'POST':
+            text = (request.data.get('text') or '').strip()
+            if not text:
+                return Response({'error': 'Comment text cannot be empty'}, status=400)
+            comment = MemberPostComment.objects.create(post=post, user=request.user, text=text)
+            serializer = MemberPostCommentSerializer(comment, context={'request': request})
+            return Response(serializer.data, status=201)
+
+    @action(detail=True, methods=['post'], url_path='forward-to-fao')
+    def forward_to_fao(self, request, pk=None):
+        post = self.get_object()
+        if post.status == MemberPostStatus.FORWARDED_TO_FAO and post.assessment_request:
+            return Response({
+                'error': f'Already forwarded to FAO as {post.assessment_request.request_number}',
+                'assessment_request_id': str(post.assessment_request.id),
+                'request_number': post.assessment_request.request_number
+            }, status=400)
+
+        from manager_module.models import AssessmentRequest, AssessmentPhoto, RequestStatus, RequestStatusHistory
+        category = request.data.get('category') or 'OTHER'
+        priority = request.data.get('priority') or 'NORMAL'
+
+        # Create AssessmentRequest with status WITH_FAO
+        req = AssessmentRequest.objects.create(
+            source='MEMBER',
+            requested_by=post.author,
+            beneficiary_name=post.author.full_name or post.author.username,
+            beneficiary_phone=post.contact_number or getattr(post.author, 'phone', ''),
+            beneficiary_address=post.address or '',
+            purpose=post.description[:250] if post.description else 'Public Issue Report',
+            description=post.description,
+            category=category,
+            priority=priority,
+            status=RequestStatus.WITH_FAO,
+            submitted_at=timezone.now(),
+        )
+
+        # Copy all post images to AssessmentPhoto
+        for post_img in post.images.all():
+            if post_img.image:
+                AssessmentPhoto.objects.create(
+                    assessment=req,
+                    image=post_img.image,
+                    caption='Uploaded by member'
+                )
+
+        # Record Status History
+        RequestStatusHistory.objects.create(
+            request=req,
+            from_status=RequestStatus.SUBMITTED,
+            to_status=RequestStatus.WITH_FAO,
+            changed_by=request.user,
+            remarks=f"Forwarded from Public Issue (Post ID: {post.id})"
+        )
+
+        # Update Post
+        post.status = MemberPostStatus.FORWARDED_TO_FAO
+        post.assessment_request = req
+        post.save(update_fields=['status', 'assessment_request', 'updated_at'])
+
+        # Audit Log
+        AuditLog.objects.create(
+            user=request.user,
+            action='FORWARD_TO_FAO',
+            module='DATA_ENTRY',
+            record_type='MemberPost',
+            record_id=str(post.id),
+            reference_number=req.request_number,
+            new_status=post.status,
+            description=f"Public Issue {post.id} forwarded to FAO by {request.user.full_name} -> {req.request_number}",
+            ip_address=getattr(request, 'audit_ip', None)
+        )
+
+        return Response({
+            'message': f'Successfully forwarded to FAO as {req.request_number}',
+            'assessment_request_id': str(req.id),
+            'request_number': req.request_number,
+            'status': post.status
+        })
+

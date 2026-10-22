@@ -6,6 +6,7 @@ from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
 router.register(r'events', views.EventViewSet, basename='events')
+router.register(r'member-posts', views.MemberPostViewSet, basename='member-posts')
 
 urlpatterns = [
     path('users/', views.UserListCreateView.as_view(), name='user_list'),

@@ -10,11 +10,14 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { Colors } from '../../constants/Colors';
 import { useAuthStore } from '../../store/authStore';
-import { eventsApi } from '../../api';
+import { eventsApi, memberPostsApi } from '../../api';
 import SideDrawer from '../../components/SideDrawer';
 import { EventBanner } from '../../components/shared';
+import PostCard from '../../components/feed/PostCard';
+import CommentsModal from '../../components/feed/CommentsModal';
 
 const MemberHomeScreen = ({ navigation }) => {
   const { user } = useAuthStore();
@@ -22,17 +25,11 @@ const MemberHomeScreen = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [posts, setPosts] = useState([]);
+  const [postsLoading, setPostsLoading] = useState(false);
+  const [commentsModalVisible, setCommentsModalVisible] = useState(false);
+  const [selectedPostId, setSelectedPostId] = useState(null);
 
-  // Time-based greeting helper
-  const getGreetingData = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return { text: 'Good Morning,', icon: 'sunny-outline' };
-    if (hour < 17) return { text: 'Good Afternoon,', icon: 'partly-sunny-outline' };
-    if (hour < 21) return { text: 'Good Evening,', icon: 'cloudy-night-outline' };
-    return { text: 'Good Night,', icon: 'moon-outline' };
-  };
-
-  const greeting = getGreetingData();
   const memberName = user?.full_name || '';
   const memberId = user?.username || '';
 
@@ -46,13 +43,31 @@ const MemberHomeScreen = ({ navigation }) => {
     } catch (err) {}
   };
 
+  const fetchPosts = async () => {
+    try {
+      setPostsLoading(true);
+      const res = await memberPostsApi.list();
+      setPosts(res.data.results || res.data || []);
+    } catch (_) {}
+    finally {
+      setPostsLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchUpcomingEvents();
+    fetchPosts();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchPosts();
+    }, [])
+  );
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await fetchUpcomingEvents();
+    await Promise.all([fetchUpcomingEvents(), fetchPosts()]);
     setTimeout(() => setRefreshing(false), 800);
   }, []);
 
@@ -87,142 +102,6 @@ const MemberHomeScreen = ({ navigation }) => {
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-        {/* Dynamic Greeting Card */}
-        <View style={styles.greetingCard}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.greetingTitle}>{greeting.text}</Text>
-            <Text style={styles.memberName}>{memberName}</Text>
-            <Text style={styles.greetingMessage}>
-              Wishing you a beautiful day filled with kindness & positivity! 💙
-            </Text>
-          </View>
-          <View style={styles.weatherIconCircle}>
-            <Ionicons name={greeting.icon} size={32} color="#0284c7" />
-          </View>
-        </View>
-
-        {/* Prominent Digital Membership Card */}
-        <TouchableOpacity
-          activeOpacity={0.9}
-          onPress={() => navigation.navigate('MembershipCard')}
-        >
-          <View style={[styles.membershipCard, { backgroundColor: '#0284c7' }]}>
-            <View style={styles.cardHeader}>
-              <View style={styles.logoBadge}>
-                <Ionicons name="flower-outline" size={20} color="#0284c7" />
-                <View>
-                  <Text style={styles.trustLogoTitle}>SREELAKSHMI</Text>
-                  <Text style={styles.trustLogoSub}>CHARITABLE TRUST</Text>
-                </View>
-              </View>
-
-              <View style={styles.memberIdContainer}>
-                <Text style={styles.memberIdLabel}>MEMBER ID</Text>
-                <Text style={styles.memberIdValue}>{memberId}</Text>
-              </View>
-            </View>
-
-            <View style={styles.cardCenter}>
-              <Text style={styles.cardTitle}>MEMBERSHIP CARD</Text>
-            </View>
-
-            <View style={styles.cardFooter}>
-              <View>
-                <Text style={styles.footerLabel}>Member Since</Text>
-                <Text style={styles.footerValue}>{user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', {month: 'short', year: 'numeric'}) : 'N/A'}</Text>
-              </View>
-
-              <View style={{ alignItems: 'flex-end' }}>
-                <Text style={styles.footerLabel}>Valid Upto</Text>
-                <Text style={styles.footerValue}>{user?.valid_upto ? new Date(user.valid_upto).toLocaleDateString('en-US', {month: 'short', year: 'numeric'}) : 'N/A'}</Text>
-              </View>
-            </View>
-          </View>
-        </TouchableOpacity>
-
-        {/* Donation & Monthly Autopay Hero Card */}
-        <View style={styles.donateHeroCard}>
-          <View style={styles.donateHeroLeft}>
-            <View style={styles.donateHeroBadge}>
-              <Ionicons name="sparkles" size={12} color="#0284c7" />
-              <Text style={styles.donateHeroBadgeText}>PAYMENT GATEWAY & AUTOPAY</Text>
-            </View>
-            <Text style={styles.donateHeroTitle}>Support Our Mission</Text>
-            <Text style={styles.donateHeroDesc}>
-              Make an instant one-time donation or setup monthly recurring autopay.
-            </Text>
-            <View style={styles.donateHeroBtns}>
-              <TouchableOpacity
-                style={styles.donateBtnPrimary}
-                onPress={() => navigation.navigate('Donate', { mode: 'ONETIME' })}
-                activeOpacity={0.85}
-              >
-                <Ionicons name="heart" size={15} color={Colors.white} />
-                <Text style={styles.donateBtnPrimaryText}>Donate Now</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.donateBtnSecondary}
-                onPress={() => navigation.navigate('Donate', { mode: 'MONTHLY' })}
-                activeOpacity={0.85}
-              >
-                <Ionicons name="repeat" size={15} color="#0284c7" />
-                <Text style={styles.donateBtnSecondaryText}>Monthly Autopay</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-
-        {/* Quick-Action Grid (4 equal rounded cards) */}
-        <View style={styles.actionGrid}>
-          {/* 1. My Donation */}
-          <TouchableOpacity
-            style={styles.actionCard}
-            onPress={() => navigation.navigate('DonationHistory')}
-          >
-            <View style={styles.actionIconCircle}>
-              <Ionicons name="heart" size={24} color="#0284c7" />
-            </View>
-            <Text style={styles.actionTitle}>My Donation</Text>
-            <Text style={styles.actionSub}>View your donation history</Text>
-          </TouchableOpacity>
-
-          {/* 2. Report a Problem */}
-          <TouchableOpacity
-            style={styles.actionCard}
-            onPress={() => navigation.navigate('ReportProblem')}
-          >
-            <View style={styles.actionIconCircle}>
-              <Ionicons name="warning" size={24} color="#0284c7" />
-            </View>
-            <Text style={styles.actionTitle}>Report a Problem</Text>
-            <Text style={styles.actionSub}>Help us improve by reporting issues</Text>
-          </TouchableOpacity>
-
-          {/* 3. Events */}
-          <TouchableOpacity
-            style={styles.actionCard}
-            onPress={() => navigation.navigate('Events')}
-          >
-            <View style={styles.actionIconCircle}>
-              <Ionicons name="calendar" size={24} color="#0284c7" />
-            </View>
-            <Text style={styles.actionTitle}>Events</Text>
-            <Text style={styles.actionSub}>View upcoming events & activities</Text>
-          </TouchableOpacity>
-
-          {/* 4. My Profile */}
-          <TouchableOpacity
-            style={styles.actionCard}
-            onPress={() => navigation.navigate('Profile')}
-          >
-            <View style={styles.actionIconCircle}>
-              <Ionicons name="person" size={24} color="#0284c7" />
-            </View>
-            <Text style={styles.actionTitle}>My Profile</Text>
-            <Text style={styles.actionSub}>View and manage your profile</Text>
-          </TouchableOpacity>
-        </View>
 
         {/* Upcoming Events Section */}
         <View style={styles.sectionHeader}>
@@ -237,7 +116,92 @@ const MemberHomeScreen = ({ navigation }) => {
           navigation={navigation}
           autoPlayInterval={4000}
         />
+
+        {/* Community Problem & Help Feed (Instagram-Style) */}
+        <View style={styles.feedHeaderRow}>
+          <View>
+            <Text style={styles.sectionTitle}>Community Help & Issues</Text>
+            <Text style={styles.feedSubtitle}>Problems & assistance requested by members</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.createPostSmallBtn}
+            onPress={() => navigation.navigate('CreatePost')}
+          >
+            <Ionicons name="add" size={16} color="#fff" />
+            <Text style={styles.createPostSmallBtnText}>Post Issue</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Create Post Prompt Card */}
+        <TouchableOpacity
+          style={styles.createPromptCard}
+          activeOpacity={0.85}
+          onPress={() => navigation.navigate('CreatePost')}
+        >
+          {user?.avatar || user?.photo ? (
+            <Image source={{ uri: user.avatar || user.photo }} style={styles.promptAvatar} />
+          ) : (
+            <View style={styles.promptAvatarPlaceholder}>
+              <Text style={styles.promptAvatarText}>{(user?.full_name || user?.username || 'U')[0].toUpperCase()}</Text>
+            </View>
+          )}
+          <View style={styles.promptFakeInput}>
+            <Text style={styles.promptPlaceholderText}>Share a problem or ask for help...</Text>
+          </View>
+          <View style={styles.promptPhotoBtn}>
+            <Ionicons name="images-outline" size={20} color="#0284c7" />
+          </View>
+        </TouchableOpacity>
+
+        {/* Posts List */}
+        {postsLoading && posts.length === 0 ? (
+          <View style={styles.loadingFeedCard}>
+            <Text style={styles.loadingFeedText}>Loading community feed...</Text>
+          </View>
+        ) : posts.length === 0 ? (
+          <View style={styles.emptyFeedCard}>
+            <Ionicons name="chatbubbles-outline" size={40} color="#CBD5E1" />
+            <Text style={styles.emptyFeedTitle}>No Community Posts Yet</Text>
+            <Text style={styles.emptyFeedSub}>
+              Be the first to share an issue, illness, or need assistance.
+            </Text>
+            <TouchableOpacity
+              style={styles.emptyCreateBtn}
+              onPress={() => navigation.navigate('CreatePost')}
+            >
+              <Text style={styles.emptyCreateBtnText}>+ Share Problem</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          posts.map((post) => (
+            <PostCard
+              key={post.id}
+              post={post}
+              currentUserId={user?.id}
+              onOpenComments={(id) => {
+                setSelectedPostId(id);
+                setCommentsModalVisible(true);
+              }}
+              onPostDeleted={(deletedId) => {
+                setPosts((prev) => prev.filter((p) => p.id !== deletedId));
+              }}
+            />
+          ))
+        )}
       </ScrollView>
+
+      {/* Comments Bottom Sheet Modal */}
+      <CommentsModal
+        visible={commentsModalVisible}
+        postId={selectedPostId}
+        onClose={() => {
+          setCommentsModalVisible(false);
+          setSelectedPostId(null);
+        }}
+        onCommentAdded={() => {
+          fetchPosts();
+        }}
+      />
 
       {/* Side Drawer Component */}
       <SideDrawer
@@ -481,6 +445,119 @@ const styles = StyleSheet.create({
   eventMetaRow: { flexDirection: 'row', gap: 10, alignItems: 'center' },
   eventMetaItem: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   eventMetaText: { fontSize: 10, color: Colors.gray500, fontWeight: '500' },
+
+  feedHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 4,
+  },
+  feedSubtitle: {
+    fontSize: 11,
+    color: Colors.gray500,
+    marginTop: 1,
+  },
+  createPostSmallBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#0284c7',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 14,
+  },
+  createPostSmallBtnText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  createPromptCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.white,
+    borderRadius: 14,
+    padding: 10,
+    gap: 10,
+    borderWidth: 1,
+    borderColor: Colors.gray100,
+    marginBottom: 10,
+  },
+  promptAvatar: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+  },
+  promptAvatarPlaceholder: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: '#E0F2FE',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  promptAvatarText: {
+    color: '#0284c7',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  promptFakeInput: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  promptPlaceholderText: {
+    fontSize: 12.5,
+    color: '#94A3B8',
+  },
+  promptPhotoBtn: {
+    padding: 6,
+  },
+  loadingFeedCard: {
+    paddingVertical: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingFeedText: {
+    fontSize: 12,
+    color: Colors.gray500,
+  },
+  emptyFeedCard: {
+    backgroundColor: Colors.white,
+    borderRadius: 14,
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: Colors.gray100,
+    gap: 6,
+    marginBottom: 20,
+  },
+  emptyFeedTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+    marginTop: 4,
+  },
+  emptyFeedSub: {
+    fontSize: 12,
+    color: Colors.gray500,
+    textAlign: 'center',
+    marginBottom: 6,
+  },
+  emptyCreateBtn: {
+    backgroundColor: '#E0F2FE',
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 14,
+  },
+  emptyCreateBtnText: {
+    color: '#0284c7',
+    fontSize: 12,
+    fontWeight: '700',
+  },
 });
 
 export default MemberHomeScreen;

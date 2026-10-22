@@ -70,13 +70,13 @@ export default function DaySheet() {
   const scheduleAutoSave = useCallback(() => {
     setAutoSaveStatus('saving')
     setIsDirty(true)
-    // Cancel any pending save (in case a previous save is still in-flight, queue one more)
+    // Debounce auto-save slightly to batch typing strokes, or fires on blur
     if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current)
     autoSaveTimerRef.current = setTimeout(() => {
       if (handleSaveRef.current) {
         handleSaveRef.current(true, null, null, true)
       }
-    }, 0)
+    }, 400)
   }, [])
 
   // Tab close interceptor
@@ -152,6 +152,217 @@ export default function DaySheet() {
       load(false);
     }
     catch (err) { toast.error(err.response?.data?.detail || "Save failed") } finally { setIncomeSaving(false) }
+  }
+
+  // ── Edit & Delete Row State & Handlers ───────────────────────
+  const [editModal, setEditModal] = useState({
+    isOpen: false,
+    side: null, // 'CREDIT' | 'DEBIT'
+    item: null,
+    index: null,
+    isSpecialOB: false,
+    form: {}
+  })
+  const [editSaving, setEditSaving] = useState(false)
+
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    side: null,
+    item: null,
+    index: null,
+    deleting: false
+  })
+
+  const handleOpenEdit = (item, side, index) => {
+    if (side === 'DEBIT') {
+      setEditModal({
+        isOpen: true,
+        side: 'DEBIT',
+        item,
+        index,
+        isSpecialOB: false,
+        form: {
+          id: item.id || '',
+          payee: item.payee || item.particular || '',
+          amount: item.amount != null ? item.amount : '',
+          category: item.category || 'OFFICE EXPENSE',
+          payment_method: item.payment_method || (item.sc === 'BANK' ? 'BANK' : 'CASH'),
+          account_type: item.account_type || item.sc || 'CASH',
+          purpose: item.purpose || '',
+          expense_id: item.expense_id || '',
+          date: item.date || date,
+        }
+      })
+    } else {
+      const isOB = index === 0 || index === 1
+      setEditModal({
+        isOpen: true,
+        side: 'CREDIT',
+        item,
+        index,
+        isSpecialOB: isOB,
+        form: {
+          id: item.id || '',
+          source: item.source || item.particular || 'DONATION',
+          donor_name: item.donor_name || (isOB ? item.particular : item.particular || ''),
+          amount: item.amount != null ? item.amount : '',
+          payment_method: item.payment_method || (item.sc === 'BANK' ? 'BANK' : 'CASH'),
+          account_type: item.account_type || item.sc || 'CASH',
+          purpose: item.purpose || '',
+          phone: item.phone || '',
+          reference_number: item.reference_number || '',
+          address: item.address || '',
+          date: item.date || date,
+        }
+      })
+    }
+  }
+
+  const handleSaveEdit = async (e) => {
+    e?.preventDefault()
+    const { side, index, isSpecialOB, form } = editModal
+    if (!form.amount || isNaN(form.amount) || Number(form.amount) < 0) {
+      return toast.error("Please enter a valid amount")
+    }
+
+    setEditSaving(true)
+    try {
+      if (side === 'DEBIT') {
+        if (form.id) {
+          await accountsApi.expenses.update(form.id, {
+            payee: form.payee,
+            amount: form.amount,
+            category: form.category,
+            payment_method: form.payment_method,
+            account_type: form.payment_method === 'CASH' ? 'CASH' : 'BANK',
+            purpose: form.purpose,
+            expense_id: form.expense_id,
+            date: form.date || date
+          })
+          toast.success("Expense updated successfully.")
+        } else {
+          const nextCredits = [...credits]
+          nextCredits[index] = {
+            ...nextCredits[index],
+            particular: form.payee,
+            amount: form.amount,
+            sc: form.payment_method === 'CASH' ? 'CASH' : 'BANK'
+          }
+          setCredits(nextCredits)
+          await handleSave(true, debits, nextCredits, true)
+          toast.success("Entry updated.")
+        }
+      } else {
+        // CREDIT side
+        if (isSpecialOB) {
+          const nextDebits = [...debits]
+          nextDebits[index] = {
+            ...nextDebits[index],
+            amount: form.amount
+          }
+          setDebits(nextDebits)
+          await handleSave(true, nextDebits, credits, true)
+          toast.success("Opening balance updated.")
+        } else if (form.id) {
+          await accountsApi.income.update(form.id, {
+            source: form.source || 'DONATION',
+            donor_name: form.donor_name,
+            amount: form.amount,
+            payment_method: form.payment_method,
+            account_type: form.payment_method === 'CASH' ? 'CASH' : 'BANK',
+            purpose: form.purpose,
+            phone: form.phone,
+            reference_number: form.reference_number,
+            address: form.address,
+            date: form.date || date
+          })
+          toast.success("Income record updated successfully.")
+        } else {
+          const nextDebits = [...debits]
+          nextDebits[index] = {
+            ...nextDebits[index],
+            particular: form.donor_name || form.source,
+            amount: form.amount,
+            sc: form.payment_method === 'CASH' ? 'CASH' : 'BANK'
+          }
+          setDebits(nextDebits)
+          await handleSave(true, nextDebits, credits, true)
+          toast.success("Entry updated.")
+        }
+      }
+
+      setEditModal(prev => ({ ...prev, isOpen: false }))
+      load(true)
+    } catch (err) {
+      toast.error(err.response?.data?.detail || err.response?.data?.error || "Failed to update record")
+    } finally {
+      setEditSaving(false)
+    }
+  }
+
+  const handlePromptDelete = (item, side, index) => {
+    setDeleteModal({
+      isOpen: true,
+      side,
+      item,
+      index,
+      deleting: false
+    })
+  }
+
+  const handleConfirmDelete = async () => {
+    const { side, item, index } = deleteModal
+    const isOB = side === 'CREDIT' && (index === 0 || index === 1)
+
+    setDeleteModal(prev => ({ ...prev, deleting: true }))
+    try {
+      if (side === 'DEBIT') {
+        if (item.id) {
+          await accountsApi.expenses.delete(item.id)
+          toast.success("Expense deleted successfully.")
+        } else {
+          const nextCredits = [...credits]
+          if (item.isExtra) {
+            nextCredits.splice(index, 1)
+            saveExtraCredits(date, nextCredits.filter(r => r.isExtra))
+          } else {
+            nextCredits[index] = { particular: '', amount: '', sc: 'CASH' }
+          }
+          setCredits(nextCredits)
+          await handleSave(true, debits, nextCredits, true)
+          toast.success("Entry removed.")
+        }
+      } else {
+        // CREDIT side
+        if (isOB) {
+          const nextDebits = [...debits]
+          nextDebits[index] = { ...nextDebits[index], amount: '' }
+          setDebits(nextDebits)
+          await handleSave(true, nextDebits, credits, true)
+          toast.success("Opening balance cleared.")
+        } else if (item.id) {
+          await accountsApi.income.delete(item.id)
+          toast.success("Income record deleted successfully.")
+        } else {
+          const nextDebits = [...debits]
+          if (item.isExtra) {
+            nextDebits.splice(index, 1)
+            saveExtraDebits(date, nextDebits.filter(r => r.isExtra))
+          } else {
+            nextDebits[index] = { particular: '', amount: '', sc: 'CASH' }
+          }
+          setDebits(nextDebits)
+          await handleSave(true, nextDebits, credits, true)
+          toast.success("Entry removed.")
+        }
+      }
+
+      setDeleteModal({ isOpen: false, side: null, item: null, index: null, deleting: false })
+      load(true)
+    } catch (err) {
+      toast.error(err.response?.data?.detail || err.response?.data?.error || "Failed to delete entry")
+      setDeleteModal(prev => ({ ...prev, deleting: false }))
+    }
   }
 
   const load = useCallback(async (isBackground = false) => {
@@ -530,19 +741,21 @@ export default function DaySheet() {
 
             {/* Sub-headers */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderBottom: '1px solid var(--gray-200)', background: 'var(--gray-50)' }}>
-              {/* Debit headers */}
-              <div style={{ display: 'grid', gridTemplateColumns: '50px 1fr 130px 90px', borderRight: '1px solid var(--gray-200)' }}>
+              {/* Credit headers (left) */}
+              <div style={{ display: 'grid', gridTemplateColumns: '36px 1fr 110px 75px 64px', borderRight: '1px solid var(--gray-200)' }}>
                 <div style={SH.th}>SL</div>
                 <div style={SH.thL}>Particular</div>
                 <div style={SH.thR}>Amount (₹)</div>
                 <div style={SH.th}>SC</div>
+                <div style={SH.th}>Actions</div>
               </div>
-              {/* Credit headers */}
-              <div style={{ display: 'grid', gridTemplateColumns: '50px 1fr 130px 90px' }}>
+              {/* Debit headers (right) */}
+              <div style={{ display: 'grid', gridTemplateColumns: '36px 1fr 110px 75px 64px' }}>
                 <div style={SH.th}>SL</div>
                 <div style={SH.thL}>Particular</div>
                 <div style={SH.thR}>Amount (₹)</div>
                 <div style={SH.th}>SC</div>
+                <div style={SH.th}>Actions</div>
               </div>
             </div>
 
@@ -553,16 +766,16 @@ export default function DaySheet() {
               <div style={{ borderRight: '1px solid var(--gray-200)' }}>
                 {debits.map((d, i) => {
                   const bg = i % 2 === 0 ? 'var(--white)' : 'var(--gray-50)'
-                  const isFixed = !d.isExtra
+                  const hasContent = Boolean(d.id || (d.particular && d.particular.trim()) || (d.amount !== '' && d.amount != null && Number(d.amount) !== 0))
                   return (
-                    <div key={`d-${i}`} style={{ display: 'grid', gridTemplateColumns: '36px 1fr 130px 90px', background: bg, minHeight: 42 }}>
-                      {/* Delete / index cell */}
-                      <div style={{ ...SH.td, color: 'var(--gray-400)', padding: '4px 2px' }}>
-                        {/* Remove button disabled */}
+                    <div key={`d-${i}`} style={{ display: 'grid', gridTemplateColumns: '36px 1fr 110px 75px 64px', background: bg, minHeight: 42 }}>
+                      {/* SL cell */}
+                      <div style={{ ...SH.td, color: 'var(--gray-400)', padding: '4px 2px', fontSize: 11, fontWeight: 600 }}>
+                        {i + 1}
                       </div>
                       {/* Content */}
                       {i === 4 ? (
-                        <div style={{ gridColumn: '2 / 5', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', paddingLeft: '8px', fontWeight: 800, fontSize: 16, color: 'var(--success)', letterSpacing: '2px', borderBottom: '1px solid var(--gray-100)', background: 'var(--success-light)' }}>
+                        <div style={{ gridColumn: '2 / 6', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', paddingLeft: '8px', fontWeight: 800, fontSize: 16, color: 'var(--success)', letterSpacing: '2px', borderBottom: '1px solid var(--gray-100)', background: 'var(--success-light)' }}>
                           DONATION
                         </div>
                       ) : i === 7 ? (
@@ -575,6 +788,7 @@ export default function DaySheet() {
                               {(Number(debits[5]?.amount || 0) + Number(debits[6]?.amount || 0)).toLocaleString('en-IN')}
                             </span>
                           </div>
+                          <div style={{ ...SH.td, background: 'var(--primary-50)' }}></div>
                           <div style={{ ...SH.td, background: 'var(--primary-50)' }}></div>
                         </>
                       ) : (
@@ -598,35 +812,68 @@ export default function DaySheet() {
                             />
                           </div>
                           <div style={{ ...SH.td, padding: '4px' }}>
-                            <div style={{ position: 'relative', width: '100%', opacity: 0.7 }}>
+                            <div style={{ position: 'relative', width: '100%', opacity: 0.85 }}>
                               <select
                                 value={d.sc || 'CASH'}
                                 disabled={true}
                                 onChange={() => {}}
-                                style={{ background: d.sc === 'BANK' ? 'var(--primary-100)' : 'var(--success-light)', color: d.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)', border: 'none', borderRadius: '12px', padding: '4px 16px 4px 8px', fontSize: 10, fontWeight: 700, outline: 'none', cursor: 'default', appearance: 'none', width: '100%' }}
+                                style={{ background: d.sc === 'BANK' ? 'var(--primary-100)' : 'var(--success-light)', color: d.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)', border: 'none', borderRadius: '12px', padding: '4px 8px', fontSize: 10, fontWeight: 700, outline: 'none', cursor: 'default', appearance: 'none', width: '100%', textAlign: 'center' }}
                               >
                                 <option value="CASH">CASH</option>
                                 <option value="BANK">BANK</option>
                               </select>
                             </div>
                           </div>
+                          <div style={{ ...SH.td, padding: '2px', gap: '2px' }}>
+                            {hasContent && (
+                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenEdit(d, 'CREDIT', i)}
+                                  title="Edit entry"
+                                  style={{
+                                    border: 'none', background: 'transparent', cursor: 'pointer',
+                                    padding: '3px 5px', borderRadius: '4px', fontSize: '13px', lineHeight: 1,
+                                    color: 'var(--primary-600)', transition: 'all 0.15s ease'
+                                  }}
+                                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary-50)'; e.currentTarget.style.transform = 'scale(1.15)'; }}
+                                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.transform = 'scale(1)'; }}
+                                >
+                                  ✏️
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handlePromptDelete(d, 'CREDIT', i)}
+                                  title="Delete entry"
+                                  style={{
+                                    border: 'none', background: 'transparent', cursor: 'pointer',
+                                    padding: '3px 5px', borderRadius: '4px', fontSize: '13px', lineHeight: 1,
+                                    color: 'var(--danger)', transition: 'all 0.15s ease'
+                                  }}
+                                  onMouseEnter={e => { e.currentTarget.style.background = '#fee2e2'; e.currentTarget.style.transform = 'scale(1.15)'; }}
+                                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.transform = 'scale(1)'; }}
+                                >
+                                  🗑️
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </>
                       )}
                     </div>
                   )
                 })}
-                {/* Add Credit Row button removed */}
               </div>
 
               {/* ── DEBIT column (right) ── */}
               <div>
                 {credits.map((c, i) => {
                   const bg = i % 2 === 0 ? 'var(--white)' : 'var(--gray-50)'
-                  const isFixed = !c.isExtra
+                  const hasContent = Boolean(c.id || (c.particular && c.particular.trim()) || (c.amount !== '' && c.amount != null && Number(c.amount) !== 0))
                   return (
-                    <div key={`c-${i}`} style={{ display: 'grid', gridTemplateColumns: '36px 1fr 130px 90px', background: bg, minHeight: 42 }}>
-                      <div style={{ ...SH.td, color: 'var(--gray-400)', padding: '4px 2px' }}>
-                        {/* No remove button */}
+                    <div key={`c-${i}`} style={{ display: 'grid', gridTemplateColumns: '36px 1fr 110px 75px 64px', background: bg, minHeight: 42 }}>
+                      <div style={{ ...SH.td, color: 'var(--gray-400)', padding: '4px 2px', fontSize: 11, fontWeight: 600 }}>
+                        {i + 1}
                       </div>
                       <div style={{ ...SH.tdL }}>
                         <TableInput
@@ -646,36 +893,71 @@ export default function DaySheet() {
                         />
                       </div>
                       <div style={{ ...SH.td, padding: '4px' }}>
-                        <div style={{ position: 'relative', width: '100%', opacity: 0.7 }}>
+                        <div style={{ position: 'relative', width: '100%', opacity: 0.85 }}>
                           <select
                             value={c.sc || 'CASH'}
                             disabled={true}
                             onChange={() => {}}
-                            style={{ background: c.sc === 'BANK' ? 'var(--primary-100)' : 'var(--success-light)', color: c.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)', border: 'none', borderRadius: '12px', padding: '4px 16px 4px 8px', fontSize: 10, fontWeight: 700, outline: 'none', cursor: 'default', appearance: 'none', width: '100%' }}
+                            style={{ background: c.sc === 'BANK' ? 'var(--primary-100)' : 'var(--success-light)', color: c.sc === 'BANK' ? 'var(--primary-700)' : 'var(--success)', border: 'none', borderRadius: '12px', padding: '4px 8px', fontSize: 10, fontWeight: 700, outline: 'none', cursor: 'default', appearance: 'none', width: '100%', textAlign: 'center' }}
                           >
                             <option value="CASH">CASH</option>
                             <option value="BANK">BANK</option>
                           </select>
                         </div>
                       </div>
+                      <div style={{ ...SH.td, padding: '2px', gap: '2px' }}>
+                        {hasContent && (
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEdit(c, 'DEBIT', i)}
+                              title="Edit expense"
+                              style={{
+                                border: 'none', background: 'transparent', cursor: 'pointer',
+                                padding: '3px 5px', borderRadius: '4px', fontSize: '13px', lineHeight: 1,
+                                color: 'var(--primary-600)', transition: 'all 0.15s ease'
+                              }}
+                              onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary-50)'; e.currentTarget.style.transform = 'scale(1.15)'; }}
+                              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.transform = 'scale(1)'; }}
+                            >
+                              ✏️
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handlePromptDelete(c, 'DEBIT', i)}
+                              title="Delete expense"
+                              style={{
+                                border: 'none', background: 'transparent', cursor: 'pointer',
+                                padding: '3px 5px', borderRadius: '4px', fontSize: '13px', lineHeight: 1,
+                                color: 'var(--danger)', transition: 'all 0.15s ease'
+                              }}
+                              onMouseEnter={e => { e.currentTarget.style.background = '#fee2e2'; e.currentTarget.style.transform = 'scale(1.15)'; }}
+                              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.transform = 'scale(1)'; }}
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )
                 })}
-                {/* Add Debit Row button removed */}
               </div>
 
             </div>
 
             {/* Total row */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', background: 'var(--gray-100)', borderTop: '1px solid var(--gray-200)' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '50px 1fr 130px 90px', borderRight: '1px solid var(--gray-200)' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '36px 1fr 110px 75px 64px', borderRight: '1px solid var(--gray-200)' }}>
                 <div style={{ gridColumn: '1/3', padding: '14px 16px', color: 'var(--gray-700)', fontWeight: 700, fontSize: 13, textAlign: 'right', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>Total Credit</div>
                 <div style={{ padding: '14px 12px', color: 'var(--gray-900)', fontWeight: 800, fontSize: 15, textAlign: 'right', fontVariantNumeric: 'tabular-nums', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>{totalCreditSum.toLocaleString('en-IN')}</div>
                 <div />
+                <div />
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '50px 1fr 130px 90px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '36px 1fr 110px 75px 64px' }}>
                 <div style={{ gridColumn: '1/3', padding: '14px 16px', color: 'var(--gray-700)', fontWeight: 700, fontSize: 13, textAlign: 'right', textTransform: 'uppercase', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>Total Debit</div>
                 <div style={{ padding: '14px 12px', color: 'var(--gray-900)', fontWeight: 800, fontSize: 15, textAlign: 'right', fontVariantNumeric: 'tabular-nums', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>{totalDebitSum.toLocaleString('en-IN')}</div>
+                <div />
                 <div />
               </div>
             </div>
@@ -830,6 +1112,281 @@ export default function DaySheet() {
             <div className="form-group"><label className="form-label">Purpose</label>
               <textarea className="form-control" name="purpose" rows={2} value={incomeForm.purpose} onChange={e=>setIncomeForm(f=>({...f,purpose:e.target.value}))} /></div>
           </form>
+        </Modal>
+      )}
+
+      {/* ── Edit Entry Modal ── */}
+      {editModal.isOpen && (
+        <Modal
+          isOpen={true}
+          onClose={() => setEditModal(prev => ({ ...prev, isOpen: false }))}
+          title={
+            editModal.isSpecialOB
+              ? `Edit ${editModal.item?.particular || 'Opening Balance'}`
+              : editModal.side === 'DEBIT'
+              ? 'Edit Expense Entry'
+              : 'Edit Income Entry'
+          }
+          size="modal-lg"
+          footer={
+            <>
+              <button
+                className="btn btn-secondary"
+                disabled={editSaving}
+                onClick={() => setEditModal(prev => ({ ...prev, isOpen: false }))}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-primary"
+                form="ds-edit-entry-form"
+                type="submit"
+                disabled={editSaving}
+              >
+                {editSaving ? 'Saving...' : 'Save Changes'}
+              </button>
+            </>
+          }
+        >
+          <form id="ds-edit-entry-form" onSubmit={handleSaveEdit}>
+            {editModal.isSpecialOB ? (
+              <div className="form-grid-2">
+                <div className="form-group">
+                  <label className="form-label">Account</label>
+                  <input className="form-control" type="text" value={editModal.item?.particular || ''} disabled />
+                </div>
+                <div className="form-group">
+                  <label className="form-label required">Amount (₹)</label>
+                  <input
+                    className="form-control"
+                    type="number"
+                    step="0.01"
+                    required
+                    value={editModal.form.amount}
+                    onChange={e => setEditModal(f => ({ ...f, form: { ...f.form, amount: e.target.value } }))}
+                  />
+                </div>
+              </div>
+            ) : editModal.side === 'DEBIT' ? (
+              <>
+                <div className="form-grid-2">
+                  <div className="form-group">
+                    <label className="form-label required">Date</label>
+                    <input
+                      className="form-control"
+                      type="date"
+                      required
+                      value={editModal.form.date || date}
+                      onChange={e => setEditModal(f => ({ ...f, form: { ...f.form, date: e.target.value } }))}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label required">Payee / Particular</label>
+                    <input
+                      className="form-control"
+                      type="text"
+                      required
+                      value={editModal.form.payee}
+                      onChange={e => setEditModal(f => ({ ...f, form: { ...f.form, payee: e.target.value } }))}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label required">Amount (₹)</label>
+                    <input
+                      className="form-control"
+                      type="number"
+                      step="0.01"
+                      required
+                      value={editModal.form.amount}
+                      onChange={e => setEditModal(f => ({ ...f, form: { ...f.form, amount: e.target.value } }))}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Bill / Voucher No.</label>
+                    <input
+                      className="form-control"
+                      type="text"
+                      value={editModal.form.expense_id}
+                      onChange={e => setEditModal(f => ({ ...f, form: { ...f.form, expense_id: e.target.value } }))}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Category</label>
+                    <Combobox
+                      value={editModal.form.category}
+                      onChange={v => setEditModal(f => ({ ...f, form: { ...f.form, category: v } }))}
+                      options={["SALARY ADVANCE", "OFFICE EXPENSE", "TEA EXPENSE", "TRAVEL EXPENSE", "FOOD", "MEDICAL", "PURCHASE", "MAINTENANCE", "UTILITIES", "OTHER"]}
+                      placeholder="Select or type category"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Payment Method</label>
+                    <PaymentMethodSelector
+                      value={editModal.form.payment_method}
+                      onChange={v => setEditModal(f => ({ ...f, form: { ...f.form, payment_method: v, account_type: v === 'CASH' ? 'CASH' : 'BANK' } }))}
+                      options={["CASH", "CHEQUE", "NEFT", "UPI", "OTHER"]}
+                    />
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Purpose / Notes</label>
+                  <textarea
+                    className="form-control"
+                    rows={2}
+                    value={editModal.form.purpose}
+                    onChange={e => setEditModal(f => ({ ...f, form: { ...f.form, purpose: e.target.value } }))}
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="form-grid-2">
+                  <div className="form-group">
+                    <label className="form-label required">Date</label>
+                    <input
+                      className="form-control"
+                      type="date"
+                      required
+                      value={editModal.form.date || date}
+                      onChange={e => setEditModal(f => ({ ...f, form: { ...f.form, date: e.target.value } }))}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Income Source</label>
+                    <input
+                      className="form-control"
+                      type="text"
+                      value={editModal.form.source}
+                      onChange={e => setEditModal(f => ({ ...f, form: { ...f.form, source: e.target.value } }))}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label required">Amount (₹)</label>
+                    <input
+                      className="form-control"
+                      type="number"
+                      step="0.01"
+                      required
+                      value={editModal.form.amount}
+                      onChange={e => setEditModal(f => ({ ...f, form: { ...f.form, amount: e.target.value } }))}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Donor / Payer Name</label>
+                    <input
+                      className="form-control"
+                      type="text"
+                      value={editModal.form.donor_name}
+                      onChange={e => setEditModal(f => ({ ...f, form: { ...f.form, donor_name: e.target.value } }))}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Phone</label>
+                    <input
+                      className="form-control"
+                      type="text"
+                      value={editModal.form.phone}
+                      onChange={e => setEditModal(f => ({ ...f, form: { ...f.form, phone: e.target.value.replace(/\D/g, '').slice(0, 10) } }))}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Payment Method</label>
+                    <PaymentMethodSelector
+                      value={editModal.form.payment_method}
+                      onChange={v => setEditModal(f => ({ ...f, form: { ...f.form, payment_method: v, account_type: v === 'CASH' ? 'CASH' : 'BANK' } }))}
+                      options={["CASH", "CHEQUE", "DD", "NEFT", "RTGS", "IMPS", "UPI"]}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Reference Number</label>
+                    <input
+                      className="form-control"
+                      type="text"
+                      value={editModal.form.reference_number}
+                      onChange={e => setEditModal(f => ({ ...f, form: { ...f.form, reference_number: e.target.value } }))}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Address</label>
+                    <input
+                      className="form-control"
+                      type="text"
+                      value={editModal.form.address}
+                      onChange={e => setEditModal(f => ({ ...f, form: { ...f.form, address: e.target.value } }))}
+                    />
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Purpose / Notes</label>
+                  <textarea
+                    className="form-control"
+                    rows={2}
+                    value={editModal.form.purpose}
+                    onChange={e => setEditModal(f => ({ ...f, form: { ...f.form, purpose: e.target.value } }))}
+                  />
+                </div>
+              </>
+            )}
+          </form>
+        </Modal>
+      )}
+
+      {/* ── Delete Confirmation Modal ── */}
+      {deleteModal.isOpen && (
+        <Modal
+          isOpen={true}
+          onClose={() => setDeleteModal(prev => ({ ...prev, isOpen: false }))}
+          title="Confirm Deletion"
+          size="modal-md"
+          footer={
+            <>
+              <button
+                className="btn btn-secondary"
+                disabled={deleteModal.deleting}
+                onClick={() => setDeleteModal(prev => ({ ...prev, isOpen: false }))}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-danger"
+                disabled={deleteModal.deleting}
+                onClick={handleConfirmDelete}
+                style={{ background: 'var(--danger)', color: '#fff' }}
+              >
+                {deleteModal.deleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </>
+          }
+        >
+          <div style={{ textAlign: 'center', padding: '16px 8px' }}>
+            <div style={{ fontSize: '40px', marginBottom: '12px' }}>🗑️</div>
+            <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--gray-900)', marginBottom: '8px' }}>
+              Are you sure?
+            </h3>
+            <p style={{ fontSize: '14px', color: 'var(--gray-600)', marginBottom: '16px' }}>
+              This will permanently delete this {deleteModal.side === 'DEBIT' ? 'expense' : 'entry'} from the records.
+            </p>
+            {deleteModal.item && (
+              <div style={{ background: 'var(--gray-50)', border: '1px solid var(--gray-200)', borderRadius: '8px', padding: '12px', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                  <span style={{ color: 'var(--gray-500)', fontWeight: 600 }}>Particular:</span>
+                  <span style={{ fontWeight: 700, color: 'var(--gray-900)' }}>
+                    {deleteModal.item.particular || deleteModal.item.payee || deleteModal.item.donor_name || '—'}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                  <span style={{ color: 'var(--gray-500)', fontWeight: 600 }}>Amount:</span>
+                  <span style={{ fontWeight: 700, color: deleteModal.side === 'DEBIT' ? 'var(--danger)' : 'var(--success)' }}>
+                    ₹{Number(deleteModal.item.amount || 0).toLocaleString('en-IN')}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                  <span style={{ color: 'var(--gray-500)', fontWeight: 600 }}>Type / Method:</span>
+                  <span style={{ fontWeight: 600, color: 'var(--gray-700)' }}>{deleteModal.item.sc || 'CASH'}</span>
+                </div>
+              </div>
+            )}
+          </div>
         </Modal>
       )}
 

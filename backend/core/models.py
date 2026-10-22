@@ -199,3 +199,75 @@ class ExpoDevice(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.push_token}"
+
+
+class MemberPostStatus(models.TextChoices):
+    OPEN = 'OPEN', 'Open'
+    FORWARDED_TO_FAO = 'FORWARDED_TO_FAO', 'Forwarded to FAO'
+    RESOLVED = 'RESOLVED', 'Resolved'
+    CLOSED = 'CLOSED', 'Closed'
+
+
+class MemberPost(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='member_posts')
+    description = models.TextField()
+    contact_number = models.CharField(max_length=25, blank=True)
+    address = models.TextField(blank=True)
+    status = models.CharField(max_length=25, choices=MemberPostStatus.choices, default=MemberPostStatus.OPEN)
+    assessment_request = models.ForeignKey('manager_module.AssessmentRequest', on_delete=models.SET_NULL, null=True, blank=True, related_name='member_posts')
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(default=timezone.now, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'core_member_posts'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Post by {self.author.username} ({self.created_at.strftime('%Y-%m-%d')})"
+
+
+class MemberPostImage(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    post = models.ForeignKey(MemberPost, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='member_posts/', validators=[validate_image_file])
+    order = models.PositiveSmallIntegerField(default=0)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = 'core_member_post_images'
+        ordering = ['order', 'created_at']
+
+    def __str__(self):
+        return f"Image {self.order} for Post {self.post_id}"
+
+
+class MemberPostLike(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    post = models.ForeignKey(MemberPost, on_delete=models.CASCADE, related_name='likes')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='member_post_likes')
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = 'core_member_post_likes'
+        unique_together = ('post', 'user')
+
+    def __str__(self):
+        return f"{self.user.username} liked {self.post_id}"
+
+
+class MemberPostComment(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    post = models.ForeignKey(MemberPost, on_delete=models.CASCADE, related_name='comments')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='member_post_comments')
+    text = models.TextField()
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = 'core_member_post_comments'
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"Comment by {self.user.username} on {self.post_id}"
+

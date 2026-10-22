@@ -372,5 +372,11 @@ export const coreApi = {
     listMyFeatures: () => api.get('/core/features/'),
     listAllFeatures: () => api.get('/core/features/?all=true'),
     updateFeatureRoles: (data) => api.post('/core/features/', data),
+  },
+  memberPosts: {
+    list: (params) => api.get('/core/member-posts/', { params }),
+    get: (id) => api.get(`/core/member-posts/${id}/`),
+    forwardToFao: (id, data) => api.post(`/core/member-posts/${id}/forward-to-fao/`, data),
+    delete: (id) => api.delete(`/core/member-posts/${id}/`),
   }
 }

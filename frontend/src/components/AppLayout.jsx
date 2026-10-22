@@ -149,6 +149,9 @@ export default function AppLayout() {
 
       // Manager always has access to hr_members (Members Directory)
       if (user?.role === 'MANAGER' && item.key === 'hr_members') return true
+
+      // DATA_ENTRY, MANAGER, ADMIN always have access to Public Issues
+      if (item.path === '/slt/entry/public-issues' && ['DATA_ENTRY', 'MANAGER', 'ADMIN'].includes(user?.role)) return true
       
       // Check feature access
       return hasFeature(item.key)

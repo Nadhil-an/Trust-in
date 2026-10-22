@@ -335,5 +335,35 @@ export const coreApi = {
   updatePushToken: (data) => api.post('/core/update-push-token/', data),
 };
 
+export const memberPostsApi = {
+  list: (params) => api.get('/core/member-posts/', { params }),
+  get: (id) => api.get(`/core/member-posts/${id}/`),
+  create: (data) => {
+    const formData = new FormData();
+    if (data.description) formData.append('description', data.description);
+    if (data.contact_number) formData.append('contact_number', data.contact_number);
+    if (data.address) formData.append('address', data.address);
+    if (Array.isArray(data.images)) {
+      data.images.forEach((img, index) => {
+        if (img && img.uri) {
+          formData.append('images', {
+            uri: img.uri,
+            type: img.mimeType || 'image/jpeg',
+            name: img.fileName || `post_photo_${index + 1}.jpg`,
+          });
+        }
+      });
+    }
+    return api.post('/core/member-posts/', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  toggleLike: (id) => api.post(`/core/member-posts/${id}/toggle-like/`),
+  getComments: (id) => api.get(`/core/member-posts/${id}/comments/`),
+  addComment: (id, text) => api.post(`/core/member-posts/${id}/comments/`, { text }),
+  update: (id, data) => api.patch(`/core/member-posts/${id}/`, data),
+  deletePost: (id) => api.delete(`/core/member-posts/${id}/`),
+};
+
 export default api;
 

@@ -7,8 +7,11 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
-  Alert
+  Alert,
+  Platform,
+  StatusBar,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { Colors } from '../../constants/Colors';
@@ -16,6 +19,13 @@ import { complaintsApi } from '../../api';
 import Toast from 'react-native-toast-message';
 
 const ReportProblemScreen = ({ navigation }) => {
+  const insets = useSafeAreaInsets();
+  const topInset = Math.max(
+    insets.top,
+    Platform.OS === 'android' ? (StatusBar.currentHeight || 0) : 0
+  );
+  const headerPaddingTop = topInset > 0 ? topInset + 10 : (Platform.OS === 'ios' ? 50 : 36);
+
   const [issueType, setIssueType] = useState('');
   const [subject, setSubject] = useState('');
   const [details, setDetails] = useState('');
@@ -77,8 +87,9 @@ const ReportProblemScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#0284c7" translucent={true} />
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: headerPaddingTop }]}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={Colors.white} />
         </TouchableOpacity>
@@ -187,7 +198,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: 44,
     paddingBottom: 16,
   },
   backBtn: { padding: 4 },

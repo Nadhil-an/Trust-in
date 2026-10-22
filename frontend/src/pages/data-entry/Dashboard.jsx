@@ -25,6 +25,12 @@ const ENTRIES = [
     color: '#059669', bg: '#D1FAE5', border: '#6EE7B7',
   },
   {
+    icon: '📢', label: 'Public Issues',
+    desc: 'Review public problems & help requests submitted by members, forward to FAO',
+    path: '/slt/entry/public-issues',
+    color: '#0284C7', bg: '#F0F9FF', border: '#BAE6FD',
+  },
+  {
     icon: '🤝', label: 'Partners Entry',
     desc: 'Register new partners & organisations',
     path: '/slt/entry/partners',
@@ -174,13 +180,15 @@ export default function DataEntryDashboard() {
         fetchWithAmount(accountsApi.income.list, { date: dateStr, source: 'INWARD' }),
         fetchWithAmount(accountsApi.expenses.list, { date: dateStr, category: 'OUTWARD' }),
         fetchWithAmount(accountsApi.expenses.list, { date: dateStr, category: 'PURCHASE' }),
-        fetchCountOnly(coreApi.events.list, { date: dateStr })
+        fetchCountOnly(coreApi.events.list, { date: dateStr }),
+        fetchCountOnly(coreApi.memberPosts.list, {})
       ])
 
       setStats({
         '/slt/entry/donation': results[0],
         '/slt/entry/membership': results[1],
         '/slt/entry/assessment': results[2],
+        '/slt/entry/public-issues': results[8],
         '/slt/entry/partners': results[3],
         '/slt/entry/inward': results[4],
         '/slt/entry/material-outward': results[5],

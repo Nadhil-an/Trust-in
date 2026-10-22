@@ -22,6 +22,7 @@ export const MASTER_NAV_CONFIG = [
   { key: 'promoters_registry', label: 'Promoters Registry', icon: '🧾', path: '/slt/entry/promoters-registry', category: 'FINANCE & DONATIONS' },
 
   // ── PEOPLE & RELATIONS
+  { label: 'Public Issues', icon: '📢', path: '/slt/entry/public-issues', category: 'PEOPLE & RELATIONS', roles: ['DATA_ENTRY', 'MANAGER', 'ADMIN'] },
   { key: 'membership_entry', label: 'Membership Entry', icon: '🪪', path: '/slt/entry/membership', category: 'PEOPLE & RELATIONS' },
   { label: 'Assessment Entry', icon: '📋', path: '/slt/entry/assessment', category: 'PEOPLE & RELATIONS', roles: ['DATA_ENTRY', 'MANAGER', 'ADMIN'] },
   { key: 'partners_entry', label: 'Partners Entry', icon: '🤝', path: '/slt/entry/partners', category: 'PEOPLE & RELATIONS' },
@@ -78,6 +79,7 @@ export const ADMIN_NAV_CONFIG = [
   { label: 'User Management', icon: '👤', path: '/slt/sys/user-control' },
   { label: 'Feature Access', icon: '🔐', path: '/slt/sys/feature-access' },
   { label: 'Mobile Access', icon: '📱', path: '/slt/sys/mobile-access' },
+  { label: 'Public Issues', icon: '📢', path: '/slt/entry/public-issues' },
   { label: 'Audit Log', icon: '🔍', path: '/slt/sys/audit-trail' },
   { label: 'Reports', icon: '📈', path: '/slt/shared/analytics' },
 ]

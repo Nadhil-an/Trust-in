@@ -63,6 +63,7 @@ import MaterialInward from './pages/data-entry/MaterialInward'
 import MaterialOutward from './pages/data-entry/MaterialOutward'
 import AssetsInStock from './pages/data-entry/AssetsInStock'
 import EventEntry from './pages/data-entry/EventEntry'
+import PublicIssuesPage from './pages/data-entry/PublicIssuesPage'
 import ScheduledPayouts from './pages/shared/ScheduledPayouts'
 
 // ── Protected Route ───────────────────────────────────────
@@ -228,6 +229,7 @@ export default function App() {
           <Route path="slt/entry/material-outward"   element={<ProtectedRoute featureKey="material_outward"><MaterialOutward /></ProtectedRoute>} />
           <Route path="slt/entry/assets-in-stock"    element={<ProtectedRoute featureKey="assets_in_stock"><AssetsInStock /></ProtectedRoute>} />
           <Route path="slt/entry/events"             element={<ProtectedRoute featureKey="events_entry"><EventEntry /></ProtectedRoute>} />
+          <Route path="slt/entry/public-issues"      element={<ProtectedRoute roles={['DATA_ENTRY', 'MANAGER', 'ADMIN']}><PublicIssuesPage /></ProtectedRoute>} />
 
           <Route path="*" element={<NotFoundPage />} />
         </Route>

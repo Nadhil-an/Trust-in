@@ -73,6 +73,7 @@ export const SideDrawer = ({ visible, onClose, navigation, currentRoute = 'Home'
   const primaryMenu = [
     { name: 'Home', label: 'Home', icon: 'home', route: 'Root' },
     { name: 'MyDonation', label: 'My Donation', icon: 'heart', route: 'DonationHistory' },
+    { name: 'MyPosts', label: 'My Posts', icon: 'newspaper', route: 'MyPosts' },
     { name: 'ReportProblem', label: 'Report a Problem', icon: 'warning', route: 'ReportProblem' },
     { name: 'Events', label: 'Events', icon: 'calendar', route: 'Events' },
     { name: 'MyProfile', label: 'My Profile', icon: 'person', route: 'Profile' },
