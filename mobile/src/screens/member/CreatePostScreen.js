@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -31,7 +31,13 @@ export default function CreatePostScreen({ navigation }) {
   );
   const headerPaddingTop = topInset > 0 ? topInset + 10 : (Platform.OS === 'ios' ? 50 : 36);
 
-  const { user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigation.replace('Auth');
+    }
+  }, [isAuthenticated]);
   const [description, setDescription] = useState('');
   const [contactNumber, setContactNumber] = useState(user?.phone || '');
   const [selectedState, setSelectedState] = useState('Kerala');

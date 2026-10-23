@@ -12,6 +12,7 @@ import {
   Alert,
   Platform,
   KeyboardAvoidingView,
+  Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { WebView } from 'react-native-webview';
@@ -35,7 +36,13 @@ const PURPOSES = [
 
 const DonateScreen = ({ navigation, route }) => {
   const insets = useSafeAreaInsets();
-  const { user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigation.replace('Auth');
+    }
+  }, [isAuthenticated]);
 
   // Mode: 'ONETIME' or 'MONTHLY'
   const initialMode = route.params?.mode || 'ONETIME';
@@ -266,13 +273,16 @@ const DonateScreen = ({ navigation, route }) => {
           if (paymentMode === 'ONETIME') {
             const verifyRes = await paymentApi.verifyDonationPayment({
               order_id: orderId,
-              payment_id: paymentId,
+              payment_id: orderId,
+              razorpay_order_id: orderId,
+              razorpay_payment_id: paymentId,
+              razorpay_signature: signature,
               signature: signature,
             });
 
             setPaymentResult({
               type: 'ONETIME',
-              receipt_no: verifyRes.data?.receipt_no || 'Pending',
+              receipt_no: verifyRes.data?.receipt_number || 'Pending',
               amount: effectiveAmount,
               payment_id: data.payment_id,
               message: verifyRes.data?.message || 'Thank you for your generous donation!',
@@ -285,7 +295,8 @@ const DonateScreen = ({ navigation, route }) => {
           } else {
             const verifyRes = await paymentApi.verifySubscription({
               subscription_id: subscriptionId,
-              payment_id: paymentId,
+              razorpay_payment_id: paymentId,
+              razorpay_signature: signature,
               signature: signature,
             });
 
@@ -667,22 +678,38 @@ const DonateScreen = ({ navigation, route }) => {
           );
         }}
       >
-        <View style={[styles.modalContainer, { paddingTop: insets.top }]}>
+        <View style={[styles.modalContainer, { paddingTop: Math.max(insets.top, 14) }]}>
           <View style={styles.modalHeader}>
-            <View>
-              <Text style={styles.modalHeaderTitle}>Razorpay Secure Checkout</Text>
-              <Text style={styles.modalHeaderSub}>
-                {paymentMode === 'MONTHLY'
-                  ? 'UPI Autopay / e-Mandate'
-                  : 'One-Time Donation'}
-              </Text>
-            </View>
             <TouchableOpacity
               style={styles.modalCloseBtn}
-              onPress={() => setCheckoutVisible(false)}
+              onPress={() => {
+                Alert.alert(
+                  'Cancel Payment',
+                  'Do you want to exit the payment screen?',
+                  [
+                    { text: 'Stay & Pay', style: 'cancel' },
+                    { text: 'Exit', style: 'destructive', onPress: () => setCheckoutVisible(false) },
+                  ]
+                );
+              }}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             >
-              <Ionicons name="close" size={24} color={Colors.textPrimary} />
+              <Ionicons name="close" size={20} color="#0F172A" />
             </TouchableOpacity>
+
+            <View style={styles.modalHeaderCenter}>
+              <Text style={styles.modalHeaderTitle} numberOfLines={1}>
+                Razorpay Secure Checkout
+              </Text>
+              <View style={styles.modalHeaderSubRow}>
+                <Ionicons name="shield-checkmark" size={12} color="#16a34a" style={{ marginRight: 4 }} />
+                <Text style={styles.modalHeaderSub}>
+                  {paymentMode === 'MONTHLY' ? 'Monthly Autopay' : 'One-Time Donation'} &bull; 256-Bit SSL
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.modalHeaderRightPlaceholder} />
           </View>
 
           {checkoutUrl ? (
@@ -695,6 +722,19 @@ const DonateScreen = ({ navigation, route }) => {
               mixedContentMode="always"
               thirdPartyCookiesEnabled={true}
               sharedCookiesEnabled={true}
+              setSupportMultipleWindows={false}
+              javaScriptCanOpenWindowsAutomatically={true}
+              onShouldStartLoadWithRequest={(req) => {
+                const u = req.url;
+                if (u.startsWith('http://') || u.startsWith('https://') || u.startsWith('about:blank') || u.startsWith('data:')) {
+                  return true;
+                }
+                Linking.canOpenURL(u).then((sup) => {
+                  if (sup) Linking.openURL(u);
+                  else Alert.alert('Payment App', 'No compatible app found to complete this transaction.');
+                }).catch(() => {});
+                return false;
+              }}
               startInLoadingState={true}
               renderLoading={() => (
                 <View style={styles.webViewLoader}>
@@ -1210,21 +1250,45 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingTop: 8,
+    paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: '#F1F5F9',
+    backgroundColor: '#FFFFFF',
+    minHeight: 58,
+  },
+  modalCloseBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalHeaderCenter: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 8,
   },
   modalHeaderTitle: {
     fontSize: 15,
-    fontWeight: '700',
-    color: Colors.textPrimary,
+    fontWeight: '800',
+    color: '#0F172A',
+    letterSpacing: 0.2,
+  },
+  modalHeaderSubRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
   },
   modalHeaderSub: {
     fontSize: 11,
-    color: Colors.gray500,
+    fontWeight: '600',
+    color: '#64748B',
   },
-  modalCloseBtn: {
-    padding: 6,
+  modalHeaderRightPlaceholder: {
+    width: 36,
   },
   webViewLoader: {
     ...StyleSheet.absoluteFillObject,
@@ -1345,3 +1409,4 @@ const styles = StyleSheet.create({
 });
 
 export default DonateScreen;
+

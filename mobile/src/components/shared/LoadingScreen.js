@@ -5,7 +5,7 @@ import { Colors } from '../../constants/Colors';
 
 const LoadingScreen = ({ message = 'Loading...' }) => (
   <View style={styles.container}>
-    <Image source={require('../../../assets/icon.png')} style={styles.logo} resizeMode="contain" />
+    <Image source={require('../../../assets/android-icon-foreground.png')} style={styles.logo} resizeMode="contain" />
     <ActivityIndicator size="large" color={Colors.primary} style={styles.spinner} />
     <Text style={styles.text}>{message}</Text>
   </View>

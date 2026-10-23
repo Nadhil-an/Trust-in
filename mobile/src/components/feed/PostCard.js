@@ -73,6 +73,10 @@ export default function PostCard({
 
   // Like Toggle with spring pop
   const handleLike = async () => {
+    if (!currentUserId) {
+      navigation.navigate('Auth');
+      return;
+    }
     const nextLiked = !isLiked;
     const nextCount = nextLiked ? likesCount + 1 : Math.max(0, likesCount - 1);
 
@@ -105,6 +109,11 @@ export default function PostCard({
   const handleImageDoubleTap = () => {
     const now = Date.now();
     if (now - lastTapRef.current < 300) {
+      if (!currentUserId) {
+        navigation.navigate('Auth');
+        lastTapRef.current = 0;
+        return;
+      }
       if (!isLiked) {
         handleLike();
       }

@@ -288,6 +288,148 @@ class StaffDashboardView(APIView):
             'attendancePercentage': attendance_percentage,
         })
 
+# ── Member Expiry & Validity Synchronization ────────────────────────
+def calculate_member_validity(member):
+    """
+    Calculates member subscription validity, expiration date, and status.
+    Lifetime/Honorary/Patron memberships never expire.
+    General/Associate memberships expire 1 month after the latest of:
+      - Latest MembershipReceipt
+      - Latest Income record (source='MEMBERSHIP')
+      - Member joining date
+    """
+    from datetime import date
+    from django.utils import timezone
+    from dateutil.relativedelta import relativedelta
+    from django.db.models import Q
+    from hr_module.models import MembershipType, MembershipReceipt
+    from accounts_module.models import Income
+    import re
+
+    today = timezone.localdate()
+
+    if member.membership_type in [MembershipType.LIFE, MembershipType.HONORARY, MembershipType.PATRON]:
+        return {
+            'valid_upto': None,
+            'valid_upto_str': 'Lifetime',
+            'days_left': 99999,
+            'is_expired': False,
+            'is_active': True,
+            'latest_payment_date': None,
+        }
+
+    # For General / monthly members:
+    receipt = MembershipReceipt.objects.filter(member=member).order_by('-generated_at').first()
+
+    q = Q(donor_name__iexact=member.full_name.strip())
+    if member.phone:
+        clean_p = re.sub(r'[^0-9]', '', str(member.phone))[-10:]
+        if clean_p:
+            q |= Q(donor_phone__icontains=clean_p)
+    if member.created_by:
+        q |= Q(created_by=member.created_by)
+
+    income = Income.objects.filter(source='MEMBERSHIP').filter(q).order_by('-date', '-created_at').first()
+
+    dates = []
+    if receipt and receipt.generated_at:
+        dates.append(receipt.generated_at.date())
+    if income:
+        if income.date:
+            dates.append(income.date)
+        elif income.created_at:
+            dates.append(income.created_at.date())
+    if member.joining_date:
+        dates.append(member.joining_date)
+
+    latest_date = max(dates) if dates else (member.joining_date or today)
+    valid_date = latest_date + relativedelta(months=1)
+    days_left = (valid_date - today).days
+    is_expired = (days_left < 0)
+
+    return {
+        'valid_upto': valid_date,
+        'valid_upto_str': valid_date.strftime('%d %b %Y'),
+        'days_left': days_left,
+        'is_expired': is_expired,
+        'is_active': not is_expired,
+        'latest_payment_date': latest_date,
+    }
+
+
+def sync_member_subscription_status(member, notify=True):
+    """
+    Evaluates member validity.
+    If membership has expired and status is currently ACTIVE:
+      - Sets status to EXPIRED
+      - Pushes high-priority notifications to MANAGER and HR dashboards
+      - Emits dashboard refresh
+    If membership is renewed and status is EXPIRED:
+      - Sets status back to ACTIVE
+    """
+    from hr_module.models import MemberStatus
+    from core.models import SystemNotification
+    from notify.service import push_to_role, push_dashboard_refresh
+
+    validity = calculate_member_validity(member)
+    today = timezone.localdate()
+
+    if validity['is_expired']:
+        # Transition from ACTIVE -> EXPIRED
+        if member.status == MemberStatus.ACTIVE:
+            member.status = MemberStatus.EXPIRED
+            member.save(update_fields=['status'])
+
+            if notify:
+                # Prevent spam: check if notification was already sent in last 25 days for this member
+                already_notified = SystemNotification.objects.filter(
+                    notification_type='MEMBERSHIP_EXPIRED',
+                    reference_id=str(member.id),
+                    created_at__gte=timezone.now() - timezone.timedelta(days=25)
+                ).exists()
+
+                if not already_notified:
+                    valid_str = validity.get('valid_upto_str', 'recently')
+                    title = f"Membership Expired: {member.full_name}"
+                    message = (
+                        f"The membership for {member.full_name} (ID: {member.member_id}, "
+                        f"Phone: {member.phone or 'N/A'}) expired on {valid_str}. "
+                        f"Status has been updated to EXPIRED."
+                    )
+                    # Push to HR, Manager, and Admin dashboards
+                    push_to_role('HR', title, message, 'MEMBERSHIP_EXPIRED', reference_id=str(member.id), priority='HIGH', reference_type='MEMBER')
+                    push_to_role('MANAGER', title, message, 'MEMBERSHIP_EXPIRED', reference_id=str(member.id), priority='HIGH', reference_type='MEMBER')
+                    push_to_role('ADMIN', title, message, 'MEMBERSHIP_EXPIRED', reference_id=str(member.id), priority='HIGH', reference_type='MEMBER')
+                    push_dashboard_refresh(['HR', 'MANAGER', 'ADMIN'])
+
+    else:
+        # If valid and currently EXPIRED (e.g. member paid renewal fee), restore to ACTIVE
+        if member.status == MemberStatus.EXPIRED:
+            member.status = MemberStatus.ACTIVE
+            member.save(update_fields=['status'])
+            push_dashboard_refresh(['HR', 'MANAGER', 'ADMIN'])
+
+    return validity
+
+
+def sync_all_members_expiry(notify=True):
+    """
+    Scans all ACTIVE members that are subject to expiry, sets expired members to EXPIRED,
+    and sends real-time notifications to the Manager and HR dashboards.
+    """
+    from hr_module.models import Member, MemberStatus, MembershipType
+    members_to_check = Member.objects.filter(
+        status=MemberStatus.ACTIVE
+    ).exclude(membership_type__in=[MembershipType.LIFE, MembershipType.HONORARY, MembershipType.PATRON])
+
+    for m in members_to_check:
+        try:
+            sync_member_subscription_status(m, notify=notify)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Error syncing expiry for member {m.id}: {e}")
+
+
 # ── Members ───────────────────────────────────────────────────────
 class MemberListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAnyStaff]
@@ -298,6 +440,13 @@ class MemberListCreateView(generics.ListCreateAPIView):
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get_queryset(self):
+        # Automatically verify and sync expired memberships with notifications to HR & Manager
+        try:
+            sync_all_members_expiry(notify=True)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"[MemberListCreateView] Error syncing member expiries: {e}")
+
         qs = Member.objects.all()
         # If the user is STAFF (and not manager/admin/hr), only show members they added
         from core.models import Role
@@ -455,6 +604,14 @@ class MemberDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = MemberSerializer
     queryset = Member.objects.all()
     parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def get_object(self):
+        obj = super().get_object()
+        try:
+            sync_member_subscription_status(obj, notify=True)
+        except Exception:
+            pass
+        return obj
 
     def perform_update(self, serializer):
         member = serializer.save()

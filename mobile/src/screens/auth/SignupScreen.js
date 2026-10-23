@@ -119,7 +119,7 @@ const SignupScreen = ({ navigation }) => {
 
         {/* Branding Logo */}
         <View style={styles.logoContainer}>
-          <Image source={require('../../../assets/icon.png')} style={styles.logo} resizeMode="contain" />
+          <Image source={require('../../../assets/android-icon-foreground.png')} style={styles.logo} resizeMode="contain" />
           <Text style={styles.trust}>Sree Lakshmi</Text>
           <Text style={styles.trustSub}>CHARITABLE TRUST</Text>
         </View>

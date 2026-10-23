@@ -23,7 +23,7 @@ const DRAWER_WIDTH = SCREEN_WIDTH * 0.82;
 export const SideDrawer = ({ visible, onClose, navigation, currentRoute = 'Home' }) => {
   const slideAnim = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const { user, logout } = useAuthStore();
+  const { user, logout, isAuthenticated } = useAuthStore();
 
   useEffect(() => {
     if (visible) {
@@ -59,6 +59,12 @@ export const SideDrawer = ({ visible, onClose, navigation, currentRoute = 'Home'
 
   const navigateTo = (screenName) => {
     onClose();
+    if (!isAuthenticated && screenName !== 'Root' && screenName !== 'Events') {
+      setTimeout(() => {
+        navigation.navigate('Auth');
+      }, 150);
+      return;
+    }
     setTimeout(() => {
       navigation.navigate(screenName, { fromDashboard: false });
     }, 150);
@@ -126,7 +132,7 @@ export const SideDrawer = ({ visible, onClose, navigation, currentRoute = 'Home'
             <View style={styles.brandContainer}>
               <View style={styles.logoRing}>
                 <Image
-                  source={require('../../assets/icon.png')}
+                  source={require('../../assets/android-icon-foreground.png')}
                   style={styles.logoImage}
                   resizeMode="contain"
                 />
@@ -195,12 +201,26 @@ export const SideDrawer = ({ visible, onClose, navigation, currentRoute = 'Home'
               {/* Divider 2 */}
               <View style={styles.divider} />
 
-              {/* Logout Item */}
-              <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
-                <Ionicons name="log-out-outline" size={20} color="#17202A" style={styles.menuIcon} />
-                <Text style={styles.menuLabel}>Logout</Text>
-                <Ionicons name="chevron-forward" size={16} color="#A0AEC0" />
-              </TouchableOpacity>
+              {/* Logout / Login Item */}
+              {isAuthenticated ? (
+                <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
+                  <Ionicons name="log-out-outline" size={20} color="#17202A" style={styles.menuIcon} />
+                  <Text style={styles.menuLabel}>Logout</Text>
+                  <Ionicons name="chevron-forward" size={16} color="#A0AEC0" />
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  style={styles.menuItem}
+                  onPress={() => {
+                    onClose();
+                    setTimeout(() => navigation.navigate('Auth'), 150);
+                  }}
+                >
+                  <Ionicons name="log-in-outline" size={20} color="#0284c7" style={styles.menuIcon} />
+                  <Text style={[styles.menuLabel, { color: '#0284c7', fontWeight: '700' }]}>Login / Sign Up</Text>
+                  <Ionicons name="chevron-forward" size={16} color="#0284c7" />
+                </TouchableOpacity>
+              )}
 
             </ScrollView>
 

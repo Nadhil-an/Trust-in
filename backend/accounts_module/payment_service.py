@@ -73,12 +73,15 @@ def record_successful_donation(payment, razorpay_payment_id=None, razorpay_signa
         amount=payment.amount,
         payment_method='UPI',
         purpose=f"{payment.purpose} ({'Monthly Autopay' if payment.payment_type == PaymentType.MONTHLY_AUTOPAY else 'Online'})",
-        reference_number=payment.razorpay_payment_id or payment.razorpay_order_id,
         account_type='BANK',
         bank_account=bank_acc,
         created_by=payment.donor_user,
         date=date.today()
     )
+    # Generate clean, simple voucher number (e.g. VCH-2026-00208)
+    seq = income.receipt_number.replace('RCP-', '')
+    income.reference_number = f"VCH-{seq}"
+    income.save(update_fields=['reference_number'])
 
     # Link income back to payment record
     payment.income = income
@@ -141,17 +144,50 @@ def record_successful_donation(payment, razorpay_payment_id=None, razorpay_signa
         t = threading.Thread(target=dispatch_whatsapp, daemon=True)
         t.start()
 
+    # Activate Member and generate MembershipReceipt if applicable
+    if is_membership or payment.donor_user:
+        try:
+            from hr_module.models import Member, MemberStatus, MembershipReceipt
+            member = None
+            if payment.donor_user:
+                member = Member.objects.filter(created_by=payment.donor_user).first()
+            if not member and payment.donor_phone:
+                p = str(payment.donor_phone).strip()
+                member = Member.objects.filter(phone=p).first()
+            if member:
+                member.status = MemberStatus.ACTIVE
+                member.save(update_fields=['status'])
+                if is_membership and not MembershipReceipt.objects.filter(receipt_number=income.receipt_number).exists():
+                    MembershipReceipt.objects.create(
+                        member=member,
+                        receipt_number=income.receipt_number,
+                        amount=payment.amount
+                    )
+        except Exception as e:
+            logger.warning(f"[Member Status Update Error]: {e}")
+
     # Clear cached subscription info for the member user
     if payment.donor_user and hasattr(payment.donor_user, '_cached_subscription_info'):
         delattr(payment.donor_user, '_cached_subscription_info')
 
     # Trigger real-time dashboard stats reload across all staff & admin roles + member app
     try:
-        from notify.service import push_dashboard_refresh
+        from notify.service import push_dashboard_refresh, push_notification
         push_dashboard_refresh(
             ['ACCOUNTANT', 'MANAGER', 'ADMIN', 'STAFF', 'DATA_ENTRY', 'MEMBER'],
             user_id=payment.donor_user.id if payment.donor_user else None
         )
+        if payment.donor_user:
+            notif_title = "Membership Fee Confirmed" if is_membership else "Donation Received"
+            notif_msg = f"Thank you! Your payment of ₹{payment.amount:,.0f} has been recorded. Receipt #{income.receipt_number}"
+            push_notification(
+                recipient=payment.donor_user,
+                title=notif_title,
+                message=notif_msg,
+                notification_type='PAYMENT',
+                reference_id=income.receipt_number,
+                priority='HIGH'
+            )
     except Exception as err:
         logger.warning(f"[Dashboard Refresh Push Error]: {err}")
 

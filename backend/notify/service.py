@@ -80,13 +80,14 @@ def push_notification(recipient: User, title: str, message: str,
 
 
 def push_to_role(role: str, title: str, message: str, notification_type: str,
-                 reference_id: str = '', exclude_user_id=None):
+                 reference_id: str = '', exclude_user_id=None, priority: str = 'NORMAL',
+                 reference_type: str = ''):
     """Push a notification to all users of a given role."""
     users = User.objects.filter(role=role, is_active=True)
     if exclude_user_id:
         users = users.exclude(id=exclude_user_id)
     for user in users:
-        push_notification(user, title, message, notification_type, reference_id)
+        push_notification(user, title, message, notification_type, reference_id, reference_type=reference_type, priority=priority)
 
 
 def push_request_update(request_id: str, request_number: str, new_status: str,

@@ -36,7 +36,7 @@ const Header = ({ title, subtitle, showBack = false, showLogo = false, rightComp
           </TouchableOpacity>
         )}
         {showLogo && (
-          <Image source={require('../../../assets/icon.png')} style={styles.logo} resizeMode="contain" />
+          <Image source={require('../../../assets/android-icon-foreground.png')} style={styles.logo} resizeMode="contain" />
         )}
         <View style={styles.titleArea}>
           <Text style={styles.title} numberOfLines={1}>{title}</Text>

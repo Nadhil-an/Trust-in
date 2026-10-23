@@ -350,17 +350,17 @@ export default function AccountsDashboard() {
           </div>
           <button className="btn btn-secondary btn-sm" onClick={() => navigate('/slt/finance/transactions')}>All Transactions →</button>
         </div>
-        <ResponsiveContainer width="100%" height={180}>
-          <LineChart data={trend}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-            <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-            <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `₹${(v/1000).toFixed(0)}k`} />
+        <ResponsiveContainer width="100%" height={220}>
+          <BarChart data={trend} barGap={6} barCategoryGap="25%">
+            <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} />
+            <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#6b7280' }} />
+            <YAxis tick={{ fontSize: 10, fill: '#6b7280' }} tickFormatter={v => v >= 1000 ? `₹${(v/1000).toFixed(0)}k` : `₹${v}`} />
             <Tooltip content={<ChartTip money />} />
             <ReferenceLine y={0} stroke="#e5e7eb" />
-            <Line type="monotone" dataKey="income"  name="Income"  stroke={C.green} strokeWidth={2.5} dot={{ r: 4, strokeWidth: 0 }} activeDot={{ r: 6 }} />
-            <Line type="monotone" dataKey="expense" name="Expense" stroke={C.red}   strokeWidth={2.5} dot={{ r: 4, strokeWidth: 0 }} activeDot={{ r: 6 }} />
-            <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
-          </LineChart>
+            <Bar dataKey="income" name="Income" fill={C.green} radius={[4, 4, 0, 0]} maxBarSize={28} />
+            <Bar dataKey="expense" name="Expense" fill={C.red} radius={[4, 4, 0, 0]} maxBarSize={28} />
+            <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
+          </BarChart>
         </ResponsiveContainer>
       </div>
     </div>

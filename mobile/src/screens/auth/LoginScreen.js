@@ -124,6 +124,11 @@ const LoginScreen = ({ navigation }) => {
     try {
       const res = await authApi.login({ username: form.username.trim(), password: form.password });
       await login(res.data);
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+      } else {
+        navigation.navigate('Main');
+      }
     } catch (err) {
       console.log('Login error:', err.message);
       let msg = 'Wrong credentials';
@@ -150,9 +155,20 @@ const LoginScreen = ({ navigation }) => {
 
       <KeyboardAwareScrollView enableOnAndroid={true} extraScrollHeight={20} contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         
+        {/* Back button to return to public feed */}
+        {navigation.canGoBack() && (
+          <TouchableOpacity
+            style={styles.backBtn}
+            onPress={() => navigation.goBack()}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          >
+            <Ionicons name="arrow-back" size={24} color="#0284c7" />
+          </TouchableOpacity>
+        )}
+
         {/* Branding Logo */}
         <View style={styles.header}>
-          <Image source={require('../../../assets/icon.png')} style={styles.logo} resizeMode="contain" />
+          <Image source={require('../../../assets/android-icon-foreground.png')} style={styles.logo} resizeMode="contain" />
           <Text style={styles.trust}>Sree Lakshmi</Text>
           <Text style={styles.trustSub}>CHARITABLE TRUST</Text>
         </View>
@@ -367,6 +383,23 @@ const styles = StyleSheet.create({
   
   container: { flexGrow: 1, padding: 24, paddingTop: Platform.OS === 'ios' ? 60 : 40, paddingBottom: 40 },
   
+  backBtn: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 10 : 8,
+    left: 16,
+    zIndex: 10,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
   header: { alignItems: 'center', marginBottom: 24 },
   logo: { width: 80, height: 80, marginBottom: 8 },
   trust: { fontSize: 22, fontWeight: '800', color: '#0f172a' },

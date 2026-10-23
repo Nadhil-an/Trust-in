@@ -242,7 +242,11 @@ export default function DonationEntry() {
                       <td style={{ fontSize: 12 }}>{i.phone || '—'}</td>
                       <td style={{ maxWidth: 160, fontSize: 12 }}>{i.place || '—'}</td>
                       <td><span className="badge badge-blue" style={{ fontSize: 10 }}>{i.payment_method}</span></td>
-                      <td className="td-mono" style={{ fontSize: 11 }}>{i.reference_number || '—'}</td>
+                      <td className="td-mono" style={{ fontSize: 11, fontWeight: 600 }}>
+                        {i.reference_number && !i.reference_number.startsWith('pay_') && !i.reference_number.startsWith('order_')
+                          ? i.reference_number
+                          : (i.receipt_number ? `VCH-${i.receipt_number.replace('RCP-', '')}` : '—')}
+                      </td>
                       <td style={{ fontWeight: 700, color: '#EC4899' }}>{formatINR(i.amount)}</td>
                     </tr>
                   ))}

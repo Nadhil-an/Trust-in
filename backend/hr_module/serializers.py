@@ -40,6 +40,19 @@ class MemberSerializer(serializers.ModelSerializer):
             user = User.objects.filter(role=Role.MEMBER, email__iexact=instance.email.strip()).first()
         
         data['username'] = user.username if user else (clean_phone or instance.member_id or '')
+
+        # Membership validity and expiration calculation
+        from hr_module.views import calculate_member_validity
+        try:
+            validity = calculate_member_validity(instance)
+            data['valid_upto'] = validity['valid_upto_str']
+            data['days_left'] = validity['days_left']
+            data['is_expired'] = validity['is_expired']
+        except Exception:
+            data['valid_upto'] = None
+            data['days_left'] = None
+            data['is_expired'] = (instance.status == 'EXPIRED')
+
         return data
 
     def create(self, validated_data):

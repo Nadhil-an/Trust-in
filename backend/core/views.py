@@ -690,9 +690,13 @@ from rest_framework.parsers import MultiPartParser, FormParser
 class EventViewSet(ModelViewSet):
     queryset = Event.objects.all()
     serializer_class = EventSerializer
-    permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
     filterset_fields = ['category']
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
 class RoleFeaturePermissionView(APIView):
     permission_classes = [IsAuthenticated]
@@ -758,14 +762,23 @@ from core.serializers import MemberPostSerializer, MemberPostCommentSerializer
 class MemberPostViewSet(ModelViewSet):
     queryset = MemberPost.objects.filter(is_active=True).select_related('author', 'assessment_request').prefetch_related('images', 'likes', 'comments')
     serializer_class = MemberPostSerializer
-    permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+        if self.action == 'comments' and self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
     def get_queryset(self):
         qs = MemberPost.objects.filter(is_active=True).select_related('author', 'assessment_request').prefetch_related('images', 'likes', 'comments')
         my_posts = self.request.query_params.get('my_posts')
         if my_posts in ['true', '1', True]:
-            qs = qs.filter(author=self.request.user)
+            if self.request.user and self.request.user.is_authenticated:
+                qs = qs.filter(author=self.request.user)
+            else:
+                qs = qs.none()
 
         status_param = (self.request.query_params.get('status') or '').strip()
         if status_param and status_param != 'ALL':

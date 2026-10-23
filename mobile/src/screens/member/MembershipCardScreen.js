@@ -1,10 +1,11 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Image,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,7 +14,13 @@ import { useAuthStore } from '../../store/authStore';
 import { authApi } from '../../api';
 
 const MembershipCardScreen = ({ navigation }) => {
-  const { user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigation.replace('Auth');
+    }
+  }, [isAuthenticated]);
   const [userProfile, setUserProfile] = useState(user);
 
   const fetchLatestProfile = useCallback(() => {
@@ -73,7 +80,11 @@ const MembershipCardScreen = ({ navigation }) => {
           <View style={[styles.membershipCard, styles.lockedMembershipCard]}>
             <View style={styles.cardTopRow}>
               <View style={styles.logoBadge}>
-                <Ionicons name="flower-outline" size={24} color="#64748b" />
+                <Image
+                  source={require('../../../assets/android-icon-foreground.png')}
+                  style={styles.trustLogoImg}
+                  resizeMode="contain"
+                />
                 <View style={styles.logoTextContainer}>
                   <Text style={[styles.trustLogoTitle, { color: '#475569' }]}>SREELAKSHMI</Text>
                   <Text style={styles.trustLogoSub}>CHARITABLE TRUST</Text>
@@ -111,7 +122,11 @@ const MembershipCardScreen = ({ navigation }) => {
           <View style={[styles.membershipCard, { backgroundColor: '#0284c7' }]}>
             <View style={styles.cardTopRow}>
               <View style={styles.logoBadge}>
-                <Ionicons name="flower-outline" size={24} color="#0284c7" />
+                <Image
+                  source={require('../../../assets/android-icon-foreground.png')}
+                  style={styles.trustLogoImg}
+                  resizeMode="contain"
+                />
                 <View style={styles.logoTextContainer}>
                   <Text style={styles.trustLogoTitle}>SREELAKSHMI</Text>
                   <Text style={styles.trustLogoSub}>CHARITABLE TRUST</Text>
@@ -338,6 +353,10 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 24,
     gap: 6,
+  },
+  trustLogoImg: {
+    width: 24,
+    height: 24,
   },
   logoTextContainer: { justifyContent: 'center' },
   trustLogoTitle: { fontSize: 8, fontWeight: '900', color: '#0284c7', letterSpacing: 0.5 },

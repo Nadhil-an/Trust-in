@@ -7,7 +7,8 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Modal,
-  RefreshControl
+  RefreshControl,
+  Image,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,15 +19,16 @@ import { useNotificationSocket } from '../../hooks/useWebSocket';
 
 const DonationHistoryScreen = ({ navigation }) => {
   useNotificationSocket((data) => {
-    if (data?.type === 'DASHBOARD_REFRESH') {
+    if (data?.type === 'DASHBOARD_REFRESH' || data?.type === 'dashboard_refresh') {
       fetchDonations();
       fetchProfile();
     }
   });
-  const { user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
   const [userProfile, setUserProfile] = useState(user);
 
   const fetchProfile = async () => {
+    if (!isAuthenticated) return;
     try {
       const res = await authApi.getProfile();
       if (res.data) {
@@ -43,6 +45,7 @@ const DonationHistoryScreen = ({ navigation }) => {
   const [selectedDonation, setSelectedDonation] = useState(null);
 
   const fetchDonations = async () => {
+    if (!isAuthenticated) return;
     try {
       setLoading(true);
       const res = await donationApi.list({ page_size: 1000 });
@@ -86,6 +89,58 @@ const DonationHistoryScreen = ({ navigation }) => {
       : 'N/A';
   const validUpto = activeUser?.valid_upto || 'N/A';
   const monthlyFee = activeUser?.monthly_fee || 100;
+
+  if (!isAuthenticated) {
+    return (
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+            <Ionicons name="arrow-back" size={24} color={Colors.white} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>My Donation</Text>
+          <View style={{ width: 40 }} />
+        </View>
+
+        {/* Centered Guest Card */}
+        <View style={styles.guestBody}>
+          <View style={styles.guestCard}>
+            <View style={styles.guestIconCircle}>
+              <Ionicons name="heart-outline" size={40} color="#0284c7" />
+            </View>
+
+            <View style={styles.trustBadge}>
+              <Text style={styles.trustBadgeText}>SREE LAKSHMI CHARITABLE TRUST</Text>
+            </View>
+
+            <Text style={styles.guestTitle}>Donation History & Receipts</Text>
+
+            <Text style={styles.guestSubtitle}>
+              Sign in to view your past donations, download 80G tax exemption receipts, and track your contribution history.
+            </Text>
+
+            <TouchableOpacity
+              style={styles.guestPrimaryBtn}
+              activeOpacity={0.85}
+              onPress={() => navigation.navigate('Auth')}
+            >
+              <Ionicons name="log-in-outline" size={18} color="#FFFFFF" />
+              <Text style={styles.guestPrimaryBtnText}>Login to Continue</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.guestSecondaryBtn}
+              activeOpacity={0.85}
+              onPress={() => navigation.navigate('Signup')}
+            >
+              <Ionicons name="person-add-outline" size={18} color="#0284c7" />
+              <Text style={styles.guestSecondaryBtnText}>Sign Up as Member</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -177,7 +232,11 @@ const DonationHistoryScreen = ({ navigation }) => {
           <View style={[styles.membershipCard, styles.lockedMembershipCard]}>
             <View style={styles.cardHeader}>
               <View style={styles.logoBadge}>
-                <Ionicons name="flower-outline" size={20} color="#64748b" />
+                <Image
+                  source={require('../../../assets/android-icon-foreground.png')}
+                  style={styles.trustLogoImg}
+                  resizeMode="contain"
+                />
                 <View>
                   <Text style={[styles.trustLogoTitle, { color: '#475569' }]}>SREELAKSHMI</Text>
                   <Text style={styles.trustLogoSub}>CHARITABLE TRUST</Text>
@@ -219,7 +278,11 @@ const DonationHistoryScreen = ({ navigation }) => {
             <View style={[styles.membershipCard, { backgroundColor: '#0284c7' }]}>
               <View style={styles.cardHeader}>
                 <View style={styles.logoBadge}>
-                  <Ionicons name="flower-outline" size={20} color="#0284c7" />
+                  <Image
+                    source={require('../../../assets/android-icon-foreground.png')}
+                    style={styles.trustLogoImg}
+                    resizeMode="contain"
+                  />
                   <View>
                     <Text style={styles.trustLogoTitle}>SREELAKSHMI</Text>
                     <Text style={styles.trustLogoSub}>CHARITABLE TRUST</Text>
@@ -641,6 +704,10 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     gap: 4,
   },
+  trustLogoImg: {
+    width: 22,
+    height: 22,
+  },
   trustLogoTitle: { fontSize: 7, fontWeight: '900', color: '#0284c7' },
   trustLogoSub: { fontSize: 5, fontWeight: '700', color: Colors.gray600 },
   memberIdContainer: { alignItems: 'flex-end' },
@@ -763,6 +830,105 @@ const styles = StyleSheet.create({
   },
   actionTitle: { fontSize: 14, fontWeight: '700', color: Colors.textPrimary, marginBottom: 2 },
   actionSub: { fontSize: 11, color: Colors.gray500 },
+  guestBody: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#F8FAFC',
+  },
+  guestCard: {
+    width: '100%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    paddingVertical: 32,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.07,
+    shadowRadius: 14,
+    elevation: 4,
+  },
+  guestIconCircle: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    backgroundColor: '#F0F9FF',
+    borderWidth: 1.5,
+    borderColor: '#BAE6FD',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  trustBadge: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  trustBadgeText: {
+    fontSize: 9.5,
+    fontWeight: '800',
+    color: '#64748B',
+    letterSpacing: 0.6,
+  },
+  guestTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  guestSubtitle: {
+    fontSize: 13,
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 19,
+    marginBottom: 24,
+    paddingHorizontal: 8,
+  },
+  guestPrimaryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#0284c7',
+    paddingVertical: 13,
+    borderRadius: 14,
+    width: '100%',
+    shadowColor: '#0284c7',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  guestPrimaryBtnText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  guestSecondaryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#F0F9FF',
+    borderWidth: 1.5,
+    borderColor: '#0284c7',
+    paddingVertical: 12,
+    borderRadius: 14,
+    width: '100%',
+    marginTop: 10,
+  },
+  guestSecondaryBtnText: {
+    color: '#0284c7',
+    fontSize: 14,
+    fontWeight: '700',
+  },
 });
 
 export default DonationHistoryScreen;

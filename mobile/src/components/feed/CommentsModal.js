@@ -16,8 +16,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
 import { memberPostsApi } from '../../api';
 import Toast from 'react-native-toast-message';
+import { useNavigation } from '@react-navigation/native';
+import { useAuthStore } from '../../store/authStore';
 
 export default function CommentsModal({ visible, postId, onClose, onCommentAdded }) {
+  const navigation = useNavigation();
+  const { isAuthenticated } = useAuthStore();
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [text, setText] = useState('');
@@ -45,6 +49,11 @@ export default function CommentsModal({ visible, postId, onClose, onCommentAdded
   };
 
   const handleSend = async () => {
+    if (!isAuthenticated) {
+      onClose();
+      navigation.navigate('Auth');
+      return;
+    }
     if (!text.trim()) return;
     setSubmitting(true);
     try {
@@ -134,30 +143,44 @@ export default function CommentsModal({ visible, postId, onClose, onCommentAdded
             />
           )}
 
-          {/* Sticky Input Bar */}
-          <View style={styles.inputBar}>
-            <TextInput
-              style={styles.input}
-              placeholder="Add a comment..."
-              placeholderTextColor="#94A3B8"
-              value={text}
-              onChangeText={setText}
-              multiline={false}
-              returnKeyType="send"
-              onSubmitEditing={handleSend}
-            />
+          {/* Sticky Input Bar (or Guest Sign-in CTA) */}
+          {isAuthenticated ? (
+            <View style={styles.inputBar}>
+              <TextInput
+                style={styles.input}
+                placeholder="Add a comment..."
+                placeholderTextColor="#94A3B8"
+                value={text}
+                onChangeText={setText}
+                multiline={false}
+                returnKeyType="send"
+                onSubmitEditing={handleSend}
+              />
+              <TouchableOpacity
+                style={[styles.sendBtn, !text.trim() && styles.sendBtnDisabled]}
+                onPress={handleSend}
+                disabled={!text.trim() || submitting}
+              >
+                {submitting ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Ionicons name="send" size={18} color="#fff" />
+                )}
+              </TouchableOpacity>
+            </View>
+          ) : (
             <TouchableOpacity
-              style={[styles.sendBtn, !text.trim() && styles.sendBtnDisabled]}
-              onPress={handleSend}
-              disabled={!text.trim() || submitting}
+              style={styles.guestCommentBar}
+              activeOpacity={0.8}
+              onPress={() => {
+                onClose();
+                navigation.navigate('Auth');
+              }}
             >
-              {submitting ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <Ionicons name="send" size={18} color="#fff" />
-              )}
+              <Ionicons name="log-in-outline" size={18} color="#0284c7" />
+              <Text style={styles.guestCommentText}>Log in to join the conversation</Text>
             </TouchableOpacity>
-          </View>
+          )}
         </View>
       </KeyboardAvoidingView>
     </Modal>
@@ -301,6 +324,26 @@ const styles = StyleSheet.create({
     backgroundColor: '#0284c7',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  guestCommentBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginHorizontal: 16,
+    marginBottom: Platform.OS === 'ios' ? 14 : 8,
+    marginTop: 8,
+    backgroundColor: '#F0F9FF',
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: '#BAE6FD',
+  },
+  guestCommentText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0284c7',
   },
   sendBtnDisabled: {
     backgroundColor: '#94A3B8',

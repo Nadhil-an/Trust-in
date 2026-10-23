@@ -30,7 +30,13 @@ const TRUST_NAME = 'Sree Lakshmi Charitable Trust';
 
 const MembershipPaymentScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
-  const { user, updateUser } = useAuthStore();
+  const { user, updateUser, isAuthenticated } = useAuthStore();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigation.replace('Auth');
+    }
+  }, [isAuthenticated]);
   const [userProfile, setUserProfile] = useState(user);
 
   const initialAmount = route.params?.monthlyFee || user?.monthly_fee || 100;
@@ -221,13 +227,17 @@ const MembershipPaymentScreen = ({ navigation, route }) => {
           if (isRecurring) {
             verifyRes = await paymentApi.verifySubscription({
               subscription_id: subscriptionId,
-              payment_id: paymentId,
+              razorpay_payment_id: paymentId,
+              razorpay_signature: signature,
               signature: signature,
             });
           } else {
             verifyRes = await paymentApi.verifyDonationPayment({
               order_id: orderId,
-              payment_id: paymentId,
+              payment_id: orderId,
+              razorpay_order_id: orderId,
+              razorpay_payment_id: paymentId,
+              razorpay_signature: signature,
               signature: signature,
             });
           }
@@ -236,7 +246,7 @@ const MembershipPaymentScreen = ({ navigation, route }) => {
           await fetchProfile();
 
           setPaymentSuccessDetails({
-            receipt: verifyRes?.data?.receipt_number || 'SLCT-MBR',
+            receipt: verifyRes?.data?.receipt_number || verifyRes?.data?.receipt_no || 'SLCT-MBR',
             amount: amount,
             recurring: isRecurring,
           });
@@ -554,14 +564,18 @@ const MembershipPaymentScreen = ({ navigation, route }) => {
                   { text: 'Yes, Cancel', style: 'destructive', onPress: () => setCheckoutVisible(false) },
                 ]);
               }}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             >
-              <Ionicons name="close" size={24} color="#0F172A" />
+              <Ionicons name="close" size={20} color="#0F172A" />
             </TouchableOpacity>
-            <View style={{ flex: 1, alignItems: 'center' }}>
-              <Text style={styles.webViewTitle}>Razorpay Secure Checkout</Text>
-              <Text style={styles.webViewSub}>Sree Lakshmi Charitable Trust</Text>
+            <View style={styles.webViewHeaderCenter}>
+              <Text style={styles.webViewTitle} numberOfLines={1}>Razorpay Secure Checkout</Text>
+              <View style={styles.webViewSubRow}>
+                <Ionicons name="shield-checkmark" size={12} color="#16a34a" style={{ marginRight: 4 }} />
+                <Text style={styles.webViewSub}>Membership Renewal &bull; 256-Bit SSL</Text>
+              </View>
             </View>
-            <View style={{ width: 32 }} />
+            <View style={styles.webViewRightPlaceholder} />
           </View>
 
           {Boolean(checkoutUrl) && (
@@ -575,6 +589,19 @@ const MembershipPaymentScreen = ({ navigation, route }) => {
               mixedContentMode="always"
               thirdPartyCookiesEnabled={true}
               sharedCookiesEnabled={true}
+              setSupportMultipleWindows={false}
+              javaScriptCanOpenWindowsAutomatically={true}
+              onShouldStartLoadWithRequest={(req) => {
+                const u = req.url;
+                if (u.startsWith('http://') || u.startsWith('https://') || u.startsWith('about:blank') || u.startsWith('data:')) {
+                  return true;
+                }
+                Linking.canOpenURL(u).then((sup) => {
+                  if (sup) Linking.openURL(u);
+                  else Alert.alert('Payment App', 'No compatible app found to complete this transaction.');
+                }).catch(() => {});
+                return false;
+              }}
               startInLoadingState={true}
               renderLoading={() => (
                 <View style={styles.webViewLoader}>
@@ -1061,21 +1088,45 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingTop: 8,
+    paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
+    borderBottomColor: '#F1F5F9',
+    backgroundColor: '#FFFFFF',
+    minHeight: 58,
   },
   webViewCloseBtn: {
-    padding: 6,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  webViewHeaderCenter: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 8,
   },
   webViewTitle: {
     fontSize: 15,
     fontWeight: '800',
     color: '#0F172A',
+    letterSpacing: 0.2,
+  },
+  webViewSubRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
   },
   webViewSub: {
     fontSize: 11,
+    fontWeight: '600',
     color: '#64748B',
+  },
+  webViewRightPlaceholder: {
+    width: 36,
   },
   webView: {
     flex: 1,
@@ -1177,3 +1228,4 @@ const styles = StyleSheet.create({
 });
 
 export default MembershipPaymentScreen;
+

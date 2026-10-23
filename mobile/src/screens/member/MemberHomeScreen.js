@@ -22,10 +22,11 @@ import PostCard from '../../components/feed/PostCard';
 import CommentsModal from '../../components/feed/CommentsModal';
 
 const MemberHomeScreen = ({ navigation }) => {
-  const { user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
 
   useNotificationSocket((data) => {
-    if (data?.type === 'DASHBOARD_REFRESH') {
+    if (!isAuthenticated) return;
+    if (data?.type === 'DASHBOARD_REFRESH' || data?.type === 'dashboard_refresh') {
       authApi.getProfile()
         .then(res => {
           if (res.data) {
@@ -60,6 +61,7 @@ const MemberHomeScreen = ({ navigation }) => {
   const monthlyFee = activeUser?.monthly_fee || 100;
 
   const showSubscriptionToastAlert = (profile) => {
+    if (!isAuthenticated) return;
     const isPaid = Boolean(profile?.is_paid_member);
     const hasActive = Boolean(profile?.has_active_subscription);
     const status = profile?.subscription_status || (hasActive ? 'ACTIVE' : 'NOT_SUBSCRIBED');
@@ -95,6 +97,7 @@ const MemberHomeScreen = ({ navigation }) => {
   };
 
   const fetchProfileAndCheck = async () => {
+    if (!isAuthenticated) return;
     try {
       const res = await authApi.getProfile();
       if (res.data) {
@@ -117,6 +120,30 @@ const MemberHomeScreen = ({ navigation }) => {
         setUpcomingEvents(upcoming.length > 0 ? upcoming : res.data.results);
       }
     } catch (err) {}
+  };
+
+  const handleCreatePost = () => {
+    if (!isAuthenticated) {
+      navigation.navigate('Auth');
+      return;
+    }
+    navigation.navigate('CreatePost');
+  };
+
+  const handleDonate = () => {
+    if (!isAuthenticated) {
+      navigation.navigate('Auth');
+      return;
+    }
+    navigation.navigate('Donate');
+  };
+
+  const handleMembershipPayment = () => {
+    if (!isAuthenticated) {
+      navigation.navigate('Auth');
+      return;
+    }
+    navigation.navigate('MembershipPayment');
   };
 
   const fetchPosts = async () => {
@@ -162,17 +189,30 @@ const MemberHomeScreen = ({ navigation }) => {
           <Text style={styles.brandSub}>CHARITABLE TRUST</Text>
         </View>
 
-        <View style={styles.rightIcons}>
-          <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Notifications')}>
-            <Ionicons name="notifications-outline" size={22} color={Colors.textPrimary} />
-          </TouchableOpacity>
+        {isAuthenticated ? (
+          <View style={styles.rightIcons}>
+            <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Notifications')}>
+              <Ionicons name="notifications-outline" size={22} color={Colors.textPrimary} />
+            </TouchableOpacity>
 
-          <TouchableOpacity style={styles.avatarBtn} onPress={() => navigation.navigate('Profile')}>
-            <View style={styles.avatarCircle}>
-              <Ionicons name="person" size={18} color="#0284c7" />
-            </View>
-          </TouchableOpacity>
-        </View>
+            <TouchableOpacity style={styles.avatarBtn} onPress={() => navigation.navigate('Profile')}>
+              <View style={styles.avatarCircle}>
+                <Ionicons name="person" size={18} color="#0284c7" />
+              </View>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View style={styles.rightIcons}>
+            <TouchableOpacity
+              style={styles.loginPillBtn}
+              onPress={() => navigation.navigate('Auth')}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="log-in-outline" size={16} color="#FFFFFF" />
+              <Text style={styles.loginPillBtnText}>Login</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
       <ScrollView
@@ -181,11 +221,11 @@ const MemberHomeScreen = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
       >
         {/* Subscription Hover / Attention Banner on App Open */}
-        {isNotSubscribed ? (
+        {isAuthenticated && isNotSubscribed ? (
           <TouchableOpacity
             style={styles.notifBannerAmber}
             activeOpacity={0.88}
-            onPress={() => navigation.navigate('MembershipPayment')}
+            onPress={handleMembershipPayment}
           >
             <View style={styles.notifBannerRow}>
               <View style={styles.notifIconBadgeAmber}>
@@ -208,11 +248,11 @@ const MemberHomeScreen = ({ navigation }) => {
               </View>
             </View>
           </TouchableOpacity>
-        ) : isExpiringSoon ? (
+        ) : (isAuthenticated && isExpiringSoon) ? (
           <TouchableOpacity
             style={styles.notifBannerOrange}
             activeOpacity={0.88}
-            onPress={() => navigation.navigate('MembershipPayment')}
+            onPress={handleMembershipPayment}
           >
             <View style={styles.notifBannerRow}>
               <View style={styles.notifIconBadgeOrange}>
@@ -237,11 +277,11 @@ const MemberHomeScreen = ({ navigation }) => {
               </View>
             </View>
           </TouchableOpacity>
-        ) : isExpired ? (
+        ) : (isAuthenticated && isExpired) ? (
           <TouchableOpacity
             style={styles.notifBannerRed}
             activeOpacity={0.88}
-            onPress={() => navigation.navigate('MembershipPayment')}
+            onPress={handleMembershipPayment}
           >
             <View style={styles.notifBannerRow}>
               <View style={styles.notifIconBadgeRed}>
@@ -274,7 +314,7 @@ const MemberHomeScreen = ({ navigation }) => {
           </View>
           <TouchableOpacity
             style={styles.createPostSmallBtn}
-            onPress={() => navigation.navigate('CreatePost')}
+            onPress={handleCreatePost}
           >
             <Ionicons name="add" size={16} color="#fff" />
             <Text style={styles.createPostSmallBtnText}>Post Issue</Text>
@@ -285,7 +325,7 @@ const MemberHomeScreen = ({ navigation }) => {
         <TouchableOpacity
           style={styles.createPromptCard}
           activeOpacity={0.85}
-          onPress={() => navigation.navigate('CreatePost')}
+          onPress={handleCreatePost}
         >
           {user?.avatar || user?.photo ? (
             <Image source={{ uri: user.avatar || user.photo }} style={styles.promptAvatar} />
@@ -316,7 +356,7 @@ const MemberHomeScreen = ({ navigation }) => {
             </Text>
             <TouchableOpacity
               style={styles.emptyCreateBtn}
-              onPress={() => navigation.navigate('CreatePost')}
+              onPress={handleCreatePost}
             >
               <Text style={styles.emptyCreateBtnText}>+ Share Problem</Text>
             </TouchableOpacity>
@@ -563,6 +603,25 @@ const styles = StyleSheet.create({
   brandTitleContainer: { alignItems: 'center' },
   brandTitle: { fontSize: 13, fontWeight: '900', color: '#0284c7', letterSpacing: 1 },
   brandSub: { fontSize: 9, fontWeight: '700', color: Colors.gray600, letterSpacing: 0.5 },
+    loginPillBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#0284c7',
+    paddingHorizontal: 13,
+    paddingVertical: 7,
+    borderRadius: 18,
+    shadowColor: '#0284c7',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  loginPillBtnText: {
+    color: '#FFFFFF',
+    fontSize: 12.5,
+    fontWeight: '700',
+  },
   rightIcons: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   avatarBtn: { padding: 2 },
   avatarCircle: {

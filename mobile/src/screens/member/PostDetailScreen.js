@@ -125,6 +125,10 @@ const PostDetailScreen = ({ route, navigation }) => {
   };
 
   const handleLike = async () => {
+    if (!useAuthStore.getState().isAuthenticated) {
+      navigation.navigate('Auth');
+      return;
+    }
     const nextLiked = !isLiked;
     const nextCount = nextLiked ? likesCount + 1 : Math.max(0, likesCount - 1);
     setIsLiked(nextLiked);
@@ -153,6 +157,10 @@ const PostDetailScreen = ({ route, navigation }) => {
   };
 
   const handleAddComment = async () => {
+    if (!useAuthStore.getState().isAuthenticated) {
+      navigation.navigate('Auth');
+      return;
+    }
     const text = commentText.trim();
     if (!text || submittingComment) return;
 
@@ -172,6 +180,10 @@ const PostDetailScreen = ({ route, navigation }) => {
   };
 
   const handleCommentPress = () => {
+    if (!useAuthStore.getState().isAuthenticated) {
+      navigation.navigate('Auth');
+      return;
+    }
     setShowCommentInput((prev) => {
       const next = true;
       setTimeout(() => {

@@ -534,19 +534,21 @@ export default function ManagerDashboard() {
             View All →
           </button>
         </div>
-        <ResponsiveContainer width="100%" height={180}>
-          <LineChart data={monthly_trend}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--gray-100)" />
-            <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-            <YAxis allowDecimals={false} tick={{ fontSize: 10 }} />
+        <ResponsiveContainer width="100%" height={200}>
+          <BarChart data={monthly_trend} barCategoryGap="30%">
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--gray-100)" vertical={false} />
+            <XAxis dataKey="month" tick={{ fontSize: 11, fill: 'var(--gray-500)' }} />
+            <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: 'var(--gray-500)' }} />
             <Tooltip content={<ChartTip />} />
-            <Line
-              type="monotone" dataKey="count" name="Requests"
-              stroke={CLR.blue} strokeWidth={2.5}
-              dot={{ r: 4, fill: CLR.blue, strokeWidth: 0 }}
-              activeDot={{ r: 6 }}
+            <Bar
+              dataKey="count"
+              name="Requests"
+              fill={CLR.blue}
+              radius={[4, 4, 0, 0]}
+              maxBarSize={32}
             />
-          </LineChart>
+            <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
+          </BarChart>
         </ResponsiveContainer>
       </div>
     </div>

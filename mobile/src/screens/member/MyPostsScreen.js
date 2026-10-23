@@ -33,7 +33,7 @@ export default function MyPostsScreen({ navigation }) {
   );
   const headerPaddingTop = topInset > 0 ? topInset + 10 : (Platform.OS === 'ios' ? 50 : 36);
 
-  const { user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -53,6 +53,7 @@ export default function MyPostsScreen({ navigation }) {
   const [editSaving, setEditSaving] = useState(false);
 
   const fetchMyPosts = async () => {
+    if (!isAuthenticated) return;
     try {
       const res = await memberPostsApi.list({ my_posts: true });
       const results = res.data?.results || res.data || [];
@@ -132,6 +133,61 @@ export default function MyPostsScreen({ navigation }) {
       setEditSaving(false);
     }
   };
+
+  if (!isAuthenticated) {
+    return (
+      <View style={styles.container}>
+        <StatusBar barStyle="dark-content" backgroundColor="#ffffff" translucent={true} />
+
+        {/* Top Header Bar */}
+        <View style={[styles.header, { paddingTop: headerPaddingTop }]}>
+          <View style={styles.headerTitleWrap}>
+            <Text style={styles.headerTitle}>My Posts</Text>
+            <Text style={styles.headerSubtitle}>
+              Problems & help requests submitted by you
+            </Text>
+          </View>
+        </View>
+
+        {/* Centered Guest Card */}
+        <View style={styles.guestBody}>
+          <View style={styles.guestCard}>
+            <View style={styles.guestIconCircle}>
+              <Ionicons name="newspaper-outline" size={40} color="#0284c7" />
+            </View>
+
+            <View style={styles.trustBadge}>
+              <Text style={styles.trustBadgeText}>SREE LAKSHMI CHARITABLE TRUST</Text>
+            </View>
+
+            <Text style={styles.guestTitle}>Member Posts & Requests</Text>
+            
+            <Text style={styles.guestSubtitle}>
+              Sign in as a registered member to post community issues, request assistance for medical or educational needs, and track your posts.
+            </Text>
+
+            <TouchableOpacity
+              style={styles.guestPrimaryBtn}
+              activeOpacity={0.85}
+              onPress={() => navigation.navigate('Auth')}
+            >
+              <Ionicons name="log-in-outline" size={18} color="#FFFFFF" />
+              <Text style={styles.guestPrimaryBtnText}>Login to Continue</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.guestSecondaryBtn}
+              activeOpacity={0.85}
+              onPress={() => navigation.navigate('Signup')}
+            >
+              <Ionicons name="person-add-outline" size={18} color="#0284c7" />
+              <Text style={styles.guestSecondaryBtnText}>Sign Up as Member</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -619,5 +675,105 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#0F172A',
+  },
+  // Guest State Styles
+  guestBody: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#F8FAFC',
+  },
+  guestCard: {
+    width: '100%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    paddingVertical: 32,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.07,
+    shadowRadius: 14,
+    elevation: 4,
+  },
+  guestIconCircle: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    backgroundColor: '#F0F9FF',
+    borderWidth: 1.5,
+    borderColor: '#BAE6FD',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  trustBadge: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  trustBadgeText: {
+    fontSize: 9.5,
+    fontWeight: '800',
+    color: '#64748B',
+    letterSpacing: 0.6,
+  },
+  guestTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  guestSubtitle: {
+    fontSize: 13,
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 19,
+    marginBottom: 24,
+    paddingHorizontal: 8,
+  },
+  guestPrimaryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#0284c7',
+    paddingVertical: 13,
+    borderRadius: 14,
+    width: '100%',
+    shadowColor: '#0284c7',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  guestPrimaryBtnText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  guestSecondaryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#F0F9FF',
+    borderWidth: 1.5,
+    borderColor: '#0284c7',
+    paddingVertical: 12,
+    borderRadius: 14,
+    width: '100%',
+    marginTop: 10,
+  },
+  guestSecondaryBtnText: {
+    color: '#0284c7',
+    fontSize: 14,
+    fontWeight: '700',
   },
 });

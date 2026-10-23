@@ -148,14 +148,18 @@ const GEOTabs = () => (
 );
 
 const MainStack = () => {
-  const { isStaff, isMember, isFAO, isACO, isGEO, isManager } = useAuthStore();
+  const { isStaff, isMember, isFAO, isACO, isGEO, isManager, isAuthenticated } = useAuthStore();
   
-  let HomeTabs = StaffTabs;
-  if (isMember()) HomeTabs = MemberTabs;
-  if (isManager()) HomeTabs = ManagerTabs;
-  if (isFAO()) HomeTabs = FAOTabs;
-  if (isACO()) HomeTabs = ACOTabs;
-  if (isGEO()) HomeTabs = GEOTabs;
+  // Default to MemberTabs for unauthenticated guests and regular members
+  let HomeTabs = MemberTabs;
+  if (isAuthenticated) {
+    if (isStaff()) HomeTabs = StaffTabs;
+    if (isManager()) HomeTabs = ManagerTabs;
+    if (isFAO()) HomeTabs = FAOTabs;
+    if (isACO()) HomeTabs = ACOTabs;
+    if (isGEO()) HomeTabs = GEOTabs;
+    if (isMember()) HomeTabs = MemberTabs;
+  }
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false, animation: 'slide_from_right', animationDuration: 280 }}>
@@ -239,15 +243,17 @@ export const AppNavigator = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {!isAuthenticated ? (
-          // Auth Stack — Login + Signup share a stack so navigation.navigate() works between them
-          <>
-            <Stack.Screen name="Auth" component={LoginScreen} options={{ animationTypeForReplace: 'pop' }} />
-            <Stack.Screen name="Signup" component={SignupScreen} options={{ animation: 'slide_from_right' }} />
-          </>
-        ) : (
-          <Stack.Screen name="Main" component={MainStack} />
-        )}
+        <Stack.Screen name="Main" component={MainStack} />
+        <Stack.Screen
+          name="Auth"
+          component={LoginScreen}
+          options={{ animation: 'slide_from_bottom' }}
+        />
+        <Stack.Screen
+          name="Signup"
+          component={SignupScreen}
+          options={{ animation: 'slide_from_right' }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
