@@ -339,10 +339,16 @@ const MemberHomeScreen = ({ navigation }) => {
         )}
 
         {/* Upcoming Events Section (Placed below community feed) */}
-        <View style={[styles.sectionHeader, { marginTop: 22, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#E2E8F0' }]}>
+        <View style={[styles.sectionHeader, { marginTop: 22, paddingTop: 14, marginBottom: 12, borderTopWidth: 1, borderTopColor: '#E2E8F0' }]}>
           <Text style={styles.sectionTitle}>Upcoming Events</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Events')}>
+          <TouchableOpacity
+            style={styles.viewAllBtn}
+            onPress={() => navigation.navigate('Events')}
+            activeOpacity={0.7}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
             <Text style={styles.viewAllText}>View All</Text>
+            <Ionicons name="arrow-forward" size={13} color="#0284c7" />
           </TouchableOpacity>
         </View>
 
@@ -744,12 +750,22 @@ const styles = StyleSheet.create({
 
   sectionHeader: {
     flexDirection: 'row',
-    justify: 'space-between',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    width: '100%',
     marginTop: 4,
   },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary },
-  viewAllText: { fontSize: 13, fontWeight: '700', color: '#0284c7' },
+  sectionTitle: { fontSize: 16, fontWeight: '800', color: Colors.textPrimary },
+  viewAllBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#F0F9FF',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+  },
+  viewAllText: { fontSize: 12.5, fontWeight: '700', color: '#0284c7' },
 
   eventCard: {
     flexDirection: 'row',

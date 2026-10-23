@@ -6,6 +6,31 @@ from core.models import (
 )
 
 
+def get_user_member(user):
+    if not user:
+        return None
+    if hasattr(user, '_cached_member'):
+        return user._cached_member
+    from hr_module.models import Member
+    target_username = (user.username or '').strip()
+    target_phone = str(getattr(user, 'phone', '') or '').strip()
+    target_name = (user.full_name or '').strip().lower()
+
+    member = None
+    if target_username:
+        member = Member.objects.filter(member_id__iexact=target_username).first()
+    if not member and target_name:
+        member = Member.objects.filter(full_name__iexact=user.full_name.strip()).first()
+    if not member:
+        for m in Member.objects.all():
+            m_phone = str(m.phone or '').strip()
+            if m_phone and (m_phone == target_username or (target_phone and m_phone == target_phone)):
+                member = m
+                break
+    user._cached_member = member
+    return member
+
+
 class UserSerializer(serializers.ModelSerializer):
     photo = serializers.SerializerMethodField()
     member_id = serializers.SerializerMethodField()
@@ -31,26 +56,7 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'date_joined']
 
     def _get_member(self, obj):
-        if hasattr(obj, '_cached_member'):
-            return obj._cached_member
-        from hr_module.models import Member
-        target_username = (obj.username or '').strip()
-        target_phone = str(getattr(obj, 'phone', '') or '').strip()
-        target_name = (obj.full_name or '').strip().lower()
-
-        member = None
-        if target_username:
-            member = Member.objects.filter(member_id__iexact=target_username).first()
-        if not member and target_name:
-            member = Member.objects.filter(full_name__iexact=obj.full_name.strip()).first()
-        if not member:
-            for m in Member.objects.all():
-                m_phone = str(m.phone or '').strip()
-                if m_phone and (m_phone == target_username or (target_phone and m_phone == target_phone)):
-                    member = m
-                    break
-        obj._cached_member = member
-        return member
+        return get_user_member(obj)
 
     def get_member_id(self, obj):
         member = self._get_member(obj)
@@ -210,11 +216,16 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
 
 class ChangePasswordSerializer(serializers.Serializer):
-    old_password = serializers.CharField(required=True)
-    new_password = serializers.CharField(required=True, min_length=8)
+    old_password = serializers.CharField(required=False, allow_blank=True)
+    current_password = serializers.CharField(required=False, allow_blank=True)
+    new_password = serializers.CharField(required=True, min_length=6)
     confirm_password = serializers.CharField(required=True)
 
     def validate(self, data):
+        old_pwd = data.get('old_password') or data.get('current_password')
+        if not old_pwd:
+            raise serializers.ValidationError({"current_password": "Current password is required."})
+        data['old_password'] = old_pwd
         if data['new_password'] != data['confirm_password']:
             raise serializers.ValidationError("Passwords do not match.")
         return data
@@ -276,12 +287,15 @@ class MemberPostCommentSerializer(serializers.ModelSerializer):
         photo_url = None
         if obj.user.photo:
             photo_url = request.build_absolute_uri(obj.user.photo.url) if request else obj.user.photo.url
+        member = get_user_member(obj.user)
+        member_id = member.member_id if (member and member.member_id) else (obj.user.username or '')
         return {
             'id': str(obj.user.id),
             'username': obj.user.username,
             'full_name': obj.user.full_name or obj.user.username,
             'photo': photo_url,
             'role': obj.user.role,
+            'member_id': member_id,
         }
 
 
@@ -316,6 +330,8 @@ class MemberPostSerializer(serializers.ModelSerializer):
         photo_url = None
         if obj.author.photo:
             photo_url = request.build_absolute_uri(obj.author.photo.url) if request else obj.author.photo.url
+        member = get_user_member(obj.author)
+        member_id = member.member_id if (member and member.member_id) else (obj.author.username or '')
         return {
             'id': str(obj.author.id),
             'username': obj.author.username,
@@ -323,6 +339,7 @@ class MemberPostSerializer(serializers.ModelSerializer):
             'photo': photo_url,
             'role': obj.author.role,
             'phone': getattr(obj.author, 'phone', ''),
+            'member_id': member_id,
         }
 
     def get_likes_count(self, obj):

@@ -205,7 +205,7 @@ export default function MyPostsScreen({ navigation }) {
               }}
               onPostDeleted={(deletedId) => {
                 setPosts((prev) => prev.filter((p) => p.id !== deletedId));
-                Toast.show({ type: 'info', text1: 'Deleted', text2: 'Post was removed.' });
+                Toast.show({ type: 'success', text1: 'Post Deleted', text2: 'Your post was successfully deleted.' });
               }}
               onEditPost={handleOpenEdit}
             />

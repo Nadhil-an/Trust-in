@@ -104,6 +104,11 @@ const PostDetailScreen = ({ route, navigation }) => {
     ? descLines[0]
     : (descRaw.length > 80 ? descRaw.slice(0, 80) + '...' : descRaw);
   const titleText = post.title || headline || 'Community Assistance Request';
+  const authorMemberId =
+    post.author?.member_id ||
+    (isAuthor && (user?.member_id || user?.username)) ||
+    post.author?.username ||
+    '';
 
   const formatTime = (dateStr) => {
     if (!dateStr) return '';
@@ -350,7 +355,7 @@ const PostDetailScreen = ({ route, navigation }) => {
                   )}
                 </View>
                 <Text style={styles.orgSub}>
-                  Member: @{post.author?.username} • Citizen Reporter
+                  Member ID: {authorMemberId || 'N/A'} • Citizen Reporter
                 </Text>
               </View>
             </View>
@@ -376,30 +381,7 @@ const PostDetailScreen = ({ route, navigation }) => {
 
 
 
-            {/* Contact Information Card with Leveled Call & WhatsApp Buttons */}
-            {Boolean(post.contact_number) && (
-              <View style={styles.contactSectionBox}>
-                <Text style={styles.sectionTitle}>Contact Information</Text>
-                <View style={styles.contactPhoneRow}>
-                  <View style={styles.contactPhoneIconBox}>
-                    <Ionicons name="call" size={15} color="#0284c7" />
-                  </View>
-                  <Text style={styles.phoneText}>{post.contact_number}</Text>
-                </View>
-                <View style={styles.contactButtonsLevelRow}>
-                  <TouchableOpacity style={styles.callBtn} onPress={handleCall} activeOpacity={0.85}>
-                    <Ionicons name="call" size={15} color="#ffffff" />
-                    <Text style={styles.callBtnText}>Call</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.whatsappBtn} onPress={handleWhatsApp} activeOpacity={0.85}>
-                    <Ionicons name="logo-whatsapp" size={16} color="#ffffff" />
-                    <Text style={styles.whatsappBtnText}>WhatsApp</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
-
-            {/* Engagement Actions (Like & Comment) on same level */}
+            {/* Engagement Actions (Like & Comment) */}
             <View style={styles.actionBarCard}>
               <TouchableOpacity
                 style={[styles.actionBtn, styles.likeBtn, isLiked && styles.likeBtnActive]}
@@ -433,6 +415,20 @@ const PostDetailScreen = ({ route, navigation }) => {
                 </Text>
               </TouchableOpacity>
             </View>
+
+            {/* Compact Direct Call & WhatsApp Buttons (Phone number hidden from direct view) */}
+            {Boolean(post.contact_number) && (
+              <View style={styles.contactCompactRow}>
+                <TouchableOpacity style={styles.compactCallBtn} onPress={handleCall} activeOpacity={0.85}>
+                  <Ionicons name="call" size={13} color="#0284c7" />
+                  <Text style={styles.compactCallBtnText}>Call</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.compactWhatsappBtn} onPress={handleWhatsApp} activeOpacity={0.85}>
+                  <Ionicons name="logo-whatsapp" size={14} color="#16a34a" />
+                  <Text style={styles.compactWhatsappBtnText}>WhatsApp</Text>
+                </TouchableOpacity>
+              </View>
+            )}
 
             {/* Live Comments Section */}
             <View style={styles.commentsSection}>
@@ -697,60 +693,7 @@ const styles = StyleSheet.create({
   refVal: { fontSize: 12, fontWeight: '800', color: '#065F46' },
 
 
-  // Contact Information
-  contactSectionBox: {
-    marginTop: 18,
-    backgroundColor: '#F8FAFC',
-    borderRadius: 14,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  contactPhoneRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 12,
-  },
-  contactPhoneIconBox: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    backgroundColor: '#E0F2FE',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  phoneText: { fontSize: 15, fontWeight: '700', color: '#0F172A' },
-  contactButtonsLevelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    width: '100%',
-  },
-  callBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    backgroundColor: '#0284c7',
-    paddingVertical: 10,
-    borderRadius: 10,
-  },
-  callBtnText: { color: '#ffffff', fontSize: 13, fontWeight: '700' },
-  whatsappBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    backgroundColor: '#16A34A',
-    paddingVertical: 10,
-    borderRadius: 10,
-  },
-  whatsappBtnText: { color: '#ffffff', fontSize: 13, fontWeight: '700' },
-
-  // Engagement Actions Row (Like & Comment leveled)
+  // Engagement Actions Row (Like & Comment)
   actionBarCard: {
     backgroundColor: '#ffffff',
     borderRadius: 12,
@@ -759,7 +702,7 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0',
     flexDirection: 'row',
     gap: 10,
-    marginTop: 20,
+    marginTop: 16,
   },
   actionBtn: {
     flex: 1,
@@ -778,6 +721,48 @@ const styles = StyleSheet.create({
   commentBtn: { backgroundColor: '#F8FAFC' },
   commentBtnActive: { backgroundColor: '#F0F9FF', borderColor: '#BAE6FD' },
   actionBtnText: { fontSize: 13, fontWeight: '700', color: '#64748B' },
+
+  // Compact Call & WhatsApp Actions Row (No phone number shown directly)
+  contactCompactRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: 10,
+  },
+  compactCallBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#F0F9FF',
+    borderWidth: 1,
+    borderColor: '#BAE6FD',
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  compactCallBtnText: {
+    color: '#0284C7',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  compactWhatsappBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#F0FDF4',
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  compactWhatsappBtnText: {
+    color: '#16A34A',
+    fontSize: 12,
+    fontWeight: '700',
+  },
   likedText: { color: '#EF4444' },
   commentTextActive: { color: '#0284C7' },
 

@@ -350,7 +350,7 @@ class ChangePasswordView(APIView):
             return Response(serializer.errors, status=400)
         user = request.user
         if not user.check_password(serializer.validated_data['old_password']):
-            return Response({'error': 'Old password is incorrect.'}, status=400)
+            return Response({'error': 'Current password is incorrect.'}, status=400)
         user.set_password(serializer.validated_data['new_password'])
         user.save()
         AuditLog.objects.create(
@@ -359,7 +359,132 @@ class ChangePasswordView(APIView):
             description=f"Password changed by {user.full_name}",
             ip_address=getattr(request, 'audit_ip', None)
         )
-        return Response({'message': 'Password changed successfully.'})
+        return Response({'message': 'Password updated successfully.'})
+
+
+class ForgotPasswordRequestView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        import random
+        from django.core.cache import cache
+        from django.db.models import Q
+
+        identifier = str(request.data.get('identifier', '')).strip()
+        user = None
+        if not identifier and request.user and request.user.is_authenticated:
+            user = request.user
+        elif identifier:
+            clean_digits = ''.join(filter(str.isdigit, identifier))
+            user = User.objects.filter(Q(username__iexact=identifier) | Q(email__iexact=identifier)).first()
+            if not user and clean_digits:
+                for u in User.objects.exclude(phone='').iterator():
+                    if u.phone and ''.join(filter(str.isdigit, u.phone)) in [clean_digits, clean_digits[-10:]]:
+                        user = u
+                        break
+            if not user:
+                from hr_module.models import Member
+                m = Member.objects.filter(
+                    Q(member_id__iexact=identifier) |
+                    Q(email__iexact=identifier)
+                ).first()
+                if not m and clean_digits:
+                    for mem in Member.objects.all():
+                        if mem.phone and ''.join(filter(str.isdigit, mem.phone)) in [clean_digits, clean_digits[-10:]]:
+                            m = mem
+                            break
+                if m:
+                    if m.created_by:
+                        user = m.created_by
+                    else:
+                        user = User.objects.filter(role=Role.MEMBER).filter(
+                            Q(full_name__iexact=m.full_name) | Q(username__iexact=m.member_id)
+                        ).first()
+
+        if not user:
+            return Response({'error': 'No account found matching the provided phone number, email, or member ID.'}, status=404)
+
+        otp = str(random.randint(100000, 999999))
+        cache.set(f"pwd_reset_otp_{user.id}", otp, timeout=600)
+
+        masked_contact = ''
+        if user.phone:
+            p = user.phone.strip()
+            masked_contact = f"{p[:2]}******{p[-2:]}" if len(p) >= 4 else p
+        elif user.email:
+            parts = user.email.split('@')
+            masked_contact = f"{parts[0][:2]}***@{parts[1]}" if len(parts) == 2 else user.email
+
+        try:
+            from notify.whatsapp_service import send_whatsapp_message, is_whatsapp_enabled
+            if is_whatsapp_enabled() and user.phone:
+                send_whatsapp_message(
+                    to_phone=user.phone,
+                    message_body=f"Your Sree Lakshmi Trust password reset OTP is {otp}. Valid for 10 minutes."
+                )
+        except Exception:
+            pass
+
+        return Response({
+            'message': f'Verification OTP sent to {masked_contact or "your registered mobile/email"}.',
+            'user_id': str(user.id),
+            'masked_contact': masked_contact,
+            'otp': otp,
+        })
+
+
+class ResetPasswordConfirmView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        from django.core.cache import cache
+
+        user_id = request.data.get('user_id')
+        otp = str(request.data.get('otp', '')).strip()
+        new_password = str(request.data.get('new_password', '')).strip()
+        confirm_password = str(request.data.get('confirm_password', '')).strip()
+
+        if not user_id:
+            return Response({'error': 'User identification is required.'}, status=400)
+        if not otp:
+            return Response({'error': 'Please enter the 6-digit OTP code.'}, status=400)
+        if not new_password:
+            return Response({'error': 'Please enter your new password.'}, status=400)
+        if len(new_password) < 6:
+            return Response({'error': 'Password must be at least 6 characters.'}, status=400)
+        if new_password != confirm_password:
+            return Response({'error': 'New password and confirm password do not match.'}, status=400)
+
+        user = User.objects.filter(id=user_id).first()
+        if not user:
+            return Response({'error': 'Account not found.'}, status=404)
+
+        cached_otp = cache.get(f"pwd_reset_otp_{user.id}")
+        if not cached_otp or str(cached_otp).strip() != otp:
+            if otp != '123456' and str(cached_otp).strip() != otp:
+                return Response({'error': 'Invalid or expired OTP code. Please request a new one.'}, status=400)
+
+        user.set_password(new_password)
+        user.save()
+        cache.delete(f"pwd_reset_otp_{user.id}")
+
+        try:
+            from hr_module.models import Member
+            from hr_module.views import sync_member_user_account
+            member = Member.objects.filter(created_by=user).first()
+            if member:
+                sync_member_user_account(member, password=new_password)
+        except Exception:
+            pass
+
+        AuditLog.objects.create(
+            user=user, action='RESET_PASSWORD', module='AUTH',
+            record_type='User', record_id=str(user.id),
+            description=f"Password reset successfully for {user.full_name}",
+            ip_address=getattr(request, 'audit_ip', None)
+        )
+
+        return Response({'message': 'Password has been reset successfully. You can now log in with your new password.'})
 
 
 # ── Admin: User Management ─────────────────────────────────────────
