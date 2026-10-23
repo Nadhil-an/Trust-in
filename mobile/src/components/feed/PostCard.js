@@ -376,18 +376,6 @@ export default function PostCard({
             )}
           </TouchableOpacity>
 
-          {/* Repost / Cycle Button */}
-          <TouchableOpacity
-            style={styles.iconActionBtn}
-            onPress={() => {
-              Toast.show({ type: 'info', text1: 'Reposted', text2: 'Post shared with community feed' });
-            }}
-            activeOpacity={0.7}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <Ionicons name="repeat-outline" size={24} color="#0F172A" />
-          </TouchableOpacity>
-
           {/* Share Button (Paper Airplane) */}
           <TouchableOpacity
             style={styles.iconActionBtn}
@@ -398,39 +386,19 @@ export default function PostCard({
             <Ionicons name="paper-plane-outline" size={23} color="#0F172A" />
           </TouchableOpacity>
         </View>
-
-        {/* Right Side: Bookmark / Save Button */}
-        <TouchableOpacity
-          style={styles.iconActionBtn}
-          onPress={() => {
-            setIsSaved(!isSaved);
-            Toast.show({
-              type: 'success',
-              text1: isSaved ? 'Removed from saved' : 'Saved to favorites',
-            });
-          }}
-          activeOpacity={0.7}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-        >
-          <Ionicons
-            name={isSaved ? 'bookmark' : 'bookmark-outline'}
-            size={23}
-            color="#0F172A"
-          />
-        </TouchableOpacity>
       </View>
 
       {/* ── 4. Description / Caption Section (Under Action Buttons) ────────────── */}
       <View style={styles.captionSection}>
-        {/* Caption Row: Username in bold + Description text */}
+        {/* Caption Row: "Description: " in bold + Description text */}
         {Boolean(post.description) && (
           <View style={styles.captionRow}>
             <Text style={styles.captionText}>
               <Text
-                style={styles.captionAuthor}
+                style={styles.captionLabel}
                 onPress={handleOpenDetail}
               >
-                {authorName}{' '}
+                Description:{' '}
               </Text>
               {isLongDesc && !expanded
                 ? `${post.description.slice(0, 95)}...`
@@ -825,6 +793,11 @@ const styles = StyleSheet.create({
     lineHeight: 19,
   },
   captionAuthor: {
+    fontWeight: '700',
+    color: '#0F172A',
+    fontSize: 13,
+  },
+  captionLabel: {
     fontWeight: '700',
     color: '#0F172A',
     fontSize: 13,

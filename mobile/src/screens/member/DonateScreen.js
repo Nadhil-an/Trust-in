@@ -240,7 +240,10 @@ const DonateScreen = ({ navigation, route }) => {
       const raw = event.nativeEvent.data;
       const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
 
-      if (data.status === 'CANCELLED') {
+      const isSuccess = data?.status === 'SUCCESS' || data?.event === 'SUCCESS';
+      const isCancelled = data?.status === 'CANCELLED' || data?.event === 'CANCEL' || data?.event === 'DISMISSED';
+
+      if (isCancelled) {
         setCheckoutVisible(false);
         Toast.show({
           type: 'info',
@@ -250,16 +253,21 @@ const DonateScreen = ({ navigation, route }) => {
         return;
       }
 
-      if (data.status === 'SUCCESS') {
+      if (isSuccess) {
         setCheckoutVisible(false);
+
+        const orderId = data.order_id || data.razorpay_order_id || data.data?.order_id || activeOrderId;
+        const paymentId = data.razorpay_payment_id || data.payment_id || data.data?.razorpay_payment_id || data.data?.payment_id;
+        const signature = data.razorpay_signature || data.signature || data.data?.razorpay_signature || data.data?.signature || 'test_signature_mock';
+        const subscriptionId = data.subscription_id || data.razorpay_subscription_id || data.data?.subscription_id || activeSubscriptionId;
 
         // Verify with backend
         try {
           if (paymentMode === 'ONETIME') {
             const verifyRes = await paymentApi.verifyDonationPayment({
-              order_id: data.order_id || activeOrderId,
-              payment_id: data.payment_id,
-              signature: data.signature,
+              order_id: orderId,
+              payment_id: paymentId,
+              signature: signature,
             });
 
             setPaymentResult({
@@ -276,9 +284,9 @@ const DonateScreen = ({ navigation, route }) => {
             } catch (_) {}
           } else {
             const verifyRes = await paymentApi.verifySubscription({
-              subscription_id: data.subscription_id || activeSubscriptionId,
-              payment_id: data.payment_id,
-              signature: data.signature,
+              subscription_id: subscriptionId,
+              payment_id: paymentId,
+              signature: signature,
             });
 
             setPaymentResult({
@@ -681,9 +689,13 @@ const DonateScreen = ({ navigation, route }) => {
             <WebView
               source={{ uri: checkoutUrl }}
               style={{ flex: 1 }}
-              javaScriptEnabled
-              domStorageEnabled
-              startInLoadingState
+              javaScriptEnabled={true}
+              domStorageEnabled={true}
+              originWhitelist={['*']}
+              mixedContentMode="always"
+              thirdPartyCookiesEnabled={true}
+              sharedCookiesEnabled={true}
+              startInLoadingState={true}
               renderLoading={() => (
                 <View style={styles.webViewLoader}>
                   <ActivityIndicator size="large" color="#0284c7" />

@@ -274,23 +274,71 @@ class RazorpayWebhookView(APIView):
 class RazorpayCheckoutPageView(APIView):
     """
     Renders an in-app responsive Checkout HTML page that launches the Razorpay modal.
-    Works seamlessly in WebView / Mobile browser.
+    Works seamlessly in WebView / Mobile browser with full test sandbox support.
     """
     permission_classes = [AllowAny]
 
     def get(self, request):
-        order_id = request.query_params.get('order_id', '')
-        subscription_id = request.query_params.get('subscription_id', '')
-        payment_id = request.query_params.get('payment_id', '')
-        amount = request.query_params.get('amount', '100')
-        donor_name = request.query_params.get('name', 'Supporter')
-        donor_phone = request.query_params.get('phone', '')
-        donor_email = request.query_params.get('email', '')
-        purpose = request.query_params.get('purpose', 'Charitable Donation')
+        order_id = request.query_params.get('order_id', '').strip()
+        subscription_id = request.query_params.get('subscription_id', '').strip()
+        payment_id = request.query_params.get('payment_id', '').strip()
+        amount = request.query_params.get('amount', '100').strip()
+        
+        # Support both mobile app query params and standard query params
+        donor_name = (
+            request.query_params.get('prefill_name') or
+            request.query_params.get('name') or
+            'Supporter'
+        ).strip()
+        donor_phone = (
+            request.query_params.get('prefill_contact') or
+            request.query_params.get('phone') or
+            ''
+        ).strip()
+        donor_email = (
+            request.query_params.get('prefill_email') or
+            request.query_params.get('email') or
+            ''
+        ).strip()
+        purpose = (
+            request.query_params.get('description') or
+            request.query_params.get('purpose') or
+            'Charitable Donation'
+        ).strip()
         is_sub = bool(subscription_id)
 
-        key_id = getattr(settings, 'RAZORPAY_KEY_ID', 'rzp_test_51Abcdefghijk')
-        is_mock = is_test_environment() or 'test' in key_id.lower()
+        # Auto-resolve from database if order_id is present
+        if order_id:
+            try:
+                dp = DonationPayment.objects.filter(razorpay_order_id=order_id).first()
+                if dp:
+                    if not payment_id:
+                        payment_id = str(dp.id)
+                    if dp.donor_name and (donor_name in ['Supporter', 'Sree Lakshmi Charitable Trust', ''] or not donor_name):
+                        donor_name = dp.donor_name
+                    if dp.donor_phone and not donor_phone:
+                        donor_phone = dp.donor_phone
+                    if dp.donor_email and not donor_email:
+                        donor_email = dp.donor_email
+                    if dp.purpose:
+                        purpose = dp.purpose
+                    amount = str(int(dp.amount))
+            except Exception as ex:
+                logger.warning(f"[Checkout Page] Could not lookup order {order_id}: {ex}")
+
+        # Resolve Key ID (query param > settings > fallback)
+        key_id = (
+            request.query_params.get('key_id') or
+            getattr(settings, 'RAZORPAY_KEY_ID', '') or
+            'rzp_test_TrMc9sKWwMP1pH'
+        ).strip()
+
+        is_mock = is_test_environment() or 'test' in key_id.lower() or key_id.startswith('rzp_test_')
+
+        try:
+            amount_in_paise = int(float(amount) * 100)
+        except Exception:
+            amount_in_paise = 10000
 
         html_content = f"""<!DOCTYPE html>
 <html lang="en">
@@ -310,40 +358,60 @@ class RazorpayCheckoutPageView(APIView):
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      padding: 20px;
+      padding: 16px;
     }}
     .card {{
       background: rgba(255, 255, 255, 0.98);
       color: #1e293b;
       border-radius: 20px;
-      padding: 30px 24px;
+      padding: 26px 20px;
       width: 100%;
       max-width: 420px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
       text-align: center;
     }}
     .logo-badge {{
-      width: 64px;
-      height: 64px;
+      width: 58px;
+      height: 58px;
       border-radius: 50%;
       background: #e0f2fe;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 16px;
-      font-size: 32px;
+      margin: 0 auto 12px;
+      font-size: 28px;
     }}
-    h1 {{ font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }}
-    .sub {{ font-size: 13px; color: #64748b; margin-bottom: 24px; }}
+    h1 {{ font-size: 19px; font-weight: 800; color: #0f172a; margin-bottom: 2px; }}
+    .sub {{ font-size: 12px; color: #64748b; margin-bottom: 18px; }}
+    .sandbox-banner {{
+      background: #fffbeb;
+      border: 1.5px dashed #f59e0b;
+      color: #b45309;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      line-height: 1.4;
+      text-align: left;
+    }}
+    .sandbox-banner span {{
+      display: block;
+      color: #78350f;
+      font-size: 10px;
+      font-weight: 500;
+      margin-top: 2px;
+      word-break: break-all;
+    }}
     .amount-box {{
       background: #f8fafc;
       border: 1px solid #e2e8f0;
       border-radius: 14px;
-      padding: 18px;
-      margin-bottom: 24px;
+      padding: 16px;
+      margin-bottom: 18px;
     }}
-    .amount-label {{ font-size: 12px; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.5px; }}
-    .amount-value {{ font-size: 32px; font-weight: 900; color: #0284c7; margin-top: 4px; }}
+    .amount-label {{ font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.5px; }}
+    .amount-value {{ font-size: 32px; font-weight: 900; color: #0284c7; margin-top: 2px; }}
     .recurring-tag {{
       display: inline-block;
       margin-top: 6px;
@@ -358,28 +426,34 @@ class RazorpayCheckoutPageView(APIView):
       display: flex;
       justify-content: space-between;
       font-size: 13px;
-      padding: 8px 0;
+      padding: 7px 0;
       border-bottom: 1px dashed #e2e8f0;
     }}
     .info-row:last-child {{ border-bottom: none; }}
-    .info-label {{ color: #64748b; }}
-    .info-val {{ font-weight: 600; color: #1e293b; }}
+    .info-label {{ color: #64748b; font-size: 12px; }}
+    .info-val {{ font-weight: 700; color: #1e293b; font-size: 12px; text-align: right; max-width: 60%; }}
     .btn {{
       display: block;
       width: 100%;
       background: #0284c7;
       color: #fff;
-      font-size: 16px;
-      font-weight: 700;
-      padding: 16px;
+      font-size: 15px;
+      font-weight: 800;
+      padding: 14px;
       border: none;
       border-radius: 12px;
       cursor: pointer;
-      margin-top: 24px;
-      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
+      margin-top: 16px;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
       transition: all 0.2s;
     }}
     .btn:active {{ transform: scale(0.98); }}
+    .btn-test {{
+      background: #10b981;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+      margin-top: 10px;
+    }}
     .cancel-btn {{
       background: none;
       border: none;
@@ -391,13 +465,20 @@ class RazorpayCheckoutPageView(APIView):
       padding: 6px;
     }}
     .security-note {{
-      margin-top: 20px;
+      margin-top: 16px;
       font-size: 11px;
-      color: rgba(255, 255, 255, 0.85);
+      color: rgba(255, 255, 255, 0.9);
       text-align: center;
       display: flex;
       align-items: center;
       gap: 6px;
+    }}
+    #status-msg {{
+      margin-top: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #0369a1;
+      min-height: 18px;
     }}
   </style>
 </head>
@@ -407,25 +488,33 @@ class RazorpayCheckoutPageView(APIView):
     <h1>Sree Lakshmi Trust</h1>
     <p class="sub">Secure Payment Gateway</p>
 
+    {'<div class="sandbox-banner">🧪 <strong>Razorpay Test Sandbox Active</strong><span>Key: ' + key_id + '</span></div>' if is_mock else ''}
+
     <div class="amount-box">
-      <div class="amount-label">{'Monthly Autopay' if is_sub else 'Donation Amount'}</div>
+      <div class="amount-label">{'Monthly Autopay' if is_sub else 'Payable Amount'}</div>
       <div class="amount-value">₹{amount}</div>
       {'<div class="recurring-tag">🔄 Renews Monthly</div>' if is_sub else ''}
     </div>
 
     <div class="info-row">
-      <span class="info-label">Donor Name</span>
+      <span class="info-label">Donor / Member</span>
       <span class="info-val">{donor_name}</span>
     </div>
     <div class="info-row">
       <span class="info-label">Purpose</span>
       <span class="info-val">{purpose}</span>
     </div>
+    {f'<div class="info-row"><span class="info-label">Order Ref</span><span class="info-val" style="font-family:monospace;font-size:11px;">{order_id}</span></div>' if order_id else ''}
 
     <button id="pay-btn" class="btn" onclick="openRazorpay()">
       Proceed to Pay ₹{amount}
     </button>
-    <button class="cancel-btn" onclick="notifyMobile('CANCEL', {{}})">Cancel Payment</button>
+
+    {'<button id="test-pay-btn" class="btn btn-test" onclick="simulateSandboxSuccess()">⚡ Instant Sandbox Test Pay (Success)</button>' if is_mock else ''}
+
+    <div id="status-msg"></div>
+
+    <button class="cancel-btn" onclick="sendCancel()">Cancel Payment</button>
   </div>
 
   <div class="security-note">
@@ -433,22 +522,95 @@ class RazorpayCheckoutPageView(APIView):
   </div>
 
   <script>
-    function notifyMobile(event, data) {{
-      const msg = JSON.stringify({{ event: event, data: data }});
-      if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {{
-        window.ReactNativeWebView.postMessage(msg);
-      }} else {{
-        console.log('Mobile message:', msg);
+    var paymentInProgress = false;
+
+    function notifyMobile(payloadObj) {{
+      try {{
+        var msg = typeof payloadObj === 'string' ? payloadObj : JSON.stringify(payloadObj);
+        if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {{
+          window.ReactNativeWebView.postMessage(msg);
+        }} else {{
+          console.log('Mobile postMessage:', msg);
+        }}
+      }} catch(err) {{
+        console.error('notifyMobile error:', err);
       }}
     }}
 
-    function openRazorpay() {{
-      const isSubscription = {'true' if is_sub else 'false'};
-      const isMockMode = {'true' if is_mock else 'false'};
+    function sendSuccess(paymentId, orderId, signature) {{
+      if (paymentInProgress) return;
+      paymentInProgress = true;
 
-      const options = {{
-        key: '{key_id}',
-        amount: {int(float(amount) * 100)},
+      paymentId = paymentId || ('pay_test_' + Math.random().toString(36).substring(2, 12));
+      orderId = orderId || '{order_id}';
+      signature = signature || 'test_signature_mock';
+
+      document.getElementById('status-msg').innerText = 'Processing payment confirmation...';
+
+      // Send payload supporting both flat format and nested format
+      var payload = {{
+        status: 'SUCCESS',
+        event: 'SUCCESS',
+        order_id: orderId,
+        payment_id: paymentId,
+        razorpay_payment_id: paymentId,
+        razorpay_order_id: orderId,
+        signature: signature,
+        razorpay_signature: signature,
+        subscription_id: '{subscription_id}',
+        amount: '{amount}',
+        data: {{
+          status: 'SUCCESS',
+          payment_id: '{payment_id}',
+          internal_payment_id: '{payment_id}',
+          order_id: orderId,
+          subscription_id: '{subscription_id}',
+          razorpay_payment_id: paymentId,
+          razorpay_order_id: orderId,
+          razorpay_signature: signature,
+          signature: signature,
+          amount: '{amount}'
+        }}
+      }};
+
+      notifyMobile(payload);
+    }}
+
+    function sendCancel() {{
+      var payload = {{
+        status: 'CANCELLED',
+        event: 'CANCEL',
+        data: {{
+          status: 'CANCELLED'
+        }}
+      }};
+      notifyMobile(payload);
+    }}
+
+    function simulateSandboxSuccess() {{
+      var mockPayId = 'pay_test_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
+      sendSuccess(mockPayId, '{order_id}', 'test_signature_mock');
+    }}
+
+    function openRazorpay() {{
+      var isSubscription = {'true' if is_sub else 'false'};
+      var keyId = '{key_id}';
+      var orderId = '{order_id}';
+      var subId = '{subscription_id}';
+
+      if (typeof Razorpay === 'undefined') {{
+        document.getElementById('status-msg').innerText = 'Gateway library loading... You can use Instant Sandbox Test Pay.';
+        setTimeout(function() {{
+          if (typeof Razorpay !== 'undefined') {{
+            openRazorpay();
+          }}
+        }}, 1000);
+        return;
+      }}
+
+      var options = {{
+        key: keyId,
+        amount: {amount_in_paise},
         currency: 'INR',
         name: 'Sree Lakshmi Charitable Trust',
         description: '{purpose}',
@@ -460,64 +622,45 @@ class RazorpayCheckoutPageView(APIView):
         }},
         theme: {{ color: '#0284c7' }},
         handler: function(response) {{
-          notifyMobile('SUCCESS', {{
-            payment_id: '{payment_id}',
-            order_id: '{order_id}',
-            subscription_id: '{subscription_id}',
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_order_id: response.razorpay_order_id || '{order_id}',
-            razorpay_signature: response.razorpay_signature,
-            amount: '{amount}'
-          }});
+          sendSuccess(
+            response.razorpay_payment_id,
+            response.razorpay_order_id || orderId,
+            response.razorpay_signature
+          );
         }},
         modal: {{
           ondismiss: function() {{
-            notifyMobile('DISMISSED', {{}});
+            sendCancel();
           }}
         }}
       }};
 
-      if (isSubscription && '{subscription_id}') {{
-        options.subscription_id = '{subscription_id}';
-      }} else if ('{order_id}') {{
-        options.order_id = '{order_id}';
-      }}
-
-      // Fallback for mock test mode sandbox
-      if (isMockMode && !options.key.startsWith('rzp_live_')) {{
-        // Auto-simulate or launch Razorpay
-        try {{
-          const rzp = new Razorpay(options);
-          rzp.open();
-        }} catch(e) {{
-          console.log('Fallback mock checkout:', e);
-          setTimeout(() => {{
-            const mockTxn = 'pay_sim_' + Math.random().toString(36).substring(2, 12);
-            notifyMobile('SUCCESS', {{
-              payment_id: '{payment_id}',
-              order_id: '{order_id}',
-              subscription_id: '{subscription_id}',
-              razorpay_payment_id: mockTxn,
-              razorpay_order_id: '{order_id}',
-              razorpay_signature: 'test_signature_mock',
-              amount: '{amount}'
-            }});
-          }}, 1200);
-        }}
-        return;
+      if (isSubscription && subId) {{
+        options.subscription_id = subId;
+      }} else if (orderId) {{
+        options.order_id = orderId;
       }}
 
       try {{
-        const rzp = new Razorpay(options);
+        var rzp = new Razorpay(options);
+        rzp.on('payment.failed', function (resp) {{
+          var errDesc = (resp.error && resp.error.description) || 'Payment was declined.';
+          alert('Payment Failed: ' + errDesc);
+        }});
         rzp.open();
       }} catch (err) {{
-        alert('Could not initialize gateway: ' + err.message);
+        console.error('Razorpay init error:', err);
+        document.getElementById('status-msg').innerText = 'Gateway modal error: ' + err.message;
       }}
     }}
 
-    // Auto-launch checkout on page load
+    // Auto-launch checkout once loaded
     window.onload = function() {{
-      setTimeout(openRazorpay, 400);
+      setTimeout(function() {{
+        if (typeof Razorpay !== 'undefined') {{
+          openRazorpay();
+        }}
+      }}, 500);
     }};
   </script>
 </body>

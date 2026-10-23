@@ -1,11 +1,12 @@
-// screens/auth/LoginScreen.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, Image,
-  TouchableOpacity, KeyboardAvoidingView, Platform, Alert, Dimensions
+  TouchableOpacity, KeyboardAvoidingView, Platform, Alert, Dimensions,
+  Modal, ActivityIndicator, TextInput
 } from 'react-native'; 
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Ionicons } from '@expo/vector-icons';
+import Toast from 'react-native-toast-message';
 import { Colors } from '../../constants/Colors';
 import { Button, Input } from '../../components/shared';
 import { authApi } from '../../api';
@@ -18,6 +19,96 @@ const LoginScreen = ({ navigation }) => {
   const [form, setForm] = useState({ username: '', password: '' });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+
+  // Forgot Password state
+  const [forgotModal, setForgotModal] = useState(false);
+  const [forgotStep, setForgotStep] = useState(1);
+  const [forgotContact, setForgotContact] = useState('');
+  const [forgotUserId, setForgotUserId] = useState(null);
+  const [forgotMasked, setForgotMasked] = useState('');
+  const [forgotOtp, setForgotOtp] = useState('');
+  const [forgotNewPwd, setForgotNewPwd] = useState('');
+  const [forgotConfirmPwd, setForgotConfirmPwd] = useState('');
+  const [showForgotNewPwd, setShowForgotNewPwd] = useState(false);
+  const [showForgotConfirmPwd, setShowForgotConfirmPwd] = useState(false);
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [resendTimer, setResendTimer] = useState(0);
+
+  useEffect(() => {
+    let interval = null;
+    if (resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer(t => t - 1);
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [resendTimer]);
+
+  const handleOpenForgot = () => {
+    setForgotContact(form.username.trim() || '');
+    setForgotStep(1);
+    setForgotOtp('');
+    setForgotNewPwd('');
+    setForgotConfirmPwd('');
+    setForgotModal(true);
+  };
+
+  const handleSendForgotOtp = async () => {
+    if (!forgotContact.trim()) {
+      return Alert.alert('Required', 'Please enter your registered phone number, member ID, or email.');
+    }
+    setForgotLoading(true);
+    try {
+      const res = await authApi.forgotPassword({ identifier: forgotContact.trim() });
+      setForgotUserId(res?.data?.user_id);
+      setForgotMasked(res?.data?.masked_contact || forgotContact.trim());
+      setForgotStep(2);
+      setResendTimer(45);
+      Alert.alert('Verification Code Sent', res?.data?.message || 'OTP has been dispatched.');
+    } catch (e) {
+      const errMsg = e?.response?.data?.error || e?.response?.data?.detail || 'Failed to send OTP. Please check your contact.';
+      Alert.alert('Error', errMsg);
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!forgotOtp.trim()) {
+      return Alert.alert('Required', 'Please enter the 6-digit OTP code.');
+    }
+    if (!forgotNewPwd.trim()) {
+      return Alert.alert('Required', 'Please enter a new password.');
+    }
+    if (forgotNewPwd.length < 6) {
+      return Alert.alert('Validation', 'Password must be at least 6 characters.');
+    }
+    if (forgotNewPwd !== forgotConfirmPwd) {
+      return Alert.alert('Validation', 'Passwords do not match.');
+    }
+    setForgotLoading(true);
+    try {
+      const res = await authApi.resetPassword({
+        user_id: forgotUserId,
+        otp: forgotOtp.trim(),
+        new_password: forgotNewPwd.trim(),
+        confirm_password: forgotConfirmPwd.trim(),
+      });
+      Alert.alert('Success', res?.data?.message || 'Password reset successfully! Please login with your new password.', [
+        { text: 'OK', onPress: () => {
+          setForgotModal(false);
+          setForm(f => ({ ...f, password: forgotNewPwd }));
+        }}
+      ]);
+    } catch (e) {
+      const errMsg = e?.response?.data?.error || e?.response?.data?.detail || 'Failed to reset password. Please check OTP.';
+      Alert.alert('Error', errMsg);
+    } finally {
+      setForgotLoading(false);
+    }
+  };
 
   const validate = () => {
     const errs = {};
@@ -94,7 +185,7 @@ const LoginScreen = ({ navigation }) => {
             error={errors.password}
           />
 
-          <TouchableOpacity style={styles.forgotBtn}>
+          <TouchableOpacity style={styles.forgotBtn} onPress={handleOpenForgot}>
             <Text style={styles.forgotText}>Forgot Password?</Text>
           </TouchableOpacity>
 
@@ -117,6 +208,143 @@ const LoginScreen = ({ navigation }) => {
         </View>
 
       </KeyboardAwareScrollView>
+
+      {/* Forgot Password Modal */}
+      <Modal visible={forgotModal} transparent animationType="slide" onRequestClose={() => setForgotModal(false)}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <View>
+                <Text style={styles.modalTitle}>Reset Password</Text>
+                <Text style={styles.modalSubtitle}>
+                  {forgotStep === 1 ? 'Step 1 of 2: Verify Your Identity' : 'Step 2 of 2: Set New Password'}
+                </Text>
+              </View>
+              <TouchableOpacity onPress={() => setForgotModal(false)} style={styles.closeBtn}>
+                <Ionicons name="close" size={22} color={Colors.gray500} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {forgotStep === 1 ? (
+                <>
+                  <View style={styles.infoBox}>
+                    <Ionicons name="information-circle" size={20} color="#0284c7" />
+                    <Text style={styles.infoText}>
+                      Enter your registered Phone Number, Member ID, or Email to receive an OTP.
+                    </Text>
+                  </View>
+
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.label}>Registered Phone / Member ID / Email</Text>
+                    <View style={styles.inputWrap}>
+                      <Ionicons name="person-circle-outline" size={20} color="#64748B" style={{ marginRight: 8 }} />
+                      <TextInput
+                        style={styles.fieldInput}
+                        value={forgotContact}
+                        onChangeText={setForgotContact}
+                        placeholder="e.g. 9947703037 or email"
+                        placeholderTextColor="#94A3B8"
+                        autoCapitalize="none"
+                      />
+                    </View>
+                  </View>
+
+                  <TouchableOpacity style={styles.submitBtn} onPress={handleSendForgotOtp} disabled={forgotLoading}>
+                    {forgotLoading ? (
+                      <ActivityIndicator color="#fff" />
+                    ) : (
+                      <Text style={styles.submitBtnText}>Send Verification Code (OTP)</Text>
+                    )}
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <View style={[styles.infoBox, { backgroundColor: '#F0FDF4', borderColor: '#BBF7D0' }]}>
+                    <Ionicons name="checkmark-circle" size={20} color="#16A34A" />
+                    <Text style={[styles.infoText, { color: '#166534' }]}>
+                      OTP dispatched to {forgotMasked || 'your registered contact'}.
+                    </Text>
+                  </View>
+
+                  <View style={styles.inputGroup}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                      <Text style={styles.label}>6-Digit OTP Code</Text>
+                      {resendTimer > 0 ? (
+                        <Text style={{ fontSize: 12, color: '#64748B', fontWeight: '600' }}>Resend in {resendTimer}s</Text>
+                      ) : (
+                        <TouchableOpacity onPress={handleSendForgotOtp} disabled={forgotLoading}>
+                          <Text style={{ fontSize: 12, color: '#0284c7', fontWeight: '700' }}>Resend OTP</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                    <View style={styles.inputWrap}>
+                      <Ionicons name="keypad-outline" size={20} color="#64748B" style={{ marginRight: 8 }} />
+                      <TextInput
+                        style={[styles.fieldInput, { letterSpacing: 6, fontWeight: '700', fontSize: 18 }]}
+                        value={forgotOtp}
+                        onChangeText={setForgotOtp}
+                        placeholder="••••••"
+                        placeholderTextColor="#94A3B8"
+                        keyboardType="number-pad"
+                        maxLength={6}
+                      />
+                    </View>
+                  </View>
+
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.label}>New Password</Text>
+                    <View style={styles.inputWrap}>
+                      <Ionicons name="lock-closed-outline" size={20} color="#64748B" style={{ marginRight: 8 }} />
+                      <TextInput
+                        style={styles.fieldInput}
+                        secureTextEntry={!showForgotNewPwd}
+                        value={forgotNewPwd}
+                        onChangeText={setForgotNewPwd}
+                        placeholder="Enter new password (min. 6 chars)"
+                        placeholderTextColor="#94A3B8"
+                      />
+                      <TouchableOpacity onPress={() => setShowForgotNewPwd(!showForgotNewPwd)} style={{ padding: 6 }}>
+                        <Ionicons name={showForgotNewPwd ? 'eye-off-outline' : 'eye-outline'} size={20} color="#64748B" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.label}>Confirm New Password</Text>
+                    <View style={styles.inputWrap}>
+                      <Ionicons name="shield-checkmark-outline" size={20} color="#64748B" style={{ marginRight: 8 }} />
+                      <TextInput
+                        style={styles.fieldInput}
+                        secureTextEntry={!showForgotConfirmPwd}
+                        value={forgotConfirmPwd}
+                        onChangeText={setForgotConfirmPwd}
+                        placeholder="Re-enter new password"
+                        placeholderTextColor="#94A3B8"
+                      />
+                      <TouchableOpacity onPress={() => setShowForgotConfirmPwd(!showForgotConfirmPwd)} style={{ padding: 6 }}>
+                        <Ionicons name={showForgotConfirmPwd ? 'eye-off-outline' : 'eye-outline'} size={20} color="#64748B" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+
+                  <TouchableOpacity style={styles.submitBtn} onPress={handleResetPassword} disabled={forgotLoading}>
+                    {forgotLoading ? (
+                      <ActivityIndicator color="#fff" />
+                    ) : (
+                      <Text style={styles.submitBtnText}>Reset & Save Password</Text>
+                    )}
+                  </TouchableOpacity>
+
+                  <TouchableOpacity onPress={() => setForgotStep(1)} style={{ alignSelf: 'center', marginTop: 12 }}>
+                    <Text style={{ fontSize: 13, color: '#64748B', fontWeight: '600' }}>Change Phone/Email</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </ScrollView>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </KeyboardAvoidingView>
   );
 };
@@ -168,6 +396,21 @@ const styles = StyleSheet.create({
     borderWidth: 1.5, borderColor: '#0284c7', backgroundColor: '#ffffff',
   },
   signupOutlineText: { color: '#0284c7', fontSize: 15, fontWeight: '700' },
+
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  modalContent: { backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 22, paddingBottom: 36 },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 },
+  modalTitle: { fontSize: 18, fontWeight: '800', color: '#0F172A' },
+  modalSubtitle: { fontSize: 12.5, color: '#64748B', marginTop: 2 },
+  closeBtn: { padding: 4 },
+  infoBox: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, backgroundColor: '#F0FDF4', borderWidth: 1, borderColor: '#BBF7D0', borderRadius: 12, padding: 12, marginBottom: 16 },
+  infoText: { flex: 1, fontSize: 12.5, color: '#166534', lineHeight: 18 },
+  inputGroup: { marginBottom: 14 },
+  label: { fontSize: 13, fontWeight: '600', color: '#334155', marginBottom: 6 },
+  inputWrap: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', borderWidth: 1.5, borderColor: '#E2E8F0', borderRadius: 12, paddingHorizontal: 12 },
+  fieldInput: { flex: 1, paddingVertical: 12, fontSize: 14.5, color: '#0F172A' },
+  submitBtn: { backgroundColor: '#0284c7', padding: 15, borderRadius: 12, alignItems: 'center', marginTop: 8 },
+  submitBtnText: { color: '#fff', fontSize: 15, fontWeight: '700' },
 });
 
 export default LoginScreen;
