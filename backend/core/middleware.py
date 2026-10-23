@@ -24,14 +24,29 @@ class SecurityHeadersMiddleware(MiddlewareMixin):
     """Adds OWASP-recommended security headers to every response."""
     def process_response(self, request, response):
         response['X-Content-Type-Options'] = 'nosniff'
-        response['X-Frame-Options'] = 'DENY'
         response['X-XSS-Protection'] = '1; mode=block'
         response['Referrer-Policy'] = 'strict-origin-when-cross-origin'
         response['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'
+
+        # Allow Razorpay checkout, scripts, stylesheets, and iframes on payment routes
+        if request.path.startswith('/api/payments/checkout-page'):
+            response['X-Frame-Options'] = 'ALLOWALL'
+            response['Content-Security-Policy'] = (
+                "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; "
+                "script-src * 'unsafe-inline' 'unsafe-eval' https://*.razorpay.com https://checkout.razorpay.com; "
+                "style-src * 'unsafe-inline' https://fonts.googleapis.com; "
+                "font-src * data: https://fonts.gstatic.com; "
+                "img-src * data: blob: https://*.razorpay.com; "
+                "frame-src * https://*.razorpay.com https://api.razorpay.com; "
+                "connect-src * https://*.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com;"
+            )
+            return response
+
+        response['X-Frame-Options'] = 'DENY'
         response['Content-Security-Policy'] = (
             "default-src 'self'; "
             "script-src 'self'; "
-            "style-src 'self' https://fonts.googleapis.com; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             "font-src 'self' https://fonts.gstatic.com; "
             "img-src 'self' data: blob:; "
             "connect-src 'self' ws://localhost:8000 wss://localhost:8000;"

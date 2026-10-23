@@ -273,8 +273,8 @@ class RazorpayWebhookView(APIView):
 
 class RazorpayCheckoutPageView(APIView):
     """
-    Renders an in-app responsive Checkout HTML page that launches the Razorpay modal.
-    Works seamlessly in WebView / Mobile browser with full test sandbox support.
+    Renders an in-app checkout HTML page that immediately launches the standard
+    official Razorpay UI modal (UPI, Cards, Netbanking, Wallets).
     """
     permission_classes = [AllowAny]
 
@@ -283,8 +283,7 @@ class RazorpayCheckoutPageView(APIView):
         subscription_id = request.query_params.get('subscription_id', '').strip()
         payment_id = request.query_params.get('payment_id', '').strip()
         amount = request.query_params.get('amount', '100').strip()
-        
-        # Support both mobile app query params and standard query params
+
         donor_name = (
             request.query_params.get('prefill_name') or
             request.query_params.get('name') or
@@ -349,113 +348,72 @@ class RazorpayCheckoutPageView(APIView):
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <style>
     * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-    body {{
+    html, body {{
+      width: 100%;
+      height: 100%;
+      background: #0f172a;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
       color: #fff;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
-      padding: 16px;
+      overflow: hidden;
     }}
-    .card {{
-      background: rgba(255, 255, 255, 0.98);
-      color: #1e293b;
-      border-radius: 20px;
-      padding: 26px 20px;
-      width: 100%;
-      max-width: 420px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+    .backdrop {{
       text-align: center;
-    }}
-    .logo-badge {{
-      width: 58px;
-      height: 58px;
-      border-radius: 50%;
-      background: #e0f2fe;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 12px;
-      font-size: 28px;
-    }}
-    h1 {{ font-size: 19px; font-weight: 800; color: #0f172a; margin-bottom: 2px; }}
-    .sub {{ font-size: 12px; color: #64748b; margin-bottom: 18px; }}
-    .sandbox-banner {{
-      background: #fffbeb;
-      border: 1.5px dashed #f59e0b;
-      color: #b45309;
-      border-radius: 12px;
-      padding: 10px 12px;
-      font-size: 11px;
-      font-weight: 700;
-      margin-bottom: 16px;
-      line-height: 1.4;
-      text-align: left;
-    }}
-    .sandbox-banner span {{
-      display: block;
-      color: #78350f;
-      font-size: 10px;
-      font-weight: 500;
-      margin-top: 2px;
-      word-break: break-all;
-    }}
-    .amount-box {{
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 14px;
-      padding: 16px;
-      margin-bottom: 18px;
-    }}
-    .amount-label {{ font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; letter-spacing: 0.5px; }}
-    .amount-value {{ font-size: 32px; font-weight: 900; color: #0284c7; margin-top: 2px; }}
-    .recurring-tag {{
-      display: inline-block;
-      margin-top: 6px;
-      background: #dbeafe;
-      color: #1d4ed8;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 3px 10px;
+      padding: 24px;
+      max-width: 380px;
+      width: 90%;
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(10px);
       border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     }}
-    .info-row {{
-      display: flex;
-      justify-content: space-between;
-      font-size: 13px;
-      padding: 7px 0;
-      border-bottom: 1px dashed #e2e8f0;
+    .spinner {{
+      width: 48px;
+      height: 48px;
+      border: 4px solid rgba(255, 255, 255, 0.15);
+      border-top-color: #0284c7;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
     }}
-    .info-row:last-child {{ border-bottom: none; }}
-    .info-label {{ color: #64748b; font-size: 12px; }}
-    .info-val {{ font-weight: 700; color: #1e293b; font-size: 12px; text-align: right; max-width: 60%; }}
+    @keyframes spin {{ to {{ transform: rotate(360deg); }} }}
+    .title {{ font-size: 18px; font-weight: 800; color: #f8fafc; margin-bottom: 4px; }}
+    .desc {{ font-size: 13px; color: #94a3b8; margin-bottom: 16px; line-height: 1.4; }}
+    .amount-badge {{
+      display: inline-block;
+      background: #0284c7;
+      color: #fff;
+      font-size: 20px;
+      font-weight: 900;
+      padding: 6px 16px;
+      border-radius: 30px;
+      margin-bottom: 20px;
+      letter-spacing: 0.5px;
+    }}
     .btn {{
       display: block;
       width: 100%;
       background: #0284c7;
       color: #fff;
       font-size: 15px;
-      font-weight: 800;
-      padding: 14px;
+      font-weight: 700;
+      padding: 13px;
       border: none;
       border-radius: 12px;
       cursor: pointer;
-      margin-top: 16px;
+      margin-top: 10px;
       box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
-      transition: all 0.2s;
     }}
-    .btn:active {{ transform: scale(0.98); }}
     .btn-test {{
       background: #10b981;
-      color: #fff;
       box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
-      margin-top: 10px;
     }}
-    .cancel-btn {{
-      background: none;
+    .btn-cancel {{
+      background: transparent;
       border: none;
       color: #94a3b8;
       font-size: 13px;
@@ -464,61 +422,23 @@ class RazorpayCheckoutPageView(APIView):
       cursor: pointer;
       padding: 6px;
     }}
-    .security-note {{
-      margin-top: 16px;
-      font-size: 11px;
-      color: rgba(255, 255, 255, 0.9);
-      text-align: center;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }}
-    #status-msg {{
-      margin-top: 12px;
-      font-size: 12px;
-      font-weight: 600;
-      color: #0369a1;
-      min-height: 18px;
-    }}
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="logo-badge">💙</div>
-    <h1>Sree Lakshmi Trust</h1>
-    <p class="sub">Secure Payment Gateway</p>
+  <div class="backdrop">
+    <div id="loader-spinner" class="spinner"></div>
+    <div class="title">Opening Razorpay Standard Checkout</div>
+    <div class="desc">Please select your payment method (UPI, Cards, Netbanking) in the Razorpay window.</div>
+    <div class="amount-badge">₹{amount}</div>
 
-    {'<div class="sandbox-banner">🧪 <strong>Razorpay Test Sandbox Active</strong><span>Key: ' + key_id + '</span></div>' if is_mock else ''}
-
-    <div class="amount-box">
-      <div class="amount-label">{'Monthly Autopay' if is_sub else 'Payable Amount'}</div>
-      <div class="amount-value">₹{amount}</div>
-      {'<div class="recurring-tag">🔄 Renews Monthly</div>' if is_sub else ''}
-    </div>
-
-    <div class="info-row">
-      <span class="info-label">Donor / Member</span>
-      <span class="info-val">{donor_name}</span>
-    </div>
-    <div class="info-row">
-      <span class="info-label">Purpose</span>
-      <span class="info-val">{purpose}</span>
-    </div>
-    {f'<div class="info-row"><span class="info-label">Order Ref</span><span class="info-val" style="font-family:monospace;font-size:11px;">{order_id}</span></div>' if order_id else ''}
-
-    <button id="pay-btn" class="btn" onclick="openRazorpay()">
-      Proceed to Pay ₹{amount}
+    <button id="open-btn" class="btn" onclick="openRazorpay()" style="display:none;">
+      Re-open Razorpay UI
     </button>
 
-    {'<button id="test-pay-btn" class="btn btn-test" onclick="simulateSandboxSuccess()">⚡ Instant Sandbox Test Pay (Success)</button>' if is_mock else ''}
+    {'<button id="test-btn" class="btn btn-test" onclick="simulateSandboxSuccess()" style="display:none;">⚡ Instant Sandbox Test Pay (Success)</button>' if is_mock else ''}
 
-    <div id="status-msg"></div>
-
-    <button class="cancel-btn" onclick="sendCancel()">Cancel Payment</button>
-  </div>
-
-  <div class="security-note">
-    🔒 256-Bit SSL Encrypted &bull; Razorpay Certified
+    <br/>
+    <button class="btn-cancel" onclick="sendCancel()">Cancel Payment</button>
   </div>
 
   <script>
@@ -545,9 +465,6 @@ class RazorpayCheckoutPageView(APIView):
       orderId = orderId || '{order_id}';
       signature = signature || 'test_signature_mock';
 
-      document.getElementById('status-msg').innerText = 'Processing payment confirmation...';
-
-      // Send payload supporting both flat format and nested format
       var payload = {{
         status: 'SUCCESS',
         event: 'SUCCESS',
@@ -599,22 +516,14 @@ class RazorpayCheckoutPageView(APIView):
       var subId = '{subscription_id}';
 
       if (typeof Razorpay === 'undefined') {{
-        document.getElementById('status-msg').innerText = 'Gateway library loading... You can use Instant Sandbox Test Pay.';
-        setTimeout(function() {{
-          if (typeof Razorpay !== 'undefined') {{
-            openRazorpay();
-          }}
-        }}, 1000);
+        setTimeout(openRazorpay, 300);
         return;
       }}
 
       var options = {{
         key: keyId,
-        amount: {amount_in_paise},
-        currency: 'INR',
         name: 'Sree Lakshmi Charitable Trust',
         description: '{purpose}',
-        image: 'https://sreelakshmicharity.org/logo.png',
         prefill: {{
           name: '{donor_name}',
           email: '{donor_email}',
@@ -629,6 +538,8 @@ class RazorpayCheckoutPageView(APIView):
           );
         }},
         modal: {{
+          confirm_close: true,
+          escape: true,
           ondismiss: function() {{
             sendCancel();
           }}
@@ -639,30 +550,54 @@ class RazorpayCheckoutPageView(APIView):
         options.subscription_id = subId;
       }} else if (orderId) {{
         options.order_id = orderId;
+      }} else {{
+        options.amount = {amount_in_paise};
+        options.currency = 'INR';
       }}
 
       try {{
         var rzp = new Razorpay(options);
-        rzp.on('payment.failed', function (resp) {{
-          var errDesc = (resp.error && resp.error.description) || 'Payment was declined.';
-          alert('Payment Failed: ' + errDesc);
+        rzp.on('payment.failed', function(resp) {{
+          alert('Payment Failed: ' + (resp.error ? resp.error.description : 'Transaction was not completed.'));
         }});
         rzp.open();
-      }} catch (err) {{
-        console.error('Razorpay init error:', err);
-        document.getElementById('status-msg').innerText = 'Gateway modal error: ' + err.message;
+
+        // Reveal buttons if modal is closed or user returns
+        setTimeout(function() {{
+          var ob = document.getElementById('open-btn');
+          if (ob) ob.style.display = 'block';
+          var tb = document.getElementById('test-btn');
+          if (tb) tb.style.display = 'block';
+        }}, 2000);
+      }} catch(err) {{
+        console.error('Razorpay open error:', err);
+        var ob = document.getElementById('open-btn');
+        if (ob) ob.style.display = 'block';
+        var tb = document.getElementById('test-btn');
+        if (tb) tb.style.display = 'block';
       }}
     }}
 
-    // Auto-launch checkout once loaded
-    window.onload = function() {{
-      setTimeout(function() {{
-        if (typeof Razorpay !== 'undefined') {{
-          openRazorpay();
-        }}
-      }}, 500);
-    }};
+    // Auto-launch checkout once script is loaded
+    if (document.readyState === 'complete') {{
+      openRazorpay();
+    }} else {{
+      window.addEventListener('load', function() {{
+        setTimeout(openRazorpay, 100);
+      }});
+    }}
   </script>
 </body>
 </html>"""
-        return HttpResponse(html_content, content_type='text/html')
+        response = HttpResponse(html_content, content_type='text/html; charset=utf-8')
+        response['X-Frame-Options'] = 'ALLOWALL'
+        response['Content-Security-Policy'] = (
+            "default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; "
+            "script-src * 'unsafe-inline' 'unsafe-eval' https://*.razorpay.com https://checkout.razorpay.com; "
+            "style-src * 'unsafe-inline' https://fonts.googleapis.com; "
+            "font-src * data: https://fonts.gstatic.com; "
+            "img-src * data: blob: https://*.razorpay.com; "
+            "frame-src * https://*.razorpay.com https://api.razorpay.com; "
+            "connect-src * https://*.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com;"
+        )
+        return response
