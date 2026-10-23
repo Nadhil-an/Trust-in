@@ -275,6 +275,7 @@ class RazorpayCheckoutPageView(APIView):
     """
     Renders an in-app checkout HTML page that immediately launches the standard
     official Razorpay UI modal (UPI, Cards, Netbanking, Wallets).
+    Works seamlessly in both local sandbox test mode and live production.
     """
     permission_classes = [AllowAny]
 
@@ -362,50 +363,70 @@ class RazorpayCheckoutPageView(APIView):
     }}
     .backdrop {{
       text-align: center;
-      padding: 24px;
+      padding: 24px 20px;
       max-width: 380px;
       width: 90%;
-      background: rgba(30, 41, 59, 0.7);
+      background: rgba(30, 41, 59, 0.85);
       backdrop-filter: blur(10px);
       border-radius: 20px;
       border: 1px solid rgba(255, 255, 255, 0.1);
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     }}
     .spinner {{
-      width: 48px;
-      height: 48px;
+      width: 44px;
+      height: 44px;
       border: 4px solid rgba(255, 255, 255, 0.15);
       border-top-color: #0284c7;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
-      margin: 0 auto 16px;
+      margin: 0 auto 14px;
     }}
     @keyframes spin {{ to {{ transform: rotate(360deg); }} }}
-    .title {{ font-size: 18px; font-weight: 800; color: #f8fafc; margin-bottom: 4px; }}
-    .desc {{ font-size: 13px; color: #94a3b8; margin-bottom: 16px; line-height: 1.4; }}
+    .title {{ font-size: 17px; font-weight: 800; color: #f8fafc; margin-bottom: 4px; }}
+    .desc {{ font-size: 12.5px; color: #94a3b8; margin-bottom: 14px; line-height: 1.4; }}
     .amount-badge {{
       display: inline-block;
       background: #0284c7;
       color: #fff;
-      font-size: 20px;
+      font-size: 19px;
       font-weight: 900;
-      padding: 6px 16px;
+      padding: 5px 16px;
       border-radius: 30px;
-      margin-bottom: 20px;
+      margin-bottom: 14px;
       letter-spacing: 0.5px;
+    }}
+    .sandbox-guide {{
+      background: #fffbeb;
+      border: 1px solid #f59e0b;
+      color: #92400e;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 11.5px;
+      text-align: left;
+      margin-bottom: 14px;
+      line-height: 1.4;
+    }}
+    .sandbox-guide strong {{ display: block; color: #78350f; margin-bottom: 2px; }}
+    .sandbox-guide code {{
+      background: #fef3c7;
+      padding: 1px 4px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-weight: 700;
+      color: #b45309;
     }}
     .btn {{
       display: block;
       width: 100%;
       background: #0284c7;
       color: #fff;
-      font-size: 15px;
+      font-size: 14.5px;
       font-weight: 700;
-      padding: 13px;
+      padding: 12px;
       border: none;
       border-radius: 12px;
       cursor: pointer;
-      margin-top: 10px;
+      margin-top: 8px;
       box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
     }}
     .btn-test {{
@@ -416,9 +437,9 @@ class RazorpayCheckoutPageView(APIView):
       background: transparent;
       border: none;
       color: #94a3b8;
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 600;
-      margin-top: 14px;
+      margin-top: 12px;
       cursor: pointer;
       padding: 6px;
     }}
@@ -427,18 +448,19 @@ class RazorpayCheckoutPageView(APIView):
 <body>
   <div class="backdrop">
     <div id="loader-spinner" class="spinner"></div>
-    <div class="title">Opening Razorpay Standard Checkout</div>
-    <div class="desc">Please select your payment method (UPI, Cards, Netbanking) in the Razorpay window.</div>
+    <div class="title">Razorpay Standard Checkout</div>
+    <div class="desc">Please select your payment method in the Razorpay window.</div>
     <div class="amount-badge">₹{amount}</div>
+
+    {'<div class="sandbox-guide"><strong>🧪 Test Mode Sandbox Guide:</strong>• <strong>Cards</strong>: Use <code>4111 1111 1111 1111</code> (any MM/YY, CVV 123)<br/>• <strong>UPI</strong>: Enter UPI ID <code>success@razorpay</code><br/>• <strong>Netbanking</strong>: Pick any bank and click Success</div>' if is_mock else ''}
 
     <button id="open-btn" class="btn" onclick="openRazorpay()" style="display:none;">
       Re-open Razorpay UI
     </button>
 
-    {'<button id="test-btn" class="btn btn-test" onclick="simulateSandboxSuccess()" style="display:none;">⚡ Instant Sandbox Test Pay (Success)</button>' if is_mock else ''}
+    {'<button id="test-btn" class="btn btn-test" onclick="simulateSandboxSuccess()">⚡ Instant 1-Tap Sandbox Test Pay</button>' if is_mock else ''}
 
-    <br/>
-    <button class="btn-cancel" onclick="sendCancel()">Cancel Payment</button>
+    <button class="btn-cancel" onclick="sendCancel()">Cancel and Go Back</button>
   </div>
 
   <script>
@@ -530,6 +552,10 @@ class RazorpayCheckoutPageView(APIView):
           contact: '{donor_phone}'
         }},
         theme: {{ color: '#0284c7' }},
+        retry: {{
+          enabled: true,
+          max_count: 4
+        }},
         handler: function(response) {{
           sendSuccess(
             response.razorpay_payment_id,
@@ -557,28 +583,25 @@ class RazorpayCheckoutPageView(APIView):
 
       try {{
         var rzp = new Razorpay(options);
+        // Do NOT use intrusive alert() on payment.failed; Razorpay has its own retry UI
         rzp.on('payment.failed', function(resp) {{
-          alert('Payment Failed: ' + (resp.error ? resp.error.description : 'Transaction was not completed.'));
+          console.warn('Razorpay payment attempt note:', resp);
+          var ob = document.getElementById('open-btn');
+          if (ob) ob.style.display = 'block';
         }});
         rzp.open();
 
-        // Reveal buttons if modal is closed or user returns
         setTimeout(function() {{
           var ob = document.getElementById('open-btn');
           if (ob) ob.style.display = 'block';
-          var tb = document.getElementById('test-btn');
-          if (tb) tb.style.display = 'block';
         }}, 2000);
       }} catch(err) {{
         console.error('Razorpay open error:', err);
         var ob = document.getElementById('open-btn');
         if (ob) ob.style.display = 'block';
-        var tb = document.getElementById('test-btn');
-        if (tb) tb.style.display = 'block';
       }}
     }}
 
-    // Auto-launch checkout once script is loaded
     if (document.readyState === 'complete') {{
       openRazorpay();
     }} else {{
