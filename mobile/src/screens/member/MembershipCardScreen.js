@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
 import { useAuthStore } from '../../store/authStore';
@@ -15,7 +16,7 @@ const MembershipCardScreen = ({ navigation }) => {
   const { user } = useAuthStore();
   const [userProfile, setUserProfile] = useState(user);
 
-  useEffect(() => {
+  const fetchLatestProfile = useCallback(() => {
     authApi.getProfile()
       .then(res => {
         if (res.data) {
@@ -25,6 +26,12 @@ const MembershipCardScreen = ({ navigation }) => {
       })
       .catch(() => {});
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchLatestProfile();
+    }, [fetchLatestProfile])
+  );
 
   const activeUser = userProfile || user;
   const isPaidMember = Boolean(activeUser?.is_paid_member);

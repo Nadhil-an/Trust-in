@@ -6,6 +6,8 @@ urlpatterns = [
     path('staff-dashboard/', views.StaffDashboardView.as_view()),
     # Members
     path('members/', views.MemberListCreateView.as_view()),
+    path('members/pay-online/', views.MemberPayOnlineView.as_view()),
+    path('members/mark-paid-office/', views.MemberMarkPaidOfficeView.as_view()),
     path('members/<uuid:pk>/', views.MemberDetailView.as_view()),
     path('members/<uuid:pk>/reset-password/', views.MemberResetPasswordView.as_view()),
     path('members/<uuid:pk>/certificate/', views.MemberCertificateView.as_view()),

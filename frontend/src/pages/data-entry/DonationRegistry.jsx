@@ -58,6 +58,15 @@ export default function DonationRegistry() {
     fetchSessionHistory()
   }, [batch.staff_id, batch.date])
 
+  // Live real-time update when donations are recorded
+  useEffect(() => {
+    const handleRefresh = () => {
+      fetchSessionHistory()
+    }
+    window.addEventListener('dashboard-refresh', handleRefresh)
+    return () => window.removeEventListener('dashboard-refresh', handleRefresh)
+  }, [batch.staff_id, batch.date])
+
   const [showHistoryModal, setShowHistoryModal] = useState(sessionStorage.getItem('donation_registry_history_open') === 'true')
 
   useEffect(() => {

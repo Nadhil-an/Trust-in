@@ -198,6 +198,9 @@ export default function DataEntryDashboard() {
     }
     
     fetchStats()
+    const handleRefresh = () => fetchStats()
+    window.addEventListener('dashboard-refresh', handleRefresh)
+    return () => window.removeEventListener('dashboard-refresh', handleRefresh)
   }, [filterDate])
 
   return (

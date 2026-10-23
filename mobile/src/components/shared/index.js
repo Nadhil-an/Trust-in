@@ -21,3 +21,4 @@ export { default as PipelineBar } from './PipelineBar';
 // New components
 export { default as EligibilityToggle } from './EligibilityToggle';
 export { default as LineItemTable } from './LineItemTable';
+export { default as OptionPickerModal } from './OptionPickerModal';

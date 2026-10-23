@@ -69,6 +69,27 @@ export default function Donations() {
     fetchIncome()
   }, [selectedUser, selectedDate, selectedSource, selectedMethod])
 
+  // Real-time live dashboard sync on payment success
+  useEffect(() => {
+    const handleRefresh = () => {
+      accountsApi.dashboard({ date: selectedDate }).then(r => setData(r.data)).catch(() => {})
+      const params = { date: selectedDate, page_size: 5000 }
+      if (selectedUser) params.created_by = selectedUser
+      accountsApi.income.list(params).then(res => {
+        const allItems = res.data.results || res.data || []
+        const filtered = allItems.filter(i => {
+          const isCorrectSource = i.source === 'DONATION' || i.source === 'MEMBERSHIP'
+          const matchesSource = !selectedSource || i.source === selectedSource
+          const matchesMethod = !selectedMethod || i.payment_method === selectedMethod
+          return isCorrectSource && matchesSource && matchesMethod
+        })
+        setItems(filtered)
+      }).catch(() => {})
+    }
+    window.addEventListener('dashboard-refresh', handleRefresh)
+    return () => window.removeEventListener('dashboard-refresh', handleRefresh)
+  }, [selectedUser, selectedDate, selectedSource, selectedMethod])
+
   if (loading) return <LoadingState />
   const acc = data || {}
 

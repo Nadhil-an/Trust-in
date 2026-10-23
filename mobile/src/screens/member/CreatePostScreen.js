@@ -10,6 +10,7 @@ import {
   Alert,
   Platform,
   StatusBar,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,7 +18,8 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { Colors } from '../../constants/Colors';
 import { memberPostsApi } from '../../api';
-import { KERALA_DISTRICTS } from '../../utils/location';
+import { INDIAN_STATES, getDistrictsForState, formatAddress } from '../../utils/location';
+import { OptionPickerModal } from '../../components/shared';
 import { useAuthStore } from '../../store/authStore';
 import Toast from 'react-native-toast-message';
 
@@ -32,9 +34,24 @@ export default function CreatePostScreen({ navigation }) {
   const { user } = useAuthStore();
   const [description, setDescription] = useState('');
   const [contactNumber, setContactNumber] = useState(user?.phone || '');
-  const [address, setAddress] = useState('');
+  const [selectedState, setSelectedState] = useState('Kerala');
+  const [selectedDistrict, setSelectedDistrict] = useState('Kozhikode');
+  const [locality, setLocality] = useState('');
+  const [pickerModal, setPickerModal] = useState({ visible: false, type: null });
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  const handleSelectState = (newState) => {
+    setSelectedState(newState);
+    const districts = getDistrictsForState(newState);
+    if (!districts.includes(selectedDistrict)) {
+      setSelectedDistrict(districts[0] || '');
+    }
+  };
+
+  const handleSelectDistrict = (newDistrict) => {
+    setSelectedDistrict(newDistrict);
+  };
 
   const handlePickPhotos = async () => {
     if (photos.length >= 10) {
@@ -72,17 +89,19 @@ export default function CreatePostScreen({ navigation }) {
       return;
     }
 
-    if (!address.trim()) {
-      Toast.show({ type: 'error', text1: 'Address Required', text2: 'Please provide your location or address.' });
+    if (!selectedDistrict || !selectedState) {
+      Toast.show({ type: 'error', text1: 'Location Required', text2: 'Please select both state and district.' });
       return;
     }
+
+    const fullAddress = formatAddress(locality, selectedDistrict, selectedState);
 
     setLoading(true);
     try {
       await memberPostsApi.create({
         description: description.trim(),
         contact_number: contactNumber.trim(),
-        address: address.trim(),
+        address: fullAddress,
         images: photos,
       });
 
@@ -121,9 +140,9 @@ export default function CreatePostScreen({ navigation }) {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Share Problem / Need</Text>
         <TouchableOpacity
-          style={[styles.postHeaderBtn, (!description.trim() || !address.trim() || loading) && styles.postHeaderBtnDisabled]}
+          style={[styles.postHeaderBtn, (!description.trim() || !selectedState || !selectedDistrict || loading) && styles.postHeaderBtnDisabled]}
           onPress={handleSubmit}
-          disabled={!description.trim() || !address.trim() || loading}
+          disabled={!description.trim() || !selectedState || !selectedDistrict || loading}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           {loading ? (
@@ -235,62 +254,60 @@ export default function CreatePostScreen({ navigation }) {
           <Text style={styles.fieldLabel}>
             Location / Address <Text style={{ color: '#EF4444' }}>*</Text>
           </Text>
-          <Text style={{ fontSize: 11, fontWeight: '600', color: '#64748B', marginBottom: 6 }}>
-            Select District (Kerala):
-          </Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ flexDirection: 'row', gap: 6, marginBottom: 8 }}
-          >
-            {KERALA_DISTRICTS.map((d) => {
-              const isSelected = address.toLowerCase().includes(d.toLowerCase());
-              return (
-                <TouchableOpacity
-                  key={d}
-                  style={{
-                    backgroundColor: isSelected ? '#0284c7' : '#EFF6FF',
-                    paddingHorizontal: 10,
-                    paddingVertical: 5,
-                    borderRadius: 14,
-                    borderWidth: 1,
-                    borderColor: isSelected ? '#0284c7' : '#BFDBFE',
-                  }}
-                  onPress={() => {
-                    setAddress(`${d}, Kerala`);
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <Text
-                    style={{
-                      fontSize: 11,
-                      fontWeight: '700',
-                      color: isSelected ? '#ffffff' : '#0284c7',
-                    }}
-                  >
-                    {d}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-          <View style={styles.fieldInputRow}>
-            <Ionicons name="location-outline" size={18} color="#64748B" style={{ marginLeft: 12 }} />
+
+          {/* Separate State and District Dropdown Selectors */}
+          <View style={styles.locationDropdownRow}>
+            {/* State Input Dropdown */}
+            <View style={styles.locationDropdownCol}>
+              <Text style={styles.dropdownMiniLabel}>State</Text>
+              <TouchableOpacity
+                style={styles.dropdownSelectorBtn}
+                onPress={() => setPickerModal({ visible: true, type: 'state' })}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="map-outline" size={16} color="#0284c7" style={styles.dropdownIcon} />
+                <Text style={styles.dropdownValueText} numberOfLines={1}>
+                  {selectedState}
+                </Text>
+                <Ionicons name="chevron-down" size={16} color="#64748B" />
+              </TouchableOpacity>
+            </View>
+
+            {/* District Input Dropdown */}
+            <View style={styles.locationDropdownCol}>
+              <Text style={styles.dropdownMiniLabel}>District</Text>
+              <TouchableOpacity
+                style={styles.dropdownSelectorBtn}
+                onPress={() => setPickerModal({ visible: true, type: 'district' })}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="location-outline" size={16} color="#0284c7" style={styles.dropdownIcon} />
+                <Text style={styles.dropdownValueText} numberOfLines={1}>
+                  {selectedDistrict}
+                </Text>
+                <Ionicons name="chevron-down" size={16} color="#64748B" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Specific Locality / House / Street Input */}
+          <View style={[styles.fieldInputRow, { marginTop: 10 }]}>
+            <Ionicons name="home-outline" size={17} color="#64748B" style={{ marginLeft: 12 }} />
             <TextInput
               style={styles.fieldInput}
-              placeholder="House name, locality, village/town, district"
+              placeholder="House name, locality, street / village (optional)"
               placeholderTextColor="#94A3B8"
-              value={address}
-              onChangeText={setAddress}
+              value={locality}
+              onChangeText={setLocality}
             />
           </View>
         </View>
 
         {/* Bottom Submit Button */}
         <TouchableOpacity
-          style={[styles.submitBtn, (!description.trim() || !address.trim() || loading) && styles.submitBtnDisabled]}
+          style={[styles.submitBtn, (!description.trim() || !selectedState || !selectedDistrict || loading) && styles.submitBtnDisabled]}
           onPress={handleSubmit}
-          disabled={!description.trim() || !address.trim() || loading}
+          disabled={!description.trim() || !selectedState || !selectedDistrict || loading}
           activeOpacity={0.85}
         >
           {loading ? (
@@ -303,6 +320,18 @@ export default function CreatePostScreen({ navigation }) {
           )}
         </TouchableOpacity>
       </KeyboardAwareScrollView>
+
+      {/* State & District Dropdown Bottom Sheet Modal */}
+      <OptionPickerModal
+        visible={pickerModal.visible}
+        onClose={() => setPickerModal({ visible: false, type: null })}
+        title={pickerModal.type === 'state' ? 'Select State' : `Select District (${selectedState})`}
+        options={pickerModal.type === 'state' ? INDIAN_STATES : getDistrictsForState(selectedState)}
+        selectedValue={pickerModal.type === 'state' ? selectedState : selectedDistrict}
+        onSelect={pickerModal.type === 'state' ? handleSelectState : handleSelectDistrict}
+        searchPlaceholder={pickerModal.type === 'state' ? 'Search Indian state...' : 'Search district...'}
+        iconName={pickerModal.type === 'state' ? 'map-outline' : 'location-outline'}
+      />
     </KeyboardAvoidingView>
   );
 }
@@ -535,5 +564,40 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 15,
     fontWeight: '700',
+  },
+  locationDropdownRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 4,
+  },
+  locationDropdownCol: {
+    flex: 1,
+  },
+  dropdownMiniLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#64748B',
+    marginBottom: 5,
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  dropdownSelectorBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 11,
+  },
+  dropdownIcon: {
+    marginRight: 6,
+  },
+  dropdownValueText: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#0F172A',
   },
 });

@@ -107,8 +107,8 @@ export const membersApi = {
 export const membershipApi = {
   myStatus:       () => api.get('/auth/profile/'),
   list:           (p) => api.get('/hr/members/', { params: p }),
-  payOnline:      (data) => api.post('/hr/members/pay-online/', data).catch(() => Promise.resolve({ data: { success: true } })),
-  markPaidOffice: () => api.post('/hr/members/mark-paid-office/').catch(() => Promise.resolve({ data: { success: true } })),
+  payOnline:      (data) => api.post('/hr/members/pay-online/', data),
+  markPaidOffice: (data) => api.post('/hr/members/mark-paid-office/', data),
 };
 
 // ── Assessment / Assessment Requests ────────────────────────────────────────

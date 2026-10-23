@@ -108,13 +108,22 @@ def push_request_update(request_id: str, request_number: str, new_status: str,
             pass
 
 
-def push_dashboard_refresh(roles: list, module: str = 'ALL'):
-    """Tell dashboard consumers to re-fetch stats."""
+def push_dashboard_refresh(roles: list = None, module: str = 'ALL', user_id=None):
+    """Tell dashboard and app consumers to re-fetch stats."""
     channel_layer = get_channel_layer()
-    for role in roles:
+    if roles:
+        for role in roles:
+            try:
+                async_to_sync(channel_layer.group_send)(
+                    f"notify_role_{role}",
+                    {'type': 'dashboard_refresh', 'module': module}
+                )
+            except Exception:
+                pass
+    if user_id:
         try:
             async_to_sync(channel_layer.group_send)(
-                f"notify_role_{role}",
+                f"notify_{user_id}",
                 {'type': 'dashboard_refresh', 'module': module}
             )
         except Exception:

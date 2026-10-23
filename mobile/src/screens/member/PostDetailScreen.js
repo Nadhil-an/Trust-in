@@ -97,6 +97,14 @@ const PostDetailScreen = ({ route, navigation }) => {
   const authorPhotoUrl = resolveImageUrl(post.author?.photo);
   const isAuthor = String(post.author?.id) === String(user?.id);
 
+  // Derive prominent headline/title for the issue just like EventDetailScreen
+  const descRaw = (post.description || '').trim();
+  const descLines = descRaw.split('\n').filter((l) => l.trim().length > 0);
+  const headline = descLines[0] && descLines[0].length <= 110
+    ? descLines[0]
+    : (descRaw.length > 80 ? descRaw.slice(0, 80) + '...' : descRaw);
+  const titleText = post.title || headline || 'Community Assistance Request';
+
   const formatTime = (dateStr) => {
     if (!dateStr) return '';
     try {
@@ -200,7 +208,7 @@ const PostDetailScreen = ({ route, navigation }) => {
           <Ionicons name="arrow-back" size={24} color="#ffffff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Issue Details</Text>
-        <View style={{ width: 40 }} />
+        <View style={{ width: 24 }} />
       </View>
 
       {loading ? (
@@ -220,79 +228,18 @@ const PostDetailScreen = ({ route, navigation }) => {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* 1. Author Header Card */}
-          <View style={styles.authorCard}>
-            <View style={styles.authorLeft}>
-              {authorPhotoUrl ? (
-                <Image source={{ uri: authorPhotoUrl }} style={styles.authorAvatar} />
-              ) : (
-                <View style={styles.avatarPlaceholder}>
-                  <Text style={styles.avatarText}>
-                    {(post.author?.full_name || post.author?.username || 'U')[0].toUpperCase()}
-                  </Text>
-                </View>
-              )}
-              <View style={styles.authorTextWrap}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                  <Text style={styles.authorName} numberOfLines={1}>
-                    {post.author?.full_name || post.author?.username || 'Community Member'}
-                  </Text>
-                  <Ionicons name="checkmark-circle" size={15} color="#0284c7" />
-                </View>
-                <Text style={styles.authorSub}>
-                  Member: @{post.author?.username} • {formatTime(post.created_at)}
-                </Text>
-              </View>
-            </View>
-
-            {/* Status Badge */}
-            {post.status === 'FORWARDED_TO_FAO' ? (
-              <View style={[styles.statusBadge, styles.statusBadgeForwarded]}>
-                <Ionicons name="shield-checkmark" size={12} color="#059669" />
-                <Text style={[styles.statusBadgeText, { color: '#059669' }]}>In Assessment</Text>
-              </View>
-            ) : post.status === 'RESOLVED' ? (
-              <View style={[styles.statusBadge, { backgroundColor: '#F3E8FF', borderColor: '#D8B4FE' }]}>
-                <Text style={[styles.statusBadgeText, { color: '#7E22CE' }]}>Resolved</Text>
-              </View>
-            ) : (
-              <View style={[styles.statusBadge, styles.statusBadgeOpen]}>
-                <Text style={[styles.statusBadgeText, { color: '#0284C7' }]}>Open</Text>
-              </View>
-            )}
-          </View>
-
-          {/* 2. Assessment Request Tracking Banner (if forwarded) */}
-          {post.status === 'FORWARDED_TO_FAO' && (
-            <View style={styles.trackingBanner}>
-              <View style={styles.trackingHeader}>
-                <Ionicons name="shield-checkmark" size={18} color="#059669" />
-                <Text style={styles.trackingTitle}>Trust Verification in Progress</Text>
-              </View>
-              <Text style={styles.trackingDesc}>
-                This issue has been forwarded to the Field Assessment Officer (FAO) for physical verification and cost estimation.
-              </Text>
-              {Boolean(post.assessment_request_number) && (
-                <View style={styles.refRow}>
-                  <Text style={styles.refLabel}>Request Reference:</Text>
-                  <Text style={styles.refVal}>{post.assessment_request_number}</Text>
-                </View>
-              )}
-            </View>
-          )}
-
-          {/* 3. Photos Carousel / Image Section */}
-          {images.length > 0 && (
-            <View style={styles.imageBannerWrapper}>
+          {/* Hero Image Container (Edge-to-Edge like EventDetailScreen) */}
+          {images.length > 0 ? (
+            <View style={styles.imageContainer}>
               <ScrollView
                 horizontal
                 pagingEnabled
                 showsHorizontalScrollIndicator={false}
                 decelerationRate="fast"
-                snapToInterval={SCREEN_WIDTH - 32}
+                snapToInterval={SCREEN_WIDTH}
                 snapToAlignment="center"
                 onMomentumScrollEnd={(e) => {
-                  const idx = Math.round(e.nativeEvent.contentOffset.x / (SCREEN_WIDTH - 32));
+                  const idx = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
                   if (idx >= 0 && idx < images.length) {
                     setActivePhotoIndex(idx);
                   }
@@ -303,18 +250,17 @@ const PostDetailScreen = ({ route, navigation }) => {
                     key={imgItem.id || idx}
                     activeOpacity={0.9}
                     onPress={() => setViewerImage(imgItem.resolvedUrl)}
-                    style={{ width: SCREEN_WIDTH - 32 }}
+                    style={{ width: SCREEN_WIDTH, height: '100%' }}
                   >
                     <Image
                       source={{ uri: imgItem.resolvedUrl }}
-                      style={styles.cardBannerImage}
+                      style={styles.heroImage}
                       resizeMode="cover"
                     />
                   </TouchableOpacity>
                 ))}
               </ScrollView>
 
-              {/* Photo Counter Badge */}
               {images.length > 1 && (
                 <View style={styles.counterBadge}>
                   <Text style={styles.counterText}>
@@ -323,7 +269,6 @@ const PostDetailScreen = ({ route, navigation }) => {
                 </View>
               )}
 
-              {/* Dots */}
               {images.length > 1 && (
                 <View style={styles.dotsWrap}>
                   {images.map((_, i) => (
@@ -338,152 +283,225 @@ const PostDetailScreen = ({ route, navigation }) => {
                 </View>
               )}
             </View>
-          )}
-
-          {/* 4. Full Problem Description Card */}
-          <View style={styles.detailCard}>
-            <Text style={styles.sectionLabel}>Problem / Assistance Needed</Text>
-            <Text style={styles.descriptionFull}>{post.description}</Text>
-          </View>
-
-          {/* 5. Address & Location Card */}
-          {Boolean(post.address) && (
-            <View style={styles.detailCard}>
-              <Text style={styles.sectionLabel}>Location / Address</Text>
-              <View style={styles.infoRow}>
-                <Ionicons name="location" size={18} color="#0284c7" />
-                <Text style={styles.infoValue}>{formatDistrictKerala(post.address)}</Text>
-              </View>
+          ) : (
+            <View style={styles.imagePlaceholderContainer}>
+              <Ionicons name="document-text-outline" size={56} color="#BAE6FD" />
+              <Text style={styles.imagePlaceholderText}>Community Help & Issue Request</Text>
             </View>
           )}
 
-          {/* 6. Contact Information Card */}
-          {Boolean(post.contact_number) && (
-            <View style={styles.detailCard}>
-              <Text style={styles.sectionLabel}>Contact Information</Text>
-              <View style={styles.contactPhoneRow}>
-                <View style={styles.contactPhoneIconBox}>
-                  <Ionicons name="call" size={15} color="#0284c7" />
+          {/* Floating Overlapping Card */}
+          <View style={styles.card}>
+            {/* About the Issue Header Row with parallel Place & Time on the right */}
+            <View style={styles.aboutHeaderRow}>
+              <Text style={styles.sectionTitle}>About the Issue</Text>
+              <View style={styles.metaRightSide}>
+                <View style={styles.metaRightItem}>
+                  <Ionicons name="calendar-outline" size={13} color="#0284c7" />
+                  <Text style={styles.metaTimeText}>{formatTime(post.created_at)}</Text>
                 </View>
-                <Text style={styles.phoneText}>{post.contact_number}</Text>
-              </View>
-              <View style={styles.contactButtonsLevelRow}>
-                <TouchableOpacity style={styles.callBtn} onPress={handleCall} activeOpacity={0.85}>
-                  <Ionicons name="call" size={15} color="#ffffff" />
-                  <Text style={styles.callBtnText}>Call</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.whatsappBtn} onPress={handleWhatsApp} activeOpacity={0.85}>
-                  <Ionicons name="logo-whatsapp" size={16} color="#ffffff" />
-                  <Text style={styles.whatsappBtnText}>WhatsApp</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
-
-          {/* 7. Engagement Actions (Like, Comment on same level) */}
-          <View style={styles.actionBarCard}>
-            {/* Like Button */}
-            <TouchableOpacity
-              style={[styles.actionBtn, styles.likeBtn, isLiked && styles.likeBtnActive]}
-              onPress={handleLike}
-              activeOpacity={0.7}
-            >
-              <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-                <Ionicons
-                  name={isLiked ? 'heart' : 'heart-outline'}
-                  size={20}
-                  color={isLiked ? '#EF4444' : '#64748B'}
-                />
-              </Animated.View>
-              <Text style={[styles.actionBtnText, isLiked && styles.likedText]}>
-                {likesCount > 0 ? `${likesCount} Likes` : 'Like'}
-              </Text>
-            </TouchableOpacity>
-
-            {/* Comment Button — Same Level */}
-            <TouchableOpacity
-              style={[styles.actionBtn, styles.commentBtn, showCommentInput && styles.commentBtnActive]}
-              onPress={handleCommentPress}
-              activeOpacity={0.7}
-            >
-              <Ionicons
-                name={showCommentInput ? 'chatbubble' : 'chatbubble-outline'}
-                size={19}
-                color={showCommentInput ? '#0284c7' : '#64748B'}
-              />
-              <Text style={[styles.actionBtnText, showCommentInput && styles.commentTextActive]}>
-                {comments.length > 0 ? `${comments.length} Comments` : 'Comment'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* 8. Live Comments Section */}
-          <View style={styles.commentsSection}>
-            <View style={styles.commentsHeader}>
-              <Text style={styles.commentsTitle}>Comments ({comments.length})</Text>
-            </View>
-
-            {loadingComments ? (
-              <ActivityIndicator size="small" color="#0284c7" style={{ marginVertical: 16 }} />
-            ) : comments.length === 0 ? (
-              <View style={styles.emptyComments}>
-                <Ionicons name="chatbubble-ellipses-outline" size={32} color="#CBD5E1" />
-                <Text style={styles.emptyCommentsText}>No comments yet. Be the first to reply!</Text>
-              </View>
-            ) : (
-              comments.map((comment) => (
-                <View key={comment.id} style={styles.commentItem}>
-                  <View style={styles.commentAvatar}>
-                    <Text style={styles.commentAvatarText}>
-                      {(comment.user?.full_name || comment.user?.username || 'U')[0].toUpperCase()}
+                {Boolean(post.address) && (
+                  <View style={styles.metaRightItem}>
+                    <Ionicons name="location-sharp" size={13} color="#0284c7" />
+                    <Text style={styles.metaLocationText} numberOfLines={1}>
+                      {post.address}
                     </Text>
                   </View>
-                  <View style={styles.commentBody}>
-                    <View style={styles.commentHeaderRow}>
-                      <Text style={styles.commentAuthor}>{comment.user?.full_name || comment.user?.username}</Text>
-                      <Text style={styles.commentTime}>{formatTime(comment.created_at)}</Text>
-                    </View>
-                    <Text style={styles.commentText}>{comment.text}</Text>
-                  </View>
+                )}
+              </View>
+            </View>
+
+            <Text style={styles.descriptionText}>{post.description}</Text>
+
+            {/* Reporter / Member Info Box (Styled exactly like EventDetail orgBox) */}
+            <View style={styles.orgBox}>
+              {authorPhotoUrl ? (
+                <Image source={{ uri: authorPhotoUrl }} style={styles.authorAvatar} />
+              ) : (
+                <View style={styles.avatarPlaceholder}>
+                  <Text style={styles.avatarText}>
+                    {(post.author?.full_name || post.author?.username || 'U')[0].toUpperCase()}
+                  </Text>
                 </View>
-              ))
+              )}
+              <View style={{ flex: 1 }}>
+                <View style={styles.orgHeaderRow}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, flex: 1 }}>
+                    <Text style={styles.orgTitle} numberOfLines={1}>
+                      {post.author?.full_name || post.author?.username || 'Community Member'}
+                    </Text>
+                    <Ionicons name="checkmark-circle" size={14} color="#0284c7" />
+                  </View>
+
+                  {/* Status Badge */}
+                  {post.status === 'FORWARDED_TO_FAO' ? (
+                    <View style={[styles.statusBadge, styles.statusBadgeForwarded]}>
+                      <Ionicons name="shield-checkmark" size={11} color="#059669" />
+                      <Text style={[styles.statusBadgeText, { color: '#059669' }]}>In Assessment</Text>
+                    </View>
+                  ) : post.status === 'RESOLVED' ? (
+                    <View style={[styles.statusBadge, { backgroundColor: '#F3E8FF', borderColor: '#D8B4FE' }]}>
+                      <Text style={[styles.statusBadgeText, { color: '#7E22CE' }]}>Resolved</Text>
+                    </View>
+                  ) : (
+                    <View style={[styles.statusBadge, styles.statusBadgeOpen]}>
+                      <Text style={[styles.statusBadgeText, { color: '#0284C7' }]}>Open</Text>
+                    </View>
+                  )}
+                </View>
+                <Text style={styles.orgSub}>
+                  Member: @{post.author?.username} • Citizen Reporter
+                </Text>
+              </View>
+            </View>
+
+            {/* Assessment Request Tracking Banner (if forwarded) */}
+            {post.status === 'FORWARDED_TO_FAO' && (
+              <View style={styles.trackingBanner}>
+                <View style={styles.trackingHeader}>
+                  <Ionicons name="shield-checkmark" size={18} color="#059669" />
+                  <Text style={styles.trackingTitle}>Trust Verification in Progress</Text>
+                </View>
+                <Text style={styles.trackingDesc}>
+                  This issue has been forwarded to the Field Assessment Officer (FAO) for physical verification and cost estimation.
+                </Text>
+                {Boolean(post.assessment_request_number) && (
+                  <View style={styles.refRow}>
+                    <Text style={styles.refLabel}>Request Reference:</Text>
+                    <Text style={styles.refVal}>{post.assessment_request_number}</Text>
+                  </View>
+                )}
+              </View>
             )}
 
-            {/* Add Comment Input — Displayed when clicking comment icon */}
-            {showCommentInput ? (
-              <View style={styles.inputWrap}>
-                <TextInput
-                  ref={commentInputRef}
-                  style={styles.commentInput}
-                  placeholder="Write a supportive comment..."
-                  placeholderTextColor="#94A3B8"
-                  value={commentText}
-                  onChangeText={setCommentText}
-                  multiline
-                  autoFocus={true}
-                />
-                <TouchableOpacity
-                  style={[styles.sendBtn, (!commentText.trim() || submittingComment) && styles.sendBtnDisabled]}
-                  onPress={handleAddComment}
-                  disabled={!commentText.trim() || submittingComment}
-                >
-                  {submittingComment ? (
-                    <ActivityIndicator size="small" color="#fff" />
-                  ) : (
-                    <Ionicons name="send" size={16} color="#ffffff" />
-                  )}
-                </TouchableOpacity>
+
+
+            {/* Contact Information Card with Leveled Call & WhatsApp Buttons */}
+            {Boolean(post.contact_number) && (
+              <View style={styles.contactSectionBox}>
+                <Text style={styles.sectionTitle}>Contact Information</Text>
+                <View style={styles.contactPhoneRow}>
+                  <View style={styles.contactPhoneIconBox}>
+                    <Ionicons name="call" size={15} color="#0284c7" />
+                  </View>
+                  <Text style={styles.phoneText}>{post.contact_number}</Text>
+                </View>
+                <View style={styles.contactButtonsLevelRow}>
+                  <TouchableOpacity style={styles.callBtn} onPress={handleCall} activeOpacity={0.85}>
+                    <Ionicons name="call" size={15} color="#ffffff" />
+                    <Text style={styles.callBtnText}>Call</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.whatsappBtn} onPress={handleWhatsApp} activeOpacity={0.85}>
+                    <Ionicons name="logo-whatsapp" size={16} color="#ffffff" />
+                    <Text style={styles.whatsappBtnText}>WhatsApp</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-            ) : (
+            )}
+
+            {/* Engagement Actions (Like & Comment) on same level */}
+            <View style={styles.actionBarCard}>
               <TouchableOpacity
-                style={styles.addCommentTrigger}
+                style={[styles.actionBtn, styles.likeBtn, isLiked && styles.likeBtnActive]}
+                onPress={handleLike}
+                activeOpacity={0.7}
+              >
+                <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+                  <Ionicons
+                    name={isLiked ? 'heart' : 'heart-outline'}
+                    size={20}
+                    color={isLiked ? '#EF4444' : '#64748B'}
+                  />
+                </Animated.View>
+                <Text style={[styles.actionBtnText, isLiked && styles.likedText]}>
+                  {likesCount > 0 ? `${likesCount} Likes` : 'Like'}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.actionBtn, styles.commentBtn, showCommentInput && styles.commentBtnActive]}
                 onPress={handleCommentPress}
                 activeOpacity={0.7}
               >
-                <Ionicons name="create-outline" size={16} color="#0284c7" />
-                <Text style={styles.addCommentTriggerText}>Write a supportive comment...</Text>
+                <Ionicons
+                  name={showCommentInput ? 'chatbubble' : 'chatbubble-outline'}
+                  size={19}
+                  color={showCommentInput ? '#0284c7' : '#64748B'}
+                />
+                <Text style={[styles.actionBtnText, showCommentInput && styles.commentTextActive]}>
+                  {comments.length > 0 ? `${comments.length} Comments` : 'Comment'}
+                </Text>
               </TouchableOpacity>
-            )}
+            </View>
+
+            {/* Live Comments Section */}
+            <View style={styles.commentsSection}>
+              <View style={styles.commentsHeader}>
+                <Text style={styles.commentsTitle}>Comments ({comments.length})</Text>
+              </View>
+
+              {loadingComments ? (
+                <ActivityIndicator size="small" color="#0284c7" style={{ marginVertical: 16 }} />
+              ) : comments.length === 0 ? (
+                <View style={styles.emptyComments}>
+                  <Ionicons name="chatbubble-ellipses-outline" size={32} color="#CBD5E1" />
+                  <Text style={styles.emptyCommentsText}>No comments yet. Be the first to reply!</Text>
+                </View>
+              ) : (
+                comments.map((comment) => (
+                  <View key={comment.id} style={styles.commentItem}>
+                    <View style={styles.commentAvatar}>
+                      <Text style={styles.commentAvatarText}>
+                        {(comment.user?.full_name || comment.user?.username || 'U')[0].toUpperCase()}
+                      </Text>
+                    </View>
+                    <View style={styles.commentBody}>
+                      <View style={styles.commentHeaderRow}>
+                        <Text style={styles.commentAuthor}>{comment.user?.full_name || comment.user?.username}</Text>
+                        <Text style={styles.commentTime}>{formatTime(comment.created_at)}</Text>
+                      </View>
+                      <Text style={styles.commentText}>{comment.text}</Text>
+                    </View>
+                  </View>
+                ))
+              )}
+
+              {/* Add Comment Input — Displayed when clicking comment icon */}
+              {showCommentInput ? (
+                <View style={styles.inputWrap}>
+                  <TextInput
+                    ref={commentInputRef}
+                    style={styles.commentInput}
+                    placeholder="Write a supportive comment..."
+                    placeholderTextColor="#94A3B8"
+                    value={commentText}
+                    onChangeText={setCommentText}
+                    multiline
+                    autoFocus={true}
+                  />
+                  <TouchableOpacity
+                    style={[styles.sendBtn, (!commentText.trim() || submittingComment) && styles.sendBtnDisabled]}
+                    onPress={handleAddComment}
+                    disabled={!commentText.trim() || submittingComment}
+                  >
+                    {submittingComment ? (
+                      <ActivityIndicator size="small" color="#fff" />
+                    ) : (
+                      <Ionicons name="send" size={16} color="#ffffff" />
+                    )}
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  style={styles.addCommentTrigger}
+                  onPress={handleCommentPress}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="create-outline" size={16} color="#0284c7" />
+                  <Text style={styles.addCommentTriggerText}>Write a supportive comment...</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
         </KeyboardAwareScrollView>
       )}
@@ -506,94 +524,45 @@ const PostDetailScreen = ({ route, navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F8FAFC' },
+  container: { flex: 1, backgroundColor: Colors.background },
   header: {
     backgroundColor: '#0284c7',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingBottom: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+    paddingBottom: 16,
   },
   backBtn: { padding: 4 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: '#ffffff' },
-  shareHeaderBtn: { padding: 4 },
+  headerTitle: { fontSize: 18, fontWeight: '700', color: Colors.white },
   centerLoading: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12 },
   loadingText: { fontSize: 14, color: '#64748B', fontWeight: '500' },
-  scrollContent: { padding: 16, gap: 14, paddingBottom: 60 },
+  scrollContent: { paddingBottom: 60 },
 
-  authorCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 14,
-    padding: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  authorLeft: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
-  authorAvatar: { width: 44, height: 44, borderRadius: 22, borderWidth: 1.5, borderColor: '#0284c7' },
-  avatarPlaceholder: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#E0F2FE',
-    borderWidth: 1.5,
-    borderColor: '#0284c7',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: { color: '#0284c7', fontSize: 16, fontWeight: '800' },
-  authorTextWrap: { flex: 1 },
-  authorName: { fontSize: 15, fontWeight: '800', color: '#0F172A' },
-  authorSub: { fontSize: 11, color: '#64748B', marginTop: 2 },
-
-  statusBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    borderWidth: 1,
-  },
-  statusBadgeOpen: { backgroundColor: '#F0F9FF', borderColor: '#BAE6FD' },
-  statusBadgeForwarded: { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' },
-  statusBadgeText: { fontSize: 11, fontWeight: '700' },
-
-  trackingBanner: {
-    backgroundColor: '#ECFDF5',
-    borderRadius: 14,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: '#A7F3D0',
-  },
-  trackingHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
-  trackingTitle: { fontSize: 14, fontWeight: '800', color: '#065F46' },
-  trackingDesc: { fontSize: 12, color: '#047857', lineHeight: 18, marginBottom: 8 },
-  refRow: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingTop: 6, borderTopWidth: 1, borderTopColor: '#A7F3D0' },
-  refLabel: { fontSize: 11, fontWeight: '700', color: '#047857' },
-  refVal: { fontSize: 12, fontWeight: '800', color: '#065F46' },
-
-  imageBannerWrapper: {
-    borderRadius: 14,
-    overflow: 'hidden',
-    backgroundColor: '#000',
+  imageContainer: {
+    width: '100%',
+    aspectRatio: 3 / 2,
+    backgroundColor: '#f1f5f9',
     position: 'relative',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
   },
-  cardBannerImage: { width: SCREEN_WIDTH - 32, aspectRatio: 4 / 3, backgroundColor: '#F1F5F9' },
+  heroImage: { width: '100%', height: '100%' },
+  imagePlaceholderContainer: {
+    width: '100%',
+    height: 180,
+    backgroundColor: '#F0F9FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+  },
+  imagePlaceholderText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0284C7',
+  },
   counterBadge: {
     position: 'absolute',
-    top: 12,
-    right: 12,
+    top: 14,
+    right: 14,
     backgroundColor: 'rgba(15, 23, 42, 0.75)',
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -602,7 +571,7 @@ const styles = StyleSheet.create({
   counterText: { color: '#ffffff', fontSize: 12, fontWeight: '700' },
   dotsWrap: {
     position: 'absolute',
-    bottom: 10,
+    bottom: 28,
     left: 0,
     right: 0,
     flexDirection: 'row',
@@ -613,18 +582,130 @@ const styles = StyleSheet.create({
   dot: { width: 7, height: 7, borderRadius: 3.5, backgroundColor: 'rgba(255, 255, 255, 0.6)' },
   activeDot: { width: 18, height: 7, borderRadius: 3.5, backgroundColor: '#0284c7' },
 
-  detailCard: {
-    backgroundColor: '#ffffff',
+  // Floating Overlapping Sheet Card (Matches EventDetailScreen)
+  card: {
+    backgroundColor: Colors.white,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    marginTop: -20,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  aboutHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+    marginBottom: 8,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+  },
+  metaRightSide: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    flexWrap: 'wrap',
+    gap: 10,
+    flex: 1,
+  },
+  metaRightItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  metaTimeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  metaLocationText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0284C7',
+    maxWidth: 140,
+  },
+  descriptionText: {
+    fontSize: 14,
+    color: Colors.gray700,
+    lineHeight: 22,
+  },
+
+  // Reporter / Member Info Box (Styled like EventDetail orgBox)
+  orgBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0f9ff',
+    padding: 14,
+    borderRadius: 12,
+    marginTop: 16,
+    gap: 12,
+  },
+  authorAvatar: { width: 42, height: 42, borderRadius: 21, borderWidth: 1.5, borderColor: '#0284c7' },
+  avatarPlaceholder: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: '#E0F2FE',
+    borderWidth: 1.5,
+    borderColor: '#0284c7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: { color: '#0284c7', fontSize: 15, fontWeight: '800' },
+  orgHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  orgTitle: { fontSize: 13, fontWeight: '700', color: '#0369a1' },
+  orgSub: { fontSize: 11, color: Colors.gray500, marginTop: 2 },
+
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  statusBadgeOpen: { backgroundColor: '#F0F9FF', borderColor: '#BAE6FD' },
+  statusBadgeForwarded: { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' },
+  statusBadgeText: { fontSize: 10, fontWeight: '700' },
+
+  trackingBanner: {
+    backgroundColor: '#ECFDF5',
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+    marginTop: 16,
+  },
+  trackingHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
+  trackingTitle: { fontSize: 13, fontWeight: '800', color: '#065F46' },
+  trackingDesc: { fontSize: 12, color: '#047857', lineHeight: 18, marginBottom: 8 },
+  refRow: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingTop: 6, borderTopWidth: 1, borderTopColor: '#A7F3D0' },
+  refLabel: { fontSize: 11, fontWeight: '700', color: '#047857' },
+  refVal: { fontSize: 12, fontWeight: '800', color: '#065F46' },
+
+
+  // Contact Information
+  contactSectionBox: {
+    marginTop: 18,
+    backgroundColor: '#F8FAFC',
     borderRadius: 14,
-    padding: 16,
+    padding: 14,
     borderWidth: 1,
     borderColor: '#E2E8F0',
   },
-  sectionLabel: { fontSize: 11, fontWeight: '800', color: '#0284c7', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
-  descriptionFull: { fontSize: 15, fontWeight: '500', color: '#1E293B', lineHeight: 23 },
-  infoRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
-  infoValue: { fontSize: 14, fontWeight: '600', color: '#334155', flex: 1, lineHeight: 20 },
-
   contactPhoneRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -635,7 +716,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 8,
-    backgroundColor: '#F0F9FF',
+    backgroundColor: '#E0F2FE',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -669,14 +750,16 @@ const styles = StyleSheet.create({
   },
   whatsappBtnText: { color: '#ffffff', fontSize: 13, fontWeight: '700' },
 
+  // Engagement Actions Row (Like & Comment leveled)
   actionBarCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 14,
+    borderRadius: 12,
     padding: 10,
     borderWidth: 1,
     borderColor: '#E2E8F0',
     flexDirection: 'row',
     gap: 10,
+    marginTop: 20,
   },
   actionBtn: {
     flex: 1,
@@ -698,31 +781,15 @@ const styles = StyleSheet.create({
   likedText: { color: '#EF4444' },
   commentTextActive: { color: '#0284C7' },
 
-  addCommentTrigger: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#F8FAFC',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    marginTop: 4,
-  },
-  addCommentTriggerText: {
-    fontSize: 13,
-    color: '#64748B',
-    fontWeight: '500',
-  },
-
+  // Comments Section
   commentsSection: {
     backgroundColor: '#ffffff',
     borderRadius: 14,
-    padding: 16,
+    padding: 14,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    marginBottom: 20,
+    marginTop: 16,
+    marginBottom: 10,
   },
   commentsHeader: { borderBottomWidth: 1, borderBottomColor: '#F1F5F9', paddingBottom: 10, marginBottom: 12 },
   commentsTitle: { fontSize: 15, fontWeight: '800', color: '#0F172A' },
@@ -767,6 +834,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   sendBtnDisabled: { backgroundColor: '#94A3B8', opacity: 0.5 },
+  addCommentTrigger: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#F8FAFC',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginTop: 4,
+  },
+  addCommentTriggerText: {
+    fontSize: 13,
+    color: '#64748B',
+    fontWeight: '500',
+  },
 
   viewerContainer: {
     flex: 1,

@@ -20,7 +20,7 @@ import Toast from 'react-native-toast-message';
 
 import { Colors } from '../../constants/Colors';
 import { useAuthStore } from '../../store/authStore';
-import { paymentApi } from '../../api';
+import { paymentApi, authApi } from '../../api';
 
 const QUICK_AMOUNTS_ONETIME = [200, 500, 1000, 2500, 5000, 10000];
 const QUICK_AMOUNTS_MONTHLY = [100, 250, 500, 1000, 2000, 5000];
@@ -270,6 +270,10 @@ const DonateScreen = ({ navigation, route }) => {
               message: verifyRes.data?.message || 'Thank you for your generous donation!',
             });
             setSuccessVisible(true);
+            try {
+              const prof = await authApi.getProfile();
+              if (prof.data) useAuthStore.getState().updateUser(prof.data);
+            } catch (_) {}
           } else {
             const verifyRes = await paymentApi.verifySubscription({
               subscription_id: data.subscription_id || activeSubscriptionId,
@@ -286,6 +290,10 @@ const DonateScreen = ({ navigation, route }) => {
             });
             setSuccessVisible(true);
             fetchActiveSubscription();
+            try {
+              const prof = await authApi.getProfile();
+              if (prof.data) useAuthStore.getState().updateUser(prof.data);
+            } catch (_) {}
           }
         } catch (verifyErr) {
           Alert.alert(

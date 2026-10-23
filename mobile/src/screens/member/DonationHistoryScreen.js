@@ -6,15 +6,23 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  Modal
+  Modal,
+  RefreshControl
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
 import { donationApi, authApi } from '../../api';
 import { useAuthStore } from '../../store/authStore';
+import { useNotificationSocket } from '../../hooks/useWebSocket';
 
 const DonationHistoryScreen = ({ navigation }) => {
+  useNotificationSocket((data) => {
+    if (data?.type === 'DASHBOARD_REFRESH') {
+      fetchDonations();
+      fetchProfile();
+    }
+  });
   const { user } = useAuthStore();
   const [userProfile, setUserProfile] = useState(user);
 
@@ -97,7 +105,21 @@ const DonationHistoryScreen = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={loading}
+            onRefresh={() => {
+              fetchDonations();
+              fetchProfile();
+            }}
+            tintColor="#0284c7"
+            colors={['#0284c7']}
+          />
+        }
+      >
         {/* 1. Total Donation Summary Card */}
         <View style={styles.summaryCard}>
           <View style={styles.summaryIconCircle}>

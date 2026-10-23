@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { Colors } from '../../constants/Colors';
 import { useAuthStore } from '../../store/authStore';
+import { useNotificationSocket } from '../../hooks/useWebSocket';
 import { authApi, eventsApi, memberPostsApi } from '../../api';
 import Toast from 'react-native-toast-message';
 import SideDrawer from '../../components/SideDrawer';
@@ -22,6 +23,18 @@ import CommentsModal from '../../components/feed/CommentsModal';
 
 const MemberHomeScreen = ({ navigation }) => {
   const { user } = useAuthStore();
+
+  useNotificationSocket((data) => {
+    if (data?.type === 'DASHBOARD_REFRESH') {
+      authApi.getProfile()
+        .then(res => {
+          if (res.data) {
+            useAuthStore.getState().updateUser(res.data);
+          }
+        })
+        .catch(() => {});
+    }
+  });
   const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);

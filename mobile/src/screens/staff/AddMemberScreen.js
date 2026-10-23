@@ -11,11 +11,12 @@ import { useTranslation } from 'react-i18next';
 import { isValidPhone, isValidEmail } from '../../utils/validators';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
-import { Button, Input, PhotoPicker, ActionSheet } from '../../components/shared';
+import { Button, Input, PhotoPicker, ActionSheet, OptionPickerModal } from '../../components/shared';
 import { membersApi, staffApi, notifyApi } from '../../api';
 import { useAuthStore } from '../../store/authStore';
 import Toast from 'react-native-toast-message';
 import { verifyAttendanceMarked } from '../../utils/attendanceGuard';
+import { INDIAN_STATES, getDistrictsForState } from '../../utils/location';
 
 const MEMBER_TYPES = ['General', 'Donor', 'Volunteer', 'Beneficiary', 'Life Member', 'Honorary'];
 const GENDER_OPTIONS = ['Male', 'Female', 'Other'];
@@ -71,6 +72,7 @@ const AddMemberScreen = ({ navigation, route }) => {
 
   // ActionSheet states
   const [sheet, setSheet] = useState({ visible: false, title: '', options: [] });
+  const [locationPickerModal, setLocationPickerModal] = useState({ visible: false, type: null });
 
   const [form, setForm] = useState({
     full_name: editItem?.full_name || '',
@@ -357,8 +359,8 @@ const AddMemberScreen = ({ navigation, route }) => {
               <Input label={t('staff.age', 'Age')} value={form.age} onChangeText={v => set('age', v)} type="number" placeholder={t('staff.age', 'Age')} required error={errors.age} icon="calendar-outline" />
               <SelectField label={t('staff.gender', 'Gender')} icon="male-female-outline" value={form.gender} placeholder={t('staff.gender', 'Select Gender')} onPress={() => openSheet(t('staff.gender', 'Gender'), GENDER_OPTIONS, 'gender')} required error={errors.gender} />
               <Input label={t('staff.address', 'Address')} value={form.address} onChangeText={v => set('address', v)} placeholder={t('staff.address', 'Address')} required error={errors.address} icon="home-outline" />
-              <Input label={t('staff.district', 'District')} value={form.district} onChangeText={v => set('district', v)} placeholder={t('staff.district', 'District')} required error={errors.district} icon="location-outline" />
-              <Input label={t('staff.state', 'State')} value={form.state} onChangeText={v => set('state', v)} placeholder={t('staff.state', 'State')} required error={errors.state} icon="map-outline" />
+              <SelectField label={t('staff.state', 'State')} icon="map-outline" value={form.state} placeholder={t('staff.state', 'Select State')} onPress={() => setLocationPickerModal({ visible: true, type: 'state' })} required error={errors.state} />
+              <SelectField label={t('staff.district', 'District')} icon="location-outline" value={form.district} placeholder={t('staff.district', 'Select District')} onPress={() => setLocationPickerModal({ visible: true, type: 'district' })} required error={errors.district} />
               <Input label={t('staff.pincode', 'Pincode')} value={form.pincode} onChangeText={v => set('pincode', v)} type="number" placeholder={t('staff.pincode', 'Pincode')} required error={errors.pincode} maxLength={6} icon="mail-unread-outline" />
             </View>
           </>
@@ -532,6 +534,28 @@ const AddMemberScreen = ({ navigation, route }) => {
         onClose={() => setSheet(s => ({ ...s, visible: false }))} 
         title={sheet.title} 
         options={sheet.options} 
+      />
+
+      {/* State & District Dropdown Picker */}
+      <OptionPickerModal
+        visible={locationPickerModal.visible}
+        onClose={() => setLocationPickerModal({ visible: false, type: null })}
+        title={locationPickerModal.type === 'state' ? 'Select State' : `Select District (${form.state || 'Kerala'})`}
+        options={locationPickerModal.type === 'state' ? INDIAN_STATES : getDistrictsForState(form.state || 'Kerala')}
+        selectedValue={locationPickerModal.type === 'state' ? form.state : form.district}
+        onSelect={(val) => {
+          if (locationPickerModal.type === 'state') {
+            set('state', val);
+            const dists = getDistrictsForState(val);
+            if (!dists.includes(form.district)) {
+              set('district', dists[0] || '');
+            }
+          } else {
+            set('district', val);
+          }
+        }}
+        searchPlaceholder={locationPickerModal.type === 'state' ? 'Search Indian state...' : 'Search district...'}
+        iconName={locationPickerModal.type === 'state' ? 'map-outline' : 'location-outline'}
       />
 
       {/* Preview Modal */}

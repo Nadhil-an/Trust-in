@@ -43,8 +43,24 @@ def record_successful_donation(payment, razorpay_payment_id=None, razorpay_signa
     if razorpay_signature:
         payment.razorpay_signature = razorpay_signature
 
+    # Auto-resolve donor_user if not linked
+    if not payment.donor_user and (payment.donor_phone or payment.donor_name):
+        from core.models import User
+        from django.db.models import Q
+        p = str(payment.donor_phone or '').strip()
+        q = Q()
+        if p:
+            q |= Q(phone__iexact=p) | Q(username__iexact=p)
+            if len(p) >= 10:
+                q |= Q(phone__endswith=p[-10:]) | Q(username__endswith=p[-10:])
+        if payment.donor_name and payment.donor_name != 'Anonymous Donor':
+            q |= Q(full_name__iexact=payment.donor_name.strip())
+        matched_user = User.objects.filter(q).first() if q else None
+        if matched_user:
+            payment.donor_user = matched_user
+
     payment.status = PaymentGatewayStatus.SUCCESS
-    payment.save(update_fields=['status', 'razorpay_payment_id', 'razorpay_signature', 'updated_at'])
+    payment.save(update_fields=['status', 'razorpay_payment_id', 'razorpay_signature', 'donor_user', 'updated_at'])
 
     # Find the primary active bank account to credit
     bank_acc = BankAccount.objects.filter(is_active=True).first()
@@ -125,6 +141,20 @@ def record_successful_donation(payment, razorpay_payment_id=None, razorpay_signa
         t = threading.Thread(target=dispatch_whatsapp, daemon=True)
         t.start()
 
+    # Clear cached subscription info for the member user
+    if payment.donor_user and hasattr(payment.donor_user, '_cached_subscription_info'):
+        delattr(payment.donor_user, '_cached_subscription_info')
+
+    # Trigger real-time dashboard stats reload across all staff & admin roles + member app
+    try:
+        from notify.service import push_dashboard_refresh
+        push_dashboard_refresh(
+            ['ACCOUNTANT', 'MANAGER', 'ADMIN', 'STAFF', 'DATA_ENTRY', 'MEMBER'],
+            user_id=payment.donor_user.id if payment.donor_user else None
+        )
+    except Exception as err:
+        logger.warning(f"[Dashboard Refresh Push Error]: {err}")
+
     return income
 
 
@@ -132,6 +162,15 @@ def create_donation_order(amount, donor_name, donor_phone, donor_email='', purpo
     """
     Creates a Razorpay Order for a one-time donation.
     """
+    if not user and donor_phone:
+        from core.models import User
+        from django.db.models import Q
+        p = str(donor_phone).strip()
+        q = Q(phone__iexact=p) | Q(username__iexact=p)
+        if len(p) >= 10:
+            q |= Q(phone__endswith=p[-10:]) | Q(username__endswith=p[-10:])
+        user = User.objects.filter(q).first()
+
     amount_in_rupees = float(amount)
     amount_in_paise = int(amount_in_rupees * 100)
 
@@ -240,6 +279,15 @@ def create_monthly_autopay_subscription(amount, donor_name, donor_phone, donor_e
     """
     Creates a Razorpay recurring subscription for monthly autopay.
     """
+    if not user and donor_phone:
+        from core.models import User
+        from django.db.models import Q
+        p = str(donor_phone).strip()
+        q = Q(phone__iexact=p) | Q(username__iexact=p)
+        if len(p) >= 10:
+            q |= Q(phone__endswith=p[-10:]) | Q(username__endswith=p[-10:])
+        user = User.objects.filter(q).first()
+
     amount_in_rupees = float(amount)
     amount_in_paise = int(amount_in_rupees * 100)
     client = get_razorpay_client()

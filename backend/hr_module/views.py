@@ -2063,3 +2063,188 @@ class DailyTransactionHistoryView(APIView):
             'cash_total': sum(t['amount'] for t in cash_transactions),
             'online_total': sum(t['amount'] for t in online_transactions),
         })
+
+
+
+class MemberPayOnlineView(APIView):
+    """
+    Records an online membership fee payment (via manual UPI or gateway)
+    creating an official Income entry and syncing with accounts ledger & dashboard.
+    """
+    permission_classes = [IsOwnerOrManagerOrHR]
+
+    def get_permissions(self):
+        from rest_framework.permissions import IsAuthenticated
+        return [IsAuthenticated()]
+
+    def post(self, request):
+        user = request.user
+        amount = request.data.get('amount') or getattr(user, 'monthly_fee', 100) or 100
+        upi_ref = str(request.data.get('upi_ref') or request.data.get('reference_number') or '').strip()
+
+        try:
+            amount = float(amount)
+            if amount <= 0:
+                amount = 100.0
+        except (ValueError, TypeError):
+            amount = 100.0
+
+        if not upi_ref:
+            upi_ref = f"UPI-{timezone.now().strftime('%Y%m%d%H%M%S')}"
+
+        from accounts_module.models import Income, BankAccount, BankTransaction, DonationPayment, PaymentType, PaymentGatewayStatus
+        from datetime import date
+
+        bank_acc = BankAccount.objects.filter(is_active=True).first()
+
+        donor_name = user.full_name or user.username or 'Trust Member'
+        donor_phone = str(getattr(user, 'phone', '') or getattr(user, 'username', '') or '')
+
+        income = Income.objects.create(
+            donor_name=donor_name,
+            donor_phone=donor_phone,
+            source='MEMBERSHIP',
+            amount=amount,
+            payment_method='UPI',
+            purpose=f"Monthly Membership Fee (UPI Ref: {upi_ref})",
+            reference_number=upi_ref,
+            account_type='BANK',
+            bank_account=bank_acc,
+            created_by=user,
+            date=date.today()
+        )
+
+        # Update Bank Account Balance and Transaction Log
+        if bank_acc:
+            new_bal = bank_acc.current_balance + amount
+            BankTransaction.objects.create(
+                bank_account=bank_acc,
+                transaction_type='DEPOSIT',
+                date=income.date,
+                description=f"Membership Fee: {donor_name}",
+                reference_id=income.receipt_number,
+                payment_method='UPI',
+                amount=amount,
+                balance_after=new_bal,
+                utr_number=upi_ref,
+                created_by=user
+            )
+            bank_acc.current_balance = new_bal
+            bank_acc.save(update_fields=['current_balance'])
+
+        # Record DonationPayment for unified transaction logs
+        DonationPayment.objects.create(
+            donor_user=user,
+            donor_name=donor_name,
+            donor_phone=donor_phone,
+            amount=amount,
+            payment_type=PaymentType.ONE_TIME,
+            purpose='Membership Fee',
+            status=PaymentGatewayStatus.SUCCESS,
+            razorpay_payment_id=upi_ref,
+            income=income
+        )
+
+        # Clear cached subscription on user
+        if hasattr(user, '_cached_subscription_info'):
+            delattr(user, '_cached_subscription_info')
+
+        # Broadcast live dashboard refresh
+        try:
+            push_dashboard_refresh(['ACCOUNTANT', 'MANAGER', 'ADMIN', 'STAFF', 'DATA_ENTRY', 'MEMBER'], user_id=user.id if user else None)
+        except Exception:
+            pass
+
+        return Response({
+            'success': True,
+            'message': 'Membership payment recorded successfully!',
+            'receipt_number': income.receipt_number,
+            'amount': float(income.amount),
+            'date': str(income.date)
+        }, status=status.HTTP_201_CREATED)
+
+
+class MemberMarkPaidOfficeView(APIView):
+    """
+    Records an in-person / office cash membership fee payment.
+    """
+    def get_permissions(self):
+        from rest_framework.permissions import IsAuthenticated
+        return [IsAuthenticated()]
+
+    def post(self, request):
+        user = request.user
+        amount = request.data.get('amount') or getattr(user, 'monthly_fee', 100) or 100
+        try:
+            amount = float(amount)
+            if amount <= 0:
+                amount = 100.0
+        except (ValueError, TypeError):
+            amount = 100.0
+
+        from accounts_module.models import Income, CashAccount, CashTransaction, DonationPayment, PaymentType, PaymentGatewayStatus
+        from datetime import date
+
+        cash_acc = CashAccount.objects.filter(is_active=True).first()
+        ref_no = f"OFFICE-{timezone.now().strftime('%Y%m%d%H%M%S')}"
+
+        donor_name = user.full_name or user.username or 'Trust Member'
+        donor_phone = str(getattr(user, 'phone', '') or getattr(user, 'username', '') or '')
+
+        income = Income.objects.create(
+            donor_name=donor_name,
+            donor_phone=donor_phone,
+            source='MEMBERSHIP',
+            amount=amount,
+            payment_method='CASH',
+            purpose='Monthly Membership Fee (Office Cash)',
+            reference_number=ref_no,
+            account_type='CASH',
+            cash_account=cash_acc,
+            created_by=user,
+            date=date.today()
+        )
+
+        if cash_acc:
+            new_bal = cash_acc.current_balance + amount
+            CashTransaction.objects.create(
+                cash_account=cash_acc,
+                transaction_type='RECEIPT',
+                date=income.date,
+                description=f"Membership Cash: {donor_name}",
+                reference_id=income.receipt_number,
+                payment_method='CASH',
+                amount=amount,
+                balance_after=new_bal,
+                created_by=user
+            )
+            cash_acc.current_balance = new_bal
+            cash_acc.save(update_fields=['current_balance'])
+
+        DonationPayment.objects.create(
+            donor_user=user,
+            donor_name=donor_name,
+            donor_phone=donor_phone,
+            amount=amount,
+            payment_type=PaymentType.ONE_TIME,
+            purpose='Membership Fee',
+            status=PaymentGatewayStatus.SUCCESS,
+            razorpay_payment_id=ref_no,
+            income=income
+        )
+
+        if hasattr(user, '_cached_subscription_info'):
+            delattr(user, '_cached_subscription_info')
+
+        try:
+            push_dashboard_refresh(['ACCOUNTANT', 'MANAGER', 'ADMIN', 'STAFF', 'DATA_ENTRY', 'MEMBER'], user_id=user.id if user else None)
+        except Exception:
+            pass
+
+        return Response({
+            'success': True,
+            'message': 'Office payment recorded successfully!',
+            'receipt_number': income.receipt_number,
+            'amount': float(income.amount),
+            'date': str(income.date)
+        }, status=status.HTTP_201_CREATED)

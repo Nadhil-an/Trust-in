@@ -18,7 +18,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { Colors } from '../../constants/Colors';
 import { memberPostsApi } from '../../api';
-import { KERALA_DISTRICTS } from '../../utils/location';
+import { INDIAN_STATES, getDistrictsForState, parseAddress, formatAddress } from '../../utils/location';
+import { OptionPickerModal } from '../../components/shared';
 import { useAuthStore } from '../../store/authStore';
 import PostCard from '../../components/feed/PostCard';
 import CommentsModal from '../../components/feed/CommentsModal';
@@ -45,7 +46,10 @@ export default function MyPostsScreen({ navigation }) {
   const [editingPost, setEditingPost] = useState(null);
   const [editDesc, setEditDesc] = useState('');
   const [editContact, setEditContact] = useState('');
-  const [editAddress, setEditAddress] = useState('');
+  const [editState, setEditState] = useState('Kerala');
+  const [editDistrict, setEditDistrict] = useState('Kozhikode');
+  const [editLocality, setEditLocality] = useState('');
+  const [editPickerModal, setEditPickerModal] = useState({ visible: false, type: null });
   const [editSaving, setEditSaving] = useState(false);
 
   const fetchMyPosts = async () => {
@@ -84,7 +88,10 @@ export default function MyPostsScreen({ navigation }) {
     setEditingPost(post);
     setEditDesc(post.description || '');
     setEditContact(post.contact_number || '');
-    setEditAddress(post.address || '');
+    const parsed = parseAddress(post.address);
+    setEditState(parsed.state || 'Kerala');
+    setEditDistrict(parsed.district || 'Kozhikode');
+    setEditLocality(parsed.locality || '');
   };
 
   const handleSaveEdit = async () => {
@@ -93,17 +100,19 @@ export default function MyPostsScreen({ navigation }) {
       return;
     }
 
-    if (!editAddress.trim()) {
-      Toast.show({ type: 'error', text1: 'Address Required', text2: 'Please provide location or address.' });
+    if (!editState || !editDistrict) {
+      Toast.show({ type: 'error', text1: 'Location Required', text2: 'Please select state and district.' });
       return;
     }
+
+    const fullAddress = formatAddress(editLocality, editDistrict, editState);
 
     setEditSaving(true);
     try {
       const res = await memberPostsApi.update(editingPost.id, {
         description: editDesc.trim(),
         contact_number: editContact.trim(),
-        address: editAddress.trim(),
+        address: fullAddress,
       });
 
       // Update post in local state
@@ -254,50 +263,47 @@ export default function MyPostsScreen({ navigation }) {
               <Text style={styles.fieldLabel}>
                 Location / Address <Text style={{ color: '#EF4444' }}>*</Text>
               </Text>
-              <Text style={{ fontSize: 11, fontWeight: '600', color: '#64748B', marginBottom: 6 }}>
-                Select District (Kerala):
-              </Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ flexDirection: 'row', gap: 6, marginBottom: 8 }}
-              >
-                {KERALA_DISTRICTS.map((d) => {
-                  const isSelected = editAddress.toLowerCase().includes(d.toLowerCase());
-                  return (
-                    <TouchableOpacity
-                      key={d}
-                      style={{
-                        backgroundColor: isSelected ? '#0284c7' : '#EFF6FF',
-                        paddingHorizontal: 10,
-                        paddingVertical: 5,
-                        borderRadius: 14,
-                        borderWidth: 1,
-                        borderColor: isSelected ? '#0284c7' : '#BFDBFE',
-                      }}
-                      onPress={() => {
-                        setEditAddress(`${d}, Kerala`);
-                      }}
-                      activeOpacity={0.7}
-                    >
-                      <Text
-                        style={{
-                          fontSize: 11,
-                          fontWeight: '700',
-                          color: isSelected ? '#ffffff' : '#0284c7',
-                        }}
-                      >
-                        {d}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
+
+              {/* State & District Dropdown Selectors */}
+              <View style={styles.locationDropdownRow}>
+                {/* State Dropdown */}
+                <View style={styles.locationDropdownCol}>
+                  <Text style={styles.dropdownMiniLabel}>State</Text>
+                  <TouchableOpacity
+                    style={styles.dropdownSelectorBtn}
+                    onPress={() => setEditPickerModal({ visible: true, type: 'state' })}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="map-outline" size={16} color="#0284c7" style={styles.dropdownIcon} />
+                    <Text style={styles.dropdownValueText} numberOfLines={1}>
+                      {editState}
+                    </Text>
+                    <Ionicons name="chevron-down" size={16} color="#64748B" />
+                  </TouchableOpacity>
+                </View>
+
+                {/* District Dropdown */}
+                <View style={styles.locationDropdownCol}>
+                  <Text style={styles.dropdownMiniLabel}>District</Text>
+                  <TouchableOpacity
+                    style={styles.dropdownSelectorBtn}
+                    onPress={() => setEditPickerModal({ visible: true, type: 'district' })}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="location-outline" size={16} color="#0284c7" style={styles.dropdownIcon} />
+                    <Text style={styles.dropdownValueText} numberOfLines={1}>
+                      {editDistrict}
+                    </Text>
+                    <Ionicons name="chevron-down" size={16} color="#64748B" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
               <TextInput
-                style={styles.textInput}
-                value={editAddress}
-                onChangeText={setEditAddress}
-                placeholder="House, village/town, district"
+                style={[styles.textInput, { marginTop: 10 }]}
+                value={editLocality}
+                onChangeText={setEditLocality}
+                placeholder="House, street, village/town (optional)"
                 placeholderTextColor="#94A3B8"
               />
             </ScrollView>
@@ -311,9 +317,9 @@ export default function MyPostsScreen({ navigation }) {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.saveBtn, (!editDesc.trim() || !editAddress.trim() || editSaving) && { opacity: 0.5 }]}
+                style={[styles.saveBtn, (!editDesc.trim() || !editState || !editDistrict || editSaving) && { opacity: 0.5 }]}
                 onPress={handleSaveEdit}
-                disabled={!editDesc.trim() || !editAddress.trim() || editSaving}
+                disabled={!editDesc.trim() || !editState || !editDistrict || editSaving}
               >
                 {editSaving ? (
                   <ActivityIndicator size="small" color="#fff" />
@@ -325,6 +331,28 @@ export default function MyPostsScreen({ navigation }) {
           </View>
         </KeyboardAvoidingView>
       </Modal>
+
+      {/* State & District Dropdown Picker for Edit Modal */}
+      <OptionPickerModal
+        visible={editPickerModal.visible}
+        onClose={() => setEditPickerModal({ visible: false, type: null })}
+        title={editPickerModal.type === 'state' ? 'Select State' : `Select District (${editState})`}
+        options={editPickerModal.type === 'state' ? INDIAN_STATES : getDistrictsForState(editState)}
+        selectedValue={editPickerModal.type === 'state' ? editState : editDistrict}
+        onSelect={(val) => {
+          if (editPickerModal.type === 'state') {
+            setEditState(val);
+            const dists = getDistrictsForState(val);
+            if (!dists.includes(editDistrict)) {
+              setEditDistrict(dists[0] || '');
+            }
+          } else {
+            setEditDistrict(val);
+          }
+        }}
+        searchPlaceholder={editPickerModal.type === 'state' ? 'Search Indian state...' : 'Search district...'}
+        iconName={editPickerModal.type === 'state' ? 'map-outline' : 'location-outline'}
+      />
 
       {/* Comments Modal */}
       <CommentsModal
@@ -556,5 +584,40 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: '#ffffff',
+  },
+  locationDropdownRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 4,
+  },
+  locationDropdownCol: {
+    flex: 1,
+  },
+  dropdownMiniLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#64748B',
+    marginBottom: 5,
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  dropdownSelectorBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  dropdownIcon: {
+    marginRight: 6,
+  },
+  dropdownValueText: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#0F172A',
   },
 });
