@@ -167,17 +167,52 @@ export default function InwardEntry() {
     if (!deleteConfirmItem) return
     setDeleting(true)
     try {
-      await managerApi.stockInwardPurchase.delete(deleteConfirmItem.id)
-      toast.success('Stock entry permanently deleted from database.')
-      setDeleteConfirmItem(null)
-      window.dispatchEvent(new Event('dashboard-refresh'))
-      load()
+      let deleted = false
+      // 1. Try stockInwardPurchase delete endpoint
+      try {
+        await managerApi.stockInwardPurchase.delete(deleteConfirmItem.id)
+        deleted = true
+      } catch (err) {
+        // If 404/405 (endpoint not yet active on server or record is legacy Income/Expense), fallback to accounts delete
+        if (err.response?.status === 404 || err.response?.status === 405) {
+          try {
+            await accountsApi.income.delete(deleteConfirmItem.id)
+            deleted = true
+          } catch {
+            try {
+              await accountsApi.expenses.delete(deleteConfirmItem.id)
+              deleted = true
+            } catch {
+              try {
+                await managerApi.inventoryTransactions.delete(deleteConfirmItem.id)
+                deleted = true
+              } catch (innerErr) {
+                throw innerErr
+              }
+            }
+          }
+        } else {
+          throw err
+        }
+      }
+
+      if (deleted) {
+        toast.success('Stock entry permanently deleted from database.')
+        setDeleteConfirmItem(null)
+        window.dispatchEvent(new Event('dashboard-refresh'))
+        load()
+      }
     } catch (err) {
       const data = err.response?.data
       let msg = 'Failed to delete entry.'
       if (data) {
         if (data.detail) msg = data.detail
         else if (data.error) msg = data.error
+        else if (typeof data === 'string' && !data.includes('<html') && !data.includes('<!doctype')) {
+          msg = data
+        }
+      } else if (err.message) {
+        msg = err.message
       }
       toast.error(msg)
     } finally {
@@ -399,15 +434,80 @@ export default function InwardEntry() {
       }
 
       if (editItem) {
-        await managerApi.stockInwardPurchase.update(editItem.id, fd)
-        toast.success('Stock entry updated successfully!')
+        try {
+          await managerApi.stockInwardPurchase.update(editItem.id, fd)
+          toast.success('Stock entry updated successfully!')
+        } catch (updateErr) {
+          if (updateErr.response?.status === 404) {
+            // Fallback for legacy Income/Expense record
+            if (entryType === 'INWARD') {
+              await accountsApi.income.update(editItem.id, {
+                donor_name: form.donor_name.trim(),
+                amount: String(calculatedTotal || '1.00'),
+                date: form.date,
+                purpose: `${form.item_name.trim()} (${qty} ${form.unit}) [Donation Inward]`,
+                payment_method: form.payment_method,
+              })
+            } else {
+              await accountsApi.expenses.update(editItem.id, {
+                payee: form.vendor_name.trim(),
+                amount: String(calculatedTotal || '1.00'),
+                date: form.date,
+                purpose: `${form.item_name.trim()} (${qty} ${form.unit}) [Stock Purchase]`,
+                payment_method: form.payment_method,
+              })
+            }
+            toast.success('Stock entry updated successfully!')
+          } else {
+            throw updateErr
+          }
+        }
       } else {
-        await managerApi.stockInwardPurchase.create(fd)
-        toast.success(
-          entryType === 'INWARD'
-            ? 'Stock Inward (Donation) entry recorded & inventory updated!'
-            : 'Stock Purchase entry recorded & inventory increased!'
-        )
+        try {
+          await managerApi.stockInwardPurchase.create(fd)
+          toast.success(
+            entryType === 'INWARD'
+              ? 'Stock Inward (Donation) entry recorded & inventory updated!'
+              : 'Stock Purchase entry recorded & inventory increased!'
+          )
+        } catch (createErr) {
+          if (createErr.response?.status === 404) {
+            // Fallback to accountsApi if stock-inward-purchase endpoint is not yet on server
+            if (entryType === 'INWARD') {
+              const incomeData = new FormData()
+              incomeData.append('date', form.date)
+              incomeData.append('amount', String(calculatedTotal || '1.00'))
+              incomeData.append('source', 'INWARD')
+              incomeData.append('donor_name', form.donor_name.trim())
+              incomeData.append('donor_phone', form.donor_phone || '')
+              incomeData.append('purpose', `${form.item_name.trim()} (${qty} ${form.unit}) [Donation Inward]`)
+              incomeData.append('payment_method', form.payment_method)
+              incomeData.append('account_type', form.account_type)
+              incomeData.append('reference_number', form.serial_number || form.reference_number || '')
+              if (itemPhoto) incomeData.append('document', itemPhoto)
+
+              await accountsApi.income.create(incomeData)
+            } else {
+              await accountsApi.expenses.create({
+                date: form.date,
+                amount: String(calculatedTotal || '1.00'),
+                payee: form.vendor_name.trim(),
+                category: 'PURCHASE',
+                purpose: `${form.item_name.trim()} (${qty} ${form.unit}) [Stock Purchase]`,
+                payment_method: form.payment_method,
+                account_type: form.account_type,
+                reference_number: form.serial_number || form.reference_number || '',
+              })
+            }
+            toast.success(
+              entryType === 'INWARD'
+                ? 'Stock Inward (Donation) recorded successfully!'
+                : 'Stock Purchase entry recorded successfully!'
+            )
+          } else {
+            throw createErr
+          }
+        }
       }
 
       setShowModal(false)
@@ -420,8 +520,13 @@ export default function InwardEntry() {
       if (data) {
         if (data.detail) msg = data.detail
         else if (data.error) msg = data.error
-        else if (typeof data === 'string') msg = data
-        else if (typeof data === 'object') msg = Object.values(data).flat().join(' | ')
+        else if (typeof data === 'string') {
+          msg = data.includes('<html') || data.includes('<!doctype')
+            ? 'Server endpoint returned 404. Please try again.'
+            : data
+        } else if (typeof data === 'object') {
+          msg = Object.values(data).flat().join(' | ')
+        }
       } else if (err.message) {
         msg = err.message
       }

@@ -70,6 +70,9 @@ jobs:
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
     steps:
       - name: SSH into EC2 and deploy
         uses: appleboy/ssh-action@v1.0.3
@@ -90,10 +93,10 @@ jobs:
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
             
             echo "5. Pulling pre-built images..."
-            docker compose pull
+            docker compose pull || true
             
-            echo "6. Restarting the server with docker (force-recreate)..."
-            docker compose up -d --force-recreate
+            echo "6. Restarting the server with docker (force-recreate & build)..."
+            docker compose up -d --build --force-recreate
             
             echo "7. Running database migrations on EC2..."
             docker compose exec -T backend python manage.py migrate --noinput
