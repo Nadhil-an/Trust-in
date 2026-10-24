@@ -247879,3 +247879,150 @@ WebSocket CONNECT /ws/notify/ [10.162.176.21:8871]
 [mHTTP GET /api/hr/officers/?search=&status=ACTIVE 200 [0.26, 10.162.176.21:8873][0m
 [mHTTP GET /api/hr/staff-vouchers/ 200 [0.06, 10.162.176.21:10101][0m
 [mHTTP GET /api/hr/officers/?search=&status=ACTIVE 200 [0.09, 10.162.176.21:52680][0m
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+[mHTTP POST /api/auth/login/ 200 [0.38, 10.162.176.21:21938][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:65149]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:65149]
+[mHTTP GET /api/core/features/ 200 [0.04, 10.162.176.21:65151][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.162.176.21:65150][0m
+[mHTTP GET /api/manager/partners/?date=2026-10-24 200 [0.09, 10.162.176.21:44927][0m
+[mHTTP GET /api/manager/requests/?date=2026-10-24 200 [0.14, 10.162.176.21:44926][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-24&source=MEMBERSHIP 200 [0.17, 10.162.176.21:5069][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-24&source=INWARD 200 [0.16, 10.162.176.21:44928][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-10-24&category=OUTWARD 200 [0.16, 10.162.176.21:44929][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-24&source=DONATION 200 [0.18, 10.162.176.21:17556][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-10-24&category=PURCHASE 200 [0.10, 10.162.176.21:59458][0m
+[mHTTP GET /api/manager/partners/?date=2026-10-24 200 [0.13, 10.162.176.21:52070][0m
+[mHTTP GET /api/manager/requests/?date=2026-10-24 200 [0.13, 10.162.176.21:25936][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-24&source=INWARD 200 [0.14, 10.162.176.21:25937][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-24&source=MEMBERSHIP 200 [0.12, 10.162.176.21:49131][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-10-24&category=OUTWARD 200 [0.10, 10.162.176.21:44026][0m
+[mHTTP GET /api/accounts/income/?date=2026-10-24&source=DONATION 200 [0.13, 10.162.176.21:17133][0m
+[mHTTP GET /api/accounts/expenses/?date=2026-10-24&category=PURCHASE 200 [0.12, 10.162.176.21:46523][0m
+[mHTTP GET /api/core/events/?date=2026-10-24 200 [1.14, 10.162.176.21:29217][0m
+[mHTTP GET /api/core/member-posts/ 200 [1.12, 10.162.176.21:52069][0m
+[mHTTP GET /api/core/events/?date=2026-10-24 200 [0.04, 10.162.176.21:19546][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.05, 10.162.176.21:58155][0m
+[mHTTP GET /api/accounts/expenses/?search=&category=PURCHASE&page=1&page_size=10 200 [0.02, 10.162.176.21:49684][0m
+[mHTTP GET /api/accounts/expenses/?search=&category=PURCHASE&page=1&page_size=10 200 [0.03, 10.162.176.21:25379][0m
+[mHTTP GET /api/accounts/income/?search=&source=DONATION&date=2026-10-24&page=1&page_size=10 200 [0.06, 10.162.176.21:27197][0m
+[mHTTP GET /api/accounts/income/?search=&source=DONATION&date=2026-10-24&page=1&page_size=10 200 [0.07, 10.162.176.21:58395][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.21, 10.162.176.21:27198][0m
+[mHTTP GET /api/core/users/?role=STAFF 200 [0.17, 10.162.176.21:26667][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.03, 10.162.176.21:21147][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.03, 10.162.176.21:35806][0m
+[mHTTP GET /api/manager/inventory-transactions/?transaction_type=OUTWARD 200 [0.10, 10.162.176.21:27395][0m
+[mHTTP GET /api/manager/inventory/?is_active=true 200 [0.10, 10.162.176.21:27396][0m
+[mHTTP GET /api/manager/inventory-transactions/?transaction_type=OUTWARD 200 [0.04, 10.162.176.21:4204][0m
+[mHTTP GET /api/manager/inventory/?is_active=true 200 [0.05, 10.162.176.21:4205][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.02, 10.162.176.21:24773][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.03, 10.162.176.21:51494][0m
+[mHTTP GET /api/manager/inventory-transactions/?transaction_type=OUTWARD 200 [0.07, 10.162.176.21:61464][0m
+[mHTTP GET /api/manager/inventory/?is_active=true 200 [0.07, 10.162.176.21:61465][0m
+[mHTTP GET /api/manager/inventory-transactions/?transaction_type=OUTWARD 200 [0.04, 10.162.176.21:48804][0m
+[mHTTP GET /api/manager/inventory/?is_active=true 200 [0.05, 10.162.176.21:56445][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.02, 10.162.176.21:9135][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.02, 10.162.176.21:1532][0m
+[mHTTP POST /api/manager/stock-inward-purchase/ 201 [0.07, 10.162.176.21:58546][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.03, 10.162.176.21:35662][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.03, 10.162.176.21:41734][0m
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\manager_module\models.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:22454]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:22454]
+[mHTTP POST /api/manager/stock-inward-purchase/ 201 [0.09, 10.162.176.21:26467][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.03, 10.162.176.21:17955][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.03, 10.162.176.21:35030][0m
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\manager_module\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:7771]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:7771]
+[mHTTP POST /api/manager/stock-inward-purchase/ 201 [0.08, 10.162.176.21:54584][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.03, 10.162.176.21:27519][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.06, 10.162.176.21:52682][0m
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\manager_module\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:31405]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:31405]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\manager_module\urls.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:34954]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:34954]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:34954]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:19310]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:12580]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:19310]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.21:19310]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:12580]
+[mHTTP GET /api/core/features/ 200 [0.06, 10.162.176.21:19311][0m
+[mHTTP GET /api/core/features/ 200 [0.06, 10.162.176.21:12581][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.07, 10.162.176.21:12582][0m
+[mHTTP GET /api/auth/profile/ 200 [0.17, 10.162.176.21:19312][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.06, 10.162.176.21:12583][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.162.176.21:12584][0m
+Failed to sync financial accounts: Income() got unexpected keyword arguments: 'remarks'
+[mHTTP POST /api/manager/stock-inward-purchase/ 201 [0.05, 10.162.176.21:15777][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.03, 10.162.176.21:52072][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.03, 10.162.176.21:16214][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.02, 10.162.176.21:15558][0m
+Failed to sync financial accounts: Income() got unexpected keyword arguments: 'remarks'
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\manager_module\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.21:7202]
+WebSocket CONNECT /ws/notify/ [10.162.176.21:7202]
+[mHTTP GET /api/manager/stock-inward-purchase/?search=&type=INWARD 200 [0.08, 10.162.176.21:21448][0m
+[mHTTP GET /api/manager/inventory-transactions/?transaction_type=OUTWARD 200 [0.05, 10.162.176.21:8399][0m
+[mHTTP GET /api/manager/inventory/?is_active=true 200 [0.05, 10.162.176.21:8400][0m
+[mHTTP GET /api/manager/inventory/?is_active=true 200 [0.04, 10.162.176.21:55586][0m
+[mHTTP GET /api/manager/inventory-transactions/?transaction_type=OUTWARD 200 [0.05, 10.162.176.21:52364][0m
+[mHTTP GET /api/manager/inventory/?show_expired=true 200 [0.02, 10.162.176.21:46135][0m
+[mHTTP GET /api/manager/inventory/?show_expired=true 200 [0.02, 10.162.176.21:10705][0m
+[mHTTP GET /api/manager/inventory-transactions/?transaction_type=OUTWARD 200 [0.05, 10.162.176.21:58335][0m
+[mHTTP GET /api/manager/inventory/?is_active=true 200 [0.05, 10.162.176.21:58336][0m
+[mHTTP GET /api/manager/inventory/?is_active=true 200 [0.04, 10.162.176.21:19804][0m
+[mHTTP GET /api/manager/inventory-transactions/?transaction_type=OUTWARD 200 [0.05, 10.162.176.21:8348][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.02, 10.162.176.21:12902][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.02, 10.162.176.21:16902][0m
+[mHTTP GET /api/manager/inventory-transactions/?transaction_type=OUTWARD 200 [0.09, 10.162.176.21:49405][0m
+[mHTTP GET /api/manager/inventory/?is_active=true 200 [0.09, 10.162.176.21:49406][0m
+[mHTTP GET /api/manager/inventory/?is_active=true 200 [0.07, 10.162.176.21:30195][0m
+[mHTTP GET /api/manager/inventory-transactions/?transaction_type=OUTWARD 200 [0.07, 10.162.176.21:30194][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.02, 10.162.176.21:12937][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.02, 10.162.176.21:32445][0m
+[mHTTP GET /api/manager/inventory-transactions/?transaction_type=OUTWARD 200 [0.07, 10.162.176.21:55313][0m
+[mHTTP GET /api/manager/inventory/?is_active=true 200 [0.07, 10.162.176.21:55314][0m
+[mHTTP GET /api/manager/inventory-transactions/?transaction_type=OUTWARD 200 [0.08, 10.162.176.21:39995][0m
+[mHTTP GET /api/manager/inventory/?is_active=true 200 [0.08, 10.162.176.21:39996][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.03, 10.162.176.21:36072][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.02, 10.162.176.21:23692][0m
+[mHTTP DELETE /api/manager/stock-inward-purchase/d5d3cf8d-574e-46bc-889b-7c7c12ec226d/ 200 [0.04, 10.162.176.21:21035][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.03, 10.162.176.21:63628][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.02, 10.162.176.21:62836][0m
+Unauthorized: /api/manager/stock-inward-purchase/
+[31;1mHTTP GET /api/manager/stock-inward-purchase/?search= 401 [0.02, 10.162.176.21:42985][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.02, 10.162.176.21:11075][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.03, 10.162.176.21:57078][0m
+[mHTTP DELETE /api/manager/stock-inward-purchase/a5f21e06-d889-4e19-8eb2-a126e07cb1be/ 200 [0.04, 10.162.176.21:28588][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.03, 10.162.176.21:14890][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.03, 10.162.176.21:8724][0m
+[mHTTP DELETE /api/manager/stock-inward-purchase/b88d9d15-4bb9-4189-8aa9-afba51397c20/ 200 [0.03, 10.162.176.21:54570][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.03, 10.162.176.21:50494][0m
+[mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.03, 10.162.176.21:25535][0m

@@ -400,7 +400,11 @@ class CharityInventory(models.Model):
     def save(self, *args, **kwargs):
         if not self.item_code:
             count = CharityInventory.objects.count() + 1
-            self.item_code = f"INV-{count:04d}"
+            candidate = f"INV-{count:04d}"
+            while CharityInventory.objects.filter(item_code=candidate).exists():
+                count += 1
+                candidate = f"INV-{count:04d}"
+            self.item_code = candidate
         from decimal import Decimal
         self.total_value = Decimal(str(self.quantity_available)) * (self.unit_value or Decimal('0'))
         super().save(*args, **kwargs)
@@ -444,7 +448,11 @@ class InventoryTransaction(models.Model):
         if not self.transaction_id:
             year = timezone.now().year
             count = InventoryTransaction.objects.filter(created_at__year=year).count() + 1
-            self.transaction_id = f"ITX-{year}-{count:05d}"
+            candidate = f"ITX-{year}-{count:05d}"
+            while InventoryTransaction.objects.filter(transaction_id=candidate).exists():
+                count += 1
+                candidate = f"ITX-{year}-{count:05d}"
+            self.transaction_id = candidate
             
             # Update inventory quantity
             if self.transaction_type == 'INWARD':

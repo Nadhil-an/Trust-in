@@ -1,6 +1,7 @@
 """Manager Module Views — Assessment Requests, FAO/ACO/GEO Reports, Inventory, Dashboard"""
 from decimal import Decimal
 from django.utils import timezone
+from django.db import transaction
 from django.db.models import Count, Sum, Q
 from rest_framework import generics, status
 from rest_framework.views import APIView
@@ -1027,144 +1028,387 @@ class StockInwardPurchaseView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
-        entry_type = (request.data.get('entry_type') or 'INWARD').upper()
-        date_str = request.data.get('date')
-        selected_date = date_str if date_str else timezone.now().date()
-
-        item_name = (request.data.get('item_name') or '').strip()
-        if not item_name:
-            item_name = (request.data.get('purpose') or 'Stock Item').strip()
-
-        category = (request.data.get('category') or 'General').strip()
-        unit = (request.data.get('unit') or 'pcs').strip()
-
         try:
-            qty = int(float(request.data.get('quantity', 1)))
-        except (ValueError, TypeError):
-            qty = 1
+            entry_type = (request.data.get('entry_type') or 'INWARD').upper()
+            date_str = request.data.get('date')
+            selected_date = date_str if date_str else timezone.now().date()
 
-        try:
-            unit_val = Decimal(str(request.data.get('unit_value', '0')))
-        except Exception:
-            unit_val = Decimal('0')
+            item_name = (request.data.get('item_name') or '').strip()
+            if not item_name:
+                item_name = (request.data.get('purpose') or 'Stock Item').strip()
 
-        try:
-            total_amount = Decimal(str(request.data.get('total_amount') or request.data.get('amount') or '0'))
-        except Exception:
-            total_amount = Decimal(str(qty)) * unit_val
+            category = (request.data.get('category') or 'General').strip()
+            unit = (request.data.get('unit') or 'pcs').strip()
 
-        remarks = request.data.get('remarks', '')
-        ref_no = request.data.get('reference_number', '')
-        expiry_date = request.data.get('expiry_date') or None
-        if expiry_date in ('', 'null', 'undefined'):
-            expiry_date = None
+            try:
+                qty = int(float(request.data.get('quantity', 1)))
+            except (ValueError, TypeError):
+                qty = 1
 
-        photo = request.FILES.get('image') or request.FILES.get('item_photo')
+            try:
+                unit_val = Decimal(str(request.data.get('unit_value', '0')))
+            except Exception:
+                unit_val = Decimal('0')
 
-        donor_name = request.data.get('donor_name', '')
-        donor_phone = request.data.get('donor_phone') or request.data.get('phone', '')
-        donor_address = request.data.get('donor_address') or request.data.get('address', '')
-        donor_member = request.data.get('donor_member') or request.data.get('member', '')
-        donor_job = request.data.get('donor_job') or request.data.get('job', '')
+            try:
+                total_amount = Decimal(str(request.data.get('total_amount') or request.data.get('amount') or '0'))
+            except Exception:
+                total_amount = Decimal(str(qty)) * unit_val
 
-        vendor_name = request.data.get('vendor_name') or request.data.get('payee', '')
-        vendor_phone = request.data.get('vendor_phone', '')
-        vendor_address = request.data.get('vendor_address', '')
+            remarks = request.data.get('remarks', '')
+            ref_no = request.data.get('reference_number', '')
+            expiry_date = request.data.get('expiry_date') or None
+            if expiry_date in ('', 'null', 'undefined'):
+                expiry_date = None
 
-        # 1. Update or create CharityInventory item
-        inv_item = CharityInventory.objects.filter(item_name__iexact=item_name, category__iexact=category, is_active=True).first()
-        if not inv_item:
-            inv_item = CharityInventory.objects.create(
-                item_name=item_name,
-                category=category,
-                unit=unit,
-                quantity_available=0,
-                unit_value=unit_val,
-                expiry_date=expiry_date,
-                source_type=entry_type,
-                donor_name=donor_name,
-                donor_phone=donor_phone,
-                donor_address=donor_address,
-                donor_member=donor_member,
-                donor_job=donor_job,
-                vendor_name=vendor_name,
-                vendor_phone=vendor_phone,
-                vendor_address=vendor_address,
-                image=photo if photo else None,
-                updated_by=request.user,
-                notes=remarks
-            )
-        else:
-            if photo:
-                inv_item.image = photo
-            if expiry_date:
-                inv_item.expiry_date = expiry_date
-            if unit_val > 0:
-                inv_item.unit_value = unit_val
-            inv_item.save()
+            photo = request.FILES.get('image') or request.FILES.get('item_photo')
 
-        # 2. Log transaction (automatically increments inv_item.quantity_available)
-        txn = InventoryTransaction(
-            item=inv_item,
-            transaction_type='INWARD',
-            source_type=entry_type,
-            quantity=qty,
-            unit_value=unit_val,
-            total_amount=total_amount,
-            date=selected_date,
-            reference_number=ref_no,
-            donor_name=donor_name,
-            donor_phone=donor_phone,
-            donor_address=donor_address,
-            donor_member=donor_member,
-            donor_job=donor_job,
-            vendor_name=vendor_name,
-            vendor_phone=vendor_phone,
-            vendor_address=vendor_address,
-            image=photo if photo else None,
-            expiry_date=expiry_date,
-            remarks=remarks,
-            created_by=request.user
-        )
-        txn.save()
+            donor_name = request.data.get('donor_name', '')
+            donor_phone = request.data.get('donor_phone') or request.data.get('phone', '')
+            donor_address = request.data.get('donor_address') or request.data.get('address', '')
+            donor_member = request.data.get('donor_member') or request.data.get('member', '')
+            donor_job = request.data.get('donor_job') or request.data.get('job', '')
 
-        # 3. Synchronize with Financial Accounts
-        payment_method = request.data.get('payment_method', 'CASH')
-        account_type = request.data.get('account_type', 'CASH')
-        try:
-            from accounts_module.models import Income, Expense
-            if entry_type == 'INWARD':
-                Income.objects.create(
+            vendor_name = request.data.get('vendor_name') or request.data.get('payee', '')
+            vendor_phone = request.data.get('vendor_phone', '')
+            vendor_address = request.data.get('vendor_address', '')
+
+            with transaction.atomic():
+                # 1. Update or create CharityInventory item
+                inv_item = CharityInventory.objects.filter(item_name__iexact=item_name, category__iexact=category, is_active=True).first()
+                if not inv_item:
+                    inv_item = CharityInventory.objects.create(
+                        item_name=item_name,
+                        category=category,
+                        unit=unit,
+                        quantity_available=0,
+                        unit_value=unit_val,
+                        expiry_date=expiry_date,
+                        source_type=entry_type,
+                        donor_name=donor_name,
+                        donor_phone=donor_phone,
+                        donor_address=donor_address,
+                        donor_member=donor_member,
+                        donor_job=donor_job,
+                        vendor_name=vendor_name,
+                        vendor_phone=vendor_phone,
+                        vendor_address=vendor_address,
+                        image=photo if photo else None,
+                        updated_by=request.user,
+                        notes=remarks
+                    )
+                else:
+                    if photo:
+                        inv_item.image = photo
+                    if expiry_date:
+                        inv_item.expiry_date = expiry_date
+                    if unit_val > 0:
+                        inv_item.unit_value = unit_val
+                    inv_item.save()
+
+                # 2. Log transaction (automatically increments inv_item.quantity_available)
+                txn = InventoryTransaction(
+                    item=inv_item,
+                    transaction_type='INWARD',
+                    source_type=entry_type,
+                    quantity=qty,
+                    unit_value=unit_val,
+                    total_amount=total_amount,
                     date=selected_date,
-                    amount=total_amount if total_amount > 0 else Decimal('1.00'),
-                    source='INWARD',
-                    donor_name=donor_name or 'Anonymous Donor',
-                    phone=donor_phone,
-                    purpose=f"{item_name} ({qty} {unit}) [Donation Inward]",
-                    payment_method=payment_method,
-                    account_type=account_type,
-                    reference_number=ref_no or txn.transaction_id,
+                    reference_number=ref_no,
+                    donor_name=donor_name,
+                    donor_phone=donor_phone,
+                    donor_address=donor_address,
+                    donor_member=donor_member,
+                    donor_job=donor_job,
+                    vendor_name=vendor_name,
+                    vendor_phone=vendor_phone,
+                    vendor_address=vendor_address,
+                    image=photo if photo else None,
+                    expiry_date=expiry_date,
                     remarks=remarks,
                     created_by=request.user
                 )
-            elif entry_type == 'PURCHASE':
-                Expense.objects.create(
-                    date=selected_date,
-                    amount=total_amount if total_amount > 0 else Decimal('1.00'),
-                    category='PURCHASE',
-                    payee=vendor_name or 'Vendor',
-                    purpose=f"{item_name} ({qty} {unit}) [Stock Purchase]",
-                    payment_method=payment_method,
-                    account_type=account_type,
-                    reference_number=ref_no or txn.transaction_id,
-                    remarks=remarks,
-                    created_by=request.user
-                )
-        except Exception:
-            pass
+                txn.save()
 
-        serializer = InventoryTransactionSerializer(txn, context={'request': request})
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+                # 3. Synchronize with Financial Accounts
+                payment_method = request.data.get('payment_method', 'CASH')
+                account_type = request.data.get('account_type', 'CASH')
+                try:
+                    from accounts_module.models import Income, Expense
+                    if entry_type == 'INWARD':
+                        Income.objects.create(
+                            date=selected_date,
+                            amount=total_amount if total_amount > 0 else Decimal('1.00'),
+                            source='INWARD',
+                            donor_name=donor_name or 'Anonymous Donor',
+                            donor_phone=donor_phone,
+                            purpose=f"{item_name} ({qty} {unit}) [Donation Inward]",
+                            payment_method=payment_method,
+                            account_type=account_type,
+                            reference_number=ref_no or txn.transaction_id,
+                            created_by=request.user
+                        )
+                    elif entry_type == 'PURCHASE':
+                        Expense.objects.create(
+                            date=selected_date,
+                            amount=total_amount if total_amount > 0 else Decimal('1.00'),
+                            category='PURCHASE',
+                            payee=vendor_name or 'Vendor',
+                            purpose=f"{item_name} ({qty} {unit}) [Stock Purchase]",
+                            payment_method=payment_method,
+                            account_type=account_type,
+                            reference_number=ref_no or txn.transaction_id,
+                            remarks=remarks,
+                            created_by=request.user
+                        )
+                except Exception as sync_err:
+                    import logging
+                    logging.getLogger(__name__).warning("Failed to sync financial accounts: %s", sync_err)
+
+            serializer = InventoryTransactionSerializer(txn, context={'request': request})
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).exception("Failed to save stock inward/purchase entry")
+            return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class StockInwardPurchaseDetailView(APIView):
+    """
+    Handles Retrieve, Update (PATCH), and Permanent Delete (DELETE)
+    for a stock inward or purchase entry.
+    """
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def get(self, request, pk):
+        txn = InventoryTransaction.objects.filter(pk=pk).first()
+        if txn:
+            serializer = InventoryTransactionSerializer(txn, context={'request': request})
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        from accounts_module.models import Income, Expense
+        inc = Income.objects.filter(pk=pk).first()
+        if inc:
+            return Response({
+                'id': str(inc.id),
+                'date': str(inc.date),
+                'reference_number': inc.reference_number,
+                'source_type': 'INWARD',
+                'donor_name': inc.donor_name,
+                'donor_phone': inc.donor_phone,
+                'item_name': inc.purpose,
+                'quantity': 1,
+                'unit_value': inc.amount,
+                'total_amount': inc.amount,
+                'payment_method': inc.payment_method,
+                'remarks': inc.remarks if hasattr(inc, 'remarks') else '',
+            }, status=status.HTTP_200_OK)
+
+        exp = Expense.objects.filter(pk=pk).first()
+        if exp:
+            return Response({
+                'id': str(exp.id),
+                'date': str(exp.date),
+                'reference_number': exp.reference_number,
+                'source_type': 'PURCHASE',
+                'vendor_name': exp.payee,
+                'item_name': exp.purpose,
+                'quantity': 1,
+                'unit_value': exp.amount,
+                'total_amount': exp.amount,
+                'payment_method': exp.payment_method,
+                'remarks': exp.remarks if hasattr(exp, 'remarks') else '',
+            }, status=status.HTTP_200_OK)
+
+        return Response({'detail': 'Stock entry not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    def patch(self, request, pk):
+        try:
+            txn = InventoryTransaction.objects.filter(pk=pk).first()
+            if not txn:
+                from accounts_module.models import Income, Expense
+                inc = Income.objects.filter(pk=pk).first()
+                if inc:
+                    if 'donor_name' in request.data: inc.donor_name = request.data['donor_name']
+                    if 'donor_phone' in request.data: inc.donor_phone = request.data['donor_phone']
+                    if 'date' in request.data and request.data['date']: inc.date = request.data['date']
+                    if 'reference_number' in request.data: inc.reference_number = request.data['reference_number']
+                    if 'total_amount' in request.data or 'amount' in request.data:
+                        inc.amount = Decimal(str(request.data.get('total_amount') or request.data.get('amount') or inc.amount))
+                    if 'payment_method' in request.data: inc.payment_method = request.data['payment_method']
+                    if 'item_name' in request.data: inc.purpose = request.data['item_name']
+                    inc.save()
+                    return Response({'detail': 'Entry updated successfully.', 'id': str(inc.id)}, status=status.HTTP_200_OK)
+
+                exp = Expense.objects.filter(pk=pk).first()
+                if exp:
+                    if 'vendor_name' in request.data: exp.payee = request.data['vendor_name']
+                    if 'date' in request.data and request.data['date']: exp.date = request.data['date']
+                    if 'reference_number' in request.data: exp.reference_number = request.data['reference_number']
+                    if 'total_amount' in request.data or 'amount' in request.data:
+                        exp.amount = Decimal(str(request.data.get('total_amount') or request.data.get('amount') or exp.amount))
+                    if 'payment_method' in request.data: exp.payment_method = request.data['payment_method']
+                    if 'item_name' in request.data: exp.purpose = request.data['item_name']
+                    exp.save()
+                    return Response({'detail': 'Entry updated successfully.', 'id': str(exp.id)}, status=status.HTTP_200_OK)
+
+                return Response({'detail': 'Stock entry not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+            with transaction.atomic():
+                old_qty = txn.quantity
+                old_ref = txn.reference_number
+                old_txn_id = txn.transaction_id
+
+                if 'entry_type' in request.data:
+                    txn.source_type = request.data['entry_type'].upper()
+                if 'date' in request.data and request.data['date']:
+                    txn.date = request.data['date']
+                if 'reference_number' in request.data:
+                    txn.reference_number = request.data['reference_number']
+
+                if 'donor_name' in request.data: txn.donor_name = request.data['donor_name']
+                if 'donor_phone' in request.data: txn.donor_phone = request.data['donor_phone']
+                if 'donor_address' in request.data: txn.donor_address = request.data['donor_address']
+                if 'donor_member' in request.data: txn.donor_member = request.data['donor_member']
+                if 'donor_job' in request.data: txn.donor_job = request.data['donor_job']
+
+                if 'vendor_name' in request.data: txn.vendor_name = request.data['vendor_name']
+                if 'vendor_phone' in request.data: txn.vendor_phone = request.data['vendor_phone']
+                if 'vendor_address' in request.data: txn.vendor_address = request.data['vendor_address']
+
+                if 'remarks' in request.data: txn.remarks = request.data['remarks']
+
+                expiry_date = request.data.get('expiry_date')
+                if expiry_date in ('', 'null', 'undefined'):
+                    txn.expiry_date = None
+                elif expiry_date:
+                    txn.expiry_date = expiry_date
+
+                new_qty = old_qty
+                if 'quantity' in request.data:
+                    try:
+                        new_qty = int(float(request.data['quantity']))
+                    except (ValueError, TypeError):
+                        new_qty = old_qty
+                    txn.quantity = new_qty
+
+                if 'unit_value' in request.data:
+                    try:
+                        txn.unit_value = Decimal(str(request.data['unit_value']))
+                    except Exception:
+                        pass
+
+                if 'total_amount' in request.data:
+                    try:
+                        txn.total_amount = Decimal(str(request.data['total_amount']))
+                    except Exception:
+                        txn.total_amount = Decimal(str(txn.quantity)) * txn.unit_value
+                else:
+                    txn.total_amount = Decimal(str(txn.quantity)) * txn.unit_value
+
+                # Photo update or removal
+                if request.data.get('remove_image') in ('true', True, '1'):
+                    txn.image = None
+                photo = request.FILES.get('image') or request.FILES.get('item_photo')
+                if photo:
+                    txn.image = photo
+
+                # Update linked inventory item
+                item_name = (request.data.get('item_name') or '').strip()
+                category = (request.data.get('category') or '').strip()
+                unit = (request.data.get('unit') or '').strip()
+
+                if txn.item:
+                    if item_name: txn.item.item_name = item_name
+                    if category: txn.item.category = category
+                    if unit: txn.item.unit = unit
+
+                    qty_diff = new_qty - old_qty
+                    txn.item.quantity_available = max(0, txn.item.quantity_available + qty_diff)
+                    if txn.unit_value > 0:
+                        txn.item.unit_value = txn.unit_value
+                    if txn.expiry_date:
+                        txn.item.expiry_date = txn.expiry_date
+                    if photo:
+                        txn.item.image = photo
+                    elif request.data.get('remove_image') in ('true', True, '1'):
+                        txn.item.image = None
+                    txn.item.save()
+
+                txn.save()
+
+                # Sync linked Income or Expense
+                try:
+                    from accounts_module.models import Income, Expense
+                    payment_method = request.data.get('payment_method')
+
+                    inc = Income.objects.filter(Q(reference_number=old_ref) | Q(reference_number=old_txn_id)).first()
+                    if inc:
+                        inc.amount = txn.total_amount if txn.total_amount > 0 else Decimal('1.00')
+                        inc.date = txn.date
+                        if txn.donor_name: inc.donor_name = txn.donor_name
+                        if txn.donor_phone: inc.donor_phone = txn.donor_phone
+                        if payment_method: inc.payment_method = payment_method
+                        if txn.item:
+                            inc.purpose = f"{txn.item.item_name} ({txn.quantity} {txn.item.unit}) [Donation Inward]"
+                        inc.save()
+
+                    exp = Expense.objects.filter(Q(reference_number=old_ref) | Q(reference_number=old_txn_id)).first()
+                    if exp:
+                        exp.amount = txn.total_amount if txn.total_amount > 0 else Decimal('1.00')
+                        exp.date = txn.date
+                        if txn.vendor_name: exp.payee = txn.vendor_name
+                        if payment_method: exp.payment_method = payment_method
+                        if txn.item:
+                            exp.purpose = f"{txn.item.item_name} ({txn.quantity} {txn.item.unit}) [Stock Purchase]"
+                        exp.save()
+                except Exception as sync_err:
+                    import logging
+                    logging.getLogger(__name__).warning("Failed to sync financial accounts on update: %s", sync_err)
+
+            serializer = InventoryTransactionSerializer(txn, context={'request': request})
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).exception("Failed to update stock entry")
+            return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        try:
+            txn = InventoryTransaction.objects.filter(pk=pk).first()
+            if not txn:
+                from accounts_module.models import Income, Expense
+                inc = Income.objects.filter(pk=pk).first()
+                if inc:
+                    inc.delete()
+                    return Response({'detail': 'Stock entry permanently deleted from database.'}, status=status.HTTP_200_OK)
+                exp = Expense.objects.filter(pk=pk).first()
+                if exp:
+                    exp.delete()
+                    return Response({'detail': 'Stock entry permanently deleted from database.'}, status=status.HTTP_200_OK)
+                return Response({'detail': 'Stock entry not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+            with transaction.atomic():
+                item = txn.item
+                if item and txn.transaction_type == 'INWARD':
+                    item.quantity_available = max(0, item.quantity_available - txn.quantity)
+                    item.save()
+
+                from accounts_module.models import Income, Expense
+                ref_filters = Q(reference_number=txn.reference_number) | Q(reference_number=txn.transaction_id)
+                if txn.reference_number or txn.transaction_id:
+                    Income.objects.filter(ref_filters).delete()
+                    Expense.objects.filter(ref_filters).delete()
+
+                txn.delete()
+
+            return Response({'detail': 'Stock entry permanently deleted from database.'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).exception("Failed to delete stock entry")
+            return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # ── Minutes Registry ───────────────────────────────────────────────

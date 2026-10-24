@@ -8,6 +8,10 @@ const api = axios.create({
 
 // ── Request interceptor ────────────────────────────────────
 api.interceptors.request.use(config => {
+  // If sending FormData, delete Content-Type header so the browser automatically sets multipart/form-data with the correct boundary
+  if (config.data instanceof FormData) {
+    delete config.headers['Content-Type']
+  }
   // CSRF token (if needed for non-GET)
   const csrfToken = document.cookie
     .split(';')
@@ -113,10 +117,10 @@ export const managerApi = {
   },
   stockInwardPurchase: {
     list: (params) => api.get('/manager/stock-inward-purchase/', { params }),
-    create: (data) => {
-      const headers = data instanceof FormData ? { 'Content-Type': 'multipart/form-data' } : {};
-      return api.post('/manager/stock-inward-purchase/', data, { headers });
-    },
+    get: (id) => api.get(`/manager/stock-inward-purchase/${id}/`),
+    create: (data) => api.post('/manager/stock-inward-purchase/', data),
+    update: (id, data) => api.patch(`/manager/stock-inward-purchase/${id}/`, data),
+    delete: (id) => api.delete(`/manager/stock-inward-purchase/${id}/`),
   },
   minutes: {
     list: (params) => api.get('/manager/minutes/', { params }),
