@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { managerApi, accountsApi } from '../../api'
-import { AmountDisplay, LoadingState, PageHeader, formatINR } from '../../components/shared'
+import { AmountDisplay, LoadingState, PageHeader, formatINR, Modal } from '../../components/shared'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 import {
@@ -163,6 +163,12 @@ export default function ManagerDashboard() {
   const [showStaffFilterReport, setShowStaffFilterReport] = useState(false)
   const navigate = useNavigate()
 
+  // Secret delete mode (Ctrl + Shift + Q)
+  const [secretDeleteMode, setSecretDeleteMode] = useState(false)
+  const [selectedRequestIds, setSelectedRequestIds] = useState([])
+  const [deleteConfirmModal, setDeleteConfirmModal] = useState({ open: false, type: 'REQUEST', items: [] })
+  const [deleting, setDeleting] = useState(false)
+
   const load = async () => {
     try {
       const res = await managerApi.dashboard()
@@ -180,6 +186,90 @@ export default function ManagerDashboard() {
     window.addEventListener('dashboard-refresh', handler)
     return () => window.removeEventListener('dashboard-refresh', handler)
   }, [])
+
+  // Secret key combination: Ctrl + Shift + Q
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'q' || e.key === 'Q')) {
+        e.preventDefault();
+        setSecretDeleteMode((prev) => {
+          const next = !prev;
+          if (next) {
+            setActive(p => p || 'requests');
+            toast('🚨 Secret Delete Mode ENABLED. Select rows or click Delete to permanently erase data.', {
+              id: 'secret-delete-mode',
+              icon: '🗑️',
+              duration: 4000,
+              style: {
+                borderRadius: '8px',
+                background: '#18181B',
+                color: '#EF4444',
+                fontWeight: '700',
+                border: '1px solid #DC2626'
+              }
+            });
+          } else {
+            toast.success('Secret Delete Mode DISABLED', { id: 'secret-delete-mode' });
+          }
+          return next;
+        });
+        setSelectedRequestIds([]);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const toggleSelectRequest = (id, e) => {
+    if (e) e.stopPropagation();
+    setSelectedRequestIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAllRequests = () => {
+    const recs = data?.recent_requests || [];
+    if (selectedRequestIds.length === recs.length && recs.length > 0) {
+      setSelectedRequestIds([]);
+    } else {
+      setSelectedRequestIds(recs.map(i => i.id));
+    }
+  };
+
+  const handlePermanentDelete = async () => {
+    const { type, items: itemsToDelete } = deleteConfirmModal;
+    if (!itemsToDelete || itemsToDelete.length === 0) return;
+    setDeleting(true);
+    try {
+      if (type === 'REQUEST') {
+        for (const item of itemsToDelete) {
+          await managerApi.requests.delete(item.id);
+        }
+        toast.success(
+          itemsToDelete.length === 1
+            ? `Request "${itemsToDelete[0].request_number}" permanently deleted.`
+            : `${itemsToDelete.length} requests permanently deleted.`
+        );
+        setSelectedRequestIds(prev => prev.filter(id => !itemsToDelete.some(it => it.id === id)));
+      } else if (type === 'DONATION') {
+        for (const item of itemsToDelete) {
+          await accountsApi.income.delete(item.id);
+        }
+        toast.success(
+          itemsToDelete.length === 1
+            ? `Donation record permanently deleted.`
+            : `${itemsToDelete.length} donation records permanently deleted.`
+        );
+      }
+      setDeleteConfirmModal({ open: false, type: 'REQUEST', items: [] });
+      load();
+    } catch (err) {
+      toast.error('Failed to delete: ' + (err.response?.data?.error || err.message || 'Server error'));
+    } finally {
+      setDeleting(false);
+    }
+  };
+
 
   if (loading) return <LoadingState />
 
@@ -215,6 +305,61 @@ export default function ManagerDashboard() {
 
   return (
     <div>
+      {/* Secret Permanent Deletion Alert Banner */}
+      {secretDeleteMode && (
+        <div style={{
+          background: 'linear-gradient(90deg, #FEF2F2 0%, #FFF1F2 100%)',
+          border: '1.5px dashed #EF4444',
+          borderRadius: 10,
+          padding: '12px 18px',
+          marginBottom: 16,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 12
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ fontSize: '1.5rem' }}>🚨</span>
+            <div>
+              <div style={{ fontWeight: 800, color: '#B91C1C', fontSize: '0.95rem', letterSpacing: '0.3px' }}>
+                SECRET PERMANENT DATABASE DELETION MODE ACTIVE
+              </div>
+              <div style={{ fontSize: '0.8rem', color: '#7F1D1D', marginTop: 2 }}>
+                Records deleted here are <strong>permanently purged</strong> from the database. Press <code>Ctrl + Shift + Q</code> again to exit.
+              </div>
+            </div>
+          </div>
+
+          {selectedRequestIds.length > 0 && (
+            <button
+              className="btn"
+              style={{
+                backgroundColor: '#DC2626',
+                color: '#FFFFFF',
+                fontWeight: 700,
+                fontSize: '0.82rem',
+                padding: '7px 16px',
+                borderRadius: 6,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                boxShadow: '0 2px 4px rgba(220, 38, 38, 0.4)',
+                cursor: 'pointer'
+              }}
+              onClick={() => setDeleteConfirmModal({
+                open: true,
+                type: 'REQUEST',
+                items: (recent_requests || []).filter(i => selectedRequestIds.includes(i.id))
+              })}
+            >
+              <span>🗑️</span>
+              <span>Permanently Delete Selected Requests ({selectedRequestIds.length})</span>
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Printable Staff Performance Report Modal */}
       {showReport && <StaffPerformanceReport initialPeriod="weekly" onClose={() => setShowReport(false)} />}
 
@@ -348,6 +493,17 @@ export default function ManagerDashboard() {
               <table>
                 <thead>
                   <tr>
+                    {secretDeleteMode && (
+                      <th style={{ width: 38, textAlign: 'center' }}>
+                        <input
+                          type="checkbox"
+                          checked={selectedRequestIds.length === recent_requests.length && recent_requests.length > 0}
+                          onChange={toggleSelectAllRequests}
+                          style={{ width: 16, height: 16, cursor: 'pointer' }}
+                          title="Select All"
+                        />
+                      </th>
+                    )}
                     <th>Request No</th>
                     <th>Purpose</th>
                     <th>Category</th>
@@ -356,36 +512,80 @@ export default function ManagerDashboard() {
                     <th>Priority</th>
                     <th>Status</th>
                     <th>Date</th>
+                    {secretDeleteMode && <th>Action</th>}
                   </tr>
                 </thead>
                 <tbody>
                   {recent_requests.length === 0 ? (
-                    <tr><td colSpan={8} style={{ textAlign: 'center', padding: 24, color: 'var(--gray-400)' }}>No requests found</td></tr>
-                  ) : recent_requests.map(r => (
-                    <tr key={r.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/manager/requests/${r.id}`)}>
-                      <td className="td-mono">{r.request_number}</td>
-                      <td>{r.purpose}</td>
-                      <td><span className="badge badge-blue">{r.category?.replace(/_/g,' ')}</span></td>
-                      <td><AmountDisplay amount={r.amount_requested} /></td>
-                      <td>{r.requested_by_name}</td>
-                      <td>
-                        <span className={`badge ${r.priority==='URGENT'?'badge-red':r.priority==='HIGH'?'badge-yellow':'badge-gray'}`}>
-                          {r.priority}
-                        </span>
-                      </td>
-                      <td>
-                        <span className={`badge ${
-                          r.status==='COMPLETED'?'badge-green':
-                          r.status==='REJECTED'?'badge-red':
-                          r.status==='APPROVED'?'badge-blue':
-                          'badge-yellow'
-                        }`}>{r.status?.replace(/_/g,' ')}</span>
-                      </td>
-                      <td style={{ color: 'var(--gray-500)', fontSize: 12 }}>
-                        {r.created_at ? format(new Date(r.created_at), 'dd MMM yyyy') : '-'}
-                      </td>
-                    </tr>
-                  ))}
+                    <tr><td colSpan={secretDeleteMode ? 9 : 8} style={{ textAlign: 'center', padding: 24, color: 'var(--gray-400)' }}>No requests found</td></tr>
+                  ) : recent_requests.map(r => {
+                    const isSelected = selectedRequestIds.includes(r.id);
+                    return (
+                      <tr
+                        key={r.id}
+                        style={{
+                          cursor: 'pointer',
+                          backgroundColor: isSelected ? '#FEF2F2' : undefined
+                        }}
+                        onClick={() => {
+                          if (secretDeleteMode) toggleSelectRequest(r.id);
+                          else navigate(`/manager/requests/${r.id}`);
+                        }}
+                      >
+                        {secretDeleteMode && (
+                          <td style={{ textAlign: 'center' }} onClick={e => e.stopPropagation()}>
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={(e) => toggleSelectRequest(r.id, e)}
+                              style={{ width: 16, height: 16, cursor: 'pointer' }}
+                            />
+                          </td>
+                        )}
+                        <td className="td-mono">{r.request_number}</td>
+                        <td style={{ fontWeight: isSelected ? 700 : undefined }}>{r.purpose}</td>
+                        <td><span className="badge badge-blue">{r.category?.replace(/_/g,' ')}</span></td>
+                        <td><AmountDisplay amount={r.amount_requested} /></td>
+                        <td>{r.requested_by_name}</td>
+                        <td>
+                          <span className={`badge ${r.priority==='URGENT'?'badge-red':r.priority==='HIGH'?'badge-yellow':'badge-gray'}`}>
+                            {r.priority}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`badge ${
+                            r.status==='COMPLETED'?'badge-green':
+                            r.status==='REJECTED'?'badge-red':
+                            r.status==='APPROVED'?'badge-blue':
+                            'badge-yellow'
+                          }`}>{r.status?.replace(/_/g,' ')}</span>
+                        </td>
+                        <td style={{ color: 'var(--gray-500)', fontSize: 12 }}>
+                          {r.created_at ? format(new Date(r.created_at), 'dd MMM yyyy') : '-'}
+                        </td>
+                        {secretDeleteMode && (
+                          <td onClick={e => e.stopPropagation()}>
+                            <button
+                              className="btn btn-sm"
+                              style={{
+                                backgroundColor: '#DC2626',
+                                color: '#FFFFFF',
+                                border: 'none',
+                                fontWeight: 700,
+                                fontSize: '0.72rem',
+                                padding: '3px 8px',
+                                borderRadius: 4,
+                                cursor: 'pointer'
+                              }}
+                              onClick={() => setDeleteConfirmModal({ open: true, type: 'REQUEST', items: [r] })}
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        )}
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -519,7 +719,10 @@ export default function ManagerDashboard() {
       {active === 'donations' && (
         <ExpandPanel>
           <PanelTitle>💝 Donations Viewer</PanelTitle>
-          <DonationsTable />
+          <DonationsTable
+            secretDeleteMode={secretDeleteMode}
+            onDeleteDonation={(donation) => setDeleteConfirmModal({ open: true, type: 'DONATION', items: [donation] })}
+          />
         </ExpandPanel>
       )}
 
@@ -551,29 +754,108 @@ export default function ManagerDashboard() {
           </BarChart>
         </ResponsiveContainer>
       </div>
+
+      {/* Permanent Deletion Confirmation Modal */}
+      {deleteConfirmModal.open && (
+        <Modal
+          isOpen={true}
+          onClose={() => !deleting && setDeleteConfirmModal({ open: false, type: 'REQUEST', items: [] })}
+          title="⚠️ Confirm Permanent Database Deletion"
+          size="modal-md"
+          footer={
+            <>
+              <button
+                className="btn btn-secondary"
+                disabled={deleting}
+                onClick={() => setDeleteConfirmModal({ open: false, type: 'REQUEST', items: [] })}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn"
+                disabled={deleting}
+                style={{
+                  backgroundColor: '#DC2626',
+                  color: '#FFFFFF',
+                  fontWeight: 700,
+                  border: 'none',
+                  padding: '8px 18px',
+                  borderRadius: 6,
+                  cursor: 'pointer'
+                }}
+                onClick={handlePermanentDelete}
+              >
+                {deleting ? 'Purging from Database...' : 'Permanently Delete Now'}
+              </button>
+            </>
+          }
+        >
+          <div style={{ padding: '0.5rem 0' }}>
+            <div style={{
+              backgroundColor: '#FEF2F2',
+              border: '1px solid #FECACA',
+              borderRadius: 8,
+              padding: 12,
+              marginBottom: 16,
+              color: '#991B1B',
+              fontSize: '0.85rem'
+            }}>
+              <strong>WARNING:</strong> This action is completely permanent and cannot be reversed. The selected {deleteConfirmModal.type === 'REQUEST' ? 'request(s)' : 'donation record(s)'} will be permanently removed from the database.
+            </div>
+
+            <p style={{ fontSize: '0.9rem', color: '#374151', marginBottom: 8, fontWeight: 600 }}>
+              Are you sure you want to delete the following {deleteConfirmModal.items.length === 1 ? 'record' : `${deleteConfirmModal.items.length} records`}?
+            </p>
+
+            <ul style={{ maxHeight: 180, overflowY: 'auto', paddingLeft: 20, margin: 0, fontSize: '0.85rem', color: '#4B5563' }}>
+              {deleteConfirmModal.items.map(it => (
+                <li key={it.id} style={{ marginBottom: 4 }}>
+                  {deleteConfirmModal.type === 'REQUEST' ? (
+                    <>
+                      <span style={{ fontWeight: 700, color: '#111827' }}>{it.request_number}</span> — {it.purpose || it.beneficiary_name} (₹{it.amount_requested})
+                    </>
+                  ) : (
+                    <>
+                      <span style={{ fontWeight: 700, color: '#111827' }}>{it.donor_name || 'Anonymous'}</span> — {formatINR(it.amount)} ({it.payment_method})
+                    </>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Modal>
+      )}
     </div>
   )
 }
 
-function DonationsTable() {
+function DonationsTable({ secretDeleteMode, onDeleteDonation }) {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'))
 
-  useEffect(() => {
-    const fetchDonations = async () => {
-      setLoading(true)
-      try {
-        const res = await accountsApi.income.list({ source: 'DONATION', date: selectedDate, search })
-        setItems(res.data.results || res.data)
-      } catch (err) {
-        toast.error('Failed to load donations')
-      } finally {
-        setLoading(false)
-      }
+  const fetchDonations = async () => {
+    setLoading(true)
+    try {
+      const res = await accountsApi.income.list({ source: 'DONATION', date: selectedDate, search })
+      setItems(res.data.results || res.data)
+    } catch (err) {
+      toast.error('Failed to load donations')
+    } finally {
+      setLoading(false)
     }
+  }
+
+  useEffect(() => {
     fetchDonations()
+  }, [selectedDate, search])
+
+  // Real-time refresh
+  useEffect(() => {
+    const handler = () => fetchDonations()
+    window.addEventListener('dashboard-refresh', handler)
+    return () => window.removeEventListener('dashboard-refresh', handler)
   }, [selectedDate, search])
 
   return (
@@ -616,6 +898,7 @@ function DonationsTable() {
                 <th>Payment</th>
                 <th>Remarks</th>
                 <th style={{ textAlign: 'right' }}>Amount</th>
+                {secretDeleteMode && <th style={{ textAlign: 'center' }}>Action</th>}
               </tr>
             </thead>
             <tbody>
@@ -627,6 +910,26 @@ function DonationsTable() {
                   <td><span className="badge badge-blue" style={{ fontSize: 10 }}>{item.payment_method}</span></td>
                   <td style={{ fontSize: 12, maxWidth: 200 }}>{item.remarks || item.purpose || '—'}</td>
                   <td style={{ textAlign: 'right', fontWeight: 700, color: '#059669' }}>{formatINR(item.amount)}</td>
+                  {secretDeleteMode && (
+                    <td style={{ textAlign: 'center' }}>
+                      <button
+                        className="btn btn-sm"
+                        style={{
+                          backgroundColor: '#DC2626',
+                          color: '#FFFFFF',
+                          border: 'none',
+                          fontWeight: 700,
+                          fontSize: '0.72rem',
+                          padding: '3px 8px',
+                          borderRadius: 4,
+                          cursor: 'pointer'
+                        }}
+                        onClick={() => onDeleteDonation && onDeleteDonation(item)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -636,3 +939,4 @@ function DonationsTable() {
     </div>
   )
 }
+

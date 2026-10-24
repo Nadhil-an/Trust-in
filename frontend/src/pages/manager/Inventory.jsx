@@ -140,6 +140,76 @@ export default function Inventory() {
   const [adjusting, setAdjusting] = useState(false)
   const { user } = useAuthStore()
 
+  // Secret delete mode (Ctrl + Shift + Q)
+  const [secretDeleteMode, setSecretDeleteMode] = useState(false)
+  const [selectedRowIds, setSelectedRowIds] = useState([])
+  const [deleteConfirmModal, setDeleteConfirmModal] = useState({ open: false, items: [] })
+  const [deleting, setDeleting] = useState(false)
+
+  // Secret key combination: Ctrl + Shift + Q
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'q' || e.key === 'Q')) {
+        e.preventDefault();
+        setSecretDeleteMode((prev) => {
+          const next = !prev;
+          if (next) {
+            toast('🚨 Secret Delete Mode ENABLED. Select rows or click Delete to permanently erase data.', {
+              id: 'secret-delete-mode',
+              icon: '🗑️',
+              duration: 4000,
+              style: {
+                borderRadius: '8px',
+                background: '#18181B',
+                color: '#EF4444',
+                fontWeight: '700',
+                border: '1px solid #DC2626'
+              }
+            });
+          } else {
+            toast.success('Secret Delete Mode DISABLED', { id: 'secret-delete-mode' });
+          }
+          return next;
+        });
+        setSelectedRowIds([]);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const toggleSelectRow = (id, e) => {
+    if (e) e.stopPropagation();
+    setSelectedRowIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedRowIds.length === items.length && items.length > 0) {
+      setSelectedRowIds([]);
+    } else {
+      setSelectedRowIds(items.map(i => i.id));
+    }
+  };
+
+  const handlePermanentDelete = async () => {
+    if (deleteConfirmModal.items.length === 0) return;
+    setDeleting(true);
+    try {
+      for (const it of deleteConfirmModal.items) {
+        await managerApi.inventory.delete(it.id);
+      }
+      toast.success(`Successfully permanently deleted ${deleteConfirmModal.items.length} inventory item(s) from database!`);
+      setDeleteConfirmModal({ open: false, items: [] });
+      setSelectedRowIds([]);
+      load();
+      window.dispatchEvent(new CustomEvent('dashboard-refresh'));
+    } catch (err) {
+      toast.error('Failed to permanently delete item(s): ' + (err.response?.data?.detail || err.message));
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const load = useCallback(async () => {
     setLoading(true)
     try {
@@ -195,6 +265,60 @@ export default function Inventory() {
         subtitle="View items available for distribution to beneficiaries"
       />
 
+      {/* Secret Permanent Deletion Alert Banner */}
+      {secretDeleteMode && (
+        <div style={{
+          background: 'linear-gradient(90deg, #FEF2F2 0%, #FFF1F2 100%)',
+          border: '1.5px dashed #EF4444',
+          borderRadius: 10,
+          padding: '12px 18px',
+          marginBottom: 16,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 12
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ fontSize: '1.5rem' }}>🚨</span>
+            <div>
+              <div style={{ fontWeight: 800, color: '#B91C1C', fontSize: '0.95rem', letterSpacing: '0.3px' }}>
+                SECRET PERMANENT DATABASE DELETION MODE ACTIVE
+              </div>
+              <div style={{ fontSize: '0.8rem', color: '#7F1D1D', marginTop: 2 }}>
+                Records deleted here are <strong>permanently purged</strong> from the database. Press <code>Ctrl + Shift + Q</code> again to exit.
+              </div>
+            </div>
+          </div>
+
+          {selectedRowIds.length > 0 && (
+            <button
+              className="btn"
+              style={{
+                backgroundColor: '#DC2626',
+                color: '#FFFFFF',
+                fontWeight: 700,
+                fontSize: '0.82rem',
+                padding: '7px 16px',
+                borderRadius: 6,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                boxShadow: '0 2px 4px rgba(220, 38, 38, 0.4)',
+                cursor: 'pointer'
+              }}
+              onClick={() => setDeleteConfirmModal({
+                open: true,
+                items: items.filter(i => selectedRowIds.includes(i.id))
+              })}
+            >
+              <span>🗑️</span>
+              <span>Permanently Delete Selected ({selectedRowIds.length})</span>
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Summary Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 20 }}>
         {[
@@ -230,6 +354,17 @@ export default function Inventory() {
             <table>
               <thead>
                 <tr>
+                  {secretDeleteMode && (
+                    <th style={{ width: 38, textAlign: 'center' }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedRowIds.length === items.length && items.length > 0}
+                        onChange={toggleSelectAll}
+                        style={{ width: 16, height: 16, cursor: 'pointer' }}
+                        title="Select All"
+                      />
+                    </th>
+                  )}
                   <th>Code</th>
                   <th>Item</th>
                   <th>Category</th>
@@ -242,37 +377,76 @@ export default function Inventory() {
               </thead>
               <tbody>
                 {items.length === 0 ? (
-                  <tr><td colSpan={8}><EmptyState icon="📦" title="No inventory items" subtitle="Add items to track charity stock" /></td></tr>
-                ) : items.map(item => (
-                  <tr key={item.id} style={{ opacity: item.is_active ? 1 : 0.5 }}>
-                    <td className="td-mono" style={{ fontSize: 12, color: 'var(--gray-500)' }}>{item.item_code}</td>
-                    <td>
-                      <div style={{ fontWeight: 600 }}>{item.item_name}</div>
-                      {item.description && (
-                        <div style={{ fontSize: 11, color: 'var(--gray-500)', marginTop: 2 }}>{item.description.slice(0, 60)}</div>
+                  <tr><td colSpan={secretDeleteMode ? 9 : 8}><EmptyState icon="📦" title="No inventory items" subtitle="Add items to track charity stock" /></td></tr>
+                ) : items.map(item => {
+                  const isSelected = selectedRowIds.includes(item.id);
+                  return (
+                    <tr
+                      key={item.id}
+                      style={{
+                        opacity: item.is_active ? 1 : 0.5,
+                        backgroundColor: isSelected ? '#FEF2F2' : undefined,
+                        cursor: secretDeleteMode ? 'pointer' : undefined
+                      }}
+                      onClick={() => secretDeleteMode && toggleSelectRow(item.id)}
+                    >
+                      {secretDeleteMode && (
+                        <td style={{ textAlign: 'center' }} onClick={e => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={(e) => toggleSelectRow(item.id, e)}
+                            style={{ width: 16, height: 16, cursor: 'pointer' }}
+                          />
+                        </td>
                       )}
-                    </td>
-                    <td><CategoryBadge cat={item.category} /></td>
-                    <td style={{ fontWeight: 800, fontSize: 16, color: item.quantity_available === 0 ? '#EF4444' : 'var(--gray-900)' }}>
-                      {item.quantity_available}
-                    </td>
-                    <td style={{ fontSize: 12, color: 'var(--gray-500)' }}>{item.unit}</td>
-                    <td style={{ fontWeight: 600 }}>
-                      {parseFloat(item.unit_value) > 0 ? `₹${parseFloat(item.unit_value).toLocaleString('en-IN')}` : '—'}
-                    </td>
-                    <td><StockBar qty={item.quantity_available} /></td>
-                    <td>
-                      <div style={{ display: 'flex', gap: 4 }}>
-                        {isManager && (
-                          <button
-                            className="btn btn-sm btn-secondary"
-                            onClick={() => { setAdjustItem(item); setAdjustQty(String(item.quantity_available)) }}
-                          >Adjust Stock</button>
+                      <td className="td-mono" style={{ fontSize: 12, color: 'var(--gray-500)' }}>{item.item_code}</td>
+                      <td>
+                        <div style={{ fontWeight: isSelected ? 700 : 600 }}>{item.item_name}</div>
+                        {item.description && (
+                          <div style={{ fontSize: 11, color: 'var(--gray-500)', marginTop: 2 }}>{item.description.slice(0, 60)}</div>
                         )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td><CategoryBadge cat={item.category} /></td>
+                      <td style={{ fontWeight: 800, fontSize: 16, color: item.quantity_available === 0 ? '#EF4444' : 'var(--gray-900)' }}>
+                        {item.quantity_available}
+                      </td>
+                      <td style={{ fontSize: 12, color: 'var(--gray-500)' }}>{item.unit}</td>
+                      <td style={{ fontWeight: 600 }}>
+                        {parseFloat(item.unit_value) > 0 ? `₹${parseFloat(item.unit_value).toLocaleString('en-IN')}` : '—'}
+                      </td>
+                      <td><StockBar qty={item.quantity_available} /></td>
+                      <td onClick={e => e.stopPropagation()}>
+                        <div style={{ display: 'flex', gap: 4 }}>
+                          {isManager && (
+                            <button
+                              className="btn btn-sm btn-secondary"
+                              onClick={() => { setAdjustItem(item); setAdjustQty(String(item.quantity_available)) }}
+                            >Adjust Stock</button>
+                          )}
+                          {secretDeleteMode && (
+                            <button
+                              className="btn btn-sm"
+                              style={{
+                                backgroundColor: '#DC2626',
+                                color: '#FFFFFF',
+                                border: 'none',
+                                fontWeight: 700,
+                                fontSize: '0.72rem',
+                                padding: '3px 8px',
+                                borderRadius: 4,
+                                cursor: 'pointer'
+                              }}
+                              onClick={() => setDeleteConfirmModal({ open: true, items: [item] })}
+                            >
+                              Delete
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -321,6 +495,69 @@ export default function Inventory() {
               onChange={e => setAdjustQty(e.target.value)}
               autoFocus
             />
+          </div>
+        </Modal>
+      )}
+
+      {/* Permanent Deletion Confirmation Modal */}
+      {deleteConfirmModal.open && (
+        <Modal
+          isOpen={true}
+          onClose={() => !deleting && setDeleteConfirmModal({ open: false, items: [] })}
+          title="⚠️ Confirm Permanent Database Deletion"
+          size="modal-md"
+          footer={
+            <>
+              <button
+                className="btn btn-secondary"
+                disabled={deleting}
+                onClick={() => setDeleteConfirmModal({ open: false, items: [] })}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn"
+                disabled={deleting}
+                style={{
+                  backgroundColor: '#DC2626',
+                  color: '#FFFFFF',
+                  fontWeight: 700,
+                  border: 'none',
+                  padding: '8px 18px',
+                  borderRadius: 6,
+                  cursor: 'pointer'
+                }}
+                onClick={handlePermanentDelete}
+              >
+                {deleting ? 'Purging from Database...' : 'Permanently Delete Now'}
+              </button>
+            </>
+          }
+        >
+          <div style={{ padding: '0.5rem 0' }}>
+            <div style={{
+              backgroundColor: '#FEF2F2',
+              border: '1px solid #FECACA',
+              borderRadius: 8,
+              padding: 12,
+              marginBottom: 16,
+              color: '#991B1B',
+              fontSize: '0.85rem'
+            }}>
+              <strong>WARNING:</strong> This action is completely permanent and cannot be reversed. The selected inventory item(s) and their transaction histories will be completely removed from the database.
+            </div>
+
+            <p style={{ fontSize: '0.9rem', color: '#374151', marginBottom: 8, fontWeight: 600 }}>
+              Are you sure you want to delete the following {deleteConfirmModal.items.length === 1 ? 'item' : `${deleteConfirmModal.items.length} items`}?
+            </p>
+
+            <ul style={{ maxHeight: 180, overflowY: 'auto', paddingLeft: 20, margin: 0, fontSize: '0.85rem', color: '#4B5563' }}>
+              {deleteConfirmModal.items.map(it => (
+                <li key={it.id} style={{ marginBottom: 4 }}>
+                  <span style={{ fontWeight: 700, color: '#111827' }}>{it.item_name}</span> (Code: {it.item_code}, Category: {it.category}, Qty: {it.quantity_available} {it.unit})
+                </li>
+              ))}
+            </ul>
           </div>
         </Modal>
       )}

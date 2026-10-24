@@ -227,12 +227,14 @@ export const hrApi = {
     create: (data) => api.post('/hr/volunteers/', data),
     get: (id) => api.get(`/hr/volunteers/${id}/`),
     update: (id, data) => api.patch(`/hr/volunteers/${id}/`, data),
+    delete: (id) => api.delete(`/hr/volunteers/${id}/`),
   },
   execMembers: {
     list: (params) => api.get('/hr/executive-members/', { params }),
     create: (data) => api.post('/hr/executive-members/', data),
     get: (id) => api.get(`/hr/executive-members/${id}/`),
     update: (id, data) => api.patch(`/hr/executive-members/${id}/`, data),
+    delete: (id) => api.delete(`/hr/executive-members/${id}/`),
   },
   officers: {
     list: (params) => api.get('/hr/officers/', { params }),

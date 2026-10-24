@@ -4,7 +4,9 @@ import { LoadingState, EmptyState, PageHeader, FilterBar, Modal } from "../../co
 import { format } from "date-fns"
 import toast from "react-hot-toast"
 import { isValidPhone, isValidEmail } from "../../utils/validators"
+
 const init = { full_name:"", designation:"PRESIDENT", term_start:"", term_end:"", phone:"", email:"", status:"ACTIVE" }
+
 export default function ExecMembers() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -15,7 +17,15 @@ export default function ExecMembers() {
   const [viewItem, setViewItem] = useState(null)
   const [form, setForm] = useState(init)
   const [saving, setSaving] = useState(false)
+
+  // Secret delete mode state (Ctrl + Shift + Q)
+  const [secretDeleteMode, setSecretDeleteMode] = useState(false)
+  const [selectedRowIds, setSelectedRowIds] = useState([])
+  const [deleteConfirmModal, setDeleteConfirmModal] = useState({ open: false, items: [] })
+  const [deleting, setDeleting] = useState(false)
+
   const F = (k,v) => setForm(f=>({...f,[k]:v}))
+
   const load = useCallback(async () => {
     setLoading(true)
     try { const res = await hrApi.execMembers.list({search}); setItems(res.data.results || res.data) }
@@ -29,6 +39,77 @@ export default function ExecMembers() {
     window.addEventListener('dashboard-refresh', handleRefresh)
     return () => window.removeEventListener('dashboard-refresh', handleRefresh)
   }, [load])
+
+  // Secret key combination: Ctrl + Shift + Q
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'q' || e.key === 'Q')) {
+        e.preventDefault();
+        setSecretDeleteMode((prev) => {
+          const next = !prev;
+          if (next) {
+            toast('🚨 Secret Delete Mode ENABLED. Select rows or click Delete to permanently erase data.', {
+              id: 'secret-delete-mode',
+              icon: '🗑️',
+              duration: 4000,
+              style: {
+                borderRadius: '8px',
+                background: '#18181B',
+                color: '#EF4444',
+                fontWeight: '700',
+                border: '1px solid #DC2626'
+              }
+            });
+          } else {
+            toast.success('Secret Delete Mode DISABLED', { id: 'secret-delete-mode' });
+          }
+          return next;
+        });
+        setSelectedRowIds([]);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const toggleSelectRow = (id, e) => {
+    if (e) e.stopPropagation();
+    setSelectedRowIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedRowIds.length === items.length && items.length > 0) {
+      setSelectedRowIds([]);
+    } else {
+      setSelectedRowIds(items.map(i => i.id));
+    }
+  };
+
+  const handlePermanentDelete = async () => {
+    const itemsToDelete = deleteConfirmModal.items || [];
+    if (itemsToDelete.length === 0) return;
+    setDeleting(true);
+    try {
+      for (const item of itemsToDelete) {
+        await hrApi.execMembers.delete(item.id);
+      }
+      toast.success(
+        itemsToDelete.length === 1
+          ? `Executive Member "${itemsToDelete[0].full_name}" permanently deleted.`
+          : `${itemsToDelete.length} executive members permanently deleted.`
+      );
+      setSelectedRowIds(prev => prev.filter(id => !itemsToDelete.some(it => it.id === id)));
+      setDeleteConfirmModal({ open: false, items: [] });
+      load();
+    } catch (err) {
+      toast.error('Failed to delete: ' + (err.response?.data?.error || err.message || 'Server error'));
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const handleSave = async (e) => {
     e.preventDefault();
     if (form.phone && !isValidPhone(form.phone)) return toast.error("Enter a valid 10-digit phone number");
@@ -45,20 +126,172 @@ export default function ExecMembers() {
       toast.success("Saved."); setShowModal(false); load()
     } catch (_) { toast.error("Save failed") } finally { setSaving(false) }
   }
+
   return (
     <div>
       <PageHeader title="Executive Members" subtitle="Trust committee and board members">
         <button className="btn btn-primary" onClick={()=>{setSelected(null);setForm(init);setShowModal(true)}}>+ Add Exec Member</button>
       </PageHeader>
       <div className="data-card">
+        {/* Secret Permanent Deletion Alert Banner */}
+        {secretDeleteMode && (
+          <div style={{
+            background: 'linear-gradient(90deg, #FEF2F2 0%, #FFF1F2 100%)',
+            border: '1.5px dashed #EF4444',
+            borderRadius: 10,
+            padding: '12px 18px',
+            marginBottom: 16,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: 12
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span style={{ fontSize: '1.5rem' }}>🚨</span>
+              <div>
+                <div style={{ fontWeight: 800, color: '#B91C1C', fontSize: '0.95rem', letterSpacing: '0.3px' }}>
+                  SECRET PERMANENT DATABASE DELETION MODE ACTIVE
+                </div>
+                <div style={{ fontSize: '0.8rem', color: '#7F1D1D', marginTop: 2 }}>
+                  Records deleted here are <strong>permanently purged</strong> from the database. Press <code>Ctrl + Shift + Q</code> again to exit.
+                </div>
+              </div>
+            </div>
+
+            {selectedRowIds.length > 0 && (
+              <button
+                className="btn"
+                style={{
+                  backgroundColor: '#DC2626',
+                  color: '#FFFFFF',
+                  fontWeight: 700,
+                  fontSize: '0.82rem',
+                  padding: '7px 16px',
+                  borderRadius: 6,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  boxShadow: '0 2px 4px rgba(220, 38, 38, 0.4)',
+                  cursor: 'pointer'
+                }}
+                onClick={() => setDeleteConfirmModal({
+                  open: true,
+                  items: items.filter(i => selectedRowIds.includes(i.id))
+                })}
+              >
+                <span>🗑️</span>
+                <span>Permanently Delete Selected ({selectedRowIds.length})</span>
+              </button>
+            )}
+          </div>
+        )}
+
         <FilterBar search={search} onSearch={setSearch} />
         {loading ? <LoadingState /> : (
           <div className="table-wrap">
             <table>
-              <thead><tr><th>ID</th><th>Name</th><th>Designation</th><th>Term Start</th><th>Term End</th><th>Phone</th><th>Status</th><th>Actions</th></tr></thead>
+              <thead>
+                <tr>
+                  {secretDeleteMode && (
+                    <th style={{ width: 44, textAlign: 'center' }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedRowIds.length === items.length && items.length > 0}
+                        onChange={toggleSelectAll}
+                        style={{ width: 16, height: 16, cursor: 'pointer' }}
+                        title="Select All"
+                      />
+                    </th>
+                  )}
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Designation</th>
+                  <th>Term Start</th>
+                  <th>Term End</th>
+                  <th>Phone</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
               <tbody>
-                {items.length===0 ? <tr><td colSpan={8}><EmptyState icon="👔" title="No executive members" /></td></tr>
-                  : items.map(m=>(<tr key={m.id} onClick={()=>{setViewItem(m);setShowViewModal(true)}} style={{cursor: 'pointer'}} className="hover-row"><td className="td-mono">{m.exec_id}</td><td>{m.full_name}</td><td><span className="badge badge-blue">{m.designation}</span></td><td>{m.term_start ? format(new Date(m.term_start),"MMM yyyy") : "-"}</td><td>{m.term_end ? format(new Date(m.term_end),"MMM yyyy") : "-"}</td><td>{m.phone}</td><td><span className={`badge ${m.status==="ACTIVE"?"badge-green":"badge-gray"}`}>{m.status}</span></td><td><button className="btn btn-sm btn-secondary" onClick={(e)=>{e.stopPropagation(); setSelected(m);setForm({...m});setShowModal(true)}}>Edit</button></td></tr>))}
+                {items.length===0 ? <tr><td colSpan={secretDeleteMode ? 9 : 8}><EmptyState icon="👔" title="No executive members" /></td></tr>
+                  : items.map(m => {
+                    const isRowSelected = selectedRowIds.includes(m.id);
+                    return (
+                      <tr
+                        key={m.id}
+                        onClick={() => {
+                          if (secretDeleteMode) {
+                            toggleSelectRow(m.id);
+                          } else {
+                            setViewItem(m);
+                            setShowViewModal(true);
+                          }
+                        }}
+                        style={{
+                          cursor: 'pointer',
+                          backgroundColor: isRowSelected ? '#FEF2F2' : undefined
+                        }}
+                        className="hover-row"
+                      >
+                        {secretDeleteMode && (
+                          <td style={{ textAlign: 'center' }} onClick={e => e.stopPropagation()}>
+                            <input
+                              type="checkbox"
+                              checked={isRowSelected}
+                              onChange={(e) => toggleSelectRow(m.id, e)}
+                              style={{ width: 16, height: 16, cursor: 'pointer' }}
+                            />
+                          </td>
+                        )}
+                        <td className="td-mono">{m.exec_id}</td>
+                        <td style={{ fontWeight: isRowSelected ? 700 : undefined }}>{m.full_name}</td>
+                        <td><span className="badge badge-blue">{m.designation}</span></td>
+                        <td>{m.term_start ? format(new Date(m.term_start),"MMM yyyy") : "-"}</td>
+                        <td>{m.term_end ? format(new Date(m.term_end),"MMM yyyy") : "-"}</td>
+                        <td>{m.phone}</td>
+                        <td><span className={`badge ${m.status==="ACTIVE"?"badge-green":"badge-gray"}`}>{m.status}</span></td>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <button
+                              className="btn btn-sm btn-secondary"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelected(m);
+                                setForm({...m});
+                                setShowModal(true);
+                              }}
+                            >
+                              Edit
+                            </button>
+                            {secretDeleteMode && (
+                              <button
+                                className="btn btn-sm"
+                                style={{
+                                  backgroundColor: '#DC2626',
+                                  color: '#FFFFFF',
+                                  border: 'none',
+                                  fontWeight: 700,
+                                  fontSize: '0.75rem',
+                                  padding: '4px 10px',
+                                  borderRadius: 4,
+                                  cursor: 'pointer',
+                                  boxShadow: '0 1px 3px rgba(220, 38, 38, 0.3)'
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDeleteConfirmModal({ open: true, items: [m] });
+                                }}
+                              >
+                                Delete
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
               </tbody>
             </table>
           </div>
@@ -85,6 +318,27 @@ export default function ExecMembers() {
       {showViewModal && viewItem && (
         <Modal isOpen={true} onClose={()=>setShowViewModal(false)} title="Executive Details" size="modal-lg"
           footer={<>
+            {secretDeleteMode && (
+              <button
+                className="btn btn-sm"
+                style={{
+                  backgroundColor: '#DC2626',
+                  color: '#FFFFFF',
+                  fontWeight: 700,
+                  marginRight: 'auto',
+                  border: 'none',
+                  padding: '6px 14px',
+                  borderRadius: 4,
+                  cursor: 'pointer'
+                }}
+                onClick={() => {
+                  setShowViewModal(false);
+                  setDeleteConfirmModal({ open: true, items: [viewItem] });
+                }}
+              >
+                🗑️ Permanently Delete
+              </button>
+            )}
             <button className="btn btn-secondary" onClick={()=>setShowViewModal(false)}>Close</button>
             <button className="btn btn-primary" onClick={() => {
               setShowViewModal(false);
@@ -102,6 +356,69 @@ export default function ExecMembers() {
             <div><strong style={{display:'block', fontSize:'0.75rem', color:'#6b7280', textTransform:'uppercase'}}>Term Start</strong><div>{viewItem.term_start ? format(new Date(viewItem.term_start), "dd MMM yyyy") : '-'}</div></div>
             <div><strong style={{display:'block', fontSize:'0.75rem', color:'#6b7280', textTransform:'uppercase'}}>Term End</strong><div>{viewItem.term_end ? format(new Date(viewItem.term_end), "dd MMM yyyy") : '-'}</div></div>
             <div><strong style={{display:'block', fontSize:'0.75rem', color:'#6b7280', textTransform:'uppercase'}}>Status</strong><div><span className={`badge ${viewItem.status==="ACTIVE"?"badge-green":"badge-gray"}`}>{viewItem.status}</span></div></div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Permanent Deletion Confirmation Modal */}
+      {deleteConfirmModal.open && (
+        <Modal
+          isOpen={true}
+          onClose={() => !deleting && setDeleteConfirmModal({ open: false, items: [] })}
+          title="⚠️ Confirm Permanent Database Deletion"
+          size="modal-md"
+          footer={
+            <>
+              <button
+                className="btn btn-secondary"
+                disabled={deleting}
+                onClick={() => setDeleteConfirmModal({ open: false, items: [] })}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn"
+                disabled={deleting}
+                style={{
+                  backgroundColor: '#DC2626',
+                  color: '#FFFFFF',
+                  fontWeight: 700,
+                  border: 'none',
+                  padding: '8px 18px',
+                  borderRadius: 6,
+                  cursor: 'pointer'
+                }}
+                onClick={handlePermanentDelete}
+              >
+                {deleting ? 'Purging from Database...' : 'Permanently Delete Now'}
+              </button>
+            </>
+          }
+        >
+          <div style={{ padding: '0.5rem 0' }}>
+            <div style={{
+              backgroundColor: '#FEF2F2',
+              border: '1px solid #FECACA',
+              borderRadius: 8,
+              padding: 12,
+              marginBottom: 16,
+              color: '#991B1B',
+              fontSize: '0.85rem'
+            }}>
+              <strong>WARNING:</strong> This action is completely permanent and cannot be reversed. The selected record(s) will be completely removed from the database.
+            </div>
+
+            <p style={{ fontSize: '0.9rem', color: '#374151', marginBottom: 8, fontWeight: 600 }}>
+              Are you sure you want to delete the following {deleteConfirmModal.items.length === 1 ? 'executive member' : `${deleteConfirmModal.items.length} executive members`}?
+            </p>
+
+            <ul style={{ maxHeight: 180, overflowY: 'auto', paddingLeft: 20, margin: 0, fontSize: '0.85rem', color: '#4B5563' }}>
+              {deleteConfirmModal.items.map(it => (
+                <li key={it.id} style={{ marginBottom: 4 }}>
+                  <span style={{ fontWeight: 700, color: '#111827' }}>{it.full_name}</span> (ID: <span className="td-mono">{it.exec_id}</span>, Phone: {it.phone})
+                </li>
+              ))}
+            </ul>
           </div>
         </Modal>
       )}

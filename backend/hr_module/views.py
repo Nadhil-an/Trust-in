@@ -621,6 +621,37 @@ class MemberDetailView(generics.RetrieveUpdateDestroyAPIView):
         push_dashboard_refresh(['HR', 'MANAGER', 'ADMIN', 'STAFF'])
 
     def perform_destroy(self, instance):
+        from core.models import User, Role, SystemNotification
+        import re
+        from django.db.models import Q
+
+        # Permanently purge linked User credentials for this member
+        clean_phone = re.sub(r'[^0-9]', '', str(instance.phone or ''))[-10:]
+        clean_mem_id = str(instance.member_id or '').replace('MEM-', '').strip()
+        users_to_delete = []
+
+        if instance.created_by and getattr(instance.created_by, 'role', None) == Role.MEMBER:
+            users_to_delete.append(instance.created_by)
+        if clean_phone:
+            for u in User.objects.filter(role=Role.MEMBER).filter(Q(username__iexact=clean_phone) | Q(username__iexact=str(instance.phone).strip())):
+                if u not in users_to_delete:
+                    users_to_delete.append(u)
+        if instance.member_id:
+            for u in User.objects.filter(role=Role.MEMBER).filter(Q(username__iexact=instance.member_id) | Q(username__iexact=clean_mem_id)):
+                if u not in users_to_delete:
+                    users_to_delete.append(u)
+
+        for u in users_to_delete:
+            try:
+                u.delete()
+            except Exception:
+                pass
+
+        try:
+            SystemNotification.objects.filter(reference_id=str(instance.id)).delete()
+        except Exception:
+            pass
+
         instance.delete()
         push_dashboard_refresh(['HR', 'MANAGER', 'ADMIN', 'STAFF'])
 
@@ -799,6 +830,10 @@ class VolunteerDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Volunteer.objects.all()
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
+    def perform_destroy(self, instance):
+        instance.delete()
+        push_dashboard_refresh(['HR', 'MANAGER', 'ADMIN'])
+
 
 # ── Executive Members ─────────────────────────────────────────────
 class ExecutiveMemberListCreateView(generics.ListCreateAPIView):
@@ -815,6 +850,11 @@ class ExecutiveMemberDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ExecutiveMemberSerializer
     queryset = ExecutiveMember.objects.all()
     parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def perform_destroy(self, instance):
+        instance.delete()
+        push_dashboard_refresh(['HR', 'MANAGER', 'ADMIN'])
+
 
 
 # ── Executive Officers ────────────────────────────────────────────
@@ -903,14 +943,24 @@ class ExecutiveOfficerDetailView(generics.RetrieveUpdateDestroyAPIView):
                 next_book_number=None, next_voucher_start=None, next_voucher_end=None, next_current_voucher=None
             )
 
-        # Mark officer profile status as INACTIVE to remove from active staff list while preserving all history
-        instance.status = 'INACTIVE'
-        reason = self.request.data.get('termination_reason')
-        if reason:
-            instance.termination_reason = reason
-        instance.save(update_fields=['status', 'termination_reason'])
+        is_permanent = self.request.query_params.get('permanent') == 'true' or bool(self.request.data.get('permanent'))
+        if is_permanent:
+            for u in all_users:
+                try:
+                    u.delete()
+                except Exception:
+                    pass
+            instance.delete()
+        else:
+            # Mark officer profile status as INACTIVE to remove from active staff list while preserving all history
+            instance.status = 'INACTIVE'
+            reason = self.request.data.get('termination_reason')
+            if reason:
+                instance.termination_reason = reason
+            instance.save(update_fields=['status', 'termination_reason'])
 
         push_dashboard_refresh(['HR', 'MANAGER', 'ADMIN', 'STAFF'])
+
 
 
 class ExecutiveOfficerReactivateView(APIView):

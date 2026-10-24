@@ -26,12 +26,10 @@
         "foregroundImage": "./assets/android-icon-foreground.png"
       },
       "package": "com.sreelakshmiappsteam.mobile",
-      "versionCode": 54,
+      "versionCode": 55,
       "softwareKeyboardLayoutMode": "resize",
       "permissions": [
         "CAMERA",
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE",
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
         "INTERNET"
@@ -58,4 +56,3 @@
     }
   }
 }
-

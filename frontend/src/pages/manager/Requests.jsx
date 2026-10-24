@@ -322,6 +322,82 @@ export default function Requests() {
     return () => window.removeEventListener('dashboard-refresh', handleRefresh)
   }, [load])
 
+  // Secret delete mode (Ctrl + Shift + Q)
+  const [secretDeleteMode, setSecretDeleteMode] = useState(false)
+  const [selectedRequestIds, setSelectedRequestIds] = useState([])
+  const [permanentDeleteModal, setPermanentDeleteModal] = useState({ open: false, items: [] })
+  const [permanentDeleting, setPermanentDeleting] = useState(false)
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'q' || e.key === 'Q')) {
+        e.preventDefault();
+        setSecretDeleteMode((prev) => {
+          const next = !prev;
+          if (next) {
+            toast('🚨 Secret Delete Mode ENABLED. Select rows or click Delete to permanently erase data.', {
+              id: 'secret-delete-mode',
+              icon: '🗑️',
+              duration: 4000,
+              style: {
+                borderRadius: '8px',
+                background: '#18181B',
+                color: '#EF4444',
+                fontWeight: '700',
+                border: '1px solid #DC2626'
+              }
+            });
+          } else {
+            toast.success('Secret Delete Mode DISABLED', { id: 'secret-delete-mode' });
+          }
+          return next;
+        });
+        setSelectedRequestIds([]);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const toggleSelectRow = (id, e) => {
+    if (e) e.stopPropagation();
+    setSelectedRequestIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedRequestIds.length === requests.length && requests.length > 0) {
+      setSelectedRequestIds([]);
+    } else {
+      setSelectedRequestIds(requests.map(i => i.id));
+    }
+  };
+
+  const handlePermanentDelete = async () => {
+    const itemsToDelete = permanentDeleteModal.items || [];
+    if (itemsToDelete.length === 0) return;
+    setPermanentDeleting(true);
+    try {
+      for (const item of itemsToDelete) {
+        await managerApi.requests.delete(item.id);
+      }
+      toast.success(
+        itemsToDelete.length === 1
+          ? `Request "${itemsToDelete[0].request_number}" permanently deleted from database.`
+          : `${itemsToDelete.length} requests permanently deleted.`
+      );
+      setSelectedRequestIds(prev => prev.filter(id => !itemsToDelete.some(it => it.id === id)));
+      setPermanentDeleteModal({ open: false, items: [] });
+      load();
+    } catch (err) {
+      toast.error('Failed to delete: ' + (err.response?.data?.error || err.message || 'Server error'));
+    } finally {
+      setPermanentDeleting(false);
+    }
+  };
+
+
   useEffect(() => {
     const handler = () => load()
     window.addEventListener('request-update', handler)
@@ -396,6 +472,60 @@ export default function Requests() {
       </PageHeader>
 
       <div className="data-card">
+        {/* Secret Permanent Deletion Alert Banner */}
+        {secretDeleteMode && (
+          <div style={{
+            background: 'linear-gradient(90deg, #FEF2F2 0%, #FFF1F2 100%)',
+            border: '1.5px dashed #EF4444',
+            borderRadius: 10,
+            padding: '12px 18px',
+            marginBottom: 16,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: 12
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span style={{ fontSize: '1.5rem' }}>🚨</span>
+              <div>
+                <div style={{ fontWeight: 800, color: '#B91C1C', fontSize: '0.95rem', letterSpacing: '0.3px' }}>
+                  SECRET PERMANENT DATABASE DELETION MODE ACTIVE
+                </div>
+                <div style={{ fontSize: '0.8rem', color: '#7F1D1D', marginTop: 2 }}>
+                  Records deleted here are <strong>permanently purged</strong> from the database. Press <code>Ctrl + Shift + Q</code> again to exit.
+                </div>
+              </div>
+            </div>
+
+            {selectedRequestIds.length > 0 && (
+              <button
+                className="btn"
+                style={{
+                  backgroundColor: '#DC2626',
+                  color: '#FFFFFF',
+                  fontWeight: 700,
+                  fontSize: '0.82rem',
+                  padding: '7px 16px',
+                  borderRadius: 6,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  boxShadow: '0 2px 4px rgba(220, 38, 38, 0.4)',
+                  cursor: 'pointer'
+                }}
+                onClick={() => setPermanentDeleteModal({
+                  open: true,
+                  items: requests.filter(i => selectedRequestIds.includes(i.id))
+                })}
+              >
+                <span>🗑️</span>
+                <span>Permanently Delete Selected Requests ({selectedRequestIds.length})</span>
+              </button>
+            )}
+          </div>
+        )}
+
         <FilterBar search={search} onSearch={setSearch}>
           <input type="date" className="form-control" style={{ width: 140 }} 
             value={dateFilter} onChange={e => setDateFilter(e.target.value)} />
@@ -416,6 +546,17 @@ export default function Requests() {
             <table>
               <thead>
                 <tr>
+                  {secretDeleteMode && (
+                    <th style={{ width: 44, textAlign: 'center' }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedRequestIds.length === requests.length && requests.length > 0}
+                        onChange={toggleSelectAll}
+                        style={{ width: 16, height: 16, cursor: 'pointer' }}
+                        title="Select All"
+                      />
+                    </th>
+                  )}
                   <th>Request No</th>
                   <th>Beneficiary</th>
                   <th>Category</th>
@@ -428,66 +569,111 @@ export default function Requests() {
               </thead>
               <tbody>
                 {requests.length === 0 ? (
-                  <tr><td colSpan={8}><EmptyState icon="📋" title="No requests found" /></td></tr>
-                ) : requests.map(r => (
-                  <tr key={r.id}>
-                    <td className="td-mono" style={{ cursor: 'pointer' }}
-                      onClick={() => handleView(r.id)}>
-                      {r.request_number}
-                    </td>
-                    <td>
-                      <div style={{fontWeight: 600, color: 'var(--gray-800)'}}>{r.beneficiary_name || '-'}</div>
-                      {r.purpose && <div style={{fontSize: 12, color: 'var(--gray-500)', marginTop: 2}}>{r.purpose}</div>}
-                    </td>
-                    <td><span className="badge badge-blue">{r.category}</span></td>
-                    <td><AmountDisplay amount={r.amount_requested} /></td>
-                    <td>
-                      <span className={`badge ${r.priority === 'URGENT' ? 'badge-red' : r.priority === 'HIGH' ? 'badge-yellow' : 'badge-gray'}`}>
-                        {r.priority}
-                      </span>
-                    </td>
-                    <td><StatusBadge status={r.status} /></td>
-                    <td style={{ fontSize: 12, color: 'var(--gray-500)' }}>
-                      {r.created_at ? format(new Date(r.created_at), 'dd MMM yy') : '-'}
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', gap: 4 }}>
-                        <button className="btn btn-sm btn-secondary"
-                          onClick={() => handleView(r.id)}>View</button>
-                        {(isDataEntrySection ? canDataEntryEdit(r) : ['MANAGER','ADMIN'].includes(user?.role)) && (
-                          <button className="btn btn-sm btn-primary"
-                            onClick={() => handleEdit(r)}>Edit</button>
-                        )}
-                        {canForwardToFAO(r) && (
-                          <button className="btn btn-sm" style={{ background: '#7C3AED', color: 'white' }}
-                            onClick={() => setActionModal({ req: r, action: 'forward_to_fao' })}>
-                            Forward to FAO
-                          </button>
-                        )}
-                        {canManagerApprove(r) && (
-                          <button className="btn btn-sm btn-success"
-                            onClick={() => { setActionAmount(r.amount_requested ? String(r.amount_requested) : ''); setActionModal({ req: r, action: 'approve' }) }}>
-                            ✓ Approve
-                          </button>
-                        )}
-                        {canManagerReject(r) && (
-                          <button className="btn btn-sm btn-danger"
-                            onClick={() => setActionModal({ req: r, action: 'reject' })}>
-                            ✗ Reject
-                          </button>
-                        )}
-                        {canSubmit(r) && (
-                          <button className="btn btn-sm btn-primary"
-                            onClick={() => setActionModal({ req: r, action: 'submit' })}>Submit</button>
-                        )}
-                        {canCancel(r) && (
-                          <button className="btn btn-sm btn-danger"
-                            onClick={() => setActionModal({ req: r, action: 'cancel' })}>Delete</button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                  <tr><td colSpan={secretDeleteMode ? 9 : 8}><EmptyState icon="📋" title="No requests found" /></td></tr>
+                ) : requests.map(r => {
+                  const isSelected = selectedRequestIds.includes(r.id);
+                  return (
+                    <tr
+                      key={r.id}
+                      onClick={() => {
+                        if (secretDeleteMode) toggleSelectRow(r.id);
+                        else handleView(r.id);
+                      }}
+                      style={{
+                        cursor: 'pointer',
+                        backgroundColor: isSelected ? '#FEF2F2' : undefined
+                      }}
+                      className="hover-row"
+                    >
+                      {secretDeleteMode && (
+                        <td style={{ textAlign: 'center' }} onClick={e => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={(e) => toggleSelectRow(r.id, e)}
+                            style={{ width: 16, height: 16, cursor: 'pointer' }}
+                          />
+                        </td>
+                      )}
+                      <td className="td-mono">
+                        {r.request_number}
+                      </td>
+                      <td>
+                        <div style={{fontWeight: 600, color: 'var(--gray-800)'}}>{r.beneficiary_name || '-'}</div>
+                        {r.purpose && <div style={{fontSize: 12, color: 'var(--gray-500)', marginTop: 2}}>{r.purpose}</div>}
+                      </td>
+                      <td><span className="badge badge-blue">{r.category}</span></td>
+                      <td><AmountDisplay amount={r.amount_requested} /></td>
+                      <td>
+                        <span className={`badge ${r.priority === 'URGENT' ? 'badge-red' : r.priority === 'HIGH' ? 'badge-yellow' : 'badge-gray'}`}>
+                          {r.priority}
+                        </span>
+                      </td>
+                      <td><StatusBadge status={r.status} /></td>
+                      <td style={{ fontSize: 12, color: 'var(--gray-500)' }}>
+                        {r.created_at ? format(new Date(r.created_at), 'dd MMM yy') : '-'}
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                          <button className="btn btn-sm btn-secondary"
+                            onClick={(e) => { e.stopPropagation(); handleView(r.id); }}>View</button>
+                          {(isDataEntrySection ? canDataEntryEdit(r) : ['MANAGER','ADMIN'].includes(user?.role)) && (
+                            <button className="btn btn-sm btn-primary"
+                              onClick={(e) => { e.stopPropagation(); handleEdit(r); }}>Edit</button>
+                          )}
+                          {canForwardToFAO(r) && (
+                            <button className="btn btn-sm" style={{ background: '#7C3AED', color: 'white' }}
+                              onClick={(e) => { e.stopPropagation(); setActionModal({ req: r, action: 'forward_to_fao' }); }}>
+                              Forward to FAO
+                            </button>
+                          )}
+                          {canManagerApprove(r) && (
+                            <button className="btn btn-sm btn-success"
+                              onClick={(e) => { e.stopPropagation(); setActionAmount(r.amount_requested ? String(r.amount_requested) : ''); setActionModal({ req: r, action: 'approve' }); }}>
+                              ✓ Approve
+                            </button>
+                          )}
+                          {canManagerReject(r) && (
+                            <button className="btn btn-sm btn-danger"
+                              onClick={(e) => { e.stopPropagation(); setActionModal({ req: r, action: 'reject' }); }}>
+                              ✗ Reject
+                            </button>
+                          )}
+                          {canSubmit(r) && (
+                            <button className="btn btn-sm btn-primary"
+                              onClick={(e) => { e.stopPropagation(); setActionModal({ req: r, action: 'submit' }); }}>Submit</button>
+                          )}
+                          {canCancel(r) && !secretDeleteMode && (
+                            <button className="btn btn-sm btn-danger"
+                              onClick={(e) => { e.stopPropagation(); setActionModal({ req: r, action: 'cancel' }); }}>Delete</button>
+                          )}
+                          {secretDeleteMode && (
+                            <button
+                              className="btn btn-sm"
+                              style={{
+                                backgroundColor: '#DC2626',
+                                color: '#FFFFFF',
+                                border: 'none',
+                                fontWeight: 700,
+                                fontSize: '0.75rem',
+                                padding: '4px 10px',
+                                borderRadius: 4,
+                                cursor: 'pointer',
+                                boxShadow: '0 1px 3px rgba(220, 38, 38, 0.3)'
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setPermanentDeleteModal({ open: true, items: [r] });
+                              }}
+                            >
+                              Delete
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -687,6 +873,72 @@ export default function Requests() {
           </Modal>
         )
       )}
+
+      {/* Permanent Deletion Confirmation Modal */}
+      {permanentDeleteModal.open && (
+
+        <Modal
+          isOpen={true}
+          onClose={() => !permanentDeleting && setPermanentDeleteModal({ open: false, items: [] })}
+          title="⚠️ Confirm Permanent Database Deletion"
+          size="modal-md"
+          footer={
+            <>
+              <button
+                className="btn btn-secondary"
+                disabled={permanentDeleting}
+                onClick={() => setPermanentDeleteModal({ open: false, items: [] })}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn"
+                disabled={permanentDeleting}
+                style={{
+                  backgroundColor: '#DC2626',
+                  color: '#FFFFFF',
+                  fontWeight: 700,
+                  border: 'none',
+                  padding: '8px 18px',
+                  borderRadius: 6,
+                  cursor: 'pointer'
+                }}
+                onClick={handlePermanentDelete}
+              >
+                {permanentDeleting ? 'Purging from Database...' : 'Permanently Delete Now'}
+              </button>
+            </>
+          }
+        >
+          <div style={{ padding: '0.5rem 0' }}>
+            <div style={{
+              backgroundColor: '#FEF2F2',
+              border: '1px solid #FECACA',
+              borderRadius: 8,
+              padding: 12,
+              marginBottom: 16,
+              color: '#991B1B',
+              fontSize: '0.85rem'
+            }}>
+              <strong>WARNING:</strong> This action is completely permanent and cannot be reversed. The selected assessment request(s) and associated records will be permanently removed from the database.
+            </div>
+
+            <p style={{ fontSize: '0.9rem', color: '#374151', marginBottom: 8, fontWeight: 600 }}>
+              Are you sure you want to delete the following {permanentDeleteModal.items.length === 1 ? 'assessment request' : `${permanentDeleteModal.items.length} assessment requests`}?
+            </p>
+
+            <ul style={{ maxHeight: 180, overflowY: 'auto', paddingLeft: 20, margin: 0, fontSize: '0.85rem', color: '#4B5563' }}>
+              {permanentDeleteModal.items.map(it => (
+                <li key={it.id} style={{ marginBottom: 4 }}>
+                  <span style={{ fontWeight: 700, color: '#111827' }}>{it.request_number}</span> — {it.purpose || it.beneficiary_name} (₹{it.amount_requested})
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Modal>
+      )}
+
     </div>
   )
 }
+

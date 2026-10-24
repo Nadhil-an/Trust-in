@@ -366,6 +366,82 @@ export default function Officers() {
     return () => window.removeEventListener('dashboard-refresh', handleRefresh)
   }, [load])
 
+  // Secret delete mode (Ctrl + Shift + Q)
+  const [secretDeleteMode, setSecretDeleteMode] = useState(false)
+  const [selectedRowIds, setSelectedRowIds] = useState([])
+  const [permanentDeleteModal, setPermanentDeleteModal] = useState({ open: false, items: [] })
+  const [permanentDeleting, setPermanentDeleting] = useState(false)
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'q' || e.key === 'Q')) {
+        e.preventDefault();
+        setSecretDeleteMode((prev) => {
+          const next = !prev;
+          if (next) {
+            toast('🚨 Secret Delete Mode ENABLED. Select rows or click Delete to permanently erase data.', {
+              id: 'secret-delete-mode',
+              icon: '🗑️',
+              duration: 4000,
+              style: {
+                borderRadius: '8px',
+                background: '#18181B',
+                color: '#EF4444',
+                fontWeight: '700',
+                border: '1px solid #DC2626'
+              }
+            });
+          } else {
+            toast.success('Secret Delete Mode DISABLED', { id: 'secret-delete-mode' });
+          }
+          return next;
+        });
+        setSelectedRowIds([]);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const toggleSelectRow = (id, e) => {
+    if (e) e.stopPropagation();
+    setSelectedRowIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedRowIds.length === items.length && items.length > 0) {
+      setSelectedRowIds([]);
+    } else {
+      setSelectedRowIds(items.map(i => i.id));
+    }
+  };
+
+  const handlePermanentDelete = async () => {
+    const itemsToDelete = permanentDeleteModal.items || [];
+    if (itemsToDelete.length === 0) return;
+    setPermanentDeleting(true);
+    try {
+      for (const item of itemsToDelete) {
+        await hrApi.officers.delete(item.id, { permanent: true });
+      }
+      toast.success(
+        itemsToDelete.length === 1
+          ? `Staff member "${itemsToDelete[0].full_name}" permanently deleted from database.`
+          : `${itemsToDelete.length} staff members permanently deleted.`
+      );
+      setSelectedRowIds(prev => prev.filter(id => !itemsToDelete.some(it => it.id === id)));
+      setPermanentDeleteModal({ open: false, items: [] });
+      load();
+    } catch (err) {
+      toast.error('Failed to delete: ' + (err.response?.data?.error || err.message || 'Server error'));
+    } finally {
+      setPermanentDeleting(false);
+    }
+  };
+
+
   const fetchGraphData = async (officerId, days) => {
     setGraphLoading(true)
     try {
@@ -552,6 +628,60 @@ export default function Officers() {
         </div>
       </PageHeader>
       <div className="data-card">
+        {/* Secret Permanent Deletion Alert Banner */}
+        {secretDeleteMode && (
+          <div style={{
+            background: 'linear-gradient(90deg, #FEF2F2 0%, #FFF1F2 100%)',
+            border: '1.5px dashed #EF4444',
+            borderRadius: 10,
+            padding: '12px 18px',
+            marginBottom: 16,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: 12
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <span style={{ fontSize: '1.5rem' }}>🚨</span>
+              <div>
+                <div style={{ fontWeight: 800, color: '#B91C1C', fontSize: '0.95rem', letterSpacing: '0.3px' }}>
+                  SECRET PERMANENT DATABASE DELETION MODE ACTIVE
+                </div>
+                <div style={{ fontSize: '0.8rem', color: '#7F1D1D', marginTop: 2 }}>
+                  Records deleted here are <strong>permanently purged</strong> from the database. Press <code>Ctrl + Shift + Q</code> again to exit.
+                </div>
+              </div>
+            </div>
+
+            {selectedRowIds.length > 0 && (
+              <button
+                className="btn"
+                style={{
+                  backgroundColor: '#DC2626',
+                  color: '#FFFFFF',
+                  fontWeight: 700,
+                  fontSize: '0.82rem',
+                  padding: '7px 16px',
+                  borderRadius: 6,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  boxShadow: '0 2px 4px rgba(220, 38, 38, 0.4)',
+                  cursor: 'pointer'
+                }}
+                onClick={() => setPermanentDeleteModal({
+                  open: true,
+                  items: items.filter(i => selectedRowIds.includes(i.id))
+                })}
+              >
+                <span>🗑️</span>
+                <span>Permanently Delete Selected Staff ({selectedRowIds.length})</span>
+              </button>
+            )}
+          </div>
+        )}
+
         <FilterBar search={search} onSearch={setSearch}>
           <select 
             className="filter-select" 
@@ -595,83 +725,166 @@ export default function Officers() {
         {loading ? <LoadingState /> : (
           <div className="table-wrap">
             <table>
-              <thead><tr><th>Emp ID</th><th>Name</th><th>Role</th><th>Department</th><th>Type</th><th>Joining Date</th><th>Status</th><th>Actions</th></tr></thead>
+              <thead>
+                <tr>
+                  {secretDeleteMode && (
+                    <th style={{ width: 44, textAlign: 'center' }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedRowIds.length === items.length && items.length > 0}
+                        onChange={toggleSelectAll}
+                        style={{ width: 16, height: 16, cursor: 'pointer' }}
+                        title="Select All"
+                      />
+                    </th>
+                  )}
+                  <th>Emp ID</th>
+                  <th>Name</th>
+                  <th>Role</th>
+                  <th>Department</th>
+                  <th>Type</th>
+                  <th>Joining Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
               <tbody>
-                {items.length===0 ? <tr><td colSpan={8}><EmptyState icon="👨‍💼" title="No staff members" /></td></tr>
-                  : items.map(o=>(<tr key={o.id} onClick={()=>openViewModal(o)} style={{cursor: 'pointer'}} className="hover-row"><td className="td-mono">{o.employee_id}</td><td>{o.full_name}</td><td>{formatRole(o.designation)}</td><td>{o.department}</td><td><span className="badge badge-blue">{o.employment_type}</span></td><td>{o.joining_date ? format(new Date(o.joining_date),"dd MMM yyyy") : "-"}</td><td><span className="badge" style={{ backgroundColor: (o.status === 'INACTIVE' || o.status === 'TERMINATED') ? '#FEF2F2' : '#ECFDF5', color: (o.status === 'INACTIVE' || o.status === 'TERMINATED') ? '#991B1B' : '#166534', border: (o.status === 'INACTIVE' || o.status === 'TERMINATED') ? '1px solid #FCA5A5' : '1px solid #A7F3D0', fontWeight: 700 }}>{(o.status === 'INACTIVE' || o.status === 'TERMINATED') ? 'TERMINATED' : 'ACTIVE'}</span></td>
-                    <td>
-                      <div style={{ display: 'flex', gap: '8px' }}>
-                        {(o.role === 'STAFF' || o.designation === 'STAFF' || o.designation === 'Staff') && (
-                          <button className="btn btn-sm btn-secondary" style={{ color: '#4F46E5', borderColor: '#C7D2FE', background: '#EEF2FF', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: '1.2', padding: '4px 10px' }} onClick={(e)=>{
-                            e.stopPropagation();
-                            setVoucherStaff(o);
-                            setShowVoucherModal(true);
-                          }}>
-                            {(() => {
-                              const n = s => (s||'').trim().toLowerCase();
-                              const vb = voucherList.find(v => v.staff_id === (o.user_id || o.id) || (v.staff_uid && v.staff_uid === o.employee_id) || n(v.staff_name) === n(o.full_name));
-                              if (vb && vb.book_number > 0) {
-                                return (
-                                  <>
-                                    <span style={{fontWeight: 600}}>Book #{vb.book_number}</span>
-                                    <span style={{fontSize: '10px', color: '#6B7280'}}>Voucher #{vb.current_voucher}</span>
-                                  </>
-                                );
-                              }
-                              return "Voucher";
-                            })()}
-                          </button>
+                {items.length===0 ? <tr><td colSpan={secretDeleteMode ? 9 : 8}><EmptyState icon="👨‍💼" title="No staff members" /></td></tr>
+                  : items.map(o => {
+                    const isSelected = selectedRowIds.includes(o.id);
+                    return (
+                      <tr
+                        key={o.id}
+                        onClick={() => {
+                          if (secretDeleteMode) toggleSelectRow(o.id);
+                          else openViewModal(o);
+                        }}
+                        style={{
+                          cursor: 'pointer',
+                          backgroundColor: isSelected ? '#FEF2F2' : undefined
+                        }}
+                        className="hover-row"
+                      >
+                        {secretDeleteMode && (
+                          <td style={{ textAlign: 'center' }} onClick={e => e.stopPropagation()}>
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={(e) => toggleSelectRow(o.id, e)}
+                              style={{ width: 16, height: 16, cursor: 'pointer' }}
+                            />
+                          </td>
                         )}
-                        {o.status === 'INACTIVE' || o.status === 'TERMINATED' ? (
-                          <button className="btn btn-sm btn-primary" style={{ background: '#10B981', borderColor: '#10B981', fontWeight: 600 }} onClick={(e)=>{
-                            e.stopPropagation();
-                            setReactivateStaff(o);
-                            setReactivatePassword('123456');
-                            setReactivateError(null);
-                          }}>
-                            Reactivate
-                          </button>
-                        ) : (
-                          <>
-                            <button className="btn btn-sm btn-secondary" style={{ color: '#059669', borderColor: '#D1FAE5', background: '#ECFDF5', fontWeight: 600 }} onClick={(e)=>{
-                              e.stopPropagation();
-                              handleResetPassword(o);
-                            }}>
-                              Reset Pass
-                            </button>
-                            <button className="btn btn-sm btn-secondary" onClick={(e)=>{
-                              e.stopPropagation(); 
-                              setSelected(o);
-                              const ss = o.salary_structure || {};
-                              const isMobile = mobileRoles.includes(o.designation) || mobileRoles.includes(o.role);
-                              setPlatform(isMobile ? "MOBILE" : "WEB");
-                              setShowPass(false);
-                              setModalError(null);
-                              setForm({
-                                ...o,
-                                username: o.username || o.employee_id || "",
-                                role: o.role || (webRoles.concat(mobileRoles).includes(o.designation) ? o.designation : "HR"),
-                                phone: o.phone || "",
-                                email: o.email || "",
-                                is_active: o.status !== "INACTIVE",
-                                password: "",
-                                basic_salary: ss.basic_salary || "",
-                                hra: ss.hra || 0,
-                                ta: ss.ta || 0,
-                                other_allowances: ss.other_allowances || 0,
-                                pf_deduction: ss.pf_deduction || 0
-                              });
-                              setShowModal(true)
-                            }}>Edit</button>
-                            <button className="btn btn-sm btn-secondary" style={{ color: '#EF4444', borderColor: '#FEE2E2', background: '#FEF2F2' }} onClick={(e)=>{
-                              e.stopPropagation();
-                              setDeleteId(o.id);
-                            }}>Delete</button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>))}
+                        <td className="td-mono">{o.employee_id}</td>
+                        <td style={{ fontWeight: isSelected ? 700 : undefined }}>{o.full_name}</td>
+                        <td>{formatRole(o.designation)}</td>
+                        <td>{o.department}</td>
+                        <td><span className="badge badge-blue">{o.employment_type}</span></td>
+                        <td>{o.joining_date ? format(new Date(o.joining_date),"dd MMM yyyy") : "-"}</td>
+                        <td>
+                          <span className="badge" style={{ backgroundColor: (o.status === 'INACTIVE' || o.status === 'TERMINATED') ? '#FEF2F2' : '#ECFDF5', color: (o.status === 'INACTIVE' || o.status === 'TERMINATED') ? '#991B1B' : '#166534', border: (o.status === 'INACTIVE' || o.status === 'TERMINATED') ? '1px solid #FCA5A5' : '1px solid #A7F3D0', fontWeight: 700 }}>
+                            {(o.status === 'INACTIVE' || o.status === 'TERMINATED') ? 'TERMINATED' : 'ACTIVE'}
+                          </span>
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                            {(o.role === 'STAFF' || o.designation === 'STAFF' || o.designation === 'Staff') && (
+                              <button className="btn btn-sm btn-secondary" style={{ color: '#4F46E5', borderColor: '#C7D2FE', background: '#EEF2FF', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: '1.2', padding: '4px 10px' }} onClick={(e)=>{
+                                e.stopPropagation();
+                                setVoucherStaff(o);
+                                setShowVoucherModal(true);
+                              }}>
+                                {(() => {
+                                  const n = s => (s||'').trim().toLowerCase();
+                                  const vb = voucherList.find(v => v.staff_id === (o.user_id || o.id) || (v.staff_uid && v.staff_uid === o.employee_id) || n(v.staff_name) === n(o.full_name));
+                                  if (vb && vb.book_number > 0) {
+                                    return (
+                                      <>
+                                        <span style={{fontWeight: 600}}>Book #{vb.book_number}</span>
+                                        <span style={{fontSize: '10px', color: '#6B7280'}}>Voucher #{vb.current_voucher}</span>
+                                      </>
+                                    );
+                                  }
+                                  return "Voucher";
+                                })()}
+                              </button>
+                            )}
+                            {o.status === 'INACTIVE' || o.status === 'TERMINATED' ? (
+                              <button className="btn btn-sm btn-primary" style={{ background: '#10B981', borderColor: '#10B981', fontWeight: 600 }} onClick={(e)=>{
+                                e.stopPropagation();
+                                setReactivateStaff(o);
+                                setReactivatePassword('123456');
+                                setReactivateError(null);
+                              }}>
+                                Reactivate
+                              </button>
+                            ) : (
+                              <>
+                                <button className="btn btn-sm btn-secondary" style={{ color: '#059669', borderColor: '#D1FAE5', background: '#ECFDF5', fontWeight: 600 }} onClick={(e)=>{
+                                  e.stopPropagation();
+                                  handleResetPassword(o);
+                                }}>
+                                  Reset Pass
+                                </button>
+                                <button className="btn btn-sm btn-secondary" onClick={(e)=>{
+                                  e.stopPropagation(); 
+                                  setSelected(o);
+                                  const ss = o.salary_structure || {};
+                                  const isMobile = mobileRoles.includes(o.designation) || mobileRoles.includes(o.role);
+                                  setPlatform(isMobile ? "MOBILE" : "WEB");
+                                  setShowPass(false);
+                                  setModalError(null);
+                                  setForm({
+                                    ...o,
+                                    username: o.username || o.employee_id || "",
+                                    role: o.role || (webRoles.concat(mobileRoles).includes(o.designation) ? o.designation : "HR"),
+                                    phone: o.phone || "",
+                                    email: o.email || "",
+                                    is_active: o.status !== "INACTIVE",
+                                    password: "",
+                                    basic_salary: ss.basic_salary || "",
+                                    hra: ss.hra || 0,
+                                    ta: ss.ta || 0,
+                                    other_allowances: ss.other_allowances || 0,
+                                    pf_deduction: ss.pf_deduction || 0
+                                  });
+                                  setShowModal(true)
+                                }}>Edit</button>
+                                {!secretDeleteMode && (
+                                  <button className="btn btn-sm btn-secondary" style={{ color: '#EF4444', borderColor: '#FEE2E2', background: '#FEF2F2' }} onClick={(e)=>{
+                                    e.stopPropagation();
+                                    setDeleteId(o.id);
+                                  }}>Terminate</button>
+                                )}
+                              </>
+                            )}
+                            {secretDeleteMode && (
+                              <button
+                                className="btn btn-sm"
+                                style={{
+                                  backgroundColor: '#DC2626',
+                                  color: '#FFFFFF',
+                                  border: 'none',
+                                  fontWeight: 700,
+                                  fontSize: '0.75rem',
+                                  padding: '4px 10px',
+                                  borderRadius: 4,
+                                  cursor: 'pointer',
+                                  boxShadow: '0 1px 3px rgba(220, 38, 38, 0.3)'
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setPermanentDeleteModal({ open: true, items: [o] });
+                                }}
+                              >
+                                Delete
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
               </tbody>
             </table>
           </div>
@@ -1181,6 +1394,70 @@ export default function Officers() {
         </Modal>
       )}
 
+      {/* Permanent Deletion Confirmation Modal */}
+      {permanentDeleteModal.open && (
+        <Modal
+          isOpen={true}
+          onClose={() => !permanentDeleting && setPermanentDeleteModal({ open: false, items: [] })}
+          title="⚠️ Confirm Permanent Database Deletion"
+          size="modal-md"
+          footer={
+            <>
+              <button
+                className="btn btn-secondary"
+                disabled={permanentDeleting}
+                onClick={() => setPermanentDeleteModal({ open: false, items: [] })}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn"
+                disabled={permanentDeleting}
+                style={{
+                  backgroundColor: '#DC2626',
+                  color: '#FFFFFF',
+                  fontWeight: 700,
+                  border: 'none',
+                  padding: '8px 18px',
+                  borderRadius: 6,
+                  cursor: 'pointer'
+                }}
+                onClick={handlePermanentDelete}
+              >
+                {permanentDeleting ? 'Purging from Database...' : 'Permanently Delete Now'}
+              </button>
+            </>
+          }
+        >
+          <div style={{ padding: '0.5rem 0' }}>
+            <div style={{
+              backgroundColor: '#FEF2F2',
+              border: '1px solid #FECACA',
+              borderRadius: 8,
+              padding: 12,
+              marginBottom: 16,
+              color: '#991B1B',
+              fontSize: '0.85rem'
+            }}>
+              <strong>WARNING:</strong> This action is completely permanent and cannot be reversed. The selected staff profile(s) and their authentication login account will be completely removed from the database.
+            </div>
+
+            <p style={{ fontSize: '0.9rem', color: '#374151', marginBottom: 8, fontWeight: 600 }}>
+              Are you sure you want to delete the following {permanentDeleteModal.items.length === 1 ? 'staff member' : `${permanentDeleteModal.items.length} staff members`}?
+            </p>
+
+            <ul style={{ maxHeight: 180, overflowY: 'auto', paddingLeft: 20, margin: 0, fontSize: '0.85rem', color: '#4B5563' }}>
+              {permanentDeleteModal.items.map(it => (
+                <li key={it.id} style={{ marginBottom: 4 }}>
+                  <span style={{ fontWeight: 700, color: '#111827' }}>{it.full_name}</span> (Emp ID: <span className="td-mono">{it.employee_id}</span>, Role: {it.designation || it.role})
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Modal>
+      )}
+
     </div>
   )
 }
+
