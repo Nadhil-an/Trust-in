@@ -248026,3 +248026,5 @@ Unauthorized: /api/manager/stock-inward-purchase/
 [mHTTP DELETE /api/manager/stock-inward-purchase/b88d9d15-4bb9-4189-8aa9-afba51397c20/ 200 [0.03, 10.162.176.21:54570][0m
 [mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.03, 10.162.176.21:50494][0m
 [mHTTP GET /api/manager/stock-inward-purchase/?search= 200 [0.03, 10.162.176.21:25535][0m
+Unauthorized: /api/auth/profile/
+Forbidden: /api/core/users/fd260829-207c-4094-a5be-864489dd6f98/
