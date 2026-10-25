@@ -408,8 +408,13 @@ export default function DaySheet() {
     const obCash = savedDebits.find(r => r.particular === 'OB CASH') || { particular: 'OB CASH', amount: '', sc: 'CASH' }
     const obBank = savedDebits.find(r => r.particular === 'OB BANK') || { particular: 'OB BANK', amount: '', sc: 'BANK' }
 
-    // Income entries that came from the backend (have an `id`)
-    const incomes = savedDebits.filter(r => r.particular !== 'OB CASH' && r.particular !== 'OB BANK')
+    const AUTO_PARTICULARS = new Set(['BY CASH', 'BY ONLINE', 'BY BANK', 'DONATION', 'TOTAL DONATION', 'TOTAL', 'OB CASH', 'OB BANK'])
+
+    // Income entries that came from the backend (have an `id`, excluding auto-computed particulars)
+    const incomes = savedDebits.filter(r => {
+      const p = (r.particular || '').trim().toUpperCase()
+      return !AUTO_PARTICULARS.has(p) && !r.isDonationHeader && !r.isTotalDonation
+    })
 
     const fixedRows = [
       obCash,
@@ -423,7 +428,7 @@ export default function DaySheet() {
     ]
 
     // ── Clean stale localStorage extras ──────────────────────────────────────
-    const AUTO_PARTICULARS = new Set(['BY CASH', 'BY ONLINE', 'DONATION', 'TOTAL DONATION', 'OB CASH', 'OB BANK'])
+
     const backendIncomeIds = new Set(incomes.filter(r => r.id).map(r => String(r.id)))
     const backendExpenseIds = new Set(savedCredits.filter(r => r.id).map(r => String(r.id)))
     const backendIncomeParticulars = new Set(incomes.map(r => (r.particular || '').trim().toUpperCase()).filter(Boolean))
@@ -616,11 +621,11 @@ export default function DaySheet() {
       const rawDebits = overrideDebits ?? debits
       const rawCredits = overrideCredits ?? credits
 
-      const AUTO_PARTICULARS = new Set(['DONATION', 'TOTAL DONATION'])
+      const AUTO_PARTICULARS = new Set(['BY CASH', 'BY ONLINE', 'BY BANK', 'DONATION', 'TOTAL DONATION', 'TOTAL'])
 
       const payloadDebits = rawDebits
         .filter((d) => {
-          // Always skip auto-computed header and summary rows
+          // Always skip auto-computed header, summary, and mobile collection rows
           if (d.isDonationHeader || d.isTotalDonation) return false
           const p = (d.particular || '').trim().toUpperCase()
           if (AUTO_PARTICULARS.has(p)) return false

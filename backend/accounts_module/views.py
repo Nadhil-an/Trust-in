@@ -877,8 +877,17 @@ class DaySheetView(APIView):
             ob_bank = float(current_bank)
 
         # ── Income entries for the day (these go on DEBIT side after OB)
-        # Include all incomes entered on the desktop (exclude STAFF which is the mobile app)
-        incomes = Income.objects.filter(date=target_date).exclude(created_by__role='STAFF').order_by('created_at')
+        # Clean up any phantom auto-computed records in Income if any were previously created
+        AUTO_COMPUTED = {'BY CASH', 'BY ONLINE', 'BY BANK', 'DONATION', 'TOTAL DONATION', 'TOTAL', 'OB CASH', 'OB BANK'}
+        Income.objects.filter(date=target_date).filter(
+            Q(source__in={'BY CASH', 'BY ONLINE', 'BY BANK', 'TOTAL DONATION', 'TOTAL', 'OB CASH', 'OB BANK'}) |
+            Q(donor_name__in={'BY CASH', 'BY ONLINE', 'BY BANK', 'TOTAL DONATION', 'TOTAL', 'OB CASH', 'OB BANK'})
+        ).delete()
+
+        # Include all incomes entered on the desktop (exclude STAFF which is the mobile app, and exclude auto-computed)
+        incomes = Income.objects.filter(date=target_date).exclude(created_by__role='STAFF').exclude(
+            Q(source__in=AUTO_COMPUTED) | Q(donor_name__in=AUTO_COMPUTED)
+        ).order_by('created_at')
         income_rows = []
         for inc in incomes:
             donor = (inc.donor_name or '').strip()
@@ -904,7 +913,6 @@ class DaySheetView(APIView):
             })
 
         # ── Expense entries for the day (CREDIT side)
-        from django.db.models import Q
         # Include all expenses entered for the day
         expenses = Expense.objects.filter(date=target_date).order_by('created_at')
         expense_rows = []
@@ -955,7 +963,7 @@ class DaySheetView(APIView):
 
         if closing:
             # These particulars are ALWAYS auto-computed — never restore from closing snapshot
-            AUTO_COMPUTED = {'BY CASH', 'BY ONLINE', 'DONATION', 'TOTAL DONATION', 'OB CASH', 'OB BANK'}
+            AUTO_COMPUTED = {'BY CASH', 'BY ONLINE', 'DONATION', 'TOTAL DONATION', 'OB CASH', 'OB BANK', 'BY BANK', 'TOTAL'}
             # IDs and Particulars of income rows already loaded from the DB — skip any duplicate draft row
             known_income_ids = {str(r.get('id')) for r in income_rows if r.get('id')}
             known_income_particulars = {(r.get('particular') or '').strip().upper() for r in income_rows if r.get('particular')}
@@ -964,7 +972,7 @@ class DaySheetView(APIView):
                 particular = (r.get('particular') or '').strip().upper()
                 row_id = str(r.get('id')) if r.get('id') else None
                 # Skip auto-computed rows and already-loaded income records
-                if particular in AUTO_COMPUTED:
+                if particular in AUTO_COMPUTED or r.get('isDonationHeader') or r.get('isTotalDonation'):
                     continue
                 if row_id and row_id in known_income_ids:
                     continue
@@ -985,7 +993,7 @@ class DaySheetView(APIView):
                 if not row_id and (r.get('particular') or r.get('amount')):
                     credit_rows.append(r)
 
-        total_debit = sum(float(r.get('amount') or 0) for r in debit_rows)
+        total_debit = sum(float(r.get('amount') or 0) for r in debit_rows) + float(mobile_totals['cash']) + float(mobile_totals['online'])
         total_credit = sum(float(r.get('amount') or 0) for r in credit_rows)
         difference = total_debit - total_credit
 

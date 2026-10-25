@@ -254,22 +254,26 @@ class CashClosingListCreateView(generics.ListCreateAPIView):
 
     def _sync_ledgers(self, date, debit_rows, credit_rows):
         from accounts_module.models import Income, Expense
+        from django.db.models import Q
         
+        AUTO_COMPUTED = {'OB CASH', 'OB BANK', 'BY CASH', 'BY ONLINE', 'BY BANK', 'DONATION', 'TOTAL DONATION', 'TOTAL'}
+
         # 1. Sync Incomes (debit_rows)
         submitted_income_ids = []
         for r in debit_rows:
-            if r.get('particular') in ['OB CASH', 'OB BANK']:
+            particular = (r.get('particular') or '').strip().upper()
+            if not particular or particular in AUTO_COMPUTED or r.get('isDonationHeader') or r.get('isTotalDonation'):
                 continue
             amt = float(r.get('amount') or 0)
             if amt <= 0: continue
             
-            particular = (r.get('particular') or '').strip() or '-'
+            raw_particular = (r.get('particular') or '').strip() or '-'
             
             if r.get('id'):
                 try:
                     inc = Income.objects.get(id=r['id'])
-                    inc.source = particular
-                    inc.donor_name = particular
+                    inc.source = raw_particular
+                    inc.donor_name = raw_particular
                     inc.amount = amt
                     inc.account_type = r.get('sc', 'CASH')
                     inc.payment_method = 'CASH' if r.get('sc', 'CASH') == 'CASH' else 'UPI'
@@ -280,15 +284,15 @@ class CashClosingListCreateView(generics.ListCreateAPIView):
             else:
                 inc = Income.objects.create(
                     date=date,
-                    source=particular,
-                    donor_name=particular,
+                    source=raw_particular,
+                    donor_name=raw_particular,
                     amount=amt,
                     account_type=r.get('sc', 'CASH'),
                     payment_method='CASH' if r.get('sc', 'CASH') == 'CASH' else 'UPI',
                     created_by=self.request.user
                 )
                 r['id'] = str(inc.id)
-                r['particular'] = particular
+                r['particular'] = raw_particular
                 submitted_income_ids.append(str(inc.id))
 
         # 2. Sync Expenses (credit_rows)
@@ -327,9 +331,15 @@ class CashClosingListCreateView(generics.ListCreateAPIView):
                 r['particular'] = particular
                 submitted_expense_ids.append(str(exp.id))
 
-        # 3. Handle Deletes - anything not in the submitted IDs for this date gets deleted
-        Income.objects.filter(date=date, created_by__role='ACCOUNTANT').exclude(id__in=submitted_income_ids).delete()
-        Expense.objects.filter(date=date, created_by__role='ACCOUNTANT').exclude(id__in=submitted_expense_ids).delete()
+        # 3. Clean up any rogue auto-computed records in Income if any exist
+        Income.objects.filter(date=date).filter(
+            Q(source__in={'BY CASH', 'BY ONLINE', 'BY BANK', 'TOTAL DONATION', 'TOTAL', 'OB CASH', 'OB BANK'}) |
+            Q(donor_name__in={'BY CASH', 'BY ONLINE', 'BY BANK', 'TOTAL DONATION', 'TOTAL', 'OB CASH', 'OB BANK'})
+        ).delete()
+
+        # 4. Handle Deletes - anything not in the submitted IDs for this date gets deleted (preserving mobile staff donations)
+        Income.objects.filter(date=date).exclude(created_by__role='STAFF').exclude(id__in=submitted_income_ids).delete()
+        Expense.objects.filter(date=date).exclude(id__in=submitted_expense_ids).delete()
 
     def perform_update(self, serializer):
         from accounts_module.models import BankAccount, CashAccount
@@ -348,13 +358,19 @@ class CashClosingListCreateView(generics.ListCreateAPIView):
         credit_rows = serializer.validated_data.get('credit_rows', serializer.instance.credit_rows)
         self._sync_ledgers(date, debit_rows, credit_rows)
         
+        clean_debit_rows = [
+            r for r in debit_rows
+            if (r.get('particular') or '').strip().upper() not in {'BY CASH', 'BY ONLINE', 'BY BANK', 'DONATION', 'TOTAL DONATION', 'TOTAL'}
+            and not r.get('isDonationHeader') and not r.get('isTotalDonation')
+        ]
+
         serializer.save(
             closed_by=self.request.user,
             system_balance=system_bal,
             difference=diff,
             system_bank_balance=system_bank_bal,
             bank_difference=bank_diff,
-            debit_rows=debit_rows,
+            debit_rows=clean_debit_rows,
             credit_rows=credit_rows
         )
 
@@ -375,13 +391,19 @@ class CashClosingListCreateView(generics.ListCreateAPIView):
         credit_rows = serializer.validated_data.get('credit_rows', [])
         self._sync_ledgers(date, debit_rows, credit_rows)
         
+        clean_debit_rows = [
+            r for r in debit_rows
+            if (r.get('particular') or '').strip().upper() not in {'BY CASH', 'BY ONLINE', 'BY BANK', 'DONATION', 'TOTAL DONATION', 'TOTAL'}
+            and not r.get('isDonationHeader') and not r.get('isTotalDonation')
+        ]
+
         serializer.save(
             closed_by=self.request.user,
             system_balance=system_bal,
             difference=diff,
             system_bank_balance=system_bank_bal,
             bank_difference=bank_diff,
-            debit_rows=debit_rows,
+            debit_rows=clean_debit_rows,
             credit_rows=credit_rows
         )
 
