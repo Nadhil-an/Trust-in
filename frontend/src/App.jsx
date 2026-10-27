@@ -62,8 +62,8 @@ import PartnersEntry from './pages/data-entry/PartnersEntry'
 import MaterialInward from './pages/data-entry/MaterialInward'
 import MaterialOutward from './pages/data-entry/MaterialOutward'
 import AssetsInStock from './pages/data-entry/AssetsInStock'
-import EventEntry from './pages/data-entry/EventEntry'
-import PublicIssuesPage from './pages/data-entry/PublicIssuesPage'
+import PublicIssuesPage from './pages/social-media/PublicIssuesPage'
+import SocialMediaDashboard from './pages/social-media/Dashboard'
 import ScheduledPayouts from './pages/shared/ScheduledPayouts'
 
 // ── Protected Route ───────────────────────────────────────
@@ -105,6 +105,7 @@ function HomeRedirect() {
     HR:         '/slt/hr/overview',
     ADMIN:      '/slt/sys/user-control',
     DATA_ENTRY: '/slt/entry/hub',
+    SOCIAL_MEDIA: '/slt/social/overview',
     STAFF:      '/slt/account/profile',
     FIELD_ASSESSMENT_OFFICER: '/slt/account/profile',
     ASSESSMENT_CALCULATION_OFFICER: '/slt/account/profile',
@@ -229,7 +230,13 @@ export default function App() {
           <Route path="slt/entry/material-outward"   element={<ProtectedRoute featureKey="material_outward"><MaterialOutward /></ProtectedRoute>} />
           <Route path="slt/entry/assets-in-stock"    element={<ProtectedRoute featureKey="assets_in_stock"><AssetsInStock /></ProtectedRoute>} />
           <Route path="slt/entry/events"             element={<ProtectedRoute featureKey="events_entry"><EventEntry /></ProtectedRoute>} />
-          <Route path="slt/entry/public-issues"      element={<ProtectedRoute roles={['DATA_ENTRY', 'MANAGER', 'ADMIN']}><PublicIssuesPage /></ProtectedRoute>} />
+          
+          {/* Social Media & Community Moderation */}
+          <Route path="slt/social/overview"          element={<ProtectedRoute roles={['SOCIAL_MEDIA', 'MANAGER', 'ADMIN']}><SocialMediaDashboard /></ProtectedRoute>} />
+          <Route path="slt/social/public-issues"     element={<ProtectedRoute roles={['SOCIAL_MEDIA', 'MANAGER', 'ADMIN']}><PublicIssuesPage /></ProtectedRoute>} />
+          
+          {/* Legacy redirect for old public-issues URL */}
+          <Route path="slt/entry/public-issues"      element={<Navigate to="/slt/social/public-issues" replace />} />
 
           <Route path="*" element={<NotFoundPage />} />
         </Route>

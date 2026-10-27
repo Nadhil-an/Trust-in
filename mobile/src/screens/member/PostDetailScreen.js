@@ -20,6 +20,7 @@ import {
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { Video, ResizeMode } from 'expo-av';
 import Toast from 'react-native-toast-message';
 import { Colors } from '../../constants/Colors';
 import { memberPostsApi } from '../../api';
@@ -245,8 +246,19 @@ const PostDetailScreen = ({ route, navigation }) => {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Hero Image Container (Edge-to-Edge like EventDetailScreen) */}
-          {images.length > 0 ? (
+          {/* Hero Image / Video Container (Edge-to-Edge like EventDetailScreen) */}
+          {post.video ? (
+            <View style={styles.imageContainer}>
+              <Video
+                source={{ uri: resolveImageUrl(post.video) }}
+                style={{ width: SCREEN_WIDTH, height: 320 }}
+                useNativeControls
+                resizeMode={ResizeMode.CONTAIN}
+                isLooping
+                shouldPlay={false}
+              />
+            </View>
+          ) : images.length > 0 ? (
             <View style={styles.imageContainer}>
               <ScrollView
                 horizontal
@@ -331,7 +343,18 @@ const PostDetailScreen = ({ route, navigation }) => {
             <Text style={styles.descriptionText}>{post.description}</Text>
 
             {/* Reporter / Member Info Box (Styled exactly like EventDetail orgBox) */}
-            <View style={styles.orgBox}>
+            <TouchableOpacity
+              style={styles.orgBox}
+              activeOpacity={0.8}
+              onPress={() => {
+                if (post.author?.id) {
+                  navigation.navigate('MemberProfile', {
+                    userId: post.author.id,
+                    user: post.author,
+                  });
+                }
+              }}
+            >
               {authorPhotoUrl ? (
                 <Image source={{ uri: authorPhotoUrl }} style={styles.authorAvatar} />
               ) : (
@@ -370,7 +393,7 @@ const PostDetailScreen = ({ route, navigation }) => {
                   Member ID: {authorMemberId || 'N/A'} • Citizen Reporter
                 </Text>
               </View>
-            </View>
+            </TouchableOpacity>
 
             {/* Assessment Request Tracking Banner (if forwarded) */}
             {post.status === 'FORWARDED_TO_FAO' && (

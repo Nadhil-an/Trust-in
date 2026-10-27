@@ -101,7 +101,7 @@ export const SideDrawer = ({ visible, onClose, navigation, currentRoute = 'Home'
   const secondaryMenu = [
     { name: 'AboutUs', label: 'About Us', icon: 'information-circle-outline', route: 'AboutUs', disabled: true },
     { name: 'ContactUs', label: 'Contact Us', icon: 'call-outline', route: 'ContactUs', disabled: true },
-    { name: 'Settings', label: 'Settings', icon: 'settings-outline', route: 'Profile' },
+    { name: 'Settings', label: 'Settings', icon: 'settings-outline', route: 'ProfileSettings' },
   ];
 
   const isStaffOrManager = user?.role === Roles.STAFF || user?.role === Roles.MANAGER;

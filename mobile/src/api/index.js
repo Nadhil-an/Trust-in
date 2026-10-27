@@ -202,8 +202,8 @@ export const donationApi = {
   create:  (data)   => api.post('/accounts/income/', data),
   update:  (id, data) => api.patch(`/accounts/income/${id}/`, data),
   delete:  (id)     => api.delete(`/accounts/income/${id}/`),
-  list:    (params) => api.get('/accounts/income/', { params }),
-  myTotal: ()       => Promise.resolve({ data: { total_amount: 0 } }),
+  list:    (params) => api.get('/accounts/income/', { params: { my: true, source: 'DONATION', ...params } }),
+  myTotal: ()       => api.get('/accounts/income/', { params: { my: true, source: 'DONATION', page_size: 1 } }),
 };
 
 // ── Payment Gateway & Autopay (api/payments/) ────────────────────────────────
@@ -345,6 +345,13 @@ export const memberPostsApi = {
     if (data.description) formData.append('description', data.description);
     if (data.contact_number) formData.append('contact_number', data.contact_number);
     if (data.address) formData.append('address', data.address);
+    if (data.video && data.video.uri) {
+      formData.append('video', {
+        uri: data.video.uri,
+        type: data.video.mimeType || 'video/mp4',
+        name: data.video.fileName || 'post_video.mp4',
+      });
+    }
     if (Array.isArray(data.images)) {
       data.images.forEach((img, index) => {
         if (img && img.uri) {
@@ -361,6 +368,14 @@ export const memberPostsApi = {
     });
   },
   toggleLike: (id) => api.post(`/core/member-posts/${id}/toggle-like/`),
+  toggleFollow: (userId) => api.post(`/core/users/${userId}/toggle-follow/`),
+  getMemberProfile: (userId) => api.get(`/core/users/${userId}/member-profile/`),
+  getFollowers: (userId, params) => api.get(`/core/users/${userId}/followers/`, { params }),
+  getFollowing: (userId, params) => api.get(`/core/users/${userId}/following/`, { params }),
+  searchMembers: (params) => {
+    const p = typeof params === 'string' ? { q: params } : (params || {});
+    return api.get('/core/members/search/', { params: p });
+  },
   getComments: (id) => api.get(`/core/member-posts/${id}/comments/`),
   addComment: (id, text) => api.post(`/core/member-posts/${id}/comments/`, { text }),
   update: (id, data) => api.patch(`/core/member-posts/${id}/`, data),

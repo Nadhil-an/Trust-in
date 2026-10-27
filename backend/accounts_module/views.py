@@ -220,6 +220,66 @@ class BankTransactionListCreateView(generics.ListCreateAPIView):
 
 # ── Income ────────────────────────────────────────────────────────
 
+def get_individual_incomes(user, qs=None):
+    """
+    Returns only the individual personal income/donation records belonging to a user.
+    Strictly excludes donations collected on behalf of other donors.
+    """
+    from accounts_module.models import DonationPayment
+    from core.serializers import get_user_member
+
+    if qs is None:
+        qs = Income.objects.select_related('created_by', 'bank_account', 'cash_account').all()
+
+    # 1. Online donations directly linked to this user via payment gateway
+    matching_ids = set(
+        DonationPayment.objects.filter(donor_user=user, status='SUCCESS')
+        .exclude(income__isnull=True)
+        .values_list('income_id', flat=True)
+    )
+
+    # 2. Gather user's identifying names and phones
+    user_name = (user.full_name or '').strip()
+    user_phone = str(getattr(user, 'phone', '') or '').strip()
+    user_username = str(user.username or '').strip()
+
+    member = get_user_member(user)
+    member_name = (member.full_name or '').strip() if member else ''
+    member_phone = str(getattr(member, 'phone', '') or '').strip() if member else ''
+
+    valid_names = {n.lower() for n in [user_name, member_name] if n and len(n) >= 2 and n.lower() != 'anonymous'}
+
+    valid_phones = set()
+    for p in [user_phone, member_phone, user_username]:
+        clean_p = ''.join(c for c in p if c.isdigit())
+        if len(clean_p) >= 10:
+            valid_phones.add(clean_p[-10:])
+
+    # 3. Match records where donor_name is explicitly this user's name
+    for name in valid_names:
+        for inc_id in qs.filter(donor_name__iexact=name).values_list('id', flat=True):
+            matching_ids.add(inc_id)
+
+    # 4. Match records by phone (decrypted) ONLY IF donor_name is empty or matches user
+    if valid_phones:
+        for inc in qs.iterator():
+            if inc.id in matching_ids:
+                continue
+            d_phone = str(inc.donor_phone or '').strip()
+            clean_d_phone = ''.join(c for c in d_phone if c.isdigit())
+            if clean_d_phone and any(clean_d_phone.endswith(vp) for vp in valid_phones):
+                d_name = (inc.donor_name or '').strip().lower()
+                if not d_name or d_name in valid_names or d_name == 'anonymous':
+                    matching_ids.add(inc.id)
+
+    # 5. Online/UPI donations created directly by this user for themselves
+    if valid_names:
+        for inc_id in qs.filter(created_by=user, payment_method='UPI').values_list('id', flat=True):
+            matching_ids.add(inc_id)
+
+    return qs.filter(id__in=matching_ids)
+
+
 class IncomeListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAnyStaff]
     serializer_class = IncomeSerializer
@@ -231,22 +291,22 @@ class IncomeListCreateView(generics.ListCreateAPIView):
     def get_queryset(self):
         qs = Income.objects.select_related('created_by').all()
         user = self.request.user
-        if user.role == Role.STAFF:
+
+        is_my_scope = (
+            self.request.query_params.get('my') in ['true', '1'] or
+            self.request.query_params.get('scope') == 'my' or
+            self.request.query_params.get('individual') in ['true', '1']
+        )
+
+        if is_my_scope or user.role == Role.MEMBER:
+            qs = get_individual_incomes(user, qs)
+        elif user.role == Role.STAFF:
             qs = qs.filter(created_by=user)
-        elif user.role == Role.MEMBER:
-            from django.db.models import Q
-            q = Q(created_by=user)
-            if user.full_name:
-                q |= Q(donor_name__iexact=user.full_name.strip())
-            phone = str(getattr(user, 'phone', '') or '').strip()
-            if phone:
-                q |= Q(donor_phone__iexact=phone)
-                if len(phone) >= 10:
-                    q |= Q(donor_phone__endswith=phone[-10:])
-            username = str(getattr(user, 'username', '') or '').strip()
-            if username and username.isdigit() and len(username) >= 10:
-                q |= Q(donor_phone__endswith=username[-10:])
-            qs = qs.filter(q)
+
+        source_param = self.request.query_params.get('source')
+        if source_param:
+            qs = qs.filter(source=source_param)
+
         return qs
 
     def create(self, request, *args, **kwargs):

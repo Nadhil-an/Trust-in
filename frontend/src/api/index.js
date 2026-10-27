@@ -37,7 +37,12 @@ api.interceptors.response.use(
   response => response,
   async error => {
     const originalRequest = error.config
-    if (error.response?.status === 401 && !originalRequest._retry && originalRequest.url !== '/auth/login/') {
+    if (!originalRequest) return Promise.reject(error)
+
+    const url = originalRequest.url || ''
+    const isAuthEndpoint = url.includes('/auth/login') || url.includes('/auth/refresh')
+
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject })
@@ -46,15 +51,14 @@ api.interceptors.response.use(
       originalRequest._retry = true
       isRefreshing = true
       try {
-        await api.post('/auth/refresh/')
+        await api.post('/auth/refresh/', {}, { _retry: true })
         processQueue(null)
         return api(originalRequest)
       } catch (refreshError) {
         processQueue(refreshError, null)
         if (typeof window !== 'undefined') {
-          const state = window.localStorage.getItem('slt-auth')
-          if (state) {
-            window.localStorage.removeItem('slt-auth')
+          window.localStorage.removeItem('slt-auth')
+          if (window.location.pathname !== '/slt/portal/auth') {
             window.location.href = '/slt/portal/auth'
           }
         }
@@ -382,6 +386,8 @@ export const coreApi = {
   memberPosts: {
     list: (params) => api.get('/core/member-posts/', { params }),
     get: (id) => api.get(`/core/member-posts/${id}/`),
+    approve: (id) => api.post(`/core/member-posts/${id}/approve/`),
+    reject: (id, data) => api.post(`/core/member-posts/${id}/reject/`, data || {}),
     forwardToFao: (id, data) => api.post(`/core/member-posts/${id}/forward-to-fao/`, data),
     delete: (id) => api.delete(`/core/member-posts/${id}/`),
   }

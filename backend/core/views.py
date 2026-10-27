@@ -29,7 +29,7 @@ def set_auth_cookies(response, access_token, refresh_token):
     response.set_cookie('access_token', str(access_token), max_age=access_max_age,
                         httponly=True, secure=secure, samesite=samesite, path='/')
     response.set_cookie('refresh_token', str(refresh_token), max_age=refresh_max_age,
-                        httponly=True, secure=secure, samesite=samesite, path='/api/auth/refresh/')
+                        httponly=True, secure=secure, samesite=samesite, path='/')
     return response
 
 
@@ -193,8 +193,8 @@ class LogoutView(APIView):
         )
 
         response = Response({'message': 'Logged out successfully.'})
-        response.delete_cookie('access_token')
-        response.delete_cookie('refresh_token')
+        response.delete_cookie('access_token', path='/')
+        response.delete_cookie('refresh_token', path='/')
         return response
 
 
@@ -202,7 +202,7 @@ class TokenRefreshView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        refresh_token = request.COOKIES.get('refresh_token') or request.data.get('refresh')
+        refresh_token = request.COOKIES.get('refresh_token') or request.data.get('refresh') or request.data.get('refresh_token')
         if not refresh_token:
             return Response({'error': 'Refresh token not provided.'}, status=401)
         try:
@@ -230,7 +230,7 @@ class TokenRefreshView(APIView):
 
 
 class MemberSignupThrottle(AnonRateThrottle):
-    rate = '3/minute'
+    rate = '30/minute'
 
 
 class MemberSignupView(APIView):
@@ -239,6 +239,11 @@ class MemberSignupView(APIView):
     throttle_classes = [MemberSignupThrottle]
 
     def post(self, request):
+        from django.db import transaction, IntegrityError
+        from hr_module.models import Member
+        import logging
+        logger = logging.getLogger(__name__)
+
         data = request.data
 
         full_name  = (data.get('full_name') or '').strip()
@@ -262,44 +267,86 @@ class MemberSignupView(APIView):
             errors['phone'] = 'Phone number is required.'
         elif not re.match(r'^\d{10}$', phone):
             errors['phone'] = 'Phone number must be exactly 10 digits.'
+
+        # 6-digit pincode validation
+        if pincode and not re.match(r'^\d{6}$', pincode):
+            errors['pincode'] = 'Pincode must be exactly 6 digits.'
+
         if not password or len(password) < 6:
             errors['password'] = 'Password must be at least 6 characters.'
+
+        # Validate email if provided
+        if email:
+            if not re.match(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', email):
+                errors['email'] = 'Enter a valid email address.'
+            elif User.objects.filter(email__iexact=email).exists():
+                errors['email'] = 'An account with this email already exists. Please log in.'
+
+        # Check duplicate phone across Users & Members
+        if 'phone' not in errors:
+            for u in User.objects.exclude(phone='').iterator():
+                if u.phone and str(u.phone).strip() == phone:
+                    errors['phone'] = 'An account with this phone number already exists. Please log in.'
+                    break
+        if 'phone' not in errors:
+            for m in Member.objects.exclude(phone='').iterator():
+                if m.phone and str(m.phone).strip() == phone:
+                    errors['phone'] = 'An account with this phone number already exists. Please log in.'
+                    break
+
         if errors:
             return Response(errors, status=400)
 
-        # Build a unique username from phone number
-        base_username = re.sub(r'[^0-9]', '', phone)[-10:] or full_name.lower().replace(' ', '_')
+        # Build a unique username from full_name (not phone number)
+        clean_name = re.sub(r'[^a-zA-Z0-9_]', '', re.sub(r'\s+', '_', full_name.strip().lower()))
+        base_username = clean_name or ('member_' + (re.sub(r'[^0-9]', '', phone)[-4:] or 'user'))
         username = base_username
         counter = 1
         while User.objects.filter(username=username).exists():
             username = f"{base_username}_{counter}"
             counter += 1
 
-        # Fallback for optional email
+        # Fallback for optional email (ensure uniqueness)
         if not email:
-            email = f"{username}@member.local"
+            candidate_email = f"{username}@member.local"
+            email_counter = 1
+            while User.objects.filter(email=candidate_email).exists():
+                candidate_email = f"{username}_{email_counter}@member.local"
+                email_counter += 1
+            email = candidate_email
 
-        # Create the auth User
-        user = User.objects.create_user(
-            username=username,
-            email=email,
-            password=password,
-            full_name=full_name,
-            phone=phone,
-            role=Role.MEMBER,
-            is_active=True,
-        )
+        try:
+            with transaction.atomic():
+                # Create the auth User
+                user = User.objects.create_user(
+                    username=username,
+                    email=email,
+                    password=password,
+                    full_name=full_name,
+                    phone=phone,
+                    role=Role.MEMBER,
+                    is_active=True,
+                )
 
-        # Create the corresponding Member profile
-        from hr_module.models import Member
-        Member.objects.create(
-            full_name=full_name,
-            phone=phone,
-            email=email,
-            address=full_address,
-            occupation=occupation,
-            created_by=user,
-        )
+                # Create the corresponding Member profile
+                Member.objects.create(
+                    full_name=full_name,
+                    phone=phone,
+                    email=email,
+                    address=full_address,
+                    occupation=occupation,
+                    created_by=user,
+                )
+        except IntegrityError as e:
+            err_str = str(e).lower()
+            if 'email' in err_str:
+                return Response({'email': 'An account with this email address already exists.'}, status=400)
+            elif 'phone' in err_str or 'username' in err_str:
+                return Response({'phone': 'An account with this phone number already exists. Please log in.'}, status=400)
+            return Response({'error': 'An account with these details already exists. Please log in.'}, status=400)
+        except Exception as e:
+            logger.exception("Member signup failed: %s", e)
+            return Response({'error': f'Signup failed: {str(e)}'}, status=400)
 
         # Auto-login — generate tokens
         refresh = RefreshToken.for_user(user)
@@ -309,7 +356,7 @@ class MemberSignupView(APIView):
             user=user, action='MEMBER_SIGNUP', module='AUTH',
             record_type='User', record_id=str(user.id),
             description=f"New member self-registered: {user.full_name}",
-            ip_address=getattr(request, 'audit_ip', None)
+            ip_address=getattr(request, 'audit_ip', None) or None
         )
 
         response = Response({
@@ -756,7 +803,8 @@ class ExpoPushTokenView(APIView):
 
 from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser
-from core.models import MemberPost, MemberPostImage, MemberPostLike, MemberPostComment, MemberPostStatus
+from django.shortcuts import get_object_or_404
+from core.models import MemberPost, MemberPostImage, MemberPostLike, MemberPostComment, MemberPostStatus, UserFollow
 from core.serializers import MemberPostSerializer, MemberPostCommentSerializer
 
 class MemberPostViewSet(ModelViewSet):
@@ -773,16 +821,31 @@ class MemberPostViewSet(ModelViewSet):
 
     def get_queryset(self):
         qs = MemberPost.objects.filter(is_active=True).select_related('author', 'assessment_request').prefetch_related('images', 'likes', 'comments')
+        user = self.request.user if (self.request and self.request.user.is_authenticated) else None
+        user_role = getattr(user, 'role', '') if user else ''
+        is_moderator = user_role in ['SOCIAL_MEDIA', 'ADMIN', 'MANAGER']
+
         my_posts = self.request.query_params.get('my_posts')
         if my_posts in ['true', '1', True]:
-            if self.request.user and self.request.user.is_authenticated:
-                qs = qs.filter(author=self.request.user)
+            if user:
+                return qs.filter(author=user)
+            return qs.none()
+
+        author_id = self.request.query_params.get('author_id')
+        if author_id:
+            if (user and str(user.id) == str(author_id)) or is_moderator:
+                qs = qs.filter(author_id=author_id)
             else:
-                qs = qs.none()
+                qs = qs.filter(author_id=author_id, status__in=[MemberPostStatus.APPROVED, MemberPostStatus.FORWARDED_TO_FAO, MemberPostStatus.OPEN])
+            return qs
 
         status_param = (self.request.query_params.get('status') or '').strip()
         if status_param and status_param != 'ALL':
             qs = qs.filter(status=status_param)
+        elif not is_moderator:
+            # For general mobile feed: only show approved/forwarded posts
+            qs = qs.filter(status__in=[MemberPostStatus.APPROVED, MemberPostStatus.FORWARDED_TO_FAO, MemberPostStatus.OPEN])
+
         search = (self.request.query_params.get('search') or '').strip()
         if search:
             qs = qs.filter(
@@ -795,7 +858,15 @@ class MemberPostViewSet(ModelViewSet):
         return qs
 
     def perform_create(self, serializer):
-        post = serializer.save(author=self.request.user, is_active=True)
+        video_file = self.request.FILES.get('video')
+        user_role = getattr(self.request.user, 'role', '')
+        initial_status = MemberPostStatus.APPROVED if user_role in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA'] else MemberPostStatus.PENDING_APPROVAL
+        post = serializer.save(
+            author=self.request.user,
+            is_active=True,
+            status=initial_status,
+            video=video_file
+        )
         images = self.request.FILES.getlist('images') or self.request.FILES.getlist('photos')
         for idx, img in enumerate(images[:10]):
             MemberPostImage.objects.create(post=post, image=img, order=idx)
@@ -818,7 +889,7 @@ class MemberPostViewSet(ModelViewSet):
         if self.action in ['update', 'partial_update', 'destroy']:
             user_role = getattr(request.user, 'role', '')
             is_staff_user = getattr(request.user, 'is_staff', False) or getattr(request.user, 'is_superuser', False)
-            if obj.author != request.user and user_role not in ['ADMIN', 'MANAGER', 'DATA_ENTRY', 'HR'] and not is_staff_user:
+            if obj.author != request.user and user_role not in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA', 'DATA_ENTRY', 'HR'] and not is_staff_user:
                 from rest_framework.exceptions import PermissionDenied
                 raise PermissionDenied("You can only edit or delete your own posts.")
 
@@ -927,4 +998,300 @@ class MemberPostViewSet(ModelViewSet):
             'request_number': req.request_number,
             'status': post.status
         })
+
+    @action(detail=True, methods=['post'], url_path='approve')
+    def approve(self, request, pk=None):
+        user_role = getattr(request.user, 'role', '')
+        is_staff_user = getattr(request.user, 'is_staff', False) or getattr(request.user, 'is_superuser', False)
+        if user_role not in ['SOCIAL_MEDIA', 'ADMIN', 'MANAGER'] and not is_staff_user:
+            return Response({'error': 'Permission denied. Only Social Media moderators can approve posts.'}, status=403)
+
+        post = self.get_object()
+        post.status = MemberPostStatus.APPROVED
+        post.approved_by = request.user
+        post.approved_at = timezone.now()
+        post.rejection_reason = ''
+        post.save(update_fields=['status', 'approved_by', 'approved_at', 'rejection_reason', 'updated_at'])
+
+        AuditLog.objects.create(
+            user=request.user,
+            action='APPROVE_POST',
+            module='SOCIAL_MEDIA',
+            record_type='MemberPost',
+            record_id=str(post.id),
+            reference_number=str(post.id)[:8],
+            new_status=post.status,
+            description=f"Public issue post by @{post.author.username} approved by {request.user.full_name or request.user.username}",
+            ip_address=getattr(request, 'audit_ip', None)
+        )
+
+        return Response({
+            'message': 'Post approved successfully! It is now published and visible to all members in the mobile application.',
+            'status': post.status,
+            'approved_at': post.approved_at,
+        })
+
+    @action(detail=True, methods=['post'], url_path='reject')
+    def reject(self, request, pk=None):
+        user_role = getattr(request.user, 'role', '')
+        is_staff_user = getattr(request.user, 'is_staff', False) or getattr(request.user, 'is_superuser', False)
+        if user_role not in ['SOCIAL_MEDIA', 'ADMIN', 'MANAGER'] and not is_staff_user:
+            return Response({'error': 'Permission denied. Only Social Media moderators can reject posts.'}, status=403)
+
+        post = self.get_object()
+        reason = (request.data.get('reason') or 'Violation of community guidelines / unverified issue').strip()
+        post.status = MemberPostStatus.REJECTED
+        post.rejection_reason = reason
+        post.save(update_fields=['status', 'rejection_reason', 'updated_at'])
+
+        AuditLog.objects.create(
+            user=request.user,
+            action='REJECT_POST',
+            module='SOCIAL_MEDIA',
+            record_type='MemberPost',
+            record_id=str(post.id),
+            reference_number=str(post.id)[:8],
+            new_status=post.status,
+            description=f"Public issue post by @{post.author.username} rejected by {request.user.full_name or request.user.username}. Reason: {reason}",
+            ip_address=getattr(request, 'audit_ip', None)
+        )
+
+        return Response({
+            'message': 'Post rejected and restricted from mobile application publication.',
+            'status': post.status,
+            'rejection_reason': reason
+        })
+
+
+class ToggleFollowView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        target_user = get_object_or_404(User, id=pk)
+        if target_user == request.user:
+            return Response({'error': 'You cannot follow yourself.'}, status=400)
+
+        existing = UserFollow.objects.filter(follower=request.user, following=target_user).first()
+        if existing:
+            existing.delete()
+            is_following = False
+        else:
+            UserFollow.objects.create(follower=request.user, following=target_user)
+            is_following = True
+
+        followers_count = UserFollow.objects.filter(following=target_user).count()
+        following_count = UserFollow.objects.filter(follower=target_user).count()
+        my_following_count = UserFollow.objects.filter(follower=request.user).count()
+
+        return Response({
+            'is_following': is_following,
+            'followers_count': followers_count,
+            'following_count': following_count,
+            'my_following_count': my_following_count,
+            'message': 'Followed' if is_following else 'Unfollowed',
+        })
+
+
+class MemberProfileView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, pk):
+        target_user = get_object_or_404(User, id=pk)
+        is_following = False
+        is_me = False
+        if request.user and request.user.is_authenticated:
+            is_me = (str(target_user.id) == str(request.user.id))
+            if not is_me:
+                is_following = UserFollow.objects.filter(follower=request.user, following=target_user).exists()
+
+        followers_count = UserFollow.objects.filter(following=target_user).count()
+        following_count = UserFollow.objects.filter(follower=target_user).count()
+
+        from core.serializers import get_user_member
+        member = get_user_member(target_user)
+        member_id = member.member_id if (member and member.member_id) else (target_user.username or '')
+        district = getattr(member, 'district', '') if member else ''
+
+        photo_url = None
+        if target_user.photo:
+            photo_url = request.build_absolute_uri(target_user.photo.url) if request else target_user.photo.url
+
+        is_moderator = bool(request.user and getattr(request.user, 'role', '') in ['SOCIAL_MEDIA', 'ADMIN', 'MANAGER'])
+        if is_me or is_moderator:
+            posts = MemberPost.objects.filter(author=target_user, is_active=True).prefetch_related('images', 'likes', 'comments')
+        else:
+            posts = MemberPost.objects.filter(author=target_user, is_active=True, status__in=[MemberPostStatus.APPROVED, MemberPostStatus.FORWARDED_TO_FAO, MemberPostStatus.OPEN]).prefetch_related('images', 'likes', 'comments')
+        posts_count = posts.count()
+        serializer = MemberPostSerializer(posts, many=True, context={'request': request})
+
+        return Response({
+            'user': {
+                'id': str(target_user.id),
+                'username': target_user.username,
+                'full_name': target_user.full_name or target_user.username,
+                'photo': photo_url,
+                'role': target_user.role,
+                'phone': getattr(target_user, 'phone', ''),
+                'member_id': member_id,
+                'district': district,
+                'is_following': is_following,
+                'is_me': is_me,
+                'posts_count': posts_count,
+                'followers_count': followers_count,
+                'following_count': following_count,
+            },
+            'posts': serializer.data,
+        })
+
+
+class UserFollowersListView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, pk):
+        target_user = get_object_or_404(User, id=pk)
+        query = (request.query_params.get('q') or '').strip()
+
+        follows_qs = UserFollow.objects.filter(following=target_user).select_related('follower')
+        if query:
+            from django.db.models import Q
+            follows_qs = follows_qs.filter(
+                Q(follower__username__icontains=query) |
+                Q(follower__full_name__icontains=query)
+            )
+        follows_qs = follows_qs.order_by('-created_at')
+
+        following_ids = set()
+        if request.user and request.user.is_authenticated:
+            following_ids = set(UserFollow.objects.filter(follower=request.user).values_list('following_id', flat=True))
+
+        from core.serializers import get_user_member
+        results = []
+        for f in follows_qs:
+            u = f.follower
+            if not u.is_active:
+                continue
+            photo_url = request.build_absolute_uri(u.photo.url) if (u.photo and request) else (u.photo.url if u.photo else None)
+            is_following = u.id in following_ids
+            is_me = bool(request.user and request.user.is_authenticated and str(request.user.id) == str(u.id))
+            member = get_user_member(u)
+            results.append({
+                'id': str(u.id),
+                'username': u.username,
+                'full_name': u.full_name or u.username,
+                'photo': photo_url,
+                'district': getattr(member, 'district', '') if member else '',
+                'role': u.role,
+                'is_following': is_following,
+                'is_me': is_me,
+            })
+        return Response(results)
+
+
+class UserFollowingListView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, pk):
+        target_user = get_object_or_404(User, id=pk)
+        query = (request.query_params.get('q') or '').strip()
+
+        follows_qs = UserFollow.objects.filter(follower=target_user).select_related('following')
+        if query:
+            from django.db.models import Q
+            follows_qs = follows_qs.filter(
+                Q(following__username__icontains=query) |
+                Q(following__full_name__icontains=query)
+            )
+        follows_qs = follows_qs.order_by('-created_at')
+
+        following_ids = set()
+        if request.user and request.user.is_authenticated:
+            following_ids = set(UserFollow.objects.filter(follower=request.user).values_list('following_id', flat=True))
+
+        from core.serializers import get_user_member
+        results = []
+        for f in follows_qs:
+            u = f.following
+            if not u.is_active:
+                continue
+            photo_url = request.build_absolute_uri(u.photo.url) if (u.photo and request) else (u.photo.url if u.photo else None)
+            is_following = u.id in following_ids
+            is_me = bool(request.user and request.user.is_authenticated and str(request.user.id) == str(u.id))
+            member = get_user_member(u)
+            results.append({
+                'id': str(u.id),
+                'username': u.username,
+                'full_name': u.full_name or u.username,
+                'photo': photo_url,
+                'district': getattr(member, 'district', '') if member else '',
+                'role': u.role,
+                'is_following': is_following,
+                'is_me': is_me,
+            })
+        return Response(results)
+
+
+class MemberSearchView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        query = (request.query_params.get('q') or '').strip()
+        unfollowed_only = request.query_params.get('unfollowed') in ['true', '1', True]
+        limit_param = request.query_params.get('limit')
+        from django.db.models import Q
+
+        users_qs = User.objects.filter(is_active=True).exclude(role='ADMIN')
+
+        # Exclude self
+        if request.user and request.user.is_authenticated:
+            users_qs = users_qs.exclude(id=request.user.id)
+
+        # Retrieve set of users currently followed
+        following_ids = set()
+        if request.user and request.user.is_authenticated:
+            following_ids = set(UserFollow.objects.filter(follower=request.user).values_list('following_id', flat=True))
+
+        if unfollowed_only:
+            users_qs = users_qs.exclude(id__in=following_ids)
+
+        if query:
+            users_qs = users_qs.filter(
+                Q(username__icontains=query) |
+                Q(full_name__icontains=query) |
+                Q(staff_uid__icontains=query)
+            )
+
+        users_qs = users_qs.order_by('-date_joined')
+
+        if limit_param:
+            try:
+                lim = int(limit_param)
+                if lim > 0:
+                    users_qs = users_qs[:lim]
+            except ValueError:
+                users_qs = users_qs[:50]
+        else:
+            users_qs = users_qs[:100]
+
+        from core.serializers import get_user_member
+        results = []
+        for u in users_qs:
+            photo_url = request.build_absolute_uri(u.photo.url) if (u.photo and request) else (u.photo.url if u.photo else None)
+            is_following = u.id in following_ids
+            followers_count = UserFollow.objects.filter(following=u).count()
+            posts_count = MemberPost.objects.filter(author=u, is_active=True).count()
+            member = get_user_member(u)
+            results.append({
+                'id': str(u.id),
+                'username': u.username,
+                'full_name': u.full_name or u.username,
+                'photo': photo_url,
+                'district': getattr(member, 'district', '') if member else '',
+                'role': u.role,
+                'followers_count': followers_count,
+                'posts_count': posts_count,
+                'is_following': is_following,
+            })
+
+        return Response(results)
+
 

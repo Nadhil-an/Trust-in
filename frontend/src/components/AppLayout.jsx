@@ -147,11 +147,14 @@ export default function AppLayout() {
       // If the item specifies a hardcoded role (like the main dashboards), enforce it
       if (item.roles && !item.roles.includes(user?.role)) return false
 
+      // Non-togglable dashboard or role-fixed pages without a feature key
+      if (!item.key && item.roles && item.roles.includes(user?.role)) return true
+
       // Manager always has access to hr_members (Members Directory)
       if (user?.role === 'MANAGER' && item.key === 'hr_members') return true
 
-      // DATA_ENTRY, MANAGER, ADMIN always have access to Public Issues
-      if (item.path === '/slt/entry/public-issues' && ['DATA_ENTRY', 'MANAGER', 'ADMIN'].includes(user?.role)) return true
+      // SOCIAL_MEDIA, MANAGER, ADMIN always have access to Public Issues
+      if (item.path === '/slt/social/public-issues' && ['SOCIAL_MEDIA', 'MANAGER', 'ADMIN'].includes(user?.role)) return true
       
       // Check feature access
       return hasFeature(item.key)

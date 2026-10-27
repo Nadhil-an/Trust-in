@@ -2,7 +2,7 @@
 from rest_framework import serializers
 from core.models import (
     User, AuditLog, SystemNotification, Event,
-    MemberPost, MemberPostImage, MemberPostLike, MemberPostComment
+    MemberPost, MemberPostImage, MemberPostLike, MemberPostComment, UserFollow
 )
 
 
@@ -302,6 +302,9 @@ class MemberPostCommentSerializer(serializers.ModelSerializer):
 class MemberPostSerializer(serializers.ModelSerializer):
     author = serializers.SerializerMethodField()
     images = MemberPostImageSerializer(many=True, read_only=True)
+    video = serializers.SerializerMethodField()
+    media_type = serializers.SerializerMethodField()
+    is_following_author = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField()
     comments_count = serializers.SerializerMethodField()
     is_liked_by_me = serializers.SerializerMethodField()
@@ -315,15 +318,36 @@ class MemberPostSerializer(serializers.ModelSerializer):
         model = MemberPost
         fields = [
             'id', 'author', 'description', 'contact_number', 'address',
-            'status', 'assessment_request', 'assessment_request_number',
+            'video', 'media_type', 'is_following_author',
+            'status', 'rejection_reason', 'approved_by', 'approved_at',
+            'assessment_request', 'assessment_request_number',
             'is_active', 'images', 'likes_count', 'comments_count',
             'is_liked_by_me', 'created_at', 'updated_at'
         ]
         read_only_fields = [
-            'id', 'author', 'status', 'is_active', 'assessment_request',
+            'id', 'author', 'video', 'media_type', 'is_following_author',
+            'status', 'rejection_reason', 'approved_by', 'approved_at',
+            'is_active', 'assessment_request',
             'assessment_request_number', 'likes_count', 'comments_count',
             'is_liked_by_me', 'created_at', 'updated_at'
         ]
+
+    def get_video(self, obj):
+        request = self.context.get('request')
+        if obj.video:
+            return request.build_absolute_uri(obj.video.url) if request else obj.video.url
+        return None
+
+    def get_media_type(self, obj):
+        return 'VIDEO' if obj.video else 'IMAGE'
+
+    def get_is_following_author(self, obj):
+        request = self.context.get('request')
+        if not request or not request.user or not request.user.is_authenticated:
+            return False
+        if str(obj.author_id) == str(request.user.id):
+            return False
+        return UserFollow.objects.filter(follower=request.user, following_id=obj.author_id).exists()
 
     def get_author(self, obj):
         request = self.context.get('request')
@@ -332,6 +356,15 @@ class MemberPostSerializer(serializers.ModelSerializer):
             photo_url = request.build_absolute_uri(obj.author.photo.url) if request else obj.author.photo.url
         member = get_user_member(obj.author)
         member_id = member.member_id if (member and member.member_id) else (obj.author.username or '')
+        
+        is_following = False
+        if request and request.user and request.user.is_authenticated and str(obj.author.id) != str(request.user.id):
+            is_following = UserFollow.objects.filter(follower=request.user, following=obj.author).exists()
+
+        followers_count = UserFollow.objects.filter(following=obj.author).count()
+        following_count = UserFollow.objects.filter(follower=obj.author).count()
+        posts_count = MemberPost.objects.filter(author=obj.author, is_active=True).count()
+
         return {
             'id': str(obj.author.id),
             'username': obj.author.username,
@@ -340,6 +373,10 @@ class MemberPostSerializer(serializers.ModelSerializer):
             'role': obj.author.role,
             'phone': getattr(obj.author, 'phone', ''),
             'member_id': member_id,
+            'followers_count': followers_count,
+            'following_count': following_count,
+            'posts_count': posts_count,
+            'is_following': is_following,
         }
 
     def get_likes_count(self, obj):

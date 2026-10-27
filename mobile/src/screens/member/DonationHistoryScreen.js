@@ -48,19 +48,30 @@ const DonationHistoryScreen = ({ navigation }) => {
     if (!isAuthenticated) return;
     try {
       setLoading(true);
-      const res = await donationApi.list({ page_size: 1000 });
-      const list = res.data?.results || res.data || [];
-      setDonations(list);
+      const res = await donationApi.list({ page_size: 1000, my: true, source: 'DONATION' });
+      const rawList = res.data?.results || res.data || [];
       
-      const computedTotal = list.reduce((sum, item) => sum + Number(item.amount || 0), 0);
-      const computedCash = list.filter(item => item.payment_method === 'CASH').reduce((sum, item) => sum + Number(item.amount || 0), 0);
-      const computedOnline = list.filter(item => item.payment_method !== 'CASH').reduce((sum, item) => sum + Number(item.amount || 0), 0);
+      // Strict individual validation: only keep personal DONATION items
+      const donationItems = (Array.isArray(rawList) ? rawList : []).filter(item => {
+        return !item.source || item.source === 'DONATION';
+      });
 
+      setDonations(donationItems);
+      
+      const computedTotal = donationItems.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+      const computedCash = donationItems.filter(item => item.payment_method === 'CASH').reduce((sum, item) => sum + Number(item.amount || 0), 0);
+      const computedOnline = donationItems.filter(item => item.payment_method !== 'CASH').reduce((sum, item) => sum + Number(item.amount || 0), 0);
+
+      // Total strictly represents individual donations only
       setTotalAmount(res.data?.total_amount !== undefined ? res.data.total_amount : computedTotal);
       setTotalCash(res.data?.total_cash !== undefined ? res.data.total_cash : computedCash);
       setTotalOnline(res.data?.total_online !== undefined ? res.data.total_online : computedOnline);
     } catch (error) {
       console.log('Error fetching donations:', error);
+      setDonations([]);
+      setTotalAmount(0);
+      setTotalCash(0);
+      setTotalOnline(0);
     } finally {
       setLoading(false);
     }
@@ -349,6 +360,24 @@ const DonationHistoryScreen = ({ navigation }) => {
         {/* List of Donation History Rows */}
         {loading ? (
           <ActivityIndicator color={Colors.primary} style={{ marginTop: 20 }} />
+        ) : donations.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <View style={styles.emptyIconCircle}>
+              <Ionicons name="heart-outline" size={32} color="#94a3b8" />
+            </View>
+            <Text style={styles.emptyTitle}>No Individual Donations Yet</Text>
+            <Text style={styles.emptySub}>
+              Your individual donation history and receipts will appear here after you make a contribution.
+            </Text>
+            <TouchableOpacity
+              style={styles.emptyDonateBtn}
+              onPress={() => navigation.navigate('Donate')}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="heart" size={15} color="#ffffff" />
+              <Text style={styles.emptyDonateBtnText}>Make a Donation</Text>
+            </TouchableOpacity>
+          </View>
         ) : (
           <View style={styles.listContainer}>
             {donations.map((item) => (
@@ -927,6 +956,52 @@ const styles = StyleSheet.create({
   guestSecondaryBtnText: {
     color: '#0284c7',
     fontSize: 14,
+    fontWeight: '700',
+  },
+  emptyContainer: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    marginVertical: 10,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  emptyIconCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#f1f5f9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#334155',
+    marginBottom: 6,
+  },
+  emptySub: {
+    fontSize: 13,
+    color: '#64748b',
+    textAlign: 'center',
+    lineHeight: 18,
+    marginBottom: 16,
+    paddingHorizontal: 12,
+  },
+  emptyDonateBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#0284c7',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+  },
+  emptyDonateBtnText: {
+    color: '#ffffff',
+    fontSize: 13,
     fontWeight: '700',
   },
 });

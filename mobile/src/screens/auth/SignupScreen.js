@@ -47,6 +47,7 @@ const SignupScreen = ({ navigation }) => {
     if (!form.full_name.trim())   errs.full_name  = 'Required';
     if (!form.phone.trim())       errs.phone      = 'Required';
     else if (!/^\d{10}$/.test(form.phone.trim())) errs.phone = 'Phone must be exactly 10 digits';
+    if (form.pincode.trim() && !/^\d{6}$/.test(form.pincode.trim())) errs.pincode = 'Pincode must be exactly 6 digits';
     if (!form.password)           errs.password   = 'Required';
     else if (form.password.length < 6) errs.password = 'Must be at least 6 characters';
     if (form.password !== form.confirm_password) errs.confirm_password = 'Passwords do not match';
@@ -63,30 +64,55 @@ const SignupScreen = ({ navigation }) => {
       const res = await authApi.signup({
         full_name:  form.full_name.trim(),
         phone:      form.phone.trim(),
-        email:      form.email.trim(),
-        occupation: form.occupation.trim(),
-        place:      form.place.trim(),
-        pincode:    form.pincode.trim(),
+        email:      form.email.trim() || undefined,
+        occupation: form.occupation.trim() || undefined,
+        place:      form.place.trim() || undefined,
+        pincode:    form.pincode.trim() || undefined,
         password:   form.password,
       });
+
+      if (!res.data?.access || !res.data?.user) {
+        Alert.alert('Signup Failed', 'Unexpected server response. Please try again.');
+        return;
+      }
+
+      // Persist token & user, then navigate to the member home
       await login(res.data);
+
+      // Reset navigation stack so user lands on the Main screen
+      navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
+
     } catch (err) {
       let msg = 'Signup failed. Please try again.';
       if (err.response?.data) {
         const d = err.response.data;
         const fieldErrors = {};
-        if (d.full_name)  fieldErrors.full_name  = d.full_name;
-        if (d.phone)      fieldErrors.phone      = d.phone;
-        if (d.email)      fieldErrors.email      = d.email;
-        if (d.password)   fieldErrors.password   = d.password;
+
+        // Map all known server-side field errors back to the form
+        const fieldKeys = ['full_name', 'phone', 'email', 'password', 'pincode', 'place', 'occupation'];
+        fieldKeys.forEach((key) => {
+          if (d[key]) {
+            fieldErrors[key] = Array.isArray(d[key]) ? d[key][0] : String(d[key]);
+          }
+        });
+
         if (Object.keys(fieldErrors).length > 0) {
           setErrors(fieldErrors);
-          setLoading(false);
+          Alert.alert('Signup Failed', Object.values(fieldErrors)[0]);
           return;
         }
-        msg = d.detail || d.error || msg;
+
+        if (typeof d === 'string') {
+          msg = d;
+        } else {
+          msg = d.detail || d.error || d.message
+            || (d.non_field_errors ? d.non_field_errors[0] : null)
+            || JSON.stringify(d);
+        }
+      } else if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+        msg = 'Request timed out. The server may be busy — please try again.';
       } else if (err.message?.includes('Network Error')) {
-        msg = 'Could not connect to the server. Please check your network.';
+        msg = 'Could not connect to the server. Please check your network connection.';
       }
       Alert.alert('Signup Failed', msg);
     } finally {
@@ -179,11 +205,12 @@ const SignupScreen = ({ navigation }) => {
           <Input
             label="Pincode"
             value={form.pincode}
-            onChangeText={v => setField('pincode', v)}
-            placeholder="Enter your pincode"
+            onChangeText={v => setField('pincode', v.replace(/[^0-9]/g, '').slice(0, 6))}
+            placeholder="Enter 6-digit pincode"
             leftIcon={<Ionicons name="map-outline" size={20} color={Colors.gray400} />}
             error={errors.pincode}
-            keyboardType="number-pad"
+            keyboardType="numeric"
+            maxLength={6}
             onFocus={scrollToBottom}
           />
 

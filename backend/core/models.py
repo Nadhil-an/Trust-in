@@ -19,6 +19,7 @@ class Role(models.TextChoices):
     ACCOUNTANT = 'ACCOUNTANT', 'Accountant'
     HR = 'HR', 'HR'
     DATA_ENTRY = 'DATA_ENTRY', 'Data Entry'
+    SOCIAL_MEDIA = 'SOCIAL_MEDIA', 'Social Media'
     # Mobile application roles
     FIELD_ASSESSMENT_OFFICER = 'FIELD_ASSESSMENT_OFFICER', 'Field Assessment Officer'
     ASSESSMENT_CALCULATION_OFFICER = 'ASSESSMENT_CALCULATION_OFFICER', 'Assessment Calculation Officer'
@@ -202,8 +203,11 @@ class ExpoDevice(models.Model):
 
 
 class MemberPostStatus(models.TextChoices):
-    OPEN = 'OPEN', 'Open'
+    PENDING_APPROVAL = 'PENDING_APPROVAL', 'Pending Approval'
+    APPROVED = 'APPROVED', 'Approved'
+    REJECTED = 'REJECTED', 'Rejected'
     FORWARDED_TO_FAO = 'FORWARDED_TO_FAO', 'Forwarded to FAO'
+    OPEN = 'OPEN', 'Open'
     RESOLVED = 'RESOLVED', 'Resolved'
     CLOSED = 'CLOSED', 'Closed'
 
@@ -214,7 +218,11 @@ class MemberPost(models.Model):
     description = models.TextField()
     contact_number = models.CharField(max_length=25, blank=True)
     address = models.TextField(blank=True)
-    status = models.CharField(max_length=25, choices=MemberPostStatus.choices, default=MemberPostStatus.OPEN)
+    video = models.FileField(upload_to='member_posts/videos/', null=True, blank=True)
+    status = models.CharField(max_length=25, choices=MemberPostStatus.choices, default=MemberPostStatus.PENDING_APPROVAL)
+    rejection_reason = models.TextField(blank=True, default='')
+    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_posts')
+    approved_at = models.DateTimeField(null=True, blank=True)
     assessment_request = models.ForeignKey('manager_module.AssessmentRequest', on_delete=models.SET_NULL, null=True, blank=True, related_name='member_posts')
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(default=timezone.now, db_index=True)
@@ -226,6 +234,20 @@ class MemberPost(models.Model):
 
     def __str__(self):
         return f"Post by {self.author.username} ({self.created_at.strftime('%Y-%m-%d')})"
+
+
+class UserFollow(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    follower = models.ForeignKey(User, on_delete=models.CASCADE, related_name='following_relations')
+    following = models.ForeignKey(User, on_delete=models.CASCADE, related_name='follower_relations')
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = 'core_user_follows'
+        unique_together = ('follower', 'following')
+
+    def __str__(self):
+        return f"{self.follower.username} follows {self.following.username}"
 
 
 class MemberPostImage(models.Model):

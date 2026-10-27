@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { Video, ResizeMode } from 'expo-av';
 import Toast from 'react-native-toast-message';
 import { memberPostsApi } from '../../api';
 import { resolveImageUrl } from '../../utils/imageUrl';
@@ -41,6 +42,9 @@ export default function PostCard({
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showHeartPop, setShowHeartPop] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(
+    Boolean(post.is_following_author || post.author?.is_following)
+  );
 
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const heartPopScale = useRef(new Animated.Value(0)).current;
@@ -53,11 +57,44 @@ export default function PostCard({
     navigation.navigate('PostDetail', { post, postId: post.id });
   };
 
+  const handleOpenAuthorProfile = () => {
+    if (post.author?.id) {
+      navigation.navigate('MemberProfile', {
+        userId: post.author.id,
+        authorId: post.author.id,
+        user: post.author,
+      });
+    } else {
+      handleOpenDetail();
+    }
+  };
+
+  const handleToggleFollow = async () => {
+    if (!currentUserId) {
+      navigation.navigate('Auth');
+      return;
+    }
+    if (isAuthor || !post.author?.id) return;
+
+    const nextState = !isFollowing;
+    setIsFollowing(nextState);
+
+    try {
+      const res = await memberPostsApi.toggleFollow(post.author.id);
+      if (res.data && typeof res.data.is_following === 'boolean') {
+        setIsFollowing(res.data.is_following);
+      }
+    } catch (_) {
+      setIsFollowing(!nextState);
+    }
+  };
+
   useEffect(() => {
     setIsLiked(Boolean(post.is_liked_by_me));
     setLikesCount(post.likes_count || 0);
     setCommentsCount(post.comments_count || 0);
-  }, [post.is_liked_by_me, post.likes_count, post.comments_count]);
+    setIsFollowing(Boolean(post.is_following_author || post.author?.is_following));
+  }, [post.is_liked_by_me, post.likes_count, post.comments_count, post.is_following_author, post.author?.is_following]);
 
   const images = (post.images || [])
     .map((img) => ({
@@ -223,11 +260,11 @@ export default function PostCard({
         }
       }}
     >
-      {/* ── 1. Top Post Header (Profile Avatar, Name, Location/Music, Options Menu) ── */}
+      {/* ── 1. Top Post Header (Profile Avatar, Name, Location, Follow Button, Options Menu) ── */}
       <View style={styles.postHeader}>
         <TouchableOpacity
           style={styles.authorRow}
-          onPress={handleOpenDetail}
+          onPress={handleOpenAuthorProfile}
           activeOpacity={0.8}
         >
           {authorPhotoUrl ? (
@@ -248,7 +285,7 @@ export default function PostCard({
               <Ionicons name="checkmark-circle" size={13} color="#0284c7" style={{ marginLeft: 3 }} />
             </View>
 
-            {/* Subtitle with Location / Audio style */}
+            {/* Subtitle with Location */}
             <View style={styles.subtitleRow}>
               <Ionicons name="location-outline" size={11} color="#64748B" />
               <Text style={styles.subtitleText} numberOfLines={1}>
@@ -258,19 +295,78 @@ export default function PostCard({
           </View>
         </TouchableOpacity>
 
-        {/* Right side: 2-line/3-dots options icon */}
-        <TouchableOpacity
-          style={styles.headerMenuBtn}
-          onPress={() => setOptionsModalVisible(true)}
-          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="ellipsis-horizontal" size={20} color="#0F172A" />
-        </TouchableOpacity>
+        {/* Right side: Follow Button + 3-dots options icon */}
+        <View style={styles.headerRightActions}>
+          {!isAuthor && post.author?.id && (
+            <TouchableOpacity
+              style={[
+                styles.headerFollowBtn,
+                isFollowing ? styles.headerFollowingBtn : styles.headerFollowBtnActive,
+              ]}
+              onPress={handleToggleFollow}
+              activeOpacity={0.75}
+            >
+              <Text
+                style={[
+                  styles.headerFollowBtnText,
+                  isFollowing && styles.headerFollowingBtnText,
+                ]}
+              >
+                {isFollowing ? 'Following' : 'Follow'}
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {isAuthor && post.status && (
+            <View style={{
+              paddingHorizontal: 8,
+              paddingVertical: 3,
+              borderRadius: 10,
+              marginRight: 6,
+              backgroundColor:
+                (post.status === 'PENDING_APPROVAL' || post.status === 'OPEN') ? '#FEF3C7' :
+                post.status === 'REJECTED' ? '#FEE2E2' :
+                post.status === 'APPROVED' ? '#DCFCE7' : '#DBEAFE',
+            }}>
+              <Text style={{
+                fontSize: 10.5,
+                fontWeight: '700',
+                color:
+                  (post.status === 'PENDING_APPROVAL' || post.status === 'OPEN') ? '#B45309' :
+                  post.status === 'REJECTED' ? '#DC2626' :
+                  post.status === 'APPROVED' ? '#15803D' : '#1E40AF',
+              }}>
+                {(post.status === 'PENDING_APPROVAL' || post.status === 'OPEN') ? 'Under Review ⏳' :
+                 post.status === 'REJECTED' ? 'Rejected ⚠️' :
+                 post.status === 'APPROVED' ? 'Approved ✅' : 'With FAO 🚀'}
+              </Text>
+            </View>
+          )}
+
+          <TouchableOpacity
+            style={styles.headerMenuBtn}
+            onPress={() => setOptionsModalVisible(true)}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="ellipsis-horizontal" size={20} color="#0F172A" />
+          </TouchableOpacity>
+        </View>
       </View>
 
-      {/* ── 2. Post Media / Image (Full Width with Double Tap to Like) ──────────── */}
-      {images.length > 0 ? (
+      {/* ── 2. Post Media / Video or Image (Full Width with Double Tap to Like) ──────────── */}
+      {post.video ? (
+        <View style={styles.mediaContainer}>
+          <Video
+            source={{ uri: resolveImageUrl(post.video) }}
+            style={styles.postVideo}
+            useNativeControls
+            resizeMode={ResizeMode.COVER}
+            isLooping
+            shouldPlay={false}
+          />
+        </View>
+      ) : images.length > 0 ? (
         <View style={styles.mediaContainer}>
           <ScrollView
             horizontal
@@ -686,6 +782,36 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#64748B',
   },
+  headerRightActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  headerFollowBtn: {
+    height: 28,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerFollowBtnActive: {
+    backgroundColor: '#0284c7',
+  },
+  headerFollowBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  headerFollowingBtn: {
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+  },
+  headerFollowingBtnText: {
+    fontSize: 12,
+    color: '#0F172A',
+    fontWeight: '600',
+  },
   headerMenuBtn: {
     padding: 6,
     borderRadius: 8,
@@ -696,6 +822,11 @@ const styles = StyleSheet.create({
     width: '100%',
     position: 'relative',
     backgroundColor: '#0F172A',
+  },
+  postVideo: {
+    width: '100%',
+    height: 380,
+    backgroundColor: '#000000',
   },
   postImage: {
     width: '100%',

@@ -50,7 +50,7 @@ export default function AdminUsers() {
   const [platform, setPlatform] = useState("WEB")
   const [showInactive, setShowInactive] = useState(false)
 
-  const webRoles = ["MANAGER","ACCOUNTANT","HR","ADMIN", "DATA_ENTRY"]
+  const webRoles = ["MANAGER","ACCOUNTANT","HR","ADMIN", "DATA_ENTRY", "SOCIAL_MEDIA"]
   const mobileRoles = ["STAFF", "MEMBER", "FIELD_ASSESSMENT_OFFICER", "ASSESSMENT_CALCULATION_OFFICER", "GENERAL_ENQUIRY_OFFICER"]
 
   const handlePlatformChange = (p) => {

@@ -6,7 +6,8 @@ import {
   ScrollView,
   TouchableOpacity,
   RefreshControl,
-  Image
+  Image,
+  TextInput
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -39,6 +40,8 @@ const MemberHomeScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchText, setSearchText] = useState('');
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [posts, setPosts] = useState([]);
   const [postsLoading, setPostsLoading] = useState(false);
@@ -180,29 +183,45 @@ const MemberHomeScreen = ({ navigation }) => {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Top Navigation Header */}
       <View style={styles.topBar}>
-        <TouchableOpacity style={styles.iconBtn} onPress={() => setDrawerVisible(true)}>
+        {/* Left: Menu Drawer button */}
+        <TouchableOpacity
+          style={styles.iconBtn}
+          onPress={() => setDrawerVisible(true)}
+          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+        >
           <Ionicons name="menu-outline" size={26} color={Colors.textPrimary} />
         </TouchableOpacity>
 
-        <View style={styles.brandTitleContainer}>
-          <Text style={styles.brandTitle}>SREELAKSHMI</Text>
-          <Text style={styles.brandSub}>CHARITABLE TRUST</Text>
+        {/* Center: Brand Title (Icon removed & perfectly centered) */}
+        <View style={styles.centerBrandContainer} pointerEvents="none">
+          <Text style={styles.headerBrandTitle}>Sree Lakshmi</Text>
+          <Text style={styles.headerBrandSub}>CHARITABLE TRUST</Text>
         </View>
 
-        {isAuthenticated ? (
-          <View style={styles.rightIcons}>
-            <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Notifications')}>
-              <Ionicons name="notifications-outline" size={22} color={Colors.textPrimary} />
-            </TouchableOpacity>
+        {/* Right Icons: Search Icon (opens suggestions & search), Notification, Profile */}
+        <View style={styles.rightIcons}>
+          <TouchableOpacity
+            style={styles.iconBtn}
+            onPress={() => navigation.navigate('MemberSearch')}
+            activeOpacity={0.7}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <Ionicons name="search-outline" size={23} color={Colors.textPrimary} />
+          </TouchableOpacity>
 
-            <TouchableOpacity style={styles.avatarBtn} onPress={() => navigation.navigate('Profile')}>
-              <View style={styles.avatarCircle}>
-                <Ionicons name="person" size={18} color="#0284c7" />
-              </View>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <View style={styles.rightIcons}>
+          {isAuthenticated ? (
+            <>
+              <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Notifications')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Ionicons name="notifications-outline" size={22} color={Colors.textPrimary} />
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.avatarBtn} onPress={() => navigation.navigate('Profile')} activeOpacity={0.8}>
+                <View style={styles.avatarCircle}>
+                  <Ionicons name="person" size={17} color="#0284c7" />
+                </View>
+              </TouchableOpacity>
+            </>
+          ) : (
             <TouchableOpacity
               style={styles.loginPillBtn}
               onPress={() => navigation.navigate('Auth')}
@@ -211,8 +230,8 @@ const MemberHomeScreen = ({ navigation }) => {
               <Ionicons name="log-in-outline" size={16} color="#FFFFFF" />
               <Text style={styles.loginPillBtnText}>Login</Text>
             </TouchableOpacity>
-          </View>
-        )}
+          )}
+        </View>
       </View>
 
       <ScrollView
@@ -598,6 +617,31 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     borderBottomWidth: 1,
     borderBottomColor: Colors.gray100,
+    position: 'relative',
+    height: 56,
+  },
+  centerBrandContainer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerBrandTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0284c7',
+    letterSpacing: 0.2,
+    textAlign: 'center',
+  },
+  headerBrandSub: {
+    fontSize: 8.5,
+    fontWeight: '700',
+    color: '#64748b',
+    letterSpacing: 0.8,
+    textAlign: 'center',
   },
   iconBtn: { padding: 4 },
   brandTitleContainer: { alignItems: 'center' },

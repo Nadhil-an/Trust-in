@@ -5,6 +5,7 @@ export const MASTER_NAV_CONFIG = [
   { label: 'Dashboard', icon: '📊', path: '/slt/mgr/overview', roles: ['MANAGER'] },
   { label: 'Dashboard', icon: '📊', path: '/slt/hr/overview', roles: ['HR'] },
   { label: 'Dashboard', icon: '📊', path: '/slt/finance/overview', roles: ['ACCOUNTANT'] },
+  { label: 'Dashboard', icon: '📱', path: '/slt/social/overview', roles: ['SOCIAL_MEDIA'] },
 
   // ── MANAGER CORE
   { key: 'assessment_requests', label: 'Assessment Requests', icon: '📋', path: '/slt/mgr/requests', category: 'MANAGER CORE' },
@@ -21,8 +22,8 @@ export const MASTER_NAV_CONFIG = [
   { key: 'promoters_verification', label: 'Verification Dashboard', icon: '✅', path: '/slt/entry/verification', category: 'FINANCE & DONATIONS' },
   { key: 'promoters_registry', label: 'Promoters Registry', icon: '🧾', path: '/slt/entry/promoters-registry', category: 'FINANCE & DONATIONS' },
 
-  // ── PEOPLE & RELATIONS
-  { label: 'Public Issues', icon: '📢', path: '/slt/entry/public-issues', category: 'PEOPLE & RELATIONS', roles: ['DATA_ENTRY', 'MANAGER', 'ADMIN'] },
+  // ── SOCIAL MEDIA & COMMUNITY
+  { label: 'Public Issues', icon: '📢', path: '/slt/social/public-issues', category: 'SOCIAL MEDIA', roles: ['SOCIAL_MEDIA', 'MANAGER', 'ADMIN'] },
   { key: 'membership_entry', label: 'Membership Entry', icon: '🪪', path: '/slt/entry/membership', category: 'PEOPLE & RELATIONS' },
   { label: 'Assessment Entry', icon: '📋', path: '/slt/entry/assessment', category: 'PEOPLE & RELATIONS', roles: ['DATA_ENTRY', 'MANAGER', 'ADMIN'] },
   { key: 'partners_entry', label: 'Partners Entry', icon: '🤝', path: '/slt/entry/partners', category: 'PEOPLE & RELATIONS' },
@@ -79,7 +80,7 @@ export const ADMIN_NAV_CONFIG = [
   { label: 'User Management', icon: '👤', path: '/slt/sys/user-control' },
   { label: 'Feature Access', icon: '🔐', path: '/slt/sys/feature-access' },
   { label: 'Mobile Access', icon: '📱', path: '/slt/sys/mobile-access' },
-  { label: 'Public Issues', icon: '📢', path: '/slt/entry/public-issues' },
+  { label: 'Public Issues', icon: '📢', path: '/slt/social/public-issues' },
   { label: 'Audit Log', icon: '🔍', path: '/slt/sys/audit-trail' },
   { label: 'Reports', icon: '📈', path: '/slt/shared/analytics' },
 ]

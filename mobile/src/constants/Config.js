@@ -1,4 +1,5 @@
 import Constants from 'expo-constants';
+import { Platform } from 'react-native';
 
 // ── Environment Detection ─────────────────────────────────────────────────────
 // __DEV__ is true when running via Expo Go or `npx expo start`
@@ -10,7 +11,14 @@ const getApiConfig = () => {
   if (__DEV__) {
     // In local development: the phone must reach your PC's Django backend
     const expoHost = Constants.expoConfig?.hostUri?.split(':')[0];
-    const localHost = expoHost || '10.162.176.21'; // fallback to your PC's IP
+    let localHost = expoHost || '10.162.176.21'; // fallback to your PC's IP
+
+    if (Platform.OS === 'android' && (localHost === 'localhost' || localHost === '127.0.0.1')) {
+      localHost = '10.0.2.2'; // Android emulator alias for host PC
+    } else if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location?.hostname) {
+      localHost = window.location.hostname;
+    }
+
     return {
       apiBase:  `http://${localHost}:8000/api`,
       wsBase:   `ws://${localHost}:8000/ws`,
