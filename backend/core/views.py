@@ -9,11 +9,14 @@ from rest_framework.throttling import AnonRateThrottle
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 from django.conf import settings
+from django.db import models, transaction
 from django.contrib.auth import authenticate
 import re
 
 from core.models import User, AuditLog, SystemNotification, Role, RoleFeaturePermission
-from core.serializers import (UserSerializer, UserCreateSerializer,
+from core.serializers import (
+    MemberVerificationRequestSerializer, PublicCooperationMessageSerializer,
+    SocialPollSerializer, SocialPollOptionSerializer,UserSerializer, UserCreateSerializer,
                                 UserUpdateSerializer, ChangePasswordSerializer,
                                 AuditLogSerializer, NotificationSerializer, EventSerializer)
 from core.permissions import IsAdmin, IsHR, IsAnyStaff
@@ -259,11 +262,38 @@ class MemberSignupView(APIView):
         else:
             phone = phone_digits
 
-        email      = (data.get('email') or '').strip().lower()
-        place      = (data.get('place') or '').strip()
+        email           = (data.get('email') or '').strip().lower()
+        occupation      = (data.get('occupation') or '').strip()
+        membership_type = (data.get('membership_type') or 'MEMBER').strip().upper()
+        
+        # Address components
+        address    = (data.get('address') or data.get('place') or '').strip()
+        district   = (data.get('district') or '').strip()
+        state      = (data.get('state') or '').strip()
         pincode    = re.sub(r'\D', '', str(data.get('pincode') or ''))
-        occupation = (data.get('occupation') or '').strip()
         password   = data.get('password') or ''
+
+        # Membership fee determination
+        fee_map = {
+            'MEMBER': 100.00,
+            'GROUP_MEMBER': 100.00,
+            'ORG_STAFF': 50.00,
+            'SOCIETY': 1000.00,
+            'INSTITUTION': 5000.00,
+            'CLUB': 500.00,
+            'GENERAL': 100.00,
+            'LIFE': 5000.00,
+            'HONORARY': 0.00,
+            'PATRON': 10000.00,
+        }
+        monthly_fee_val = data.get('monthly_fee')
+        if monthly_fee_val is not None and str(monthly_fee_val).strip() != '':
+            try:
+                monthly_fee = float(monthly_fee_val)
+            except (ValueError, TypeError):
+                monthly_fee = fee_map.get(membership_type, 100.00)
+        else:
+            monthly_fee = fee_map.get(membership_type, 100.00)
 
         # 2. Validation
         errors = {}
@@ -335,8 +365,16 @@ class MemberSignupView(APIView):
             email = candidate_email
 
         # 5. Build address string
-        address_parts = [p for p in [place, pincode] if p]
-        full_address = " - ".join(address_parts)
+        address_parts = []
+        if address:
+            address_parts.append(address)
+        if district:
+            address_parts.append(district)
+        if state:
+            address_parts.append(state)
+        if pincode:
+            address_parts.append(f"PIN: {pincode}")
+        full_address = ", ".join(address_parts)
 
         # 6. Atomic database creation
         try:
@@ -351,6 +389,11 @@ class MemberSignupView(APIView):
                     is_active=True,
                 )
 
+                # Verify membership type is among recognized choices
+                from hr_module.models import MembershipType
+                valid_types = [c[0] for c in MembershipType.choices]
+                chosen_type = membership_type if membership_type in valid_types else 'MEMBER'
+
                 # Create corresponding Member record linked via created_by
                 member = Member.objects.create(
                     full_name=full_name,
@@ -360,7 +403,8 @@ class MemberSignupView(APIView):
                     occupation=occupation,
                     created_by=user,
                     status='ACTIVE',
-                    membership_type='GENERAL',
+                    membership_type=chosen_type,
+                    monthly_fee=monthly_fee,
                 )
         except IntegrityError as e:
             err_str = str(e).lower()
@@ -808,8 +852,9 @@ class RoleFeaturePermissionView(APIView):
             perms.append('hr_members')
         if ('inward_entry' in perms or request.user.role in [Role.DATA_ENTRY, Role.MANAGER, Role.ADMIN]) and 'assets_in_stock' not in perms:
             perms.append('assets_in_stock')
-        if request.user.role in [Role.DATA_ENTRY, Role.MANAGER, Role.ADMIN] and 'public_issues' not in perms:
-            perms.append('public_issues')
+        if not RoleFeaturePermission.objects.filter(feature_key='public_issues').exists():
+            if request.user.role in [Role.DATA_ENTRY, Role.MANAGER, Role.ADMIN, Role.SOCIAL_MEDIA] and 'public_issues' not in perms:
+                perms.append('public_issues')
         return Response(perms)
 
     def post(self, request):
@@ -848,7 +893,11 @@ class ExpoPushTokenView(APIView):
 from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser
 from django.shortcuts import get_object_or_404
-from core.models import MemberPost, MemberPostImage, MemberPostLike, MemberPostComment, MemberPostStatus, UserFollow
+from core.models import (
+    MemberPost, MemberPostImage, MemberPostLike, MemberPostComment, MemberPostStatus,
+    MemberPostCategory, UserFollow, MemberVerificationRequest, PublicCooperationMessage,
+    SocialPoll, SocialPollOption, SocialPollVote, VerificationStatus, POMCategory, POMStatus, PollStatus
+)
 from core.serializers import MemberPostSerializer, MemberPostCommentSerializer
 
 class MemberPostViewSet(ModelViewSet):
@@ -883,6 +932,10 @@ class MemberPostViewSet(ModelViewSet):
                 qs = qs.filter(author_id=author_id, status__in=[MemberPostStatus.APPROVED, MemberPostStatus.FORWARDED_TO_FAO, MemberPostStatus.OPEN])
             return qs
 
+        category_param = (self.request.query_params.get('post_category') or '').strip()
+        if category_param and category_param != 'ALL':
+            qs = qs.filter(post_category=category_param)
+
         status_param = (self.request.query_params.get('status') or '').strip()
         if status_param and status_param != 'ALL':
             qs = qs.filter(status=status_param)
@@ -905,22 +958,30 @@ class MemberPostViewSet(ModelViewSet):
         video_file = self.request.FILES.get('video')
         user_role = getattr(self.request.user, 'role', '')
         initial_status = MemberPostStatus.APPROVED if user_role in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA'] else MemberPostStatus.PENDING_APPROVAL
+        post_cat = self.request.data.get('post_category') or MemberPostCategory.PUBLIC
+        is_pin = self.request.data.get('is_pinned') in ['true', '1', True]
+        if post_cat == MemberPostCategory.OFFICIAL_TRUST and user_role not in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA']:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Only Trust administrators can publish official announcements.")
+
         post = serializer.save(
             author=self.request.user,
             is_active=True,
             status=initial_status,
+            post_category=post_cat,
+            is_pinned=is_pin,
             video=video_file
         )
         images = self.request.FILES.getlist('images') or self.request.FILES.getlist('photos')
         for idx, img in enumerate(images[:10]):
             MemberPostImage.objects.create(post=post, image=img, order=idx)
 
-        if post.status == MemberPostStatus.APPROVED:
-            try:
-                from notify.service import notify_post_approved_and_published
-                notify_post_approved_and_published(post)
-            except Exception as e:
-                print(f"Error notifying post publish on create: {e}")
+        try:
+            from notify.service import notify_post_created
+            notify_post_created(post)
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Error notifying post on create: {e}")
 
     def perform_update(self, serializer):
         post = serializer.save()
@@ -954,6 +1015,24 @@ class MemberPostViewSet(ModelViewSet):
         else:
             MemberPostLike.objects.get_or_create(post=post, user=request.user)
             is_liked = True
+
+            # Send push notification outside app to author when post is liked
+            if post.author and post.author != request.user:
+                try:
+                    from notify.service import push_notification
+                    liker_name = request.user.full_name or request.user.username
+                    push_notification(
+                        recipient=post.author,
+                        title="New Like on Your Post ❤️",
+                        message=f"{liker_name} liked your post.",
+                        notification_type='POST_LIKE',
+                        reference_id=str(post.id),
+                        reference_type='MemberPost',
+                        priority='LOW'
+                    )
+                except Exception as e:
+                    import logging
+                    logging.getLogger(__name__).error(f"Error notifying post like: {e}")
         
         # Always query the database directly for accurate likes count
         current_count = MemberPostLike.objects.filter(post=post).count()
@@ -975,6 +1054,26 @@ class MemberPostViewSet(ModelViewSet):
             if not text:
                 return Response({'error': 'Comment text cannot be empty'}, status=400)
             comment = MemberPostComment.objects.create(post=post, user=request.user, text=text)
+
+            # Send real-time push notification outside app to author
+            if post.author and post.author != request.user:
+                try:
+                    from notify.service import push_notification
+                    commenter_name = request.user.full_name or request.user.username
+                    snippet = text[:50] + ('...' if len(text) > 50 else '')
+                    push_notification(
+                        recipient=post.author,
+                        title="New Comment on Your Post 💬",
+                        message=f"{commenter_name}: \"{snippet}\"",
+                        notification_type='POST_COMMENT',
+                        reference_id=str(post.id),
+                        reference_type='MemberPost',
+                        priority='NORMAL'
+                    )
+                except Exception as e:
+                    import logging
+                    logging.getLogger(__name__).error(f"Error notifying post comment: {e}")
+
             serializer = MemberPostCommentSerializer(comment, context={'request': request})
             return Response(serializer.data, status=201)
 
@@ -1170,6 +1269,25 @@ class MemberProfileView(APIView):
         member_id = member.member_id if (member and member.member_id) else (target_user.username or '')
         district = getattr(member, 'district', '') if member else ''
 
+        # Badges & Achievements
+        badges_list = []
+        badge_summary_parts = []
+        if member:
+            from core.models import MemberBadge
+            awards = MemberBadge.objects.filter(member=member).select_related('badge')
+            for aw in awards:
+                badges_list.append({
+                    'badge_key': aw.badge.badge_key,
+                    'name': aw.badge.name,
+                    'icon': aw.badge.icon,
+                    'color': aw.badge.color,
+                    'is_permanent': aw.is_permanent,
+                    'times_earned': aw.times_earned,
+                    'qualifying_period': aw.qualifying_period,
+                })
+                badge_summary_parts.append(f'{aw.badge.icon} × {aw.times_earned}')
+        badge_summary = ' | '.join(badge_summary_parts) if badge_summary_parts else ''
+
         photo_url = None
         if target_user.photo:
             photo_url = request.build_absolute_uri(target_user.photo.url) if request else target_user.photo.url
@@ -1197,6 +1315,8 @@ class MemberProfileView(APIView):
                 'posts_count': posts_count,
                 'followers_count': followers_count,
                 'following_count': following_count,
+                'badges': badges_list,
+                'badge_summary': badge_summary,
             },
             'posts': serializer.data,
         })
@@ -1353,3 +1473,538 @@ class MemberSearchView(APIView):
         return Response(results)
 
 
+
+
+class SocialAnalyticsView(APIView):
+    """Platform-wide analytics engine with customizable date range filters and time-series charts"""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from django.db.models import Count, Q
+        from django.db.models.functions import TruncDate
+        from hr_module.models import Member
+        from datetime import datetime, timedelta
+
+        period = (request.query_params.get('period') or '30d').strip().lower()
+        now = timezone.now()
+
+        if period == 'today':
+            start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        elif period == '7d':
+            start_date = now - timedelta(days=7)
+        elif period == '30d':
+            start_date = now - timedelta(days=30)
+        elif period == 'this_month':
+            start_date = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        elif period == 'this_year':
+            start_date = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+        elif period == 'custom':
+            start_str = request.query_params.get('start_date')
+            end_str = request.query_params.get('end_date')
+            try:
+                start_date = timezone.make_aware(datetime.strptime(start_str, '%Y-%m-%d')) if start_str else (now - timedelta(days=30))
+                if end_str:
+                    now = timezone.make_aware(datetime.strptime(end_str, '%Y-%m-%d') + timedelta(days=1))
+            except Exception:
+                start_date = now - timedelta(days=30)
+        else:
+            start_date = now - timedelta(days=30)
+
+        # 1. Summary Cards
+        total_registered_members = Member.objects.count()
+        new_members_count = Member.objects.filter(created_at__gte=start_date, created_at__lte=now).count()
+
+        total_posts = MemberPost.objects.filter(is_active=True).count()
+        pending_post_approvals = MemberPost.objects.filter(is_active=True, status=MemberPostStatus.PENDING_APPROVAL).count()
+        published_public_posts = MemberPost.objects.filter(is_active=True, status=MemberPostStatus.APPROVED, post_category=MemberPostCategory.PUBLIC).count()
+        published_official_posts = MemberPost.objects.filter(is_active=True, status=MemberPostStatus.APPROVED, post_category=MemberPostCategory.OFFICIAL_TRUST).count()
+
+        pending_verifications = MemberVerificationRequest.objects.filter(status=VerificationStatus.PENDING).count()
+        active_voting_campaigns = SocialPoll.objects.filter(status=PollStatus.ACTIVE).count()
+        pom_messages_published = PublicCooperationMessage.objects.filter(status=POMStatus.PUBLISHED).count()
+
+        period_likes = MemberPostLike.objects.filter(created_at__gte=start_date, created_at__lte=now).count()
+        period_comments = MemberPostComment.objects.filter(created_at__gte=start_date, created_at__lte=now).count()
+        total_engagement = period_likes + period_comments
+
+        # 2. Member Growth Daily Trend
+        member_growth_qs = (
+            Member.objects.filter(created_at__gte=start_date, created_at__lte=now)
+            .annotate(date=TruncDate('created_at'))
+            .values('date')
+            .annotate(count=Count('id'))
+            .order_by('date')
+        )
+        member_growth = [{'date': str(item['date']), 'count': item['count']} for item in member_growth_qs]
+
+        # 3. Post Creation and Approval Daily Trend
+        posts_trend_qs = (
+            MemberPost.objects.filter(is_active=True, created_at__gte=start_date, created_at__lte=now)
+            .annotate(date=TruncDate('created_at'))
+            .values('date')
+            .annotate(
+                total=Count('id'),
+                approved=Count('id', filter=Q(status=MemberPostStatus.APPROVED)),
+                rejected=Count('id', filter=Q(status=MemberPostStatus.REJECTED)),
+                pending=Count('id', filter=Q(status=MemberPostStatus.PENDING_APPROVAL)),
+            )
+            .order_by('date')
+        )
+        posts_trend = [{
+            'date': str(item['date']),
+            'total': item['total'],
+            'approved': item['approved'],
+            'rejected': item['rejected'],
+            'pending': item['pending'],
+        } for item in posts_trend_qs]
+
+        # 4. Engagement Trends Daily
+        likes_daily = {
+            str(item['date']): item['count']
+            for item in (
+                MemberPostLike.objects.filter(created_at__gte=start_date, created_at__lte=now)
+                .annotate(date=TruncDate('created_at'))
+                .values('date')
+                .annotate(count=Count('id'))
+            )
+        }
+        comments_daily = {
+            str(item['date']): item['count']
+            for item in (
+                MemberPostComment.objects.filter(created_at__gte=start_date, created_at__lte=now)
+                .annotate(date=TruncDate('created_at'))
+                .values('date')
+                .annotate(count=Count('id'))
+            )
+        }
+        all_dates = sorted(set(list(likes_daily.keys()) + list(comments_daily.keys())))
+        engagement_trends = [{
+            'date': d,
+            'likes': likes_daily.get(d, 0),
+            'comments': comments_daily.get(d, 0),
+            'total': likes_daily.get(d, 0) + comments_daily.get(d, 0)
+        } for d in all_dates]
+
+        # 5. Category Distribution
+        cat_counts = (
+            MemberPost.objects.filter(is_active=True)
+            .values('post_category')
+            .annotate(count=Count('id'))
+        )
+        cat_map = {item['post_category']: item['count'] for item in cat_counts}
+        category_distribution = {
+            'SELF': cat_map.get(MemberPostCategory.SELF, 0),
+            'PUBLIC': cat_map.get(MemberPostCategory.PUBLIC, 0),
+            'OFFICIAL_TRUST': cat_map.get(MemberPostCategory.OFFICIAL_TRUST, 0),
+        }
+
+        # 6. Verification Requests Summary
+        verif_counts = (
+            MemberVerificationRequest.objects
+            .values('status')
+            .annotate(count=Count('id'))
+        )
+        verif_map = {item['status']: item['count'] for item in verif_counts}
+        verification_summary = {
+            'pending': verif_map.get(VerificationStatus.PENDING, 0),
+            'approved': verif_map.get(VerificationStatus.APPROVED, 0),
+            'rejected': verif_map.get(VerificationStatus.REJECTED, 0),
+        }
+
+        # 7. Active Voting Campaigns Summary
+        polls_qs = SocialPoll.objects.filter(status=PollStatus.ACTIVE)[:5]
+        active_polls = [{
+            'id': str(p.id),
+            'title': p.title,
+            'total_votes': p.votes.count(),
+            'end_time': p.end_time.isoformat() if p.end_time else None
+        } for p in polls_qs]
+
+        # 8. POM Overview
+        pom_qs = PublicCooperationMessage.objects.filter(status=POMStatus.PUBLISHED)[:5]
+        pom_summary = [{
+            'id': str(m.id),
+            'title': m.title,
+            'category': m.category,
+            'views_count': m.views_count,
+            'responses_count': m.responses_count
+        } for m in pom_qs]
+
+        return Response({
+            'period': period,
+            'start_date': start_date.strftime('%Y-%m-%d'),
+            'end_date': now.strftime('%Y-%m-%d'),
+            'summary': {
+                'total_members': total_registered_members,
+                'new_members': new_members_count,
+                'total_posts': total_posts,
+                'pending_post_approvals': pending_post_approvals,
+                'published_public_posts': published_public_posts,
+                'published_official_posts': published_official_posts,
+                'pending_verifications': pending_verifications,
+                'active_voting_campaigns': active_voting_campaigns,
+                'pom_messages_published': pom_messages_published,
+                'period_likes': period_likes,
+                'period_comments': period_comments,
+                'total_engagement': total_engagement,
+            },
+            'charts': {
+                'member_growth': member_growth,
+                'posts_trend': posts_trend,
+                'engagement_trends': engagement_trends,
+                'category_distribution': category_distribution,
+                'verification_summary': verification_summary,
+                'active_polls': active_polls,
+                'pom_summary': pom_summary,
+            }
+        })
+
+
+class MemberVerificationViewSet(ModelViewSet):
+    """Account verification queue for review, document inspection, approval, and rejection"""
+    queryset = MemberVerificationRequest.objects.select_related('user', 'member', 'reviewed_by').order_by('-submitted_at')
+    serializer_class = MemberVerificationRequestSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        status_param = self.request.query_params.get('status')
+        if status_param and status_param != 'ALL':
+            qs = qs.filter(status=status_param)
+        search = (self.request.query_params.get('search') or '').strip()
+        if search:
+            qs = qs.filter(
+                models.Q(full_name__icontains=search) |
+                models.Q(phone__icontains=search) |
+                models.Q(id_proof_number__icontains=search) |
+                models.Q(user__username__icontains=search) |
+                models.Q(user__full_name__icontains=search)
+            )
+        return qs
+
+    def perform_create(self, serializer):
+        from core.serializers import get_user_member
+        member = get_user_member(self.request.user)
+        serializer.save(
+            user=self.request.user,
+            member=member,
+            full_name=self.request.data.get('full_name') or self.request.user.full_name,
+            phone=self.request.data.get('phone') or str(getattr(self.request.user, 'phone', ''))
+        )
+
+    @action(detail=True, methods=['post'], url_path='approve')
+    def approve(self, request, pk=None):
+        user_role = getattr(request.user, 'role', '')
+        if user_role not in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA']:
+            return Response({'error': 'Permission denied. Only Trust moderators can verify accounts.'}, status=403)
+
+        req = self.get_object()
+        req.status = VerificationStatus.APPROVED
+        req.reviewed_by = request.user
+        req.reviewed_at = timezone.now()
+        req.rejection_reason = ''
+        req.save(update_fields=['status', 'reviewed_by', 'reviewed_at', 'rejection_reason', 'updated_at'])
+
+        # Set is_verified on User and Member
+        req.user.is_verified = True
+        req.user.save(update_fields=['is_verified'])
+        if req.member:
+            req.member.is_verified = True
+            req.member.save(update_fields=['is_verified'])
+
+        # Send push notification
+        try:
+            from notify.service import push_notification
+            push_notification(
+                recipient=req.user,
+                title="Account Verified! 🛡️",
+                message="Congratulations! Your Sree Lakshmi Trust profile has been verified. The verified badge is now visible across the platform.",
+                notification_type='ACCOUNT_VERIFIED',
+                reference_id=str(req.id),
+                reference_type='MemberVerificationRequest',
+                priority='HIGH'
+            )
+        except Exception as e:
+            logging.getLogger(__name__).error(f"Error notifying verification approval: {e}")
+
+        AuditLog.objects.create(
+            user=request.user,
+            action='APPROVE_VERIFICATION',
+            module='SOCIAL_MEDIA',
+            record_type='MemberVerificationRequest',
+            record_id=str(req.id),
+            reference_number=req.user.username,
+            new_status=req.status,
+            description=f"Member @{req.user.username} verification approved by {request.user.full_name or request.user.username}",
+            ip_address=getattr(request, 'audit_ip', None)
+        )
+
+        return Response({
+            'message': f'Account verification for @{req.user.username} approved successfully! Verified badge awarded.',
+            'status': req.status
+        })
+
+    @action(detail=True, methods=['post'], url_path='reject')
+    def reject(self, request, pk=None):
+        user_role = getattr(request.user, 'role', '')
+        if user_role not in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA']:
+            return Response({'error': 'Permission denied.'}, status=403)
+
+        reason = (request.data.get('reason') or '').strip()
+        if not reason:
+            return Response({'error': 'Rejection reason is required.'}, status=400)
+
+        req = self.get_object()
+        req.status = VerificationStatus.REJECTED
+        req.rejection_reason = reason
+        req.reviewed_by = request.user
+        req.reviewed_at = timezone.now()
+        req.save(update_fields=['status', 'rejection_reason', 'reviewed_by', 'reviewed_at', 'updated_at'])
+
+        # Send push notification
+        try:
+            from notify.service import push_notification
+            push_notification(
+                recipient=req.user,
+                title="Verification Update",
+                message=f"Your verification request was not approved: {reason}. You may reapply with valid documentation.",
+                notification_type='ACCOUNT_VERIFICATION_REJECTED',
+                reference_id=str(req.id),
+                reference_type='MemberVerificationRequest',
+                priority='NORMAL'
+            )
+        except Exception as e:
+            logging.getLogger(__name__).error(f"Error notifying verification rejection: {e}")
+
+        AuditLog.objects.create(
+            user=request.user,
+            action='REJECT_VERIFICATION',
+            module='SOCIAL_MEDIA',
+            record_type='MemberVerificationRequest',
+            record_id=str(req.id),
+            reference_number=req.user.username,
+            new_status=req.status,
+            description=f"Member @{req.user.username} verification rejected: {reason}",
+            ip_address=getattr(request, 'audit_ip', None)
+        )
+
+        return Response({
+            'message': f'Verification request rejected with reason.',
+            'status': req.status,
+            'reason': reason
+        })
+
+
+class PublicCooperationMessageViewSet(ModelViewSet):
+    """Public Cooperation Messages (POM) for community announcements, emergency blood requests, etc."""
+    queryset = PublicCooperationMessage.objects.select_related('created_by').order_by('-is_pinned', '-created_at')
+    serializer_class = PublicCooperationMessageSerializer
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        status_param = self.request.query_params.get('status')
+        if status_param and status_param != 'ALL':
+            qs = qs.filter(status=status_param)
+        category_param = self.request.query_params.get('category')
+        if category_param and category_param != 'ALL':
+            qs = qs.filter(category=category_param)
+        search = (self.request.query_params.get('search') or '').strip()
+        if search:
+            qs = qs.filter(
+                models.Q(title__icontains=search) |
+                models.Q(description__icontains=search) |
+                models.Q(target_location__icontains=search) |
+                models.Q(contact_person__icontains=search)
+            )
+        return qs
+
+    def perform_create(self, serializer):
+        user_role = getattr(self.request.user, 'role', '')
+        if user_role not in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA']:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Only Trust administrators can create Public Cooperation Messages.")
+        serializer.save(created_by=self.request.user)
+
+    @action(detail=True, methods=['post'], url_path='increment-view')
+    def increment_view(self, request, pk=None):
+        pom = self.get_object()
+        pom.views_count = models.F('views_count') + 1
+        pom.save(update_fields=['views_count'])
+        pom.refresh_from_db(fields=['views_count'])
+        return Response({'views_count': pom.views_count})
+
+    @action(detail=True, methods=['post'], url_path='respond')
+    def respond(self, request, pk=None):
+        pom = self.get_object()
+        pom.responses_count = models.F('responses_count') + 1
+        pom.save(update_fields=['responses_count'])
+        pom.refresh_from_db(fields=['responses_count'])
+        return Response({'responses_count': pom.responses_count, 'message': 'Thank you for your response!'})
+
+    @action(detail=True, methods=['post'], url_path='toggle-pin')
+    def toggle_pin(self, request, pk=None):
+        user_role = getattr(request.user, 'role', '')
+        if user_role not in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA']:
+            return Response({'error': 'Permission denied.'}, status=403)
+        pom = self.get_object()
+        pom.is_pinned = not pom.is_pinned
+        pom.save(update_fields=['is_pinned', 'updated_at'])
+        return Response({'is_pinned': pom.is_pinned})
+
+    @action(detail=True, methods=['post'], url_path='change-status')
+    def change_status(self, request, pk=None):
+        user_role = getattr(request.user, 'role', '')
+        if user_role not in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA']:
+            return Response({'error': 'Permission denied.'}, status=403)
+        target_status = request.data.get('status')
+        if target_status not in [POMStatus.DRAFT, POMStatus.PUBLISHED, POMStatus.ARCHIVED]:
+            return Response({'error': 'Invalid status.'}, status=400)
+        pom = self.get_object()
+        pom.status = target_status
+        pom.save(update_fields=['status', 'updated_at'])
+        return Response({'status': pom.status, 'message': f'POM status changed to {target_status}.'})
+
+
+class SocialPollViewSet(ModelViewSet):
+    """Voting and poll management with integrity protection, one-vote enforcement, and live results calculation"""
+    queryset = SocialPoll.objects.prefetch_related('options', 'votes').select_related('created_by').order_by('-created_at')
+    serializer_class = SocialPollSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        status_param = self.request.query_params.get('status')
+        if status_param and status_param != 'ALL':
+            qs = qs.filter(status=status_param)
+        search = (self.request.query_params.get('search') or '').strip()
+        if search:
+            qs = qs.filter(models.Q(title__icontains=search) | models.Q(description__icontains=search))
+        return qs
+
+    def create(self, request, *args, **kwargs):
+        user_role = getattr(request.user, 'role', '')
+        if user_role not in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA']:
+            return Response({'error': 'Permission denied. Only Trust administrators can create polls.'}, status=403)
+
+        title = (request.data.get('title') or '').strip()
+        if not title:
+            return Response({'error': 'Poll title is required.'}, status=400)
+
+        options_data = request.data.get('options') or []
+        if isinstance(options_data, str):
+            import json
+            try:
+                options_data = json.loads(options_data)
+            except Exception:
+                options_data = [opt.strip() for opt in options_data.split(',') if opt.strip()]
+
+        cleaned_options = [str(opt).strip() for opt in options_data if str(opt).strip()]
+        if len(cleaned_options) < 2:
+            return Response({'error': 'At least 2 options are required for a poll.'}, status=400)
+
+        with transaction.atomic():
+            poll = SocialPoll.objects.create(
+                title=title,
+                description=(request.data.get('description') or '').strip(),
+                status=request.data.get('status') or PollStatus.ACTIVE,
+                start_time=request.data.get('start_time') or timezone.now(),
+                end_time=request.data.get('end_time') or None,
+                is_anonymous=request.data.get('is_anonymous') in [True, 'true', '1'],
+                show_results_before_close=request.data.get('show_results_before_close') in [True, 'true', '1'],
+                eligible_roles=request.data.get('eligible_roles') or 'ALL',
+                created_by=request.user
+            )
+            for idx, opt_text in enumerate(cleaned_options):
+                SocialPollOption.objects.create(
+                    poll=poll,
+                    option_text=opt_text,
+                    order=idx
+                )
+
+        serializer = self.get_serializer(poll)
+        return Response(serializer.data, status=201)
+
+    @action(detail=True, methods=['post'], url_path='vote')
+    def vote(self, request, pk=None):
+        poll = self.get_object()
+
+        # Check status
+        if poll.status != PollStatus.ACTIVE:
+            return Response({'error': f'This poll is currently {poll.get_status_display().lower()} and not accepting votes.'}, status=400)
+
+        # Check deadline
+        if poll.end_time and timezone.now() > poll.end_time:
+            poll.status = PollStatus.CLOSED
+            poll.save(update_fields=['status'])
+            return Response({'error': 'Voting for this poll has concluded.'}, status=400)
+
+        # Check eligibility
+        if poll.eligible_roles and poll.eligible_roles != 'ALL':
+            allowed = [r.strip() for r in poll.eligible_roles.split(',') if r.strip()]
+            user_role = getattr(request.user, 'role', '')
+            if user_role not in allowed:
+                return Response({'error': f'Only {poll.eligible_roles} members are eligible to vote in this poll.'}, status=403)
+
+        option_id = request.data.get('option_id')
+        if not option_id:
+            return Response({'error': 'Please select an option to vote.'}, status=400)
+
+        try:
+            option = poll.options.get(id=option_id)
+        except SocialPollOption.DoesNotExist:
+            return Response({'error': 'Selected option does not exist.'}, status=404)
+
+        with transaction.atomic():
+            # Check for existing vote (prevent duplicates)
+            if SocialPollVote.objects.filter(poll=poll, voter=request.user).exists():
+                return Response({'error': 'You have already cast your vote in this poll.'}, status=400)
+
+            SocialPollVote.objects.create(
+                poll=poll,
+                option=option,
+                voter=request.user
+            )
+            option.votes_count = models.F('votes_count') + 1
+            option.save(update_fields=['votes_count'])
+
+        serializer = self.get_serializer(poll)
+        return Response({
+            'message': 'Your vote has been recorded successfully!',
+            'poll': serializer.data
+        })
+
+    @action(detail=True, methods=['post'], url_path='close')
+    def close_poll(self, request, pk=None):
+        user_role = getattr(request.user, 'role', '')
+        if user_role not in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA']:
+            return Response({'error': 'Permission denied.'}, status=403)
+        poll = self.get_object()
+        poll.status = PollStatus.CLOSED
+        poll.save(update_fields=['status', 'updated_at'])
+        return Response({'message': 'Poll closed successfully.', 'status': poll.status})
+
+    @action(detail=True, methods=['get'], url_path='results')
+    def results(self, request, pk=None):
+        poll = self.get_object()
+        total_votes = poll.votes.count()
+        options = []
+        for opt in poll.options.all():
+            cnt = opt.votes.count()
+            pct = round((cnt / total_votes * 100), 1) if total_votes > 0 else 0.0
+            options.append({
+                'id': str(opt.id),
+                'text': opt.option_text,
+                'votes': cnt,
+                'percentage': pct,
+            })
+        return Response({
+            'poll_id': str(poll.id),
+            'title': poll.title,
+            'status': poll.status,
+            'total_votes': total_votes,
+            'options': options,
+            'is_anonymous': poll.is_anonymous,
+            'show_results_before_close': poll.show_results_before_close,
+        })

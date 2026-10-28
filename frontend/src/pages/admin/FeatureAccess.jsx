@@ -4,7 +4,7 @@ import { MASTER_NAV_CONFIG } from '../../config/features'
 import { LoadingState } from '../../components/shared'
 import toast from 'react-hot-toast'
 
-const ROLES = ['MANAGER', 'ACCOUNTANT', 'HR', 'DATA_ENTRY']
+const ROLES = ['MANAGER', 'ACCOUNTANT', 'HR', 'DATA_ENTRY', 'SOCIAL_MEDIA']
 
 export default function FeatureAccess() {
   const [mappings, setMappings] = useState({})

@@ -292,6 +292,12 @@ export default function PostCard({
         }
       }}
     >
+      {Boolean(post.description?.includes('OFFICIAL TRUST APPRECIATION') || post.post_type === 'OFFICIAL' && post.title?.toLowerCase().includes('appreciation')) && (
+        <View style={styles.appreciationBanner}>
+          <Text style={styles.appreciationBannerText}>🏆 OFFICIAL TRUST APPRECIATION & RECOGNITION</Text>
+        </View>
+      )}
+
       {/* ── 1. Top Post Header (Profile Avatar, Name, Location, Follow Button, Options Menu) ── */}
       <View style={styles.postHeader}>
         <TouchableOpacity
@@ -319,7 +325,6 @@ export default function PostCard({
 
             {/* Subtitle with Location */}
             <View style={styles.subtitleRow}>
-              <Ionicons name="location-outline" size={11} color="#64748B" />
               <Text style={styles.subtitleText} numberOfLines={1}>
                 {districtName}
               </Text>
@@ -369,11 +374,6 @@ export default function PostCard({
                 {(post.status === 'PENDING_APPROVAL' || post.status === 'OPEN') ? 'Under Review ⏳' :
                  post.status === 'REJECTED' ? 'Rejected ⚠️' : 'With FAO 🚀'}
               </Text>
-            </View>
-          ) : isCharity ? (
-            <View style={[styles.charityBadge, { marginRight: 6, marginLeft: 0 }]}>
-              <Ionicons name="heart" size={11} color="#E11D48" />
-              <Text style={styles.charityBadgeText}>Charity</Text>
             </View>
           ) : null}
 
@@ -564,16 +564,26 @@ export default function PostCard({
           </TouchableOpacity>
         </View>
 
-        {/* Right side of Action Bar: Donate Now Button (parallel to love & share icons) */}
+        {/* Right side of Action Bar: Charity Badge placed right above Donate Now Button */}
         {isCharity && (
-          <TouchableOpacity
-            style={styles.donateNowBtn}
-            onPress={handleDonate}
-            activeOpacity={0.85}
-          >
-            <Ionicons name="heart" size={13} color="#FFFFFF" />
-            <Text style={styles.donateNowBtnText}>Donate Now</Text>
-          </TouchableOpacity>
+          <View style={styles.charityActionCol}>
+            <TouchableOpacity
+              style={styles.charityBadgeAbove}
+              onPress={handleDonate}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="heart" size={11} color="#E11D48" />
+              <Text style={styles.charityBadgeText}>Charity</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.donateNowBtn}
+              onPress={handleDonate}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="heart" size={13} color="#FFFFFF" />
+              <Text style={styles.donateNowBtnText}>Donate Now</Text>
+            </TouchableOpacity>
+          </View>
         )}
       </View>
 
@@ -617,16 +627,10 @@ export default function PostCard({
           </TouchableOpacity>
         )}
 
-        {/* Bottom Footer Row: Left Meta (Timestamp, Location, Status) */}
+        {/* Bottom Footer Row: Left Meta (Timestamp, Status) */}
         <View style={styles.cardBottomRow}>
           <View style={styles.footerMetaRow}>
             <Text style={styles.timestampText}>{formatTime(post.created_at)}</Text>
-            {Boolean(districtName) && (
-              <>
-                <Text style={styles.metaDivider}>•</Text>
-                <Text style={styles.metaPlaceText}>{districtName}</Text>
-              </>
-            )}
             {post.status === 'FORWARDED_TO_FAO' && (
               <>
                 <Text style={styles.metaDivider}>•</Text>
@@ -796,6 +800,19 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 2,
     marginBottom: 16,
+  },
+  appreciationBanner: {
+    backgroundColor: '#FEF3C7',
+    borderBottomWidth: 1,
+    borderBottomColor: '#FDE68A',
+    paddingVertical: 7,
+    paddingHorizontal: 14,
+  },
+  appreciationBannerText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#92400E',
+    letterSpacing: 0.5,
   },
 
   // 1. Header Styles
@@ -1070,6 +1087,22 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#64748B',
   },
+  charityActionCol: {
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  charityBadgeAbove: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3.5,
+    backgroundColor: '#FFF1F2',
+    borderWidth: 1,
+    borderColor: '#FECDD3',
+    paddingHorizontal: 8,
+    paddingVertical: 2.5,
+    borderRadius: 10,
+  },
   charityBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1098,11 +1131,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    backgroundColor: '#0284c7',
+    backgroundColor: '#16a34a',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
-    shadowColor: '#0284c7',
+    shadowColor: '#16a34a',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3,

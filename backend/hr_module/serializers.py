@@ -2,7 +2,8 @@
 from rest_framework import serializers
 from hr_module.models import (Member, MemberDocument, Volunteer, ExecutiveMember,
                                ExecutiveOfficer, SalaryStructure, Attendance,
-                               LeaveRequest, MonthlyPayroll, EmployeeDocument,
+                               LeaveRequest, LeaveHRNote, LeaveHRCommunication, LeaveAuditLog,
+                               MonthlyPayroll, EmployeeDocument,
                                Complaint, StaffReport, PaymentAdvanceRequest, PerformancePoint,
                                PromoterRegistryEntry)
 
@@ -116,10 +117,13 @@ class MemberDocumentSerializer(serializers.ModelSerializer):
 
 
 class VolunteerSerializer(serializers.ModelSerializer):
+    approved_by_name = serializers.CharField(source='approved_by.full_name', read_only=True, default='')
+    created_by_name = serializers.CharField(source='created_by.full_name', read_only=True, default='')
+
     class Meta:
         model = Volunteer
         fields = '__all__'
-        read_only_fields = ['id', 'volunteer_id', 'created_by', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'volunteer_id', 'created_by', 'created_at', 'updated_at', 'approved_by', 'approved_at']
 
 
 class ExecutiveMemberSerializer(serializers.ModelSerializer):
@@ -209,20 +213,131 @@ class AttendanceSerializer(serializers.ModelSerializer):
         return obj.employee.full_name if obj.employee else ''
 
 
+class LeaveHRNoteSerializer(serializers.ModelSerializer):
+    author_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = LeaveHRNote
+        fields = ['id', 'author', 'author_name', 'note', 'created_at']
+        read_only_fields = ['id', 'author', 'author_name', 'created_at']
+
+    def get_author_name(self, obj):
+        return obj.author.full_name or obj.author.username if obj.author else 'HR'
+
+
+class LeaveHRCommunicationSerializer(serializers.ModelSerializer):
+    sender_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = LeaveHRCommunication
+        fields = ['id', 'sender', 'sender_name', 'message', 'is_decision_communicated', 'delivery_status', 'created_at']
+        read_only_fields = ['id', 'sender', 'sender_name', 'created_at']
+
+    def get_sender_name(self, obj):
+        return obj.sender.full_name or obj.sender.username if obj.sender else 'HR'
+
+
+class LeaveAuditLogSerializer(serializers.ModelSerializer):
+    actor_name = serializers.SerializerMethodField()
+    actor_role = serializers.SerializerMethodField()
+
+    class Meta:
+        model = LeaveAuditLog
+        fields = ['id', 'actor', 'actor_name', 'actor_role', 'action', 'details', 'ip_address', 'created_at']
+        read_only_fields = ['id', 'actor', 'actor_name', 'actor_role', 'action', 'details', 'ip_address', 'created_at']
+
+    def get_actor_name(self, obj):
+        return obj.actor.full_name or obj.actor.username if obj.actor else 'System'
+
+    def get_actor_role(self, obj):
+        return getattr(obj.actor, 'role', '') if obj.actor else ''
+
+
 class LeaveRequestSerializer(serializers.ModelSerializer):
     employee_name = serializers.SerializerMethodField()
+    employee_code = serializers.SerializerMethodField()
+    staff_uid = serializers.SerializerMethodField()
+    department = serializers.SerializerMethodField()
+    designation = serializers.SerializerMethodField()
+    employee_photo = serializers.SerializerMethodField()
     approved_by_name = serializers.SerializerMethodField()
+    approved_by_role = serializers.SerializerMethodField()
+    total_days = serializers.DecimalField(source='number_of_days', max_digits=4, decimal_places=1, read_only=True)
+    approved_days_this_month = serializers.SerializerMethodField()
+    hr_notes = LeaveHRNoteSerializer(many=True, read_only=True)
+    hr_communications = LeaveHRCommunicationSerializer(many=True, read_only=True)
+    audit_logs = LeaveAuditLogSerializer(many=True, read_only=True)
+    reapplication_history = serializers.SerializerMethodField()
 
     class Meta:
         model = LeaveRequest
         fields = '__all__'
-        read_only_fields = ['id', 'approved_by', 'approved_at', 'created_at']
+        read_only_fields = [
+            'id', 'status', 'applied_at', 'created_at', 'approved_by', 'approved_at',
+            'exceeds_monthly_limit', 'notice_days', 'number_of_days'
+        ]
 
     def get_employee_name(self, obj):
         return obj.employee.full_name if obj.employee else ''
 
+    def get_employee_code(self, obj):
+        return obj.employee.employee_id if obj.employee else ''
+
+    def get_staff_uid(self, obj):
+        if obj.staff_user and obj.staff_user.staff_uid:
+            return obj.staff_user.staff_uid
+        return obj.employee.employee_id if obj.employee else ''
+
+    def get_department(self, obj):
+        return obj.employee.department if obj.employee else 'General'
+
+    def get_designation(self, obj):
+        return obj.employee.designation if obj.employee else 'Staff'
+
+    def get_employee_photo(self, obj):
+        if obj.employee and obj.employee.photo:
+            try:
+                return obj.employee.photo.url
+            except Exception:
+                return None
+        return None
+
     def get_approved_by_name(self, obj):
         return obj.approved_by.full_name if obj.approved_by else ''
+
+    def get_approved_by_role(self, obj):
+        return getattr(obj.approved_by, 'role', '') if obj.approved_by else ''
+
+    def get_approved_days_this_month(self, obj):
+        from hr_module.leave_service import get_approved_leave_days_in_month
+        if not obj.employee or not obj.from_date:
+            return 0.0
+        return float(get_approved_leave_days_in_month(obj.employee, obj.from_date.year, obj.from_date.month))
+
+    def get_reapplication_history(self, obj):
+        history = []
+        curr = obj.reapplication_of
+        while curr:
+            history.append({
+                'id': str(curr.id),
+                'from_date': curr.from_date.isoformat(),
+                'to_date': curr.to_date.isoformat(),
+                'status': curr.status,
+                'rejection_reason': curr.rejection_reason,
+                'created_at': curr.created_at.isoformat()
+            })
+            curr = curr.reapplication_of
+
+        for sub in obj.reapplications.all():
+            history.append({
+                'id': str(sub.id),
+                'from_date': sub.from_date.isoformat(),
+                'to_date': sub.to_date.isoformat(),
+                'status': sub.status,
+                'created_at': sub.created_at.isoformat(),
+                'is_subsequent': True
+            })
+        return history
 
 
 class MonthlyPayrollSerializer(serializers.ModelSerializer):

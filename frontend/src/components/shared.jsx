@@ -1,6 +1,7 @@
 // Shared utility components for all pages
 
 import React from 'react'
+import { Search, X, Inbox } from 'lucide-react'
 
 export function StatCard({ label, value, icon, variant = '', sub = '', onClick }) {
   return (
@@ -44,10 +45,12 @@ export function LoadingState() {
   )
 }
 
-export function EmptyState({ icon = '📭', title = 'No records found', message = '' }) {
+export function EmptyState({ icon = null, title = 'No records found', message = '' }) {
   return (
     <div className="empty-state">
-      <div className="empty-state-icon">{icon}</div>
+      <div className="empty-state-icon">
+        {icon || <Inbox size={42} strokeWidth={1.5} color="var(--gray-400)" />}
+      </div>
       <h3>{title}</h3>
       {message && <p>{message}</p>}
     </div>
@@ -66,14 +69,14 @@ export function PageHeader({ title, subtitle, children }) {
   )
 }
 
-export function FilterBar({ search, onSearch, children }) {
+export function FilterBar({ search, onSearch, placeholder = 'Search...', children }) {
   return (
     <div className="filter-bar">
       <div className="filter-search">
-        <span>🔍</span>
+        <Search size={15} color="var(--gray-400)" style={{ flexShrink: 0 }} />
         <input
           type="text"
-          placeholder="Search..."
+          placeholder={placeholder}
           value={search}
           onChange={e => onSearch(e.target.value)}
         />
@@ -100,7 +103,9 @@ export function Modal({ isOpen, onClose, title, children, footer, size = '', ove
       <div className={`modal ${size}`}>
         <div className="modal-header">
           <div className="modal-title">{title}</div>
-          <button className="modal-close-btn" onClick={onClose}>✕</button>
+          <button className="modal-close-btn" onClick={onClose} aria-label="Close modal">
+            <X size={16} />
+          </button>
         </div>
         <div className="modal-body">{children}</div>
         {footer && <div className="modal-footer">{footer}</div>}
@@ -127,7 +132,9 @@ export function ConfirmModal({ isOpen, onClose, onConfirm, title="Are you sure?"
       <div className="modal" style={{ maxWidth: 400 }}>
         <div className="modal-header">
           <div className="modal-title" style={{ color: isDanger ? 'var(--red-600)' : 'inherit' }}>{title}</div>
-          <button className="modal-close-btn" onClick={onClose}>✕</button>
+          <button className="modal-close-btn" onClick={onClose} aria-label="Close modal">
+            <X size={16} />
+          </button>
         </div>
         <div className="modal-body">
           <p>{message}</p>

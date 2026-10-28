@@ -408,6 +408,29 @@ export default function AttendanceScreen({ navigation, route }) {
                 </View>
               </View>
 
+              {/* Leave Requests & Applications Banner */}
+              <TouchableOpacity
+                style={styles.leaveBannerCard}
+                onPress={() => navigation.navigate('StaffLeave')}
+                activeOpacity={0.85}
+              >
+                <View style={styles.leaveBannerLeft}>
+                  <View style={styles.leaveBannerIconWrap}>
+                    <Ionicons name="calendar-outline" size={22} color="#0284c7" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.leaveBannerTitle}>Apply for Leave</Text>
+                    <Text style={styles.leaveBannerSub}>
+                      Submit leave requests, check limits & manager status
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.leaveBannerAction}>
+                  <Text style={styles.leaveBannerActionText}>Apply</Text>
+                  <Ionicons name="chevron-forward" size={16} color="#0284c7" />
+                </View>
+              </TouchableOpacity>
+
               <Text style={styles.sectionTitle}>Monthly Log History</Text>
             </View>
           }
@@ -683,5 +706,57 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#334155',
     textAlign: 'center',
+  },
+  leaveBannerCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#f0f9ff',
+    borderWidth: 1.5,
+    borderColor: '#bae6fd',
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 16,
+  },
+  leaveBannerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+    marginRight: 8,
+  },
+  leaveBannerIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#e0f2fe',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  leaveBannerTitle: {
+    fontSize: 14.5,
+    fontWeight: '700',
+    color: '#0f172a',
+  },
+  leaveBannerSub: {
+    fontSize: 11.5,
+    color: '#64748b',
+    marginTop: 2,
+  },
+  leaveBannerAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#0284c7',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
+  },
+  leaveBannerActionText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0284c7',
   },
 });

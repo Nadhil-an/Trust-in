@@ -6,8 +6,53 @@ import { useNotificationStore } from '../store/notificationStore'
 import { coreApi } from '../api'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
-import { MASTER_NAV_CONFIG, ADMIN_NAV_CONFIG } from '../config/features'
+import { MASTER_NAV_CONFIG, ADMIN_NAV_CONFIG, SOCIAL_MEDIA_NAV_CONFIG } from '../config/features'
 import { useFeatureStore } from '../store/featureStore'
+import {
+  BarChart3,
+  Users,
+  Target,
+  Award,
+  HeartHandshake,
+  Trophy,
+  ShieldCheck,
+  BadgeCheck,
+  Megaphone,
+  Handshake,
+  Vote,
+  Search,
+  Bell,
+  LogOut,
+  UserCheck,
+  Sliders,
+  Smartphone,
+  FileSearch,
+  LineChart,
+  X,
+  Menu
+} from 'lucide-react'
+
+const resolveNavIcon = (item) => {
+  if (item.key === 'social_analytics' || item.path?.includes('tab=analytics')) return <BarChart3 size={17} strokeWidth={2} />
+  if (item.key === 'social_mrm_members' || item.path?.includes('tab=mrm_members')) return <Users size={17} strokeWidth={2} />
+  if (item.key === 'social_mrm_tasks' || item.path?.includes('tab=mrm_tasks')) return <Target size={17} strokeWidth={2} />
+  if (item.key === 'social_mrm_badges' || item.path?.includes('tab=mrm_badges')) return <Award size={17} strokeWidth={2} />
+  if (item.key === 'social_mrm_volunteers' || item.path?.includes('tab=mrm_volunteers')) return <HeartHandshake size={17} strokeWidth={2} />
+  if (item.key === 'social_mrm_appreciation' || item.path?.includes('tab=mrm_appreciation')) return <Trophy size={17} strokeWidth={2} />
+  if (item.key === 'social_posts' || item.path?.includes('tab=posts')) return <ShieldCheck size={17} strokeWidth={2} />
+  if (item.key === 'social_verifications' || item.path?.includes('tab=verifications')) return <BadgeCheck size={17} strokeWidth={2} />
+  if (item.key === 'social_official' || item.path?.includes('tab=official')) return <Megaphone size={17} strokeWidth={2} />
+  if (item.key === 'social_pom' || item.path?.includes('tab=pom')) return <Handshake size={17} strokeWidth={2} />
+  if (item.key === 'social_voting' || item.path?.includes('tab=voting')) return <Vote size={17} strokeWidth={2} />
+
+  if (item.label === 'User Management') return <UserCheck size={17} strokeWidth={2} />
+  if (item.label === 'Feature Access') return <Sliders size={17} strokeWidth={2} />
+  if (item.label === 'Mobile Access') return <Smartphone size={17} strokeWidth={2} />
+  if (item.label === 'Audit Log') return <FileSearch size={17} strokeWidth={2} />
+  if (item.label === 'Reports') return <LineChart size={17} strokeWidth={2} />
+
+  return item.icon || '•'
+}
 
 function NotificationDrawer({ onClose }) {
   const { notifications, setNotifications, markRead, markAllRead } = useNotificationStore()
@@ -46,16 +91,22 @@ function NotificationDrawer({ onClose }) {
   return (
     <div className="notif-drawer">
       <div className="notif-drawer-header">
-        <span className="notif-drawer-title">🔔 Notifications</span>
+        <span className="notif-drawer-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Bell size={16} /> Notifications
+        </span>
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn btn-sm btn-secondary" onClick={handleMarkAll}>Mark all read</button>
-          <button className="modal-close-btn" onClick={onClose}>✕</button>
+          <button className="modal-close-btn" onClick={onClose} aria-label="Close notifications">
+            <X size={16} />
+          </button>
         </div>
       </div>
       <div style={{ flex: 1, overflowY: 'auto' }}>
         {notifications.length === 0 ? (
           <div className="empty-state" style={{ padding: 32 }}>
-            <div className="empty-state-icon">🔔</div>
+            <div className="empty-state-icon">
+              <Bell size={36} color="var(--gray-400)" strokeWidth={1.5} />
+            </div>
             <p>No notifications</p>
           </div>
         ) : notifications.map(n => (
@@ -96,7 +147,7 @@ function GlobalSearch() {
 
   return (
     <div className="header-search" style={{ position: 'relative' }}>
-      <span style={{ color: 'var(--gray-400)' }}>🔍</span>
+      <Search size={15} color="var(--gray-400)" style={{ flexShrink: 0 }} />
       <input
         type="text"
         placeholder="Search ID, member, transaction..."
@@ -141,6 +192,7 @@ export default function AppLayout() {
   // Build nav items dynamically
   const navItems = React.useMemo(() => {
     if (user?.role === 'ADMIN') return ADMIN_NAV_CONFIG
+    if (user?.role === 'SOCIAL_MEDIA') return SOCIAL_MEDIA_NAV_CONFIG
     
     // For non-admin, filter master config by features
     return MASTER_NAV_CONFIG.filter(item => {
@@ -153,8 +205,8 @@ export default function AppLayout() {
       // Manager always has access to hr_members (Members Directory)
       if (user?.role === 'MANAGER' && item.key === 'hr_members') return true
 
-      // SOCIAL_MEDIA, MANAGER, ADMIN always have access to Public Issues
-      if (item.path === '/slt/social/public-issues' && ['SOCIAL_MEDIA', 'MANAGER', 'ADMIN'].includes(user?.role)) return true
+      // MANAGER and ADMIN have default access to all Social and MRM items
+      if (item.key && item.key.startsWith('social_') && ['MANAGER', 'ADMIN'].includes(user?.role)) return true
       
       // Check feature access
       return hasFeature(item.key)
@@ -167,9 +219,40 @@ export default function AppLayout() {
     toast.success('Logged out successfully.')
   }
 
-  const pageTitle = [...navItems]
-    .sort((a, b) => b.path.length - a.path.length)
-    .find(n => location.pathname === n.path || location.pathname.startsWith(n.path + '/'))?.label || 'Dashboard'
+  const currentPath = location.pathname
+  const currentSearch = location.search || ''
+  const currentFull = currentPath + currentSearch
+
+  const checkIsActive = React.useCallback((itemPath) => {
+    if (!itemPath) return false
+    
+    // Exact match including query params (e.g. /slt/social/overview?tab=mrm_appreciation)
+    if (itemPath === currentFull) return true
+
+    // When on /slt/social/overview without query params or with ?tab=analytics, match Platform Analytics
+    if (currentPath === '/slt/social/overview' && (!currentSearch || currentSearch === '?tab=analytics')) {
+      if (itemPath === '/slt/social/overview?tab=analytics' || itemPath === '/slt/social/overview') {
+        return true
+      }
+    }
+
+    // Exact path match when item has no query param and url has no query param
+    if (!itemPath.includes('?') && !currentSearch && currentPath === itemPath) {
+      return true
+    }
+
+    // Subpath match (e.g. /slt/mgr/requests/42 matches /slt/mgr/requests)
+    if (!itemPath.includes('?') && currentPath.startsWith(itemPath + '/')) {
+      return true
+    }
+
+    return false
+  }, [currentPath, currentSearch, currentFull])
+
+  const pageTitle = React.useMemo(() => {
+    const matched = navItems.find(n => n.path && checkIsActive(n.path))
+    return matched?.label || 'Dashboard'
+  }, [navItems, checkIsActive])
 
   return (
     <div className="app-shell">
@@ -186,7 +269,9 @@ export default function AppLayout() {
         </div>
 
         <div className="sidebar-nav">
-          <div className="nav-section-label">{user?.role} MODULE</div>
+          {user?.role !== 'SOCIAL_MEDIA' && (
+            <div className="nav-section-label">{user?.role} MODULE</div>
+          )}
           {(() => {
             if (loading && myFeatures.length === 0 && user?.role !== 'ADMIN') {
               return (
@@ -201,11 +286,6 @@ export default function AppLayout() {
               )
             }
 
-            const activeItem = [...navItems]
-              .filter(i => i.path)
-              .sort((a, b) => b.path.length - a.path.length)
-              .find(i => location.pathname === i.path || location.pathname.startsWith(i.path + '/'));
-
             // Group by category if non-admin
             if (user?.role !== 'ADMIN') {
               const grouped = {}
@@ -219,12 +299,12 @@ export default function AppLayout() {
                 <React.Fragment key={category}>
                   <div className="nav-section-label" style={{ marginTop: 8, opacity: category === 'OTHER' ? 0 : 1 }}>{category}</div>
                   {items.map(item => {
-                    const isActive = activeItem && activeItem.path === item.path;
+                    const isActive = checkIsActive(item.path);
                     return (
                       <div key={item.path}
                         className={`nav-item ${isActive ? 'active' : ''}`}
                         onClick={() => { navigate(item.path); setMobileOpen(false) }}>
-                        <span className="nav-icon">{item.icon}</span>
+                        <span className="nav-icon">{resolveNavIcon(item)}</span>
                         <span>{item.label}</span>
                       </div>
                     )
@@ -235,12 +315,12 @@ export default function AppLayout() {
 
             // ADMIN flat rendering
             return navItems.map((item, idx) => {
-              const isActive = activeItem && activeItem.path === item.path;
+              const isActive = checkIsActive(item.path);
               return (
                 <div key={item.path}
                   className={`nav-item ${isActive ? 'active' : ''}`}
                   onClick={() => { navigate(item.path); setMobileOpen(false) }}>
-                  <span className="nav-icon">{item.icon}</span>
+                  <span className="nav-icon">{resolveNavIcon(item)}</span>
                   <span>{item.label}</span>
                 </div>
               )
@@ -270,11 +350,7 @@ export default function AppLayout() {
             onMouseLeave={e => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)'}
             title="Logout"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-              <polyline points="16 17 21 12 16 7"></polyline>
-              <line x1="21" y1="12" x2="9" y2="12"></line>
-            </svg>
+            <LogOut size={18} strokeWidth={2} />
           </button>
         </div>
       </nav>
@@ -284,7 +360,10 @@ export default function AppLayout() {
         {/* Top Header */}
         <header className="top-header">
           <button className="icon-btn" style={{ display: 'none' }}
-            onClick={() => setMobileOpen(!mobileOpen)}>☰</button>
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle navigation">
+            <Menu size={18} />
+          </button>
 
           <div style={{ flex: 1 }}>
             <div className="header-title">{pageTitle}</div>
@@ -294,8 +373,8 @@ export default function AppLayout() {
             <GlobalSearch />
 
             {/* Notification Bell */}
-            <button className="icon-btn" onClick={toggleDrawer} id="notification-bell">
-              🔔
+            <button className="icon-btn" onClick={toggleDrawer} id="notification-bell" aria-label="Notifications">
+              <Bell size={17} color="var(--gray-600)" />
               {unreadCount > 0 && (
                 <span className="notif-badge">{unreadCount > 99 ? '99+' : unreadCount}</span>
               )}

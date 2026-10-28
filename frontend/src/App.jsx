@@ -84,6 +84,11 @@ function ProtectedRoute({ children, roles = [], featureKey = null }) {
       return children
     }
 
+    // SOCIAL_MEDIA and ADMIN always have access to public_issues
+    if (featureKey === 'public_issues' && ['SOCIAL_MEDIA', 'ADMIN'].includes(user?.role)) {
+      return children
+    }
+
     if (loading) {
       return (
         <div className="h-screen w-screen flex items-center justify-center bg-gray-50">
@@ -170,6 +175,7 @@ export default function App() {
           <Route path="slt/mgr/minutes"          element={<ProtectedRoute featureKey="minutes_registry"><Minutes /></ProtectedRoute>} />
           <Route path="slt/mgr/partners"         element={<ProtectedRoute featureKey="partners_entry"><Partners /></ProtectedRoute>} />
           <Route path="slt/mgr/inventory"        element={<ProtectedRoute featureKey="charity_inventory"><Inventory /></ProtectedRoute>} />
+          <Route path="slt/mgr/volunteers"       element={<ProtectedRoute roles={['MANAGER', 'ADMIN', 'HR']}><Volunteers /></ProtectedRoute>} />
 
           {/* Accounts */}
           <Route path="slt/finance/overview"         element={<ProtectedRoute roles={['ACCOUNTANT']}><AccountsDashboard /></ProtectedRoute>} />
@@ -236,7 +242,7 @@ export default function App() {
           
           {/* Social Media & Community Moderation */}
           <Route path="slt/social/overview"          element={<ProtectedRoute roles={['SOCIAL_MEDIA', 'MANAGER', 'ADMIN']}><SocialMediaDashboard /></ProtectedRoute>} />
-          <Route path="slt/social/public-issues"     element={<ProtectedRoute roles={['SOCIAL_MEDIA', 'MANAGER', 'ADMIN']}><PublicIssuesPage /></ProtectedRoute>} />
+          <Route path="slt/social/public-issues"     element={<ProtectedRoute featureKey="public_issues"><PublicIssuesPage /></ProtectedRoute>} />
           
           {/* Legacy redirect for old public-issues URL */}
           <Route path="slt/entry/public-issues"      element={<Navigate to="/slt/social/public-issues" replace />} />

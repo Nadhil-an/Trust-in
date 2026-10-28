@@ -26,6 +26,7 @@ import PaymentAdvanceScreen from '../screens/staff/PaymentAdvanceScreen';
 import AchievedPointsScreen from '../screens/staff/AchievedPointsScreen';
 import StaffLeaderboardScreen from '../screens/staff/StaffLeaderboardScreen';
 import StockInventoryScreen from '../screens/staff/StockInventoryScreen';
+import StaffLeaveScreen from '../screens/staff/StaffLeaveScreen';
 
 // Manager Screens
 import ManagerHomeScreen from '../screens/manager/ManagerHomeScreen';
@@ -35,6 +36,7 @@ import MemberHomeScreen from '../screens/member/MemberHomeScreen';
 import DonateScreen from '../screens/member/DonateScreen';
 import MembershipPaymentScreen from '../screens/member/MembershipPaymentScreen';
 import MembershipCardScreen from '../screens/member/MembershipCardScreen';
+import JoinVolunteerScreen from '../screens/member/JoinVolunteerScreen';
 import DonationHistoryScreen from '../screens/member/DonationHistoryScreen';
 import ReportProblemScreen from '../screens/member/ReportProblemScreen';
 import CreatePostScreen from '../screens/member/CreatePostScreen';
@@ -150,17 +152,45 @@ const GEOTabs = () => (
 );
 
 const MainStack = () => {
-  const { isStaff, isMember, isFAO, isACO, isGEO, isManager, isAuthenticated, user } = useAuthStore();
-  
-  // Default to MemberTabs for unauthenticated guests and regular members
-  let HomeTabs = MemberTabs;
-  if (isAuthenticated) {
-    if (isStaff()) HomeTabs = StaffTabs;
-    if (isManager()) HomeTabs = ManagerTabs;
-    if (isFAO()) HomeTabs = FAOTabs;
-    if (isACO()) HomeTabs = ACOTabs;
-    if (isGEO()) HomeTabs = GEOTabs;
-    if (isMember()) HomeTabs = MemberTabs;
+  const { isAuthenticated, user } = useAuthStore();
+
+  // Strictly route each role to its own dedicated tab navigator.
+  // Staff and Member MUST have completely separate interfaces.
+  // Web-dashboard roles (HR, ACCOUNTANT, DATA_ENTRY, SOCIAL_MEDIA) that log
+  // in via mobile fall back to StaffTabs so they never see the Member UI.
+  let HomeTabs = MemberTabs; // default: guest / unauthenticated -> member UI
+  if (isAuthenticated && user?.role) {
+    switch (user.role) {
+      case 'STAFF':
+        HomeTabs = StaffTabs;
+        break;
+      case 'MANAGER':
+        HomeTabs = ManagerTabs;
+        break;
+      case 'FIELD_ASSESSMENT_OFFICER':
+        HomeTabs = FAOTabs;
+        break;
+      case 'ASSESSMENT_CALCULATION_OFFICER':
+        HomeTabs = ACOTabs;
+        break;
+      case 'GENERAL_ENQUIRY_OFFICER':
+        HomeTabs = GEOTabs;
+        break;
+      case 'MEMBER':
+        HomeTabs = MemberTabs;
+        break;
+      // Web-dashboard-only roles: show staff interface on mobile
+      case 'ADMIN':
+      case 'HR':
+      case 'ACCOUNTANT':
+      case 'DATA_ENTRY':
+      case 'SOCIAL_MEDIA':
+        HomeTabs = StaffTabs;
+        break;
+      default:
+        HomeTabs = MemberTabs;
+        break;
+    }
   }
 
   const stackKey = isAuthenticated ? `auth_${user?.id || user?.role || 'member'}` : 'guest';
@@ -181,6 +211,7 @@ const MainStack = () => {
       <Stack.Screen name="StaffComplaints" component={ComplaintsScreen} />
       <Stack.Screen name="StaffReports" component={StaffReportsScreen} />
       <Stack.Screen name="StaffAttendance" component={AttendanceScreen} />
+      <Stack.Screen name="StaffLeave" component={StaffLeaveScreen} />
       <Stack.Screen name="StaffPaymentAdvance" component={PaymentAdvanceScreen} />
       <Stack.Screen name="StaffAchievedPoints" component={AchievedPointsScreen} />
       <Stack.Screen name="StockInventory" component={StockInventoryScreen} />
@@ -190,6 +221,7 @@ const MainStack = () => {
       <Stack.Screen name="Donate" component={DonateScreen} />
       <Stack.Screen name="MembershipPayment" component={MembershipPaymentScreen} />
       <Stack.Screen name="MembershipCard" component={MembershipCardScreen} />
+      <Stack.Screen name="JoinVolunteer" component={JoinVolunteerScreen} />
       <Stack.Screen name="DonationHistory" component={DonationHistoryScreen} />
       <Stack.Screen name="ReportProblem" component={CreatePostScreen} />
       <Stack.Screen name="CreatePost" component={CreatePostScreen} />

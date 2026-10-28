@@ -7,7 +7,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
-from core.permissions import IsHR, IsAnyStaff, IsOwnerOrManager, IsOwnerOrManagerOrHR
+from core.permissions import IsHR, IsManagerOrHR, IsAnyStaff, IsOwnerOrManager, IsOwnerOrManagerOrHR
+from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
+from hr_module.models import VolunteerStatus
 from core.models import AuditLog
 from notify.service import push_notification, push_to_role, push_dashboard_refresh
 from hr_module.member_receipt_service import generate_member_certificate_html
@@ -875,12 +878,12 @@ class MemberDocumentView(generics.ListCreateAPIView):
 
 # ── Volunteers ────────────────────────────────────────────────────
 class VolunteerListCreateView(generics.ListCreateAPIView):
-    permission_classes = [IsHR]
+    permission_classes = [IsManagerOrHR]
     serializer_class = VolunteerSerializer
-    queryset = Volunteer.objects.all()
+    queryset = Volunteer.objects.all().order_by('-created_at')
     filterset_fields = ['status']
-    search_fields = ['volunteer_id', 'full_name', 'phone', 'email', 'skills']
-    ordering_fields = ['full_name', 'joining_date']
+    search_fields = ['volunteer_id', 'full_name', 'phone', 'email', 'skills', 'blood_group', 'occupation']
+    ordering_fields = ['full_name', 'joining_date', 'created_at']
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def perform_create(self, serializer):
@@ -888,14 +891,221 @@ class VolunteerListCreateView(generics.ListCreateAPIView):
 
 
 class VolunteerDetailView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsHR]
+    permission_classes = [IsManagerOrHR]
     serializer_class = VolunteerSerializer
     queryset = Volunteer.objects.all()
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def perform_destroy(self, instance):
         instance.delete()
-        push_dashboard_refresh(['HR', 'MANAGER', 'ADMIN'])
+        push_dashboard_refresh(['HR', 'MANAGER', 'ADMIN'], module='VOLUNTEERS')
+
+
+class VolunteerMyStatusView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        volunteer = Volunteer.objects.filter(user=user).order_by('-created_at').first()
+        if not volunteer:
+            # Check by phone
+            clean_phone = getattr(user, 'phone', None)
+            if clean_phone:
+                volunteer = Volunteer.objects.filter(phone=clean_phone).order_by('-created_at').first()
+            if not volunteer and user.email:
+                volunteer = Volunteer.objects.filter(email=user.email).order_by('-created_at').first()
+            if volunteer and not volunteer.user:
+                volunteer.user = user
+                volunteer.save(update_fields=['user'])
+
+        if not volunteer:
+            return Response({'has_applied': False, 'status': None, 'volunteer': None})
+
+        return Response({
+            'has_applied': True,
+            'status': volunteer.status,
+            'volunteer': VolunteerSerializer(volunteer, context={'request': request}).data
+        })
+
+
+class VolunteerApplyView(APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def post(self, request):
+        user = request.user
+        # Check existing active or pending application
+        existing = Volunteer.objects.filter(user=user, status__in=[VolunteerStatus.PENDING, VolunteerStatus.ACTIVE]).first()
+        if existing:
+            return Response({
+                'detail': f'You already have an application ({existing.volunteer_id}) with status {existing.status}.',
+                'volunteer': VolunteerSerializer(existing, context={'request': request}).data
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        full_name = request.data.get('full_name') or getattr(user, 'full_name', '')
+        phone = request.data.get('phone') or getattr(user, 'phone', '')
+        email = request.data.get('email') or getattr(user, 'email', '')
+        date_of_birth = request.data.get('date_of_birth') or None
+        blood_group = request.data.get('blood_group', '').strip()
+        occupation = request.data.get('occupation', '').strip()
+        address = request.data.get('address', '').strip()
+        address_proof = request.FILES.get('address_proof')
+        photo = request.FILES.get('photo')
+
+        if not full_name or not phone:
+            return Response({'detail': 'Full name and phone number are required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Parse date_of_birth if empty string
+        if date_of_birth == '' or date_of_birth == 'null':
+            date_of_birth = None
+
+        volunteer = Volunteer.objects.create(
+            user=user,
+            full_name=full_name,
+            phone=phone,
+            email=email,
+            date_of_birth=date_of_birth,
+            blood_group=blood_group,
+            occupation=occupation,
+            address=address,
+            address_proof=address_proof,
+            photo=photo,
+            status=VolunteerStatus.PENDING,
+            created_by=user
+        )
+
+        # Notify Managers and Admins
+        try:
+            push_to_role(
+                role='MANAGER',
+                title='New Volunteer Application',
+                message=f'{volunteer.full_name} has applied to join as a Volunteer ({volunteer.volunteer_id}).',
+                notification_type='VOLUNTEER_APPLICATION',
+                reference_id=str(volunteer.id),
+                reference_type='Volunteer',
+                priority='HIGH'
+            )
+            push_to_role(
+                role='ADMIN',
+                title='New Volunteer Application',
+                message=f'{volunteer.full_name} has applied to join as a Volunteer ({volunteer.volunteer_id}).',
+                notification_type='VOLUNTEER_APPLICATION',
+                reference_id=str(volunteer.id),
+                reference_type='Volunteer',
+                priority='HIGH'
+            )
+            push_dashboard_refresh(['MANAGER', 'ADMIN', 'HR'], module='VOLUNTEERS')
+        except Exception:
+            pass
+
+        AuditLog.objects.create(
+            user=user,
+            action='VOLUNTEER_APPLY',
+            module='HR',
+            record_type='Volunteer',
+            record_id=str(volunteer.id),
+            reference_number=volunteer.volunteer_id,
+            description=f'Volunteer application submitted: {volunteer.volunteer_id} ({volunteer.full_name})'
+        )
+
+        return Response(VolunteerSerializer(volunteer, context={'request': request}).data, status=status.HTTP_201_CREATED)
+
+
+class VolunteerApproveView(APIView):
+    permission_classes = [IsManagerOrHR]
+
+    def post(self, request, pk):
+        volunteer = get_object_or_404(Volunteer, pk=pk)
+        volunteer.status = VolunteerStatus.ACTIVE
+        volunteer.approved_by = request.user
+        volunteer.approved_at = timezone.now()
+        volunteer.rejection_reason = ''
+        volunteer.save()
+
+        # Send push notification to applicant user
+        target_user = volunteer.user
+        if not target_user and volunteer.phone:
+            from core.models import User
+            target_user = User.objects.filter(phone=volunteer.phone).first()
+            if target_user:
+                volunteer.user = target_user
+                volunteer.save(update_fields=['user'])
+
+        if target_user:
+            try:
+                push_notification(
+                    recipient=target_user,
+                    title='🎉 Volunteership Approved!',
+                    message=f'Congratulations {volunteer.full_name}! Your volunteer application ({volunteer.volunteer_id}) has been approved by Sree Lakshmi Charitable Trust. Your official Volunteership Card is now active in the app.',
+                    notification_type='VOLUNTEER_APPROVED',
+                    reference_id=str(volunteer.id),
+                    reference_type='Volunteer',
+                    priority='HIGH'
+                )
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).error(f'Error pushing volunteer approval: {e}')
+
+        try:
+            push_dashboard_refresh(['MANAGER', 'ADMIN', 'HR'], module='VOLUNTEERS')
+        except Exception:
+            pass
+
+        AuditLog.objects.create(
+            user=request.user,
+            action='VOLUNTEER_APPROVED',
+            module='HR',
+            record_type='Volunteer',
+            record_id=str(volunteer.id),
+            reference_number=volunteer.volunteer_id,
+            description=f'Approved volunteer {volunteer.volunteer_id} ({volunteer.full_name})'
+        )
+
+        return Response(VolunteerSerializer(volunteer, context={'request': request}).data)
+
+
+class VolunteerRejectView(APIView):
+    permission_classes = [IsManagerOrHR]
+
+    def post(self, request, pk):
+        volunteer = get_object_or_404(Volunteer, pk=pk)
+        reason = request.data.get('reason', '').strip() or 'Application could not be approved at this time.'
+        volunteer.status = VolunteerStatus.REJECTED
+        volunteer.rejection_reason = reason
+        volunteer.approved_by = request.user
+        volunteer.save()
+
+        target_user = volunteer.user
+        if target_user:
+            try:
+                push_notification(
+                    recipient=target_user,
+                    title='Volunteer Application Update',
+                    message=f'Regarding your volunteer application ({volunteer.volunteer_id}): {reason}',
+                    notification_type='VOLUNTEER_REJECTED',
+                    reference_id=str(volunteer.id),
+                    reference_type='Volunteer',
+                    priority='NORMAL'
+                )
+            except Exception:
+                pass
+
+        try:
+            push_dashboard_refresh(['MANAGER', 'ADMIN', 'HR'], module='VOLUNTEERS')
+        except Exception:
+            pass
+
+        AuditLog.objects.create(
+            user=request.user,
+            action='VOLUNTEER_REJECTED',
+            module='HR',
+            record_type='Volunteer',
+            record_id=str(volunteer.id),
+            reference_number=volunteer.volunteer_id,
+            description=f'Rejected volunteer {volunteer.volunteer_id} ({volunteer.full_name}): {reason}'
+        )
+
+        return Response(VolunteerSerializer(volunteer, context={'request': request}).data)
 
 
 # ── Executive Members ─────────────────────────────────────────────
@@ -1292,52 +1502,565 @@ class BulkAttendanceView(APIView):
 
 
 # ── Leave Management ──────────────────────────────────────────────
+from hr_module.leave_service import (
+    validate_leave_application,
+    approve_leave_request,
+    reject_leave_request,
+    cancel_leave_request,
+    get_leave_balance_summary,
+    get_approved_leave_days_in_month,
+    MONTHLY_STANDARD_LIMIT,
+    ADVANCE_NOTICE_DAYS_REQUIRED,
+)
+from hr_module.models import (
+    LeaveRequest,
+    LeaveHRNote,
+    LeaveHRCommunication,
+    LeaveAuditLog,
+)
+from hr_module.serializers import (
+    LeaveRequestSerializer,
+    LeaveHRNoteSerializer,
+    LeaveHRCommunicationSerializer,
+    LeaveAuditLogSerializer,
+)
+from datetime import datetime
+
+
 class LeaveRequestListCreateView(generics.ListCreateAPIView):
-    permission_classes = [IsHR]
+    """
+    HR and Manager View to view and list all staff leave applications.
+    Supports filtering by staff, department, status, month, and date range.
+    Includes overall statistics in response headers / meta.
+    """
+    permission_classes = [IsAuthenticated]
     serializer_class = LeaveRequestSerializer
-    queryset = LeaveRequest.objects.select_related('employee', 'approved_by').all()
-    filterset_fields = ['status', 'leave_type', 'employee']
-    ordering_fields = ['created_at', 'from_date']
     parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = LeaveRequest.objects.select_related(
+            'employee', 'staff_user', 'approved_by', 'reapplication_of'
+        ).prefetch_related(
+            'hr_notes', 'hr_communications', 'audit_logs', 'reapplications'
+        ).all()
+
+        # If ordinary staff, restrict to own requests
+        if user.role not in ['HR', 'MANAGER', 'ADMIN']:
+            officer = get_officer_for_user(user)
+            if not officer:
+                return LeaveRequest.objects.none()
+            qs = qs.filter(Q(employee=officer) | Q(staff_user=user))
+
+        # Filters
+        search = self.request.query_params.get('search', '').strip()
+        if search:
+            qs = qs.filter(
+                Q(employee__full_name__icontains=search) |
+                Q(employee__employee_id__icontains=search) |
+                Q(staff_user__staff_uid__icontains=search) |
+                Q(reason__icontains=search) |
+                Q(description__icontains=search)
+            )
+
+        status_filter = self.request.query_params.get('status', '').strip().upper()
+        if status_filter and status_filter != 'ALL':
+            qs = qs.filter(status=status_filter)
+
+        department = self.request.query_params.get('department', '').strip()
+        if department and department != 'ALL':
+            qs = qs.filter(employee__department__iexact=department)
+
+        employee_id = self.request.query_params.get('employee_id', '').strip()
+        if employee_id:
+            qs = qs.filter(Q(employee__id=employee_id) | Q(employee__employee_id=employee_id))
+
+        from_date = self.request.query_params.get('from_date')
+        if from_date:
+            qs = qs.filter(from_date__gte=from_date)
+
+        to_date = self.request.query_params.get('to_date')
+        if to_date:
+            qs = qs.filter(to_date__lte=to_date)
+
+        # Monthly filtration (e.g. month=10, year=2026 or month='2026-10')
+        month_param = self.request.query_params.get('month', '').strip()
+        year_param = self.request.query_params.get('year', '').strip()
+        if month_param:
+            try:
+                import calendar, datetime
+                if '-' in month_param:
+                    parts = month_param.split('-')
+                    filter_year, filter_month = int(parts[0]), int(parts[1])
+                else:
+                    filter_month = int(month_param)
+                    filter_year = int(year_param) if year_param else timezone.now().year
+                _, last_day = calendar.monthrange(filter_year, filter_month)
+                m_start = datetime.date(filter_year, filter_month, 1)
+                m_end = datetime.date(filter_year, filter_month, last_day)
+                qs = qs.filter(from_date__lte=m_end, to_date__gte=m_start)
+            except (ValueError, TypeError):
+                pass
+        elif year_param:
+            try:
+                filter_year = int(year_param)
+                import datetime
+                y_start = datetime.date(filter_year, 1, 1)
+                y_end = datetime.date(filter_year, 12, 31)
+                qs = qs.filter(from_date__lte=y_end, to_date__gte=y_start)
+            except (ValueError, TypeError):
+                pass
+
+        exceeds_limit = self.request.query_params.get('exceeds_monthly_limit')
+        if exceeds_limit is not None and exceeds_limit != '':
+            val = str(exceeds_limit).lower() in ['true', '1', 'yes']
+            qs = qs.filter(exceeds_monthly_limit=val)
+
+        return qs.order_by('-created_at')
+
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        # Add summary stats for HR / Manager
+        now = timezone.localtime(timezone.now())
+        all_qs = LeaveRequest.objects.all()
+
+        target_year = now.year
+        target_month = now.month
+        month_param = request.query_params.get('month', '').strip()
+        year_param = request.query_params.get('year', '').strip()
+        if month_param:
+            try:
+                if '-' in month_param:
+                    parts = month_param.split('-')
+                    target_year, target_month = int(parts[0]), int(parts[1])
+                else:
+                    target_month = int(month_param)
+                    if year_param:
+                        target_year = int(year_param)
+            except (ValueError, TypeError):
+                pass
+
+        stats = {
+            'total_pending': all_qs.filter(status='PENDING').count(),
+            'approved_this_month': all_qs.filter(
+                status='APPROVED'
+            ).filter(
+                Q(approved_at__year=target_year, approved_at__month=target_month) |
+                Q(from_date__year=target_year, from_date__month=target_month)
+            ).distinct().count(),
+            'rejected_count': all_qs.filter(status='REJECTED').count(),
+            'total_count': all_qs.count(),
+        }
+
+        if isinstance(response.data, dict) and 'results' in response.data:
+            response.data['stats'] = stats
+        else:
+            response.data = {
+                'results': response.data,
+                'stats': stats
+            }
+        return response
 
 
 class LeaveRequestDetailView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = [IsHR]
+    """
+    Detailed view of a single leave application.
+    Accessible to HR, Managers, Admins, and the staff member who applied.
+    """
+    permission_classes = [IsAuthenticated]
     serializer_class = LeaveRequestSerializer
-    queryset = LeaveRequest.objects.all()
+    queryset = LeaveRequest.objects.select_related(
+        'employee', 'staff_user', 'approved_by', 'reapplication_of'
+    ).prefetch_related(
+        'hr_notes', 'hr_communications', 'audit_logs', 'reapplications'
+    ).all()
     parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def check_object_permissions(self, request, obj):
+        super().check_object_permissions(request, obj)
+        user = request.user
+        if user.role in ['HR', 'MANAGER', 'ADMIN']:
+            return True
+        officer = get_officer_for_user(user)
+        if obj.staff_user == user or (officer and obj.employee == officer):
+            return True
+        self.permission_denied(request, message="You do not have permission to view this leave application.")
 
 
 class LeaveApprovalView(APIView):
-    permission_classes = [IsHR]
+    """
+    Manager Decision View.
+    Approves or rejects a staff leave application.
+    STRICT ROLE-BASED ACCESS CONTROL: Only Managers and Admins can approve or reject!
+    HR staff are prohibited from modifying the approval status.
+    """
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):
-        action = request.data.get('action')  # approve / reject
-        try:
-            leave = LeaveRequest.objects.get(pk=pk, status='PENDING')
-        except LeaveRequest.DoesNotExist:
-            return Response({'error': 'Leave request not found or already processed.'}, status=404)
+        # 1. Enforce Role-Based Access Control
+        if request.user.role not in ['MANAGER', 'ADMIN']:
+            return Response(
+                {
+                    'error': (
+                        'Unauthorized: HR staff cannot approve or reject leave applications. '
+                        'Only authorized Managers and Admins have approval authority.'
+                    )
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
 
-        if action == 'approve':
-            leave.status = 'APPROVED'
-            leave.approved_by = request.user
-            leave.approved_at = timezone.now()
-            # Mark attendance as LEAVE for these days
-            current = leave.from_date
-            while current <= leave.to_date:
-                Attendance.objects.update_or_create(
-                    employee=leave.employee, date=current,
-                    defaults={'status': 'LEAVE', 'marked_by': request.user}
-                )
-                current += timezone.timedelta(days=1)
-        elif action == 'reject':
-            leave.status = 'REJECTED'
-            leave.rejection_reason = request.data.get('reason', '')
-        else:
-            return Response({'error': 'Invalid action.'}, status=400)
+        action = request.data.get('action', '').strip().lower()  # 'approve' / 'reject'
+        try:
+            leave = LeaveRequest.objects.select_related('employee', 'staff_user').get(pk=pk)
+        except LeaveRequest.DoesNotExist:
+            return Response({'error': 'Leave request not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if leave.status != 'PENDING':
+            return Response(
+                {'error': f"Cannot take action. Application is already in '{leave.status}' status."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        client_ip = request.META.get('REMOTE_ADDR')
+
+        try:
+            if action == 'approve':
+                updated_leave = approve_leave_request(leave, request.user, ip_address=client_ip)
+                return Response({
+                    'message': f"Leave application for {leave.employee.full_name} approved successfully.",
+                    'status': updated_leave.status,
+                    'leave': LeaveRequestSerializer(updated_leave).data
+                })
+
+            elif action == 'reject':
+                reason = request.data.get('reason', '').strip()
+                if not reason:
+                    return Response(
+                        {'error': 'A rejection reason is mandatory when rejecting a leave application.'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                updated_leave = reject_leave_request(leave, request.user, reason, ip_address=client_ip)
+                return Response({
+                    'message': f"Leave application for {leave.employee.full_name} rejected.",
+                    'status': updated_leave.status,
+                    'rejection_reason': updated_leave.rejection_reason,
+                    'leave': LeaveRequestSerializer(updated_leave).data
+                })
+
+            else:
+                return Response({'error': "Invalid action. Use 'approve' or 'reject'."}, status=status.HTTP_400_BAD_REQUEST)
+
+        except ValidationError as ve:
+            return Response({'error': str(ve.message if hasattr(ve, 'message') else ve)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': f"Failed to process leave decision: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class StaffLeaveListCreateView(APIView):
+    """
+    Staff-facing view:
+    - GET: Returns the logged-in staff member's leave requests and monthly balance summary.
+    - POST: Submits a new leave application with full backend validations:
+        - Dates validity
+        - Overlapping applications
+        - 2-day monthly limit & 15-day advance notice requirement
+        - Creates audit log and notifies Managers
+    """
+    permission_classes = [IsAnyStaff]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+    def get(self, request):
+        officer = get_officer_for_user(request.user)
+        if not officer:
+            return Response({'error': 'No officer profile found for your user account.'}, status=404)
+
+        now = timezone.localtime(timezone.now())
+        balance = get_leave_balance_summary(officer, now.date())
+
+        qs = LeaveRequest.objects.filter(
+            Q(employee=officer) | Q(staff_user=request.user)
+        ).select_related('employee', 'staff_user', 'approved_by', 'reapplication_of').prefetch_related(
+            'hr_communications', 'reapplications'
+        ).order_by('-created_at')
+
+        status_filter = request.query_params.get('status', '').strip().upper()
+        if status_filter and status_filter != 'ALL':
+            qs = qs.filter(status=status_filter)
+
+        return Response({
+            'officer_name': officer.full_name,
+            'employee_id': officer.employee_id,
+            'balance_summary': balance,
+            'results': LeaveRequestSerializer(qs, many=True).data
+        })
+
+    def post(self, request):
+        officer = get_officer_for_user(request.user)
+        if not officer:
+            return Response({'error': 'No officer profile found for your user account.'}, status=404)
+
+        data = request.data
+        from_date_raw = data.get('from_date')
+        to_date_raw = data.get('to_date')
+        leave_type = data.get('leave_type', 'CASUAL').strip().upper()
+        reason = (data.get('reason') or '').strip()
+        description = (data.get('description') or '').strip()
+        is_half_day = str(data.get('is_half_day', 'false')).lower() in ['true', '1', 'yes']
+        half_day_session = data.get('half_day_session', '').strip().upper()
+        reapplication_of_id = data.get('reapplication_of')
+
+        if not from_date_raw or not to_date_raw:
+            return Response({'error': 'From Date and To Date are required.'}, status=400)
+        if not reason:
+            return Response({'error': 'Reason for leave is required.'}, status=400)
+
+        try:
+            from_date = datetime.strptime(str(from_date_raw), '%Y-%m-%d').date()
+            to_date = datetime.strptime(str(to_date_raw), '%Y-%m-%d').date()
+        except ValueError:
+            return Response({'error': 'Invalid date format. Use YYYY-MM-DD.'}, status=400)
+
+        # Validate Reapplication
+        reapplication_of = None
+        if reapplication_of_id:
+            try:
+                reapplication_of = LeaveRequest.objects.get(id=reapplication_of_id, employee=officer)
+                if reapplication_of.status != 'REJECTED':
+                    return Response({'error': 'You can only reapply for a rejected leave application.'}, status=400)
+            except LeaveRequest.DoesNotExist:
+                return Response({'error': 'Original rejected application not found.'}, status=404)
+
+        # Backend Validations: monthly limit, overlapping, 15-day notice
+        application_date = timezone.localtime(timezone.now()).date()
+        try:
+            days_by_month, total_days, exceeds_limit, notice_days = validate_leave_application(
+                employee=officer,
+                from_date=from_date,
+                to_date=to_date,
+                is_half_day=is_half_day,
+                application_date=application_date
+            )
+        except ValidationError as ve:
+            return Response({'error': str(ve.message if hasattr(ve, 'message') else ve)}, status=400)
+
+        # Create the Leave Application with status PENDING
+        leave = LeaveRequest(
+            employee=officer,
+            staff_user=request.user,
+            leave_type=leave_type,
+            from_date=from_date,
+            to_date=to_date,
+            is_half_day=is_half_day,
+            half_day_session=half_day_session if is_half_day else '',
+            number_of_days=total_days,
+            reason=reason,
+            description=description,
+            status='PENDING',
+            applied_at=timezone.now(),
+            created_at=timezone.now(),
+            exceeds_monthly_limit=exceeds_limit,
+            notice_days=notice_days,
+            reapplication_of=reapplication_of
+        )
+
+        if 'attachment' in request.FILES:
+            leave.attachment = request.FILES['attachment']
 
         leave.save()
-        return Response({'message': f'Leave {action}d.', 'status': leave.status})
+
+        # Audit Log
+        LeaveAuditLog.objects.create(
+            leave_request=leave,
+            actor=request.user,
+            action='REAPPLIED' if reapplication_of else 'APPLIED',
+            details=(
+                f"Applied for {total_days} days leave ({from_date.strftime('%d %b %Y')} to {to_date.strftime('%d %b %Y')}). "
+                f"Notice: {notice_days} days. Exceeds standard limit: {exceeds_limit}."
+            ),
+            ip_address=request.META.get('REMOTE_ADDR')
+        )
+
+        # Notify Managers & HR
+        push_to_role(
+            role='MANAGER',
+            title="New Leave Application 📝",
+            message=f"{officer.full_name} submitted a leave application ({leave_type}) for {from_date} to {to_date} ({total_days} days).",
+            notification_type='LEAVE_REQUESTED',
+            reference_id=str(leave.id),
+            reference_type='LEAVE'
+        )
+        push_to_role(
+            role='HR',
+            title="New Leave Application Submitted",
+            message=f"{officer.full_name} submitted a leave application ({leave_type}) for {from_date} to {to_date} ({total_days} days).",
+            notification_type='LEAVE_REQUESTED',
+            reference_id=str(leave.id),
+            reference_type='LEAVE'
+        )
+
+        push_dashboard_refresh(roles=['HR', 'MANAGER', 'STAFF'])
+
+        return Response(LeaveRequestSerializer(leave).data, status=status.HTTP_201_CREATED)
+
+
+class StaffLeaveCancelView(APIView):
+    """
+    Staff cancel their own pending leave request.
+    """
+    permission_classes = [IsAnyStaff]
+
+    def post(self, request, pk):
+        officer = get_officer_for_user(request.user)
+        try:
+            leave = LeaveRequest.objects.get(
+                Q(id=pk) & (Q(employee=officer) | Q(staff_user=request.user))
+            )
+        except LeaveRequest.DoesNotExist:
+            return Response({'error': 'Leave request not found or not owned by you.'}, status=404)
+
+        try:
+            cancelled = cancel_leave_request(leave, request.user, ip_address=request.META.get('REMOTE_ADDR'))
+            return Response({
+                'message': 'Leave application cancelled successfully.',
+                'status': cancelled.status,
+                'leave': LeaveRequestSerializer(cancelled).data
+            })
+        except ValidationError as ve:
+            return Response({'error': str(ve.message if hasattr(ve, 'message') else ve)}, status=400)
+
+
+class StaffLeaveBalanceView(APIView):
+    """
+    Returns the staff member's leave balance breakdown for the current month.
+    """
+    permission_classes = [IsAnyStaff]
+
+    def get(self, request):
+        officer = get_officer_for_user(request.user)
+        if not officer:
+            return Response({'error': 'No officer profile found.'}, status=404)
+
+        balance = get_leave_balance_summary(officer)
+        return Response(balance)
+
+
+class LeaveHRNotesView(APIView):
+    """
+    Internal HR notes on a leave application.
+    Accessible only to HR, Managers, and Admins.
+    Private to management; not visible to staff.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        if request.user.role not in ['HR', 'MANAGER', 'ADMIN']:
+            return Response({'error': 'Unauthorized to view internal HR notes.'}, status=403)
+        try:
+            leave = LeaveRequest.objects.get(pk=pk)
+        except LeaveRequest.DoesNotExist:
+            return Response({'error': 'Leave request not found.'}, status=404)
+
+        notes = leave.hr_notes.select_related('author').all()
+        return Response(LeaveHRNoteSerializer(notes, many=True).data)
+
+    def post(self, request, pk):
+        if request.user.role not in ['HR', 'MANAGER', 'ADMIN']:
+            return Response({'error': 'Unauthorized to add internal HR notes.'}, status=403)
+        try:
+            leave = LeaveRequest.objects.get(pk=pk)
+        except LeaveRequest.DoesNotExist:
+            return Response({'error': 'Leave request not found.'}, status=404)
+
+        note_text = (request.data.get('note') or '').strip()
+        if not note_text:
+            return Response({'error': 'Note text cannot be empty.'}, status=400)
+
+        hr_note = LeaveHRNote.objects.create(
+            leave_request=leave,
+            author=request.user,
+            note=note_text
+        )
+
+        LeaveAuditLog.objects.create(
+            leave_request=leave,
+            actor=request.user,
+            action='HR_NOTE_ADDED',
+            details=f"Internal note added by {request.user.full_name or request.user.username}",
+            ip_address=request.META.get('REMOTE_ADDR')
+        )
+
+        return Response(LeaveHRNoteSerializer(hr_note).data, status=201)
+
+
+class LeaveHRCommunicationView(APIView):
+    """
+    Communication between HR and Staff regarding a leave application.
+    - GET: Visible to HR, Manager, and the staff member.
+    - POST: HR or Manager sends a decision or guidance message to the staff member.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        try:
+            leave = LeaveRequest.objects.select_related('employee', 'staff_user').get(pk=pk)
+        except LeaveRequest.DoesNotExist:
+            return Response({'error': 'Leave request not found.'}, status=404)
+
+        user = request.user
+        officer = get_officer_for_user(user)
+        is_owner = (leave.staff_user == user) or (officer and leave.employee == officer)
+        is_mgmt = user.role in ['HR', 'MANAGER', 'ADMIN']
+
+        if not is_owner and not is_mgmt:
+            return Response({'error': 'Unauthorized to view communications.'}, status=403)
+
+        comms = leave.hr_communications.select_related('sender').all()
+        return Response(LeaveHRCommunicationSerializer(comms, many=True).data)
+
+    def post(self, request, pk):
+        if request.user.role not in ['HR', 'MANAGER', 'ADMIN']:
+            return Response({'error': 'Only HR and Managers can send decision communications.'}, status=403)
+        try:
+            leave = LeaveRequest.objects.select_related('employee', 'staff_user').get(pk=pk)
+        except LeaveRequest.DoesNotExist:
+            return Response({'error': 'Leave request not found.'}, status=404)
+
+        msg = (request.data.get('message') or '').strip()
+        is_decision = str(request.data.get('is_decision_communicated', 'false')).lower() in ['true', '1', 'yes']
+
+        if not msg:
+            return Response({'error': 'Message text cannot be empty.'}, status=400)
+
+        comm = LeaveHRCommunication.objects.create(
+            leave_request=leave,
+            sender=request.user,
+            message=msg,
+            is_decision_communicated=is_decision,
+            delivery_status='SENT'
+        )
+
+        LeaveAuditLog.objects.create(
+            leave_request=leave,
+            actor=request.user,
+            action='HR_COMMUNICATED',
+            details=f"Message sent to staff: {msg[:60]}",
+            ip_address=request.META.get('REMOTE_ADDR')
+        )
+
+        # Notify the staff member
+        target_user = leave.staff_user or getattr(leave.employee, 'created_by', None)
+        if target_user:
+            push_notification(
+                recipient=target_user,
+                title="Message from HR Regarding Leave 📬",
+                message=f"HR ({request.user.full_name or 'Management'}): {msg}",
+                notification_type='LEAVE_COMMUNICATION',
+                reference_id=str(leave.id),
+                reference_type='LEAVE'
+            )
+
+        push_dashboard_refresh(roles=['HR', 'MANAGER', 'STAFF'])
+        return Response(LeaveHRCommunicationSerializer(comm).data, status=201)
 
 
 # ── Payroll ───────────────────────────────────────────────────────

@@ -310,6 +310,20 @@ export const attendanceApi = {
   }),
 };
 
+// ── Leave Management ─────────────────────────────────────────────────────────
+export const leaveApi = {
+  myLeaves: (params) => api.get('/hr/leave/my-leaves/', { params }),
+  apply: (formData) => api.post('/hr/leave/my-leaves/', formData, {
+    headers: formData instanceof FormData ? { 'Content-Type': 'multipart/form-data' } : {},
+  }),
+  cancel: (id) => api.post(`/hr/leave/my-leaves/${id}/cancel/`),
+  balance: () => api.get('/hr/leave/balance/'),
+  getDetail: (id) => api.get(`/hr/leave/${id}/`),
+  getCommunications: (id) => api.get(`/hr/leave/${id}/communicate/`),
+  allLeaves: (params) => api.get('/hr/leave/', { params }),
+  action: (id, data) => api.post(`/hr/leave/${id}/action/`, data),
+};
+
 // ── Events / Newsletters ──────────────────────────────────────────────────────
 export const eventsApi = {
   list:   (params) => api.get('/core/events/', { params }),
@@ -381,6 +395,14 @@ export const memberPostsApi = {
   addComment: (id, text) => api.post(`/core/member-posts/${id}/comments/`, { text }),
   update: (id, data) => api.patch(`/core/member-posts/${id}/`, data),
   deletePost: (id) => api.delete(`/core/member-posts/${id}/`),
+};
+
+// ── Volunteers (api/hr/volunteers/) ──
+export const volunteersApi = {
+  myStatus: () => api.get('/hr/volunteers/my-status/'),
+  apply: (formData) => api.post('/hr/volunteers/apply/', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
 };
 
 export default api;

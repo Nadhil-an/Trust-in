@@ -2,7 +2,8 @@
 from rest_framework import serializers
 from core.models import (
     User, AuditLog, SystemNotification, Event,
-    MemberPost, MemberPostImage, MemberPostLike, MemberPostComment, UserFollow
+    MemberPost, MemberPostImage, MemberPostLike, MemberPostComment, UserFollow,
+    MemberVerificationRequest, PublicCooperationMessage, SocialPoll, SocialPollOption, SocialPollVote
 )
 
 
@@ -309,15 +310,13 @@ class MemberPostSerializer(serializers.ModelSerializer):
     comments_count = serializers.SerializerMethodField()
     is_liked_by_me = serializers.SerializerMethodField()
     assessment_request_number = serializers.SerializerMethodField()
-    address = serializers.CharField(required=True, allow_blank=False, error_messages={
-        'required': 'Location or address is required.',
-        'blank': 'Location or address cannot be blank.'
-    })
+    address = serializers.CharField(required=False, allow_blank=True, default='')
 
     class Meta:
         model = MemberPost
         fields = [
-            'id', 'author', 'post_type', 'description', 'contact_number', 'address',
+            'id', 'author', 'post_type', 'post_category', 'is_pinned', 'scheduled_at',
+            'description', 'contact_number', 'address',
             'video', 'media_type', 'is_following_author',
             'status', 'rejection_reason', 'approved_by', 'approved_at',
             'assessment_request', 'assessment_request_number',
@@ -377,6 +376,7 @@ class MemberPostSerializer(serializers.ModelSerializer):
             'following_count': following_count,
             'posts_count': posts_count,
             'is_following': is_following,
+            'is_verified': getattr(obj.author, 'is_verified', False),
         }
 
     def get_likes_count(self, obj):
@@ -400,3 +400,132 @@ class MemberPostSerializer(serializers.ModelSerializer):
     def get_assessment_request_number(self, obj):
         return obj.assessment_request.request_number if obj.assessment_request else None
 
+
+
+class MemberVerificationRequestSerializer(serializers.ModelSerializer):
+    user_details = serializers.SerializerMethodField()
+    reviewed_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = MemberVerificationRequest
+        fields = [
+            'id', 'user', 'user_details', 'member', 'full_name', 'phone',
+            'id_proof_type', 'id_proof_number', 'id_proof_document',
+            'address_proof_document', 'additional_notes', 'status',
+            'rejection_reason', 'reviewed_by', 'reviewed_by_name',
+            'reviewed_at', 'submitted_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'user', 'status', 'reviewed_by', 'reviewed_at', 'submitted_at', 'updated_at']
+
+    def get_user_details(self, obj):
+        request = self.context.get('request')
+        photo_url = None
+        if obj.user.photo:
+            photo_url = request.build_absolute_uri(obj.user.photo.url) if request else obj.user.photo.url
+        member = get_user_member(obj.user)
+        return {
+            'id': str(obj.user.id),
+            'username': obj.user.username,
+            'full_name': obj.user.full_name or obj.user.username,
+            'email': obj.user.email,
+            'phone': str(getattr(obj.user, 'phone', '')),
+            'photo': photo_url,
+            'role': obj.user.role,
+            'is_verified': obj.user.is_verified,
+            'member_id': member.member_id if member else obj.user.username,
+            'membership_type': getattr(member, 'membership_type', 'GENERAL') if member else 'GENERAL',
+        }
+
+    def get_reviewed_by_name(self, obj):
+        if obj.reviewed_by:
+            return obj.reviewed_by.full_name or obj.reviewed_by.username
+        return None
+
+
+class PublicCooperationMessageSerializer(serializers.ModelSerializer):
+    created_by_name = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()
+    attachment_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PublicCooperationMessage
+        fields = [
+            'id', 'title', 'description', 'category', 'status',
+            'image', 'image_url', 'attachment', 'attachment_url',
+            'contact_person', 'contact_phone', 'target_location',
+            'views_count', 'responses_count', 'is_pinned',
+            'created_by', 'created_by_name', 'published_at',
+            'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'views_count', 'responses_count', 'created_by', 'created_at', 'updated_at']
+
+    def get_created_by_name(self, obj):
+        if obj.created_by:
+            return obj.created_by.full_name or obj.created_by.username
+        return 'Sree Lakshmi Trust'
+
+    def get_image_url(self, obj):
+        request = self.context.get('request')
+        if obj.image:
+            return request.build_absolute_uri(obj.image.url) if request else obj.image.url
+        return None
+
+    def get_attachment_url(self, obj):
+        request = self.context.get('request')
+        if obj.attachment:
+            return request.build_absolute_uri(obj.attachment.url) if request else obj.attachment.url
+        return None
+
+
+class SocialPollOptionSerializer(serializers.ModelSerializer):
+    percentage = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SocialPollOption
+        fields = ['id', 'poll', 'option_text', 'order', 'votes_count', 'percentage']
+        read_only_fields = ['id', 'votes_count', 'percentage']
+
+    def get_percentage(self, obj):
+        total = obj.poll.votes.count()
+        if total > 0:
+            return round((obj.votes_count / total) * 100, 1)
+        return 0.0
+
+
+class SocialPollSerializer(serializers.ModelSerializer):
+    options = SocialPollOptionSerializer(many=True, read_only=True)
+    total_votes = serializers.SerializerMethodField()
+    has_voted = serializers.SerializerMethodField()
+    my_voted_option_id = serializers.SerializerMethodField()
+    created_by_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SocialPoll
+        fields = [
+            'id', 'title', 'description', 'status', 'start_time', 'end_time',
+            'is_anonymous', 'show_results_before_close', 'eligible_roles',
+            'created_by', 'created_by_name', 'total_votes', 'has_voted',
+            'my_voted_option_id', 'options', 'created_at', 'updated_at'
+        ]
+        read_only_fields = ['id', 'total_votes', 'has_voted', 'my_voted_option_id', 'created_by', 'created_at', 'updated_at']
+
+    def get_total_votes(self, obj):
+        return obj.votes.count()
+
+    def get_has_voted(self, obj):
+        request = self.context.get('request')
+        if request and request.user and request.user.is_authenticated:
+            return obj.votes.filter(voter=request.user).exists()
+        return False
+
+    def get_my_voted_option_id(self, obj):
+        request = self.context.get('request')
+        if request and request.user and request.user.is_authenticated:
+            vote = obj.votes.filter(voter=request.user).first()
+            return str(vote.option_id) if vote else None
+        return None
+
+    def get_created_by_name(self, obj):
+        if obj.created_by:
+            return obj.created_by.full_name or obj.created_by.username
+        return 'Trust Admin'

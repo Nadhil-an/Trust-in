@@ -24,7 +24,7 @@ import Toast from 'react-native-toast-message';
 import { useTranslation } from 'react-i18next';
 import { changeLanguage } from '../../i18n';
 
-const ProfileScreen = ({ navigation }) => {
+const ProfileScreen = ({ navigation, route }) => {
   const { user, updateUser, logout, isAuthenticated } = useAuthStore();
   const { t, i18n } = useTranslation();
   const currentLang = i18n.language;
@@ -105,6 +105,12 @@ const ProfileScreen = ({ navigation }) => {
     });
     setEditModal(true);
   };
+
+  useEffect(() => {
+    if (route?.params?.openEdit) {
+      openEditModal();
+    }
+  }, [route?.params?.openEdit]);
 
   const openPhotoPickerOptions = () => {
     setPhotoModalVisible(true);

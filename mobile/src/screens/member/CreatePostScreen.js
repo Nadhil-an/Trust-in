@@ -39,6 +39,7 @@ export default function CreatePostScreen({ navigation }) {
       navigation.replace('Auth');
     }
   }, [isAuthenticated]);
+  const [showInfoBanner, setShowInfoBanner] = useState(true);
   const [postType, setPostType] = useState('AWARENESS');
   const [description, setDescription] = useState('');
   const [contactNumber, setContactNumber] = useState(user?.phone || '');
@@ -245,13 +246,22 @@ export default function CreatePostScreen({ navigation }) {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Info Banner */}
-        <View style={styles.infoBanner}>
-          <Ionicons name="information-circle" size={20} color="#0284c7" style={{ marginTop: 1 }} />
-          <Text style={styles.infoBannerText}>
-            Share hardships or issues you or someone in your community are facing. Your post is visible to all members and routed to Trust officers.
-          </Text>
-        </View>
+        {/* Info Banner with small 'x' button to hide */}
+        {showInfoBanner && (
+          <View style={styles.infoBanner}>
+            <Ionicons name="information-circle" size={20} color="#0284c7" style={{ marginTop: 1 }} />
+            <Text style={styles.infoBannerText}>
+              Share hardships or issues you or someone in your community are facing. Your post is visible to all members and routed to Trust officers.
+            </Text>
+            <TouchableOpacity
+              style={styles.closeBannerBtn}
+              onPress={() => setShowInfoBanner(false)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons name="close" size={18} color="#0284c7" />
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* User Profile Info Tag */}
         <View style={styles.authorRow}>
@@ -268,93 +278,7 @@ export default function CreatePostScreen({ navigation }) {
           </View>
         </View>
 
-        {/* Post Type Selector (Awareness vs Charity) */}
-        <View style={styles.typeSelectorCard}>
-          <Text style={styles.typeSelectorLabel}>
-            Post Category / Type <Text style={{ color: '#EF4444' }}>*</Text>
-          </Text>
-          <View style={styles.typeButtonsRow}>
-            <TouchableOpacity
-              style={[
-                styles.typeBtn,
-                postType === 'AWARENESS' && styles.typeBtnActiveAwareness,
-              ]}
-              onPress={() => setPostType('AWARENESS')}
-              activeOpacity={0.8}
-            >
-              <Ionicons
-                name="megaphone"
-                size={18}
-                color={postType === 'AWARENESS' ? '#FFFFFF' : '#0284c7'}
-              />
-              <Text
-                style={[
-                  styles.typeBtnText,
-                  postType === 'AWARENESS' && styles.typeBtnTextActive,
-                ]}
-              >
-                Awareness
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.typeBtn,
-                postType === 'CHARITY' && styles.typeBtnActiveCharity,
-              ]}
-              onPress={() => setPostType('CHARITY')}
-              activeOpacity={0.8}
-            >
-              <Ionicons
-                name="heart"
-                size={18}
-                color={postType === 'CHARITY' ? '#FFFFFF' : '#EF4444'}
-              />
-              <Text
-                style={[
-                  styles.typeBtnText,
-                  postType === 'CHARITY' && styles.typeBtnTextActive,
-                ]}
-              >
-                Charity
-              </Text>
-            </TouchableOpacity>
-          </View>
-          <View style={[
-            styles.typeHelperBanner,
-            postType === 'CHARITY' ? styles.typeHelperBannerCharity : styles.typeHelperBannerAwareness
-          ]}>
-            <Ionicons
-              name={postType === 'CHARITY' ? 'heart-circle' : 'information-circle'}
-              size={18}
-              color={postType === 'CHARITY' ? '#E11D48' : '#0284c7'}
-            />
-            <Text style={[
-              styles.typeHelperText,
-              postType === 'CHARITY' ? { color: '#9F1239' } : { color: '#0369A1' }
-            ]}>
-              {postType === 'CHARITY'
-                ? 'Charity: Adds a "Donate Now" button directly on the post so members can contribute financially.'
-                : 'Awareness: Shared with the community to raise awareness about social issues or general updates.'}
-            </Text>
-          </View>
-        </View>
-
-        {/* Problem Description Input */}
-        <View style={styles.inputCard}>
-          <TextInput
-            style={styles.descriptionInput}
-            placeholder="Describe the issue, illness, hardship, or help needed in detail..."
-            placeholderTextColor="#94A3B8"
-            multiline
-            numberOfLines={5}
-            value={description}
-            onChangeText={setDescription}
-            textAlignVertical="top"
-          />
-        </View>
-
-        {/* Photos & Videos Section */}
+        {/* 1. Upload Photos & Video Section */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>
             Photos & Video ({photos.length + (video ? 1 : 0)}/10)
@@ -436,6 +360,92 @@ export default function CreatePostScreen({ navigation }) {
             ))}
           </View>
         )}
+
+        {/* 2. Problem Description Input */}
+        <View style={styles.inputCard}>
+          <TextInput
+            style={styles.descriptionInput}
+            placeholder="Describe the issue, illness, hardship, or help needed in detail..."
+            placeholderTextColor="#94A3B8"
+            multiline
+            numberOfLines={5}
+            value={description}
+            onChangeText={setDescription}
+            textAlignVertical="top"
+          />
+        </View>
+
+        {/* 3. Post Category / Type Selector (Awareness vs Charity) */}
+        <View style={styles.typeSelectorCard}>
+          <Text style={styles.typeSelectorLabel}>
+            Post Category / Type <Text style={{ color: '#EF4444' }}>*</Text>
+          </Text>
+          <View style={styles.typeButtonsRow}>
+            <TouchableOpacity
+              style={[
+                styles.typeBtn,
+                postType === 'AWARENESS' && styles.typeBtnActiveAwareness,
+              ]}
+              onPress={() => setPostType('AWARENESS')}
+              activeOpacity={0.8}
+            >
+              <Ionicons
+                name="megaphone"
+                size={18}
+                color={postType === 'AWARENESS' ? '#FFFFFF' : '#0284c7'}
+              />
+              <Text
+                style={[
+                  styles.typeBtnText,
+                  postType === 'AWARENESS' && styles.typeBtnTextActive,
+                ]}
+              >
+                Awareness
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.typeBtn,
+                postType === 'CHARITY' && styles.typeBtnActiveCharity,
+              ]}
+              onPress={() => setPostType('CHARITY')}
+              activeOpacity={0.8}
+            >
+              <Ionicons
+                name="heart"
+                size={18}
+                color={postType === 'CHARITY' ? '#FFFFFF' : '#EF4444'}
+              />
+              <Text
+                style={[
+                  styles.typeBtnText,
+                  postType === 'CHARITY' && styles.typeBtnTextActive,
+                ]}
+              >
+                Charity
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <View style={[
+            styles.typeHelperBanner,
+            postType === 'CHARITY' ? styles.typeHelperBannerCharity : styles.typeHelperBannerAwareness
+          ]}>
+            <Ionicons
+              name={postType === 'CHARITY' ? 'heart-circle' : 'information-circle'}
+              size={18}
+              color={postType === 'CHARITY' ? '#E11D48' : '#0284c7'}
+            />
+            <Text style={[
+              styles.typeHelperText,
+              postType === 'CHARITY' ? { color: '#9F1239' } : { color: '#0369A1' }
+            ]}>
+              {postType === 'CHARITY'
+                ? 'Charity: Adds a "Donate Now" button directly on the post so members can contribute financially.'
+                : 'Awareness: Shared with the community to raise awareness about social issues or general updates.'}
+            </Text>
+          </View>
+        </View>
 
         {/* Contact Number */}
         <View style={styles.fieldWrap}>
@@ -676,6 +686,12 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
     color: '#1E40AF',
     lineHeight: 18,
+  },
+  closeBannerBtn: {
+    padding: 2,
+    marginLeft: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   authorRow: {
     flexDirection: 'row',

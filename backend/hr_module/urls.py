@@ -16,6 +16,10 @@ urlpatterns = [
     path('members/<uuid:member_pk>/documents/', views.MemberDocumentView.as_view()),
     path('receipts/<uuid:pk>/retry-whatsapp/', views.RetryWhatsAppView.as_view()),
     # Volunteers
+    path('volunteers/my-status/', views.VolunteerMyStatusView.as_view()),
+    path('volunteers/apply/', views.VolunteerApplyView.as_view()),
+    path('volunteers/<uuid:pk>/approve/', views.VolunteerApproveView.as_view()),
+    path('volunteers/<uuid:pk>/reject/', views.VolunteerRejectView.as_view()),
     path('volunteers/', views.VolunteerListCreateView.as_view()),
     path('volunteers/<uuid:pk>/', views.VolunteerDetailView.as_view()),
     # Executive Members
@@ -40,8 +44,13 @@ urlpatterns = [
     path('attendance/my-attendance/', views.StaffAttendanceView.as_view()),
     # Leave
     path('leave/', views.LeaveRequestListCreateView.as_view()),
+    path('leave/my-leaves/', views.StaffLeaveListCreateView.as_view()),
+    path('leave/my-leaves/<uuid:pk>/cancel/', views.StaffLeaveCancelView.as_view()),
+    path('leave/balance/', views.StaffLeaveBalanceView.as_view()),
     path('leave/<uuid:pk>/', views.LeaveRequestDetailView.as_view()),
     path('leave/<uuid:pk>/action/', views.LeaveApprovalView.as_view()),
+    path('leave/<uuid:pk>/notes/', views.LeaveHRNotesView.as_view()),
+    path('leave/<uuid:pk>/communicate/', views.LeaveHRCommunicationView.as_view()),
     # Payroll
     path('payroll/', views.PayrollListCreateView.as_view()),
     path('payroll/<uuid:pk>/', views.PayrollDetailView.as_view()),

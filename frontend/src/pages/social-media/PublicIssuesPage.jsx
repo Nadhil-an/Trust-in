@@ -43,6 +43,8 @@ export default function PublicIssuesPage() {
   const [forwardPriority, setForwardPriority] = useState('NORMAL')
   const [forwarding, setForwarding] = useState(false)
   const [deletingId, setDeletingId] = useState(null)
+  const [postToDelete, setPostToDelete] = useState(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const loadData = useCallback(async () => {
     setLoading(true)
@@ -112,13 +114,18 @@ export default function PublicIssuesPage() {
     }
   }
 
-  const handleDeletePost = async (id, e) => {
+  const handleOpenDelete = (postOrId, e) => {
     if (e) e.stopPropagation()
-    const confirmed = window.confirm(
-      'Are you sure you want to delete this community post?\n\nThis will immediately remove the post, its photos, and comments from all member mobile applications.'
-    )
-    if (!confirmed) return
+    const item = typeof postOrId === 'object' && postOrId !== null
+      ? postOrId
+      : items.find(i => i.id === postOrId) || { id: postOrId }
+    setPostToDelete(item)
+  }
 
+  const handleConfirmDelete = async () => {
+    if (!postToDelete) return
+    const id = postToDelete.id
+    setIsDeleting(true)
     setDeletingId(id)
     try {
       await coreApi.memberPosts.delete(id)
@@ -127,11 +134,13 @@ export default function PublicIssuesPage() {
       if (selectedItem?.id === id) {
         setSelectedItem(null)
       }
+      setPostToDelete(null)
     } catch (err) {
       console.error('Delete post error:', err)
       const errorMsg = err.response?.data?.detail || err.response?.data?.message || 'Failed to delete post. Please try again.'
       toast.error(errorMsg)
     } finally {
+      setIsDeleting(false)
       setDeletingId(null)
     }
   }
@@ -432,7 +441,7 @@ export default function PublicIssuesPage() {
                           View Details ➜
                         </button>
                         <button
-                          onClick={(e) => handleDeletePost(item.id, e)}
+                          onClick={(e) => handleOpenDelete(item, e)}
                           disabled={deletingId === item.id}
                           className="btn btn-sm"
                           style={{
@@ -745,7 +754,7 @@ export default function PublicIssuesPage() {
                   Wipe this content permanently from database and storage
                 </span>
                 <button
-                  onClick={() => handleDeletePost(selectedItem.id)}
+                  onClick={() => handleOpenDelete(selectedItem)}
                   disabled={deletingId === selectedItem.id}
                   className="btn btn-sm"
                   style={{
@@ -820,6 +829,119 @@ export default function PublicIssuesPage() {
                 onClick={handleConfirmReject}
               >
                 {rejecting ? 'Rejecting...' : 'Confirm Reject & Restrict'}
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Styled Delete Confirmation Alert Modal */}
+      {postToDelete && (
+        <Modal
+          isOpen={true}
+          title="Delete Community Post"
+          onClose={() => !isDeleting && setPostToDelete(null)}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                background: '#FEE2E2',
+                color: '#DC2626',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '22px',
+                flexShrink: 0
+              }}>
+                🗑️
+              </div>
+              <div style={{ flex: 1 }}>
+                <h3 style={{ margin: '0 0 6px 0', fontSize: '16px', fontWeight: '700', color: '#0F172A' }}>
+                  Are you sure you want to delete this community post?
+                </h3>
+                <p style={{ margin: 0, fontSize: '13.5px', color: '#64748B', lineHeight: '1.5' }}>
+                  This will immediately remove the post, its photos, and comments from all member mobile applications.
+                </p>
+              </div>
+            </div>
+
+            {/* Post Summary Preview Box */}
+            <div style={{
+              background: '#F8FAFC',
+              border: '1px solid #E2E8F0',
+              borderRadius: '8px',
+              padding: '12px 14px',
+              fontSize: '13px'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <span style={{ fontWeight: '700', color: '#1E293B' }}>
+                  {postToDelete.author?.full_name || postToDelete.author?.username || 'Community Member'}
+                </span>
+                <span style={{ color: '#64748B', fontSize: '11.5px' }}>
+                  #{postToDelete.id ? postToDelete.id.slice(0, 8) : ''}
+                </span>
+              </div>
+              {postToDelete.description && (
+                <p style={{
+                  margin: 0,
+                  color: '#475569',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  fontStyle: 'italic'
+                }}>
+                  "{postToDelete.description}"
+                </p>
+              )}
+            </div>
+
+            <div style={{
+              background: '#FEF2F2',
+              border: '1px solid #FCA5A5',
+              borderRadius: '8px',
+              padding: '10px 14px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '12.5px',
+              color: '#991B1B'
+            }}>
+              <span>⚠️</span>
+              <span><strong>Warning:</strong> This action is permanent and cannot be reversed.</span>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '6px' }}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                disabled={isDeleting}
+                onClick={() => setPostToDelete(null)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn"
+                style={{
+                  background: '#DC2626',
+                  color: '#fff',
+                  fontWeight: '700',
+                  padding: '8px 18px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: isDeleting ? 'not-allowed' : 'pointer'
+                }}
+                disabled={isDeleting}
+                onClick={handleConfirmDelete}
+              >
+                {isDeleting ? 'Deleting...' : '🗑️ Delete Permanently'}
               </button>
             </div>
           </div>

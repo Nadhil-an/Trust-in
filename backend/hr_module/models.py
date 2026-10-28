@@ -33,6 +33,12 @@ class MembershipType(models.TextChoices):
     LIFE = 'LIFE', 'Life Member'
     HONORARY = 'HONORARY', 'Honorary'
     PATRON = 'PATRON', 'Patron'
+    MEMBER = 'MEMBER', 'Member (100 monthly)'
+    GROUP_MEMBER = 'GROUP_MEMBER', 'Group Member (100 monthly)'
+    ORG_STAFF = 'ORG_STAFF', 'Organization Staff (50 monthly)'
+    SOCIETY = 'SOCIETY', 'Society (1000 monthly)'
+    INSTITUTION = 'INSTITUTION', 'Institution (5000 monthly)'
+    CLUB = 'CLUB', 'Club (500 monthly)'
 
 
 class Member(models.Model):
@@ -48,6 +54,7 @@ class Member(models.Model):
     joining_date = models.DateField(default=date.today)
     membership_type = models.CharField(max_length=20, choices=MembershipType.choices, default=MembershipType.GENERAL)
     status = models.CharField(max_length=20, choices=MemberStatus.choices, default=MemberStatus.ACTIVE)
+    is_verified = models.BooleanField(default=False)
     blood_group = models.CharField(max_length=5, blank=True)
     occupation = models.CharField(max_length=255, blank=True)
     monthly_fee = models.DecimalField(max_digits=10, decimal_places=2, default=100.00)
@@ -115,20 +122,26 @@ class MembershipReceipt(models.Model):
 # ── Volunteers ────────────────────────────────────────────────────
 
 class VolunteerStatus(models.TextChoices):
+    PENDING = 'PENDING', 'Pending Approval'
     ACTIVE = 'ACTIVE', 'Active'
     INACTIVE = 'INACTIVE', 'Inactive'
     SUSPENDED = 'SUSPENDED', 'Suspended'
+    REJECTED = 'REJECTED', 'Rejected'
 
 
 class Volunteer(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     volunteer_id = models.CharField(max_length=20, unique=True, db_index=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='volunteer_profile')
     full_name = models.CharField(max_length=255)
     photo = models.ImageField(upload_to='hr/volunteers/', null=True, blank=True, validators=[validate_image_file])
     phone = EncryptedCharField(max_length=20, blank=True)           # Encrypted PII
     email = models.EmailField(blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
+    blood_group = models.CharField(max_length=10, blank=True)
+    occupation = models.CharField(max_length=255, blank=True)
     address = EncryptedTextField(blank=True)                         # Encrypted PII
+    address_proof = models.FileField(upload_to='hr/volunteers/proofs/', null=True, blank=True)
     joining_date = models.DateField(default=date.today)
     skills = models.TextField(blank=True)
     availability = models.CharField(max_length=100, blank=True)
@@ -136,14 +149,17 @@ class Volunteer(models.Model):
     emergency_contact_phone = EncryptedCharField(max_length=20, blank=True)  # Encrypted PII
     assigned_programs = models.JSONField(default=list)
     total_hours = models.DecimalField(max_digits=8, decimal_places=2, default=0)
-    status = models.CharField(max_length=20, choices=VolunteerStatus.choices, default=VolunteerStatus.ACTIVE)
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    status = models.CharField(max_length=20, choices=VolunteerStatus.choices, default=VolunteerStatus.PENDING)
+    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_volunteers')
+    approved_at = models.DateTimeField(null=True, blank=True)
+    rejection_reason = models.TextField(blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_volunteers')
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'hr_volunteers'
-        ordering = ['full_name']
+        ordering = ['-created_at', 'full_name']
 
     def save(self, *args, **kwargs):
         if not self.volunteer_id:
@@ -328,6 +344,7 @@ class Attendance(models.Model):
 class LeaveType(models.TextChoices):
     CASUAL = 'CASUAL', 'Casual Leave'
     SICK = 'SICK', 'Sick Leave'
+    EMERGENCY = 'EMERGENCY', 'Emergency Leave'
     EARNED = 'EARNED', 'Earned Leave'
     MATERNITY = 'MATERNITY', 'Maternity Leave'
     PATERNITY = 'PATERNITY', 'Paternity Leave'
@@ -338,22 +355,77 @@ class LeaveType(models.TextChoices):
 class LeaveRequest(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     employee = models.ForeignKey(ExecutiveOfficer, on_delete=models.CASCADE, related_name='leave_requests')
-    leave_type = models.CharField(max_length=20, choices=LeaveType.choices)
-    from_date = models.DateField()
-    to_date = models.DateField()
-    number_of_days = models.PositiveSmallIntegerField()
-    reason = models.TextField()
+    staff_user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='staff_leave_requests')
+    leave_type = models.CharField(max_length=20, choices=LeaveType.choices, default=LeaveType.CASUAL)
+    from_date = models.DateField(db_index=True)
+    to_date = models.DateField(db_index=True)
+    is_half_day = models.BooleanField(default=False)
+    half_day_session = models.CharField(max_length=15, blank=True, choices=[
+        ('FIRST_HALF', 'First Half / Morning'),
+        ('SECOND_HALF', 'Second Half / Afternoon'),
+    ])
+    number_of_days = models.DecimalField(max_digits=4, decimal_places=1, default=1.0)
+    reason = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
     attachment = models.FileField(upload_to='hr/leaves/', null=True, blank=True, validators=[validate_document_file])
     status = models.CharField(max_length=20, default='PENDING', choices=[
         ('PENDING', 'Pending'), ('APPROVED', 'Approved'), ('REJECTED', 'Rejected'), ('CANCELLED', 'Cancelled')
-    ])
+    ], db_index=True)
+    applied_at = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(default=timezone.now)
+    exceeds_monthly_limit = models.BooleanField(default=False)
+    notice_days = models.IntegerField(default=0)
     approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_leaves')
     approved_at = models.DateTimeField(null=True, blank=True)
     rejection_reason = models.TextField(blank=True)
-    created_at = models.DateTimeField(default=timezone.now)
+    reapplication_of = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='reapplications')
 
     class Meta:
         db_table = 'hr_leave_requests'
+        ordering = ['-created_at']
+
+
+class LeaveHRNote(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    leave_request = models.ForeignKey(LeaveRequest, on_delete=models.CASCADE, related_name='hr_notes')
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='leave_hr_notes')
+    note = models.TextField()
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = 'hr_leave_notes'
+        ordering = ['created_at']
+
+
+class LeaveHRCommunication(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    leave_request = models.ForeignKey(LeaveRequest, on_delete=models.CASCADE, related_name='hr_communications')
+    sender = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='sent_leave_communications')
+    message = models.TextField()
+    is_decision_communicated = models.BooleanField(default=False)
+    delivery_status = models.CharField(max_length=20, default='SENT', choices=[
+        ('SENT', 'Sent'),
+        ('DELIVERED', 'Delivered'),
+        ('READ', 'Read')
+    ])
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = 'hr_leave_communications'
+        ordering = ['created_at']
+
+
+class LeaveAuditLog(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    leave_request = models.ForeignKey(LeaveRequest, on_delete=models.CASCADE, related_name='audit_logs')
+    actor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='leave_audit_actions')
+    action = models.CharField(max_length=50)
+    details = models.TextField(blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = 'hr_leave_audit_logs'
         ordering = ['-created_at']
 
 

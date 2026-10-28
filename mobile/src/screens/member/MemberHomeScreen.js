@@ -214,17 +214,9 @@ const MemberHomeScreen = ({ navigation }) => {
           </TouchableOpacity>
 
           {isAuthenticated ? (
-            <>
-              <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Notifications')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate('Notifications')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                 <Ionicons name="notifications-outline" size={22} color={Colors.textPrimary} />
               </TouchableOpacity>
-
-              <TouchableOpacity style={styles.avatarBtn} onPress={() => navigation.navigate('Profile')} activeOpacity={0.8}>
-                <View style={styles.avatarCircle}>
-                  <Ionicons name="person" size={17} color="#0284c7" />
-                </View>
-              </TouchableOpacity>
-            </>
           ) : (
             <TouchableOpacity
               style={styles.loginPillBtn}

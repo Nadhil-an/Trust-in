@@ -1,4 +1,4 @@
-"""Core shared URL patterns — users, audit log, notifications, search"""
+"""Core shared URL patterns — users, audit log, notifications, search, social platform admin"""
 from django.urls import path
 from core import views
 
@@ -7,6 +7,9 @@ from rest_framework.routers import DefaultRouter
 router = DefaultRouter()
 router.register(r'events', views.EventViewSet, basename='events')
 router.register(r'member-posts', views.MemberPostViewSet, basename='member-posts')
+router.register(r'verifications', views.MemberVerificationViewSet, basename='verifications')
+router.register(r'pom-messages', views.PublicCooperationMessageViewSet, basename='pom-messages')
+router.register(r'social-polls', views.SocialPollViewSet, basename='social-polls')
 
 urlpatterns = [
     path('users/', views.UserListCreateView.as_view(), name='user_list'),
@@ -23,4 +26,5 @@ urlpatterns = [
     path('search/', views.GlobalSearchView.as_view(), name='global_search'),
     path('features/', views.RoleFeaturePermissionView.as_view(), name='features'),
     path('update-push-token/', views.ExpoPushTokenView.as_view(), name='update_push_token'),
+    path('social-analytics/', views.SocialAnalyticsView.as_view(), name='social_analytics'),
 ] + router.urls

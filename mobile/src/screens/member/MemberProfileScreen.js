@@ -14,13 +14,16 @@ import {
   Share,
   Modal,
   TextInput,
+  ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Colors } from '../../constants/Colors';
 import { useAuthStore } from '../../store/authStore';
-import { memberPostsApi } from '../../api';
+import { memberPostsApi, authApi } from '../../api';
+import * as ImagePicker from 'expo-image-picker';
+import { Video, ResizeMode } from 'expo-av';
 import { resolveImageUrl } from '../../utils/imageUrl';
 import Toast from 'react-native-toast-message';
 
@@ -31,7 +34,7 @@ export default function MemberProfileScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const route = useRoute();
-  const { user: currentUser, isAuthenticated } = useAuthStore();
+  const { user: currentUser, isAuthenticated, updateUser } = useAuthStore();
 
   const targetUserId = route.params?.userId || route.params?.authorId || currentUser?.id;
   const initialUser = route.params?.user || null;
@@ -57,6 +60,168 @@ export default function MemberProfileScreen() {
   const [followSearchText, setFollowSearchText] = useState('');
   const [followMap, setFollowMap] = useState({});
   const [followBtnLoading, setFollowBtnLoading] = useState({});
+
+  // ── Edit Profile Modal State & Handlers ──
+  const [editModal, setEditModal] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
+  const [photoModalVisible, setPhotoModalVisible] = useState(false);
+  const [editForm, setEditForm] = useState({
+    full_name: '',
+    phone: '',
+    email: '',
+    address: '',
+    date_of_birth: '',
+    avatar: '',
+  });
+
+  const openEditModal = () => {
+    setEditForm({
+      full_name: profileData?.full_name || currentUser?.full_name || '',
+      phone: profileData?.phone || currentUser?.phone || '',
+      email: profileData?.email || currentUser?.email || '',
+      address: profileData?.address || currentUser?.address || '',
+      date_of_birth: profileData?.date_of_birth || currentUser?.date_of_birth || currentUser?.dob || '',
+      avatar: profileData?.photo || currentUser?.photo || currentUser?.avatar || '',
+    });
+    setEditModal(true);
+  };
+
+  const openPhotoPickerOptions = () => {
+    setPhotoModalVisible(true);
+  };
+
+  const takeCameraPhoto = async () => {
+    try {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        Toast.show({ type: 'error', text1: 'Permission denied', text2: 'Camera permission required to take photo.' });
+        return;
+      }
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setEditForm((prev) => ({ ...prev, avatar: result.assets[0].uri }));
+      }
+    } catch (e) {
+      Toast.show({ type: 'error', text1: 'Camera error' });
+    }
+  };
+
+  const pickGalleryImage = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Toast.show({ type: 'error', text1: 'Permission denied', text2: 'Gallery permission required to upload photo.' });
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setEditForm((prev) => ({ ...prev, avatar: result.assets[0].uri }));
+      }
+    } catch (e) {
+      Toast.show({ type: 'error', text1: 'Image selection error' });
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    if (!editForm.full_name.trim()) {
+      return Toast.show({ type: 'error', text1: 'Name required', text2: 'Please enter your full name' });
+    }
+
+    setEditLoading(true);
+    try {
+      const updatedUser = {
+        ...currentUser,
+        full_name: editForm.full_name,
+        phone: editForm.phone,
+        email: editForm.email,
+        address: editForm.address,
+        date_of_birth: editForm.date_of_birth,
+        dob: editForm.date_of_birth,
+        avatar: editForm.avatar,
+      };
+
+      await updateUser(updatedUser);
+
+      try {
+        const formData = new FormData();
+        formData.append('full_name', editForm.full_name);
+        if (editForm.phone) formData.append('phone', editForm.phone);
+        if (editForm.email) formData.append('email', editForm.email);
+        if (editForm.address) formData.append('address', editForm.address);
+        if (editForm.date_of_birth) formData.append('date_of_birth', editForm.date_of_birth);
+
+        if (editForm.avatar && !editForm.avatar.startsWith('http')) {
+          const avatarName = editForm.avatar.split('/').pop() || 'avatar.jpg';
+          formData.append('photo', {
+            uri: editForm.avatar,
+            name: avatarName,
+            type: 'image/jpeg',
+          });
+        }
+
+        const res = await authApi.updateProfile(formData);
+
+        if (res.data) {
+          const finalUser = {
+            ...updatedUser,
+            avatar: res.data.photo || updatedUser.avatar,
+            photo: res.data.photo || updatedUser.photo,
+          };
+          await updateUser(finalUser);
+          setProfileData((prev) => ({
+            ...prev,
+            ...finalUser,
+            full_name: editForm.full_name,
+            phone: editForm.phone,
+            email: editForm.email,
+            address: editForm.address,
+            date_of_birth: editForm.date_of_birth,
+            photo: res.data.photo || prev?.photo || editForm.avatar,
+          }));
+        } else {
+          setProfileData((prev) => ({
+            ...prev,
+            ...updatedUser,
+            full_name: editForm.full_name,
+            phone: editForm.phone,
+            email: editForm.email,
+            address: editForm.address,
+            date_of_birth: editForm.date_of_birth,
+            photo: editForm.avatar || prev?.photo,
+          }));
+        }
+
+        Toast.show({ type: 'success', text1: 'Profile Updated', text2: 'Changes saved successfully!' });
+        setEditModal(false);
+      } catch (err) {
+        setProfileData((prev) => ({
+          ...prev,
+          full_name: editForm.full_name,
+          phone: editForm.phone,
+          email: editForm.email,
+          address: editForm.address,
+          date_of_birth: editForm.date_of_birth,
+          photo: editForm.avatar || prev?.photo,
+        }));
+        Toast.show({ type: 'success', text1: 'Profile Updated', text2: 'Local profile updated successfully!' });
+        setEditModal(false);
+      }
+    } catch (e) {
+      Toast.show({ type: 'error', text1: 'Failed to update profile' });
+    } finally {
+      setEditLoading(false);
+    }
+  };
 
   const openFollowModal = (tab = 'followers') => {
     setFollowModalTab(tab);
@@ -253,7 +418,7 @@ export default function MemberProfileScreen() {
     <View style={styles.headerSection}>
       {/* ── Top Avatar & 3 Stats Row ── */}
       <View style={styles.statsRow}>
-        <View style={styles.avatarWrapper}>
+        <TouchableOpacity style={styles.avatarWrapper} onPress={isMe ? openEditModal : undefined} activeOpacity={isMe ? 0.8 : 1}>
           {photoUrl ? (
             <Image source={{ uri: photoUrl }} style={styles.avatarImage} />
           ) : (
@@ -268,7 +433,7 @@ export default function MemberProfileScreen() {
               <Ionicons name="add" size={14} color="#FFFFFF" />
             </View>
           )}
-        </View>
+        </TouchableOpacity>
 
         <View style={styles.statCol}>
           <Text style={styles.statNumber}>{postsCount}</Text>
@@ -311,6 +476,15 @@ export default function MemberProfileScreen() {
         <Text style={styles.bioTagline}>
           Community Member • Sree Lakshmi Charitable Trust
         </Text>
+
+        {!!profileData?.user?.badge_summary && (
+          <View style={styles.badgeSummaryCard}>
+            <View style={styles.badgeSummaryHeader}>
+              <Text style={styles.badgeSummaryTitle}>🎖️ EARNED TRUST BADGES</Text>
+            </View>
+            <Text style={styles.badgeSummaryText}>{profileData.user.badge_summary}</Text>
+          </View>
+        )}
       </View>
 
       {/* ── Action Buttons Row ── */}
@@ -319,7 +493,7 @@ export default function MemberProfileScreen() {
           <>
             <TouchableOpacity
               style={[styles.btnAction, styles.btnSecondary]}
-              onPress={() => navigation.navigate('ProfileSettings')}
+              onPress={openEditModal}
               activeOpacity={0.8}
             >
               <Text style={styles.btnSecondaryText}>Edit profile</Text>
@@ -355,18 +529,10 @@ export default function MemberProfileScreen() {
 
             <TouchableOpacity
               style={[styles.btnAction, styles.btnSecondary]}
-              onPress={handleWhatsApp}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.btnSecondaryText}>Message</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.btnIcon, styles.btnSecondary]}
               onPress={handleShareProfile}
               activeOpacity={0.8}
             >
-              <Ionicons name="share-outline" size={18} color="#0F172A" />
+              <Text style={styles.btnSecondaryText}>Share profile</Text>
             </TouchableOpacity>
           </>
         )}
@@ -403,6 +569,7 @@ export default function MemberProfileScreen() {
     const firstImg = (item.images && item.images.length > 0) ? item.images[0] : null;
     const imgUrl = firstImg ? resolveImageUrl(firstImg.image) : null;
     const isVideo = Boolean(item.video || item.media_type === 'VIDEO');
+    const videoUrl = item.video ? resolveImageUrl(item.video) : null;
 
     return (
       <TouchableOpacity
@@ -412,6 +579,15 @@ export default function MemberProfileScreen() {
       >
         {imgUrl ? (
           <Image source={{ uri: imgUrl }} style={styles.gridImage} resizeMode="cover" />
+        ) : isVideo && videoUrl ? (
+          <Video
+            source={{ uri: videoUrl }}
+            style={styles.gridImage}
+            resizeMode={ResizeMode ? ResizeMode.COVER : 'cover'}
+            shouldPlay={false}
+            positionMillis={100}
+            isMuted={true}
+          />
         ) : (
           <View style={styles.gridPlaceholder}>
             <Ionicons name={isVideo ? 'videocam' : 'document-text-outline'} size={28} color="#94A3B8" />
@@ -529,14 +705,16 @@ export default function MemberProfileScreen() {
         </View>
 
         <View style={styles.topBarRight}>
-          <TouchableOpacity
-            style={styles.topBarBtn}
-            onPress={() => navigation.navigate('ProfileSettings')}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            accessibilityLabel="Settings"
-          >
-            <Ionicons name="settings-outline" size={24} color="#0F172A" />
-          </TouchableOpacity>
+          {isMe && (
+            <TouchableOpacity
+              style={styles.topBarBtn}
+              onPress={() => navigation.navigate('ProfileSettings')}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              accessibilityLabel="Settings"
+            >
+              <Ionicons name="settings-outline" size={24} color="#0F172A" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
@@ -720,6 +898,150 @@ export default function MemberProfileScreen() {
           )}
         </View>
       </Modal>
+
+      {/* ── Edit Profile Modal ── */}
+      <Modal visible={editModal} transparent animationType="slide" onRequestClose={() => setEditModal(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { maxHeight: '90%' }]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Edit Profile</Text>
+              <TouchableOpacity onPress={() => setEditModal(false)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Ionicons name="close" size={24} color="#64748B" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 24 }}>
+              {/* Photo Upload Avatar Picker */}
+              <View style={{ alignItems: 'center', marginBottom: 20 }}>
+                <TouchableOpacity onPress={openPhotoPickerOptions} activeOpacity={0.8} style={styles.avatarPickerWrapper}>
+                  {editForm.avatar ? (
+                    <Image source={{ uri: editForm.avatar }} style={styles.avatarPickerImg} />
+                  ) : (
+                    <View style={styles.avatarPickerPlaceholder}>
+                      <Ionicons name="person" size={44} color="#0284c7" />
+                    </View>
+                  )}
+                  <View style={styles.cameraBadge}>
+                    <Ionicons name="camera" size={14} color="#FFFFFF" />
+                  </View>
+                </TouchableOpacity>
+                <Text style={{ fontSize: 12, color: '#0284c7', fontWeight: '700', marginTop: 8 }}>
+                  Tap to Take or Upload Photo
+                </Text>
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Full Name</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={editForm.full_name}
+                  onChangeText={v => setEditForm(p => ({ ...p, full_name: v }))}
+                  placeholder="Enter full name"
+                  placeholderTextColor="#94A3B8"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Phone Number</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={editForm.phone}
+                  onChangeText={v => setEditForm(p => ({ ...p, phone: v }))}
+                  placeholder="Enter phone number"
+                  placeholderTextColor="#94A3B8"
+                  keyboardType="phone-pad"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Email Address</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={editForm.email}
+                  onChangeText={v => setEditForm(p => ({ ...p, email: v }))}
+                  placeholder="Enter email address"
+                  placeholderTextColor="#94A3B8"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Address / Location</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={editForm.address}
+                  onChangeText={v => setEditForm(p => ({ ...p, address: v }))}
+                  placeholder="Enter address or location"
+                  placeholderTextColor="#94A3B8"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Date of Birth (YYYY-MM-DD)</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={editForm.date_of_birth}
+                  onChangeText={v => setEditForm(p => ({ ...p, date_of_birth: v }))}
+                  placeholder="e.g. 1995-08-15"
+                  placeholderTextColor="#94A3B8"
+                />
+              </View>
+
+              <TouchableOpacity style={styles.saveSubmitBtn} onPress={handleSaveProfile} disabled={editLoading} activeOpacity={0.85}>
+                {editLoading ? (
+                  <ActivityIndicator color="#FFFFFF" />
+                ) : (
+                  <Text style={styles.saveSubmitBtnText}>Save Profile Changes</Text>
+                )}
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* ── Photo Picker Options Modal ── */}
+      <Modal visible={photoModalVisible} transparent animationType="fade" onRequestClose={() => setPhotoModalVisible(false)}>
+        <TouchableOpacity style={styles.photoModalOverlay} activeOpacity={1} onPress={() => setPhotoModalVisible(false)}>
+          <View style={styles.photoModalContent}>
+            <View style={styles.photoModalHeader}>
+              <View style={styles.photoModalIconWrap}>
+                <Ionicons name="camera" size={24} color="#0284c7" />
+              </View>
+              <Text style={styles.photoModalTitle}>Profile Photo</Text>
+              <Text style={styles.photoModalSub}>Choose how you would like to set your profile picture</Text>
+            </View>
+
+            <View style={styles.photoOptionsList}>
+              <TouchableOpacity style={styles.photoOptionCard} onPress={() => { setPhotoModalVisible(false); takeCameraPhoto(); }} activeOpacity={0.7}>
+                <View style={[styles.photoOptionIconWrap, { backgroundColor: '#e0f2fe' }]}>
+                  <Ionicons name="camera" size={22} color="#0284c7" />
+                </View>
+                <View style={styles.photoOptionTextWrap}>
+                  <Text style={styles.photoOptionTitle}>Take Photo</Text>
+                  <Text style={styles.photoOptionSub}>Use your camera to take a new picture</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.photoOptionCard} onPress={() => { setPhotoModalVisible(false); pickGalleryImage(); }} activeOpacity={0.7}>
+                <View style={[styles.photoOptionIconWrap, { backgroundColor: '#f0fdf4' }]}>
+                  <Ionicons name="images" size={22} color="#16a34a" />
+                </View>
+                <View style={styles.photoOptionTextWrap}>
+                  <Text style={styles.photoOptionTitle}>Choose from Gallery</Text>
+                  <Text style={styles.photoOptionSub}>Select an image from your photo library</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity style={styles.photoModalCancelBtn} onPress={() => setPhotoModalVisible(false)} activeOpacity={0.8}>
+              <Text style={styles.photoModalCancelText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
@@ -876,6 +1198,32 @@ const styles = StyleSheet.create({
     color: '#475569',
     marginTop: 4,
     lineHeight: 18,
+  },
+  badgeSummaryCard: {
+    marginTop: 10,
+    backgroundColor: '#FEFCE8',
+    borderWidth: 1,
+    borderColor: '#FEF08A',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+  },
+  badgeSummaryHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  badgeSummaryTitle: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: '#854D0E',
+    letterSpacing: 0.5,
+  },
+  badgeSummaryText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#713F12',
+    letterSpacing: 0.3,
   },
   actionsRow: {
     flexDirection: 'row',
@@ -1289,5 +1637,185 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 6,
     lineHeight: 18,
+  },
+
+  /* ── Edit Profile Modal Styles ── */
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    paddingBottom: 36,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  avatarPickerWrapper: {
+    position: 'relative',
+    width: 84,
+    height: 84,
+  },
+  avatarPickerImg: {
+    width: 84,
+    height: 84,
+    borderRadius: 42,
+    borderWidth: 2,
+    borderColor: '#0284c7',
+  },
+  avatarPickerPlaceholder: {
+    width: 84,
+    height: 84,
+    borderRadius: 42,
+    backgroundColor: '#e0f2fe',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#0284c7',
+  },
+  cameraBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#0284c7',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  inputGroup: {
+    marginBottom: 16,
+  },
+  inputLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#334155',
+    marginBottom: 8,
+  },
+  textInput: {
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 15,
+    backgroundColor: '#F8FAFC',
+    color: '#0F172A',
+  },
+  saveSubmitBtn: {
+    backgroundColor: '#0284c7',
+    paddingVertical: 15,
+    borderRadius: 14,
+    alignItems: 'center',
+    marginTop: 10,
+    shadowColor: '#0284c7',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  saveSubmitBtnText: {
+    color: '#FFFFFF',
+    fontSize: 15.5,
+    fontWeight: '700',
+  },
+
+  /* ── Photo Picker Options Modal Styles ── */
+  photoModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    justifyContent: 'flex-end',
+  },
+  photoModalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    paddingBottom: 36,
+  },
+  photoModalHeader: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  photoModalIconWrap: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: '#E0F2FE',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  photoModalTitle: {
+    fontSize: 19,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: 4,
+  },
+  photoModalSub: {
+    fontSize: 13,
+    color: '#64748B',
+    textAlign: 'center',
+  },
+  photoOptionsList: {
+    gap: 12,
+    marginBottom: 16,
+  },
+  photoOptionCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  photoOptionIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14,
+  },
+  photoOptionTextWrap: {
+    flex: 1,
+  },
+  photoOptionTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 2,
+  },
+  photoOptionSub: {
+    fontSize: 12,
+    color: '#64748B',
+  },
+  photoModalCancelBtn: {
+    backgroundColor: '#F1F5F9',
+    paddingVertical: 14,
+    borderRadius: 14,
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  photoModalCancelText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#64748B',
   },
 });

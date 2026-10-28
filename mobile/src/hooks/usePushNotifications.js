@@ -6,35 +6,25 @@ import Constants from 'expo-constants';
 import { coreApi } from '../api';
 import { useAuthStore } from '../store/authStore';
 
-// Push notifications are not supported inside the Expo Go app starting from SDK 53+
-const isExpoGo =
-  Constants.appOwnership === 'expo' ||
-  Constants.executionEnvironment === 'storeClient';
-
-if (!isExpoGo) {
-  try {
-    Notifications.setNotificationHandler({
-      handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: true,
-        shouldSetBadge: true,
-      }),
-    });
-  } catch (_) {}
-}
+// Always configure notification display behavior (foreground + background)
+try {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+    }),
+  });
+} catch (_) {}
 
 export function usePushNotifications() {
-  const { isAuthenticated, accessToken } = useAuthStore();
+  const { isAuthenticated, accessToken, user } = useAuthStore();
   const [expoPushToken, setExpoPushToken] = useState('');
   const [notification, setNotification] = useState(false);
   const notificationListener = useRef();
   const responseListener = useRef();
 
   useEffect(() => {
-    if (isExpoGo) {
-      return;
-    }
-
     registerForPushNotificationsAsync()
       .then(token => {
         if (token) {
@@ -51,7 +41,7 @@ export function usePushNotifications() {
       });
 
       responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-        console.log('[Push] User responded to notification:', response?.notification?.request?.content?.data);
+        console.log('[Push] User tapped notification outside app:', response?.notification?.request?.content?.data);
       });
     } catch (_) {}
 
@@ -63,28 +53,23 @@ export function usePushNotifications() {
     };
   }, []);
 
-  // When user is authenticated and token is obtained, send to backend
+  // When user is authenticated and token is obtained, sync with backend
   useEffect(() => {
-    if (isExpoGo) return;
     if (isAuthenticated && accessToken && expoPushToken) {
       coreApi.updatePushToken({ push_token: expoPushToken })
         .then(() => {
-          console.log('[Push] Token successfully synced with backend for authenticated user');
+          console.log(`[Push] Token successfully synced with backend for ${user?.username || user?.phone || 'user'}`);
         })
         .catch(err => {
           console.log('[Push] Failed to update push token on backend:', err?.message || err);
         });
     }
-  }, [isAuthenticated, accessToken, expoPushToken]);
+  }, [isAuthenticated, accessToken, expoPushToken, user?.id]);
 
   return { expoPushToken, notification };
 }
 
 async function registerForPushNotificationsAsync() {
-  if (isExpoGo) {
-    return null;
-  }
-
   let token = null;
 
   try {
@@ -113,13 +98,17 @@ async function registerForPushNotificationsAsync() {
       }
 
       const projectId =
-        Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
-      if (!projectId) {
-        return null;
-      }
+        Constants?.expoConfig?.extra?.eas?.projectId ??
+        Constants?.easConfig?.projectId ??
+        '5f773548-6ce7-48a6-a853-7bc68bd656b8';
 
       const tokenRes = await Notifications.getExpoPushTokenAsync({ projectId });
       token = tokenRes?.data;
+      if (token) {
+        console.log('[Push] Successfully registered Expo push token:', token);
+      }
+    } else {
+      console.log('[Push] Physical device required for remote push notifications');
     }
   } catch (e) {
     console.log('[Push] Push token registration skipped or unsupported in this client:', e?.message || e);

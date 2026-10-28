@@ -82,6 +82,7 @@ export const SideDrawer = ({ visible, onClose, navigation, currentRoute = 'Home'
     { name: 'MyPosts', label: 'My Posts', icon: 'newspaper', route: 'MyPosts' },
     { name: 'ReportProblem', label: 'Report a Problem', icon: 'warning', route: 'ReportProblem' },
     { name: 'Events', label: 'Events', icon: 'calendar', route: 'Events' },
+    { name: 'JoinVolunteer', label: 'Join as Volunteer', icon: 'hand-left', route: 'JoinVolunteer' },
     { name: 'MyProfile', label: 'My Profile', icon: 'person', route: 'Profile' },
   ];
 
@@ -92,6 +93,7 @@ export const SideDrawer = ({ visible, onClose, navigation, currentRoute = 'Home'
     { name: 'ReportProblem', label: 'Report a Problem', icon: 'warning', route: 'StaffComplaints' },
     { name: 'Events', label: 'Events', icon: 'calendar', route: 'Events' },
     { name: 'Attendance', label: 'Attendance', icon: 'calendar', route: 'StaffAttendance' },
+    { name: 'LeaveRequest', label: 'Leave Request', icon: 'time-outline', route: 'StaffLeave' },
     { name: 'SalaryAdvance', label: 'Salary Advance', icon: 'cash', route: 'StaffPaymentAdvance' },
     { name: 'StockInventory', label: 'Stock / Inventory', icon: 'cube', route: 'StockInventory' },
     { name: 'UploadReport', label: 'Upload Report', icon: 'cloud-upload', route: 'UploadEvent' },
@@ -104,10 +106,20 @@ export const SideDrawer = ({ visible, onClose, navigation, currentRoute = 'Home'
     { name: 'Settings', label: 'Settings', icon: 'settings-outline', route: 'ProfileSettings' },
   ];
 
-  const isStaffOrManager = user?.role === Roles.STAFF || user?.role === Roles.MANAGER;
-  
-  // Decide which primary menu to use
-  const activePrimaryMenu = isStaffOrManager ? staffMenu : primaryMenu;
+  // Strictly determine which drawer menu to show based on the user's role.
+  // Staff, Manager, and all web-dashboard roles see the staff menu.
+  // Members and guests see the member menu.
+  const WEB_STAFF_ROLES = ['ADMIN', 'HR', 'ACCOUNTANT', 'DATA_ENTRY', 'SOCIAL_MEDIA'];
+  const getActiveMenu = () => {
+    const role = user?.role;
+    if (
+      role === Roles.STAFF ||
+      role === Roles.MANAGER ||
+      WEB_STAFF_ROLES.includes(role)
+    ) return staffMenu;
+    return primaryMenu; // MEMBER, guest, FAO/ACO/GEO use their own screens
+  };
+  const activePrimaryMenu = getActiveMenu();
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>

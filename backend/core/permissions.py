@@ -35,6 +35,12 @@ class IsHR(BasePermission):
         return request.user.is_authenticated and request.user.role in [Role.HR, Role.ADMIN]
 
 
+class IsManagerOrHR(BasePermission):
+    """Allows Manager, HR, and Admin."""
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.role in [Role.MANAGER, Role.HR, Role.ADMIN]
+
+
 class IsManagerOrAccountant(BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.role in [Role.MANAGER, Role.ACCOUNTANT, Role.ADMIN]

@@ -4,6 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { useOfflineSync } from './src/hooks/useOfflineSync';
+import { usePushNotifications } from './src/hooks/usePushNotifications';
 import { initI18n } from './src/i18n';
 import { LoadingScreen, GlobalAttendanceModal } from './src/components/shared';
 import OfflineBar from './src/components/shared/OfflineBar';
@@ -15,6 +16,7 @@ initI18n().then(() => { i18nInitialized = true; });
 // Main App Component wrapper to use hooks that require Context
 const AppContent = () => {
   useOfflineSync();
+  usePushNotifications();
   return (
     <>
       <AppNavigator />

@@ -24,4 +24,6 @@ urlpatterns = [
     path('api/payments/', include('accounts_module.urls_payments')),
     # Core / Shared
     path('api/core/', include('core.urls.core')),
+    # MRM, Badges, Tasks & Recognition
+    path('api/mrm/', include('core.urls.mrm')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

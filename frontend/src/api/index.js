@@ -236,6 +236,8 @@ export const hrApi = {
     get: (id) => api.get(`/hr/volunteers/${id}/`),
     update: (id, data) => api.patch(`/hr/volunteers/${id}/`, data),
     delete: (id) => api.delete(`/hr/volunteers/${id}/`),
+    approve: (id) => api.post(`/hr/volunteers/${id}/approve/`),
+    reject: (id, data) => api.post(`/hr/volunteers/${id}/reject/`, data),
   },
   execMembers: {
     list: (params) => api.get('/hr/executive-members/', { params }),
@@ -264,8 +266,13 @@ export const hrApi = {
   },
   leave: {
     list: (params) => api.get('/hr/leave/', { params }),
+    get: (id) => api.get(`/hr/leave/${id}/`),
     create: (data) => api.post('/hr/leave/', data),
     action: (id, data) => api.post(`/hr/leave/${id}/action/`, data),
+    getNotes: (id) => api.get(`/hr/leave/${id}/notes/`),
+    addNote: (id, data) => api.post(`/hr/leave/${id}/notes/`, data),
+    getCommunications: (id) => api.get(`/hr/leave/${id}/communicate/`),
+    sendCommunication: (id, data) => api.post(`/hr/leave/${id}/communicate/`, data),
   },
   payroll: {
     list: (params) => api.get('/hr/payroll/', { params }),
@@ -383,12 +390,83 @@ export const coreApi = {
     listAllFeatures: () => api.get('/core/features/?all=true'),
     updateFeatureRoles: (data) => api.post('/core/features/', data),
   },
+  socialAnalytics: {
+    get: (params) => api.get('/core/social-analytics/', { params }),
+  },
   memberPosts: {
     list: (params) => api.get('/core/member-posts/', { params }),
     get: (id) => api.get(`/core/member-posts/${id}/`),
+    create: (data) => api.post('/core/member-posts/', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
     approve: (id) => api.post(`/core/member-posts/${id}/approve/`),
     reject: (id, data) => api.post(`/core/member-posts/${id}/reject/`, data || {}),
+    togglePin: (id) => api.post(`/core/member-posts/${id}/toggle-pin/`),
     forwardToFao: (id, data) => api.post(`/core/member-posts/${id}/forward-to-fao/`, data),
     delete: (id) => api.delete(`/core/member-posts/${id}/`),
+  },
+  verifications: {
+    list: (params) => api.get('/core/verifications/', { params }),
+    get: (id) => api.get(`/core/verifications/${id}/`),
+    approve: (id) => api.post(`/core/verifications/${id}/approve/`),
+    reject: (id, data) => api.post(`/core/verifications/${id}/reject/`, data),
+  },
+  pomMessages: {
+    list: (params) => api.get('/core/pom-messages/', { params }),
+    get: (id) => api.get(`/core/pom-messages/${id}/`),
+    create: (data) => api.post('/core/pom-messages/', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+    update: (id, data) => api.put(`/core/pom-messages/${id}/`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+    delete: (id) => api.delete(`/core/pom-messages/${id}/`),
+    togglePin: (id) => api.post(`/core/pom-messages/${id}/toggle-pin/`),
+    changeStatus: (id, data) => api.post(`/core/pom-messages/${id}/change-status/`, data),
+  },
+  socialPolls: {
+    list: (params) => api.get('/core/social-polls/', { params }),
+    get: (id) => api.get(`/core/social-polls/${id}/`),
+    create: (data) => api.post('/core/social-polls/', data),
+    vote: (id, data) => api.post(`/core/social-polls/${id}/vote/`, data),
+    close: (id) => api.post(`/core/social-polls/${id}/close/`),
+    delete: (id) => api.delete(`/core/social-polls/${id}/`),
+    results: (id) => api.get(`/core/social-polls/${id}/results/`),
   }
 }
+
+export const mrmApi = {
+  overview: () => api.get('/mrm/overview/'),
+  members: {
+    list: (params) => api.get('/mrm/members/', { params }),
+    get: (id) => api.get(`/mrm/members/${id}/`),
+    getInteractions: (memberId) => api.get(`/mrm/members/${memberId}/interactions/`),
+    createInteraction: (memberId, data) => api.post(`/mrm/members/${memberId}/interactions/`, data),
+  },
+  tasks: {
+    list: (params) => api.get('/mrm/tasks/', { params }),
+    get: (id) => api.get(`/mrm/tasks/${id}/`),
+    create: (data) => api.post('/mrm/tasks/', data),
+    update: (id, data) => api.patch(`/mrm/tasks/${id}/`, data),
+    delete: (id) => api.delete(`/mrm/tasks/${id}/`),
+    submit: (id, data) => api.post(`/mrm/tasks/${id}/submit/`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+    review: (id, data) => api.post(`/mrm/tasks/${id}/review/`, data),
+    myTasks: () => api.get('/mrm/tasks/my-tasks/'),
+  },
+  badges: {
+    list: () => api.get('/mrm/badges/'),
+    update: (badgeKey, data) => api.patch(`/mrm/badges/${badgeKey}/`, data),
+    awards: (params) => api.get('/mrm/badges-awards/', { params }),
+    awardManual: (data) => api.post('/mrm/badges-awards/manual/', data),
+    evaluate: (data) => api.post('/mrm/badges-evaluate/', data || {}),
+  },
+  achievements: {
+    list: (params) => api.get('/mrm/achievements/', { params }),
+    grant: (data) => api.post('/mrm/achievements/', data),
+  },
+  volunteers: {
+    list: (params) => api.get('/mrm/volunteers/', { params }),
+    updateStatus: (id, data) => api.patch(`/mrm/volunteers/${id}/status/`, data),
+    allowances: (params) => api.get('/mrm/volunteers/allowances/', { params }),
+    saveAllowance: (data) => api.post('/mrm/volunteers/allowances/', data),
+    approveAllowance: (id, data) => api.post(`/mrm/volunteers/allowances/${id}/approve/`, data),
+  },
+  appreciations: {
+    list: () => api.get('/mrm/appreciations/'),
+    publish: (data) => api.post('/mrm/appreciations/', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  }
+};

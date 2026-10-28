@@ -167,7 +167,7 @@ const LoginScreen = ({ navigation }) => {
 
         {/* Branding Logo */}
         <View style={styles.header}>
-          <Image source={require('../../../assets/android-icon-foreground.png')} style={styles.logo} resizeMode="contain" />
+          <Image source={require('../../../assets/trust-logo.png')} style={styles.logo} resizeMode="contain" />
           <Text style={styles.trust}>Sree Lakshmi</Text>
           <Text style={styles.trustSub}>CHARITABLE TRUST</Text>
         </View>
@@ -181,11 +181,11 @@ const LoginScreen = ({ navigation }) => {
         {/* Login Form Card */}
         <View style={styles.card}>
           <Input
-            label="Mobile Number / Member ID / Email"
+            label="Enter username or email"
             value={form.username}
             onChangeText={(v) => { setForm(f => ({ ...f, username: v })); setErrors(e => ({ ...e, username: '' })); }}
-            placeholder="Enter Mobile Number, Member ID or Email"
-            leftIcon={<Ionicons name="call-outline" size={20} color={Colors.gray400} />}
+            placeholder="Enter username or email"
+            leftIcon={<Ionicons name="person-outline" size={20} color={Colors.gray400} />}
             error={errors.username}
             autoCapitalize="none"
           />
@@ -400,7 +400,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   header: { alignItems: 'center', marginBottom: 24 },
-  logo: { width: 80, height: 80, marginBottom: 8 },
+  logo: { width: 120, height: 82, marginBottom: 10 },
   trust: { fontSize: 22, fontWeight: '800', color: '#0f172a' },
   trustSub: { fontSize: 11, color: '#0f172a', fontWeight: '700', letterSpacing: 1 },
   
