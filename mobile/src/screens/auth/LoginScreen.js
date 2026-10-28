@@ -124,11 +124,10 @@ const LoginScreen = ({ navigation }) => {
     try {
       const res = await authApi.login({ username: form.username.trim(), password: form.password });
       await login(res.data);
-      if (navigation.canGoBack()) {
-        navigation.goBack();
-      } else {
-        navigation.navigate('Main');
-      }
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Main' }],
+      });
     } catch (err) {
       console.log('Login error:', err.message);
       let msg = 'Wrong credentials';
@@ -182,11 +181,11 @@ const LoginScreen = ({ navigation }) => {
         {/* Login Form Card */}
         <View style={styles.card}>
           <Input
-            label="Name / Email / Member ID"
+            label="Mobile Number / Member ID / Email"
             value={form.username}
             onChangeText={(v) => { setForm(f => ({ ...f, username: v })); setErrors(e => ({ ...e, username: '' })); }}
-            placeholder="Enter your Name, Email or Member ID"
-            leftIcon={<Ionicons name="person-outline" size={20} color={Colors.gray400} />}
+            placeholder="Enter Mobile Number, Member ID or Email"
+            leftIcon={<Ionicons name="call-outline" size={20} color={Colors.gray400} />}
             error={errors.username}
             autoCapitalize="none"
           />

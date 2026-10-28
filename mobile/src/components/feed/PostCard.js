@@ -53,6 +53,25 @@ export default function PostCard({
   const lastTapRef = useRef(0);
   const navigation = useNavigation();
 
+  // Custom Video Player state (Hides native forward, backward, and pause controls during playback)
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [isVideoMuted, setIsVideoMuted] = useState(false);
+  const videoRef = useRef(null);
+
+  const togglePlayVideo = async () => {
+    if (!videoRef.current) return;
+    try {
+      const status = await videoRef.current.getStatusAsync();
+      if (status.isPlaying) {
+        await videoRef.current.pauseAsync();
+        setIsVideoPlaying(false);
+      } else {
+        await videoRef.current.playAsync();
+        setIsVideoPlaying(true);
+      }
+    } catch (_) {}
+  };
+
   const handleOpenDetail = () => {
     navigation.navigate('PostDetail', { post, postId: post.id });
   };
@@ -107,6 +126,19 @@ export default function PostCard({
   const authorName = post.author?.full_name || post.author?.username || 'Community Member';
   const authorPhotoUrl = resolveImageUrl(post.author?.photo);
   const districtName = formatDistrictKerala(post.address);
+  const isCharity = (post.post_type || '').toUpperCase() === 'CHARITY';
+
+  const handleDonate = () => {
+    if (!currentUserId) {
+      navigation.navigate('Auth');
+      return;
+    }
+    navigation.navigate('Donate', {
+      postId: post.id,
+      postAuthor: authorName,
+      initialNote: `Donation for community cause by ${authorName}`,
+    });
+  };
 
   // Like Toggle with spring pop
   const handleLike = async () => {
@@ -317,7 +349,7 @@ export default function PostCard({
             </TouchableOpacity>
           )}
 
-          {isAuthor && post.status && (
+          {post.status && post.status !== 'APPROVED' ? (
             <View style={{
               paddingHorizontal: 8,
               paddingVertical: 3,
@@ -325,23 +357,25 @@ export default function PostCard({
               marginRight: 6,
               backgroundColor:
                 (post.status === 'PENDING_APPROVAL' || post.status === 'OPEN') ? '#FEF3C7' :
-                post.status === 'REJECTED' ? '#FEE2E2' :
-                post.status === 'APPROVED' ? '#DCFCE7' : '#DBEAFE',
+                post.status === 'REJECTED' ? '#FEE2E2' : '#DBEAFE',
             }}>
               <Text style={{
                 fontSize: 10.5,
                 fontWeight: '700',
                 color:
                   (post.status === 'PENDING_APPROVAL' || post.status === 'OPEN') ? '#B45309' :
-                  post.status === 'REJECTED' ? '#DC2626' :
-                  post.status === 'APPROVED' ? '#15803D' : '#1E40AF',
+                  post.status === 'REJECTED' ? '#DC2626' : '#1E40AF',
               }}>
                 {(post.status === 'PENDING_APPROVAL' || post.status === 'OPEN') ? 'Under Review ⏳' :
-                 post.status === 'REJECTED' ? 'Rejected ⚠️' :
-                 post.status === 'APPROVED' ? 'Approved ✅' : 'With FAO 🚀'}
+                 post.status === 'REJECTED' ? 'Rejected ⚠️' : 'With FAO 🚀'}
               </Text>
             </View>
-          )}
+          ) : isCharity ? (
+            <View style={[styles.charityBadge, { marginRight: 6, marginLeft: 0 }]}>
+              <Ionicons name="heart" size={11} color="#E11D48" />
+              <Text style={styles.charityBadgeText}>Charity</Text>
+            </View>
+          ) : null}
 
           <TouchableOpacity
             style={styles.headerMenuBtn}
@@ -357,14 +391,52 @@ export default function PostCard({
       {/* ── 2. Post Media / Video or Image (Full Width with Double Tap to Like) ──────────── */}
       {post.video ? (
         <View style={styles.mediaContainer}>
-          <Video
-            source={{ uri: resolveImageUrl(post.video) }}
-            style={styles.postVideo}
-            useNativeControls
-            resizeMode={ResizeMode.COVER}
-            isLooping
-            shouldPlay={false}
-          />
+          <TouchableOpacity
+            activeOpacity={0.95}
+            onPress={togglePlayVideo}
+            style={{ width: '100%', height: 380, position: 'relative' }}
+          >
+            <Video
+              ref={videoRef}
+              source={{ uri: resolveImageUrl(post.video) }}
+              style={styles.postVideo}
+              useNativeControls={false}
+              resizeMode={ResizeMode ? ResizeMode.COVER : 'cover'}
+              isLooping
+              isMuted={isVideoMuted}
+              shouldPlay={isVideoPlaying}
+              onPlaybackStatusUpdate={(status) => {
+                if (status.isLoaded) {
+                  setIsVideoPlaying(Boolean(status.isPlaying));
+                }
+              }}
+            />
+
+            {/* When playing: forward, backward, and pause buttons are completely hidden! When paused: show elegant play button */}
+            {!isVideoPlaying && (
+              <View style={styles.videoPlayOverlay} pointerEvents="none">
+                <View style={styles.videoPlayBtn}>
+                  <Ionicons name="play" size={32} color="#FFFFFF" style={{ marginLeft: 3 }} />
+                </View>
+              </View>
+            )}
+
+            {/* Mute / Unmute Button in corner */}
+            <TouchableOpacity
+              style={styles.videoMuteBtn}
+              onPress={(e) => {
+                e.stopPropagation?.();
+                setIsVideoMuted(!isVideoMuted);
+              }}
+              activeOpacity={0.8}
+            >
+              <Ionicons
+                name={isVideoMuted ? 'volume-mute' : 'volume-high'}
+                size={16}
+                color="#FFFFFF"
+              />
+            </TouchableOpacity>
+          </TouchableOpacity>
         </View>
       ) : images.length > 0 ? (
         <View style={styles.mediaContainer}>
@@ -442,7 +514,7 @@ export default function PostCard({
         </View>
       ) : null}
 
-      {/* ── 3. Action Bar (Likes, Comments, Repost, Share on Left | Bookmark on Right) ── */}
+      {/* ── 3. Action Bar (Likes, Comments, Share on Left | Donate Now on Right) ── */}
       <View style={styles.actionBar}>
         <View style={styles.actionLeftGroup}>
           {/* Like Heart Button with Like Count */}
@@ -491,6 +563,18 @@ export default function PostCard({
             <Ionicons name="paper-plane-outline" size={23} color="#0F172A" />
           </TouchableOpacity>
         </View>
+
+        {/* Right side of Action Bar: Donate Now Button (parallel to love & share icons) */}
+        {isCharity && (
+          <TouchableOpacity
+            style={styles.donateNowBtn}
+            onPress={handleDonate}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="heart" size={13} color="#FFFFFF" />
+            <Text style={styles.donateNowBtnText}>Donate Now</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* ── 4. Description / Caption Section (Under Action Buttons) ────────────── */}
@@ -533,36 +617,33 @@ export default function PostCard({
           </TouchableOpacity>
         )}
 
-        {/* Timestamp & Location / Status Badges */}
-        <View style={styles.footerMetaRow}>
-          <Text style={styles.timestampText}>{formatTime(post.created_at)}</Text>
-          {Boolean(districtName) && (
-            <>
-              <Text style={styles.metaDivider}>•</Text>
-              <Text style={styles.metaPlaceText}>{districtName}</Text>
-            </>
-          )}
-          {post.status && (
-            <>
-              <Text style={styles.metaDivider}>•</Text>
-              <Text
-                style={[
-                  styles.metaStatusText,
-                  post.status === 'RESOLVED'
-                    ? { color: '#7E22CE' }
-                    : post.status === 'FORWARDED_TO_FAO'
-                    ? { color: '#059669' }
-                    : { color: '#0284c7' },
-                ]}
-              >
-                {post.status === 'FORWARDED_TO_FAO'
-                  ? 'In Assessment'
-                  : post.status === 'RESOLVED'
-                  ? 'Resolved'
-                  : 'Open'}
-              </Text>
-            </>
-          )}
+        {/* Bottom Footer Row: Left Meta (Timestamp, Location, Status) */}
+        <View style={styles.cardBottomRow}>
+          <View style={styles.footerMetaRow}>
+            <Text style={styles.timestampText}>{formatTime(post.created_at)}</Text>
+            {Boolean(districtName) && (
+              <>
+                <Text style={styles.metaDivider}>•</Text>
+                <Text style={styles.metaPlaceText}>{districtName}</Text>
+              </>
+            )}
+            {post.status === 'FORWARDED_TO_FAO' && (
+              <>
+                <Text style={styles.metaDivider}>•</Text>
+                <Text style={[styles.metaStatusText, { color: '#059669' }]}>
+                  In Assessment
+                </Text>
+              </>
+            )}
+            {post.status === 'RESOLVED' && (
+              <>
+                <Text style={styles.metaDivider}>•</Text>
+                <Text style={[styles.metaStatusText, { color: '#7E22CE' }]}>
+                  Resolved
+                </Text>
+              </>
+            )}
+          </View>
         </View>
       </View>
 
@@ -631,15 +712,13 @@ export default function PostCard({
               </TouchableOpacity>
             )}
 
-            {isAuthor && (
-              <TouchableOpacity
-                style={styles.optionItem}
-                onPress={handleDelete}
-              >
-                <Ionicons name="trash-outline" size={20} color="#EF4444" />
-                <Text style={[styles.optionItemText, { color: '#EF4444' }]}>Delete Post</Text>
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity
+              style={styles.optionItem}
+              onPress={handleDelete}
+            >
+              <Ionicons name="trash-outline" size={20} color="#EF4444" />
+              <Text style={[styles.optionItemText, { color: '#EF4444', fontWeight: '600' }]}>Delete Post</Text>
+            </TouchableOpacity>
 
             <TouchableOpacity
               style={[styles.optionItem, styles.cancelOptionItem]}
@@ -828,6 +907,41 @@ const styles = StyleSheet.create({
     height: 380,
     backgroundColor: '#000000',
   },
+  videoPlayOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.25)',
+  },
+  videoPlayBtn: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(15, 23, 42, 0.75)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 6,
+  },
+  videoMuteBtn: {
+    position: 'absolute',
+    bottom: 12,
+    right: 12,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: 'rgba(15, 23, 42, 0.75)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 5,
+  },
   postImage: {
     width: '100%',
     aspectRatio: 1, // Standard Instagram 1:1 square
@@ -956,12 +1070,56 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#64748B',
   },
+  charityBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3.5,
+    backgroundColor: '#FFF1F2',
+    borderWidth: 1,
+    borderColor: '#FECDD3',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+    marginRight: 6,
+  },
+  charityBadgeText: {
+    fontSize: 10.5,
+    fontWeight: '700',
+    color: '#E11D48',
+  },
+  cardBottomRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 4,
+    gap: 8,
+  },
+  donateNowBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#0284c7',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    shadowColor: '#0284c7',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  donateNowBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: 0.2,
+  },
   footerMetaRow: {
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
     gap: 5,
-    marginTop: 2,
+    flex: 1,
   },
   timestampText: {
     fontSize: 11,

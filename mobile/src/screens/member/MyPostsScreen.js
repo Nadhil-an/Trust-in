@@ -44,6 +44,7 @@ export default function MyPostsScreen({ navigation }) {
 
   // Edit Modal state
   const [editingPost, setEditingPost] = useState(null);
+  const [editPostType, setEditPostType] = useState('AWARENESS');
   const [editDesc, setEditDesc] = useState('');
   const [editContact, setEditContact] = useState('');
   const [editState, setEditState] = useState('Kerala');
@@ -87,6 +88,7 @@ export default function MyPostsScreen({ navigation }) {
 
   const handleOpenEdit = (post) => {
     setEditingPost(post);
+    setEditPostType(post.post_type || 'AWARENESS');
     setEditDesc(post.description || '');
     setEditContact(post.contact_number || '');
     const parsed = parseAddress(post.address);
@@ -111,6 +113,7 @@ export default function MyPostsScreen({ navigation }) {
     setEditSaving(true);
     try {
       const res = await memberPostsApi.update(editingPost.id, {
+        post_type: editPostType,
         description: editDesc.trim(),
         contact_number: editContact.trim(),
         address: fullAddress,
@@ -292,6 +295,56 @@ export default function MyPostsScreen({ navigation }) {
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} style={{ maxHeight: 420 }}>
+              {/* Post Type Selector */}
+              <Text style={styles.fieldLabel}>Post Type *</Text>
+              <View style={styles.editTypeRow}>
+                <TouchableOpacity
+                  style={[
+                    styles.editTypeBtn,
+                    editPostType === 'AWARENESS' && styles.editTypeBtnActiveAwareness,
+                  ]}
+                  onPress={() => setEditPostType('AWARENESS')}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons
+                    name="megaphone"
+                    size={16}
+                    color={editPostType === 'AWARENESS' ? '#FFFFFF' : '#0284c7'}
+                  />
+                  <Text
+                    style={[
+                      styles.editTypeBtnText,
+                      editPostType === 'AWARENESS' && styles.editTypeBtnTextActive,
+                    ]}
+                  >
+                    Awareness
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.editTypeBtn,
+                    editPostType === 'CHARITY' && styles.editTypeBtnActiveCharity,
+                  ]}
+                  onPress={() => setEditPostType('CHARITY')}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons
+                    name="heart"
+                    size={16}
+                    color={editPostType === 'CHARITY' ? '#FFFFFF' : '#EF4444'}
+                  />
+                  <Text
+                    style={[
+                      styles.editTypeBtnText,
+                      editPostType === 'CHARITY' && styles.editTypeBtnTextActive,
+                    ]}
+                  >
+                    Charity
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
               {/* Description Input */}
               <Text style={styles.fieldLabel}>Problem Description *</Text>
               <TextInput
@@ -579,6 +632,39 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '700',
     color: '#0F172A',
+  },
+  editTypeRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 6,
+  },
+  editTypeBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
+    backgroundColor: '#F8FAFC',
+  },
+  editTypeBtnActiveAwareness: {
+    backgroundColor: '#0284c7',
+    borderColor: '#0284c7',
+  },
+  editTypeBtnActiveCharity: {
+    backgroundColor: '#E11D48',
+    borderColor: '#E11D48',
+  },
+  editTypeBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#475569',
+  },
+  editTypeBtnTextActive: {
+    color: '#FFFFFF',
   },
   fieldLabel: {
     fontSize: 12,

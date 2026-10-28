@@ -16,6 +16,7 @@ import {
   Platform,
   StatusBar,
   KeyboardAvoidingView,
+  Share,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -54,6 +55,30 @@ const PostDetailScreen = ({ route, navigation }) => {
   const [showCommentInput, setShowCommentInput] = useState(false);
   const commentInputRef = useRef(null);
   const scrollViewRef = useRef(null);
+
+  // Options & Delete modal state
+  const [optionsModalVisible, setOptionsModalVisible] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Custom Video Player state (Hides native forward, backward, and pause controls during playback)
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [isVideoMuted, setIsVideoMuted] = useState(false);
+  const videoRef = useRef(null);
+
+  const togglePlayVideo = async () => {
+    if (!videoRef.current) return;
+    try {
+      const status = await videoRef.current.getStatusAsync();
+      if (status.isPlaying) {
+        await videoRef.current.pauseAsync();
+        setIsVideoPlaying(false);
+      } else {
+        await videoRef.current.playAsync();
+        setIsVideoPlaying(true);
+      }
+    } catch (_) {}
+  };
 
   const fetchPostDetails = async () => {
     if (!postId) return;
@@ -97,6 +122,7 @@ const PostDetailScreen = ({ route, navigation }) => {
 
   const authorPhotoUrl = resolveImageUrl(post.author?.photo);
   const isAuthor = String(post.author?.id) === String(user?.id);
+  const isCharity = (post.post_type || '').toUpperCase() === 'CHARITY';
 
   // Derive prominent headline/title for the issue just like EventDetailScreen
   const descRaw = (post.description || '').trim();
@@ -211,6 +237,47 @@ const PostDetailScreen = ({ route, navigation }) => {
     });
   };
 
+  const handleShare = async () => {
+    try {
+      const authorName = post.author?.full_name || post.author?.username || 'Community Member';
+      const districtName = formatDistrictKerala(post.address);
+      const desc = post.description || '';
+      const shareMessage = `Sree Lakshmi Trust • Community Post\n\nBy: ${authorName} (${districtName})\n\n"${desc}"\n\nView and support on the Sree Lakshmi Trust App.`;
+      await Share.share({
+        message: shareMessage,
+        title: 'Community Post',
+      });
+    } catch (err) {
+      console.log('Share error:', err);
+    }
+  };
+
+  const handleDelete = () => {
+    setOptionsModalVisible(false);
+    setDeleteModalVisible(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      setIsDeleting(true);
+      await memberPostsApi.deletePost(post.id);
+      setDeleteModalVisible(false);
+      setIsDeleting(false);
+      Toast.show({ type: 'success', text1: 'Deleted', text2: 'Post removed successfully' });
+      if (route.params?.onPostDeleted) {
+        route.params.onPostDeleted(post.id);
+      }
+      navigation.goBack();
+    } catch (_) {
+      setIsDeleting(false);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to delete post. Please try again.',
+      });
+    }
+  };
+
   const headerPaddingTop = Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 8 : 12;
 
   return (
@@ -226,7 +293,13 @@ const PostDetailScreen = ({ route, navigation }) => {
           <Ionicons name="arrow-back" size={24} color="#ffffff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Issue Details</Text>
-        <View style={{ width: 24 }} />
+        <TouchableOpacity
+          style={styles.headerMenuBtn}
+          onPress={() => setOptionsModalVisible(true)}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Ionicons name="ellipsis-horizontal" size={22} color="#ffffff" />
+        </TouchableOpacity>
       </View>
 
       {loading ? (
@@ -249,14 +322,52 @@ const PostDetailScreen = ({ route, navigation }) => {
           {/* Hero Image / Video Container (Edge-to-Edge like EventDetailScreen) */}
           {post.video ? (
             <View style={styles.imageContainer}>
-              <Video
-                source={{ uri: resolveImageUrl(post.video) }}
-                style={{ width: SCREEN_WIDTH, height: 320 }}
-                useNativeControls
-                resizeMode={ResizeMode.CONTAIN}
-                isLooping
-                shouldPlay={false}
-              />
+              <TouchableOpacity
+                activeOpacity={0.95}
+                onPress={togglePlayVideo}
+                style={{ width: SCREEN_WIDTH, height: 320, position: 'relative', backgroundColor: '#000000' }}
+              >
+                <Video
+                  ref={videoRef}
+                  source={{ uri: resolveImageUrl(post.video) }}
+                  style={{ width: SCREEN_WIDTH, height: 320 }}
+                  useNativeControls={false}
+                  resizeMode={ResizeMode ? ResizeMode.CONTAIN : 'contain'}
+                  isLooping
+                  isMuted={isVideoMuted}
+                  shouldPlay={isVideoPlaying}
+                  onPlaybackStatusUpdate={(status) => {
+                    if (status.isLoaded) {
+                      setIsVideoPlaying(Boolean(status.isPlaying));
+                    }
+                  }}
+                />
+
+                {/* When playing: forward, backward, and pause buttons are completely hidden! When paused: show elegant play button */}
+                {!isVideoPlaying && (
+                  <View style={styles.videoPlayOverlay} pointerEvents="none">
+                    <View style={styles.videoPlayBtn}>
+                      <Ionicons name="play" size={36} color="#FFFFFF" style={{ marginLeft: 3 }} />
+                    </View>
+                  </View>
+                )}
+
+                {/* Mute / Unmute Button in corner */}
+                <TouchableOpacity
+                  style={styles.videoMuteBtn}
+                  onPress={(e) => {
+                    e.stopPropagation?.();
+                    setIsVideoMuted(!isVideoMuted);
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons
+                    name={isVideoMuted ? 'volume-mute' : 'volume-high'}
+                    size={16}
+                    color="#FFFFFF"
+                  />
+                </TouchableOpacity>
+              </TouchableOpacity>
             </View>
           ) : images.length > 0 ? (
             <View style={styles.imageContainer}>
@@ -374,7 +485,15 @@ const PostDetailScreen = ({ route, navigation }) => {
                   </View>
 
                   {/* Status Badge */}
-                  {post.status === 'FORWARDED_TO_FAO' ? (
+                  {(post.status === 'PENDING_APPROVAL' || post.status === 'OPEN') ? (
+                    <View style={[styles.statusBadge, { backgroundColor: '#FEF3C7', borderColor: '#FDE68A' }]}>
+                      <Text style={[styles.statusBadgeText, { color: '#B45309' }]}>Under Review ⏳</Text>
+                    </View>
+                  ) : post.status === 'REJECTED' ? (
+                    <View style={[styles.statusBadge, { backgroundColor: '#FEE2E2', borderColor: '#FECACA' }]}>
+                      <Text style={[styles.statusBadgeText, { color: '#DC2626' }]}>Rejected ⚠️</Text>
+                    </View>
+                  ) : post.status === 'FORWARDED_TO_FAO' ? (
                     <View style={[styles.statusBadge, styles.statusBadgeForwarded]}>
                       <Ionicons name="shield-checkmark" size={11} color="#059669" />
                       <Text style={[styles.statusBadgeText, { color: '#059669' }]}>In Assessment</Text>
@@ -383,11 +502,12 @@ const PostDetailScreen = ({ route, navigation }) => {
                     <View style={[styles.statusBadge, { backgroundColor: '#F3E8FF', borderColor: '#D8B4FE' }]}>
                       <Text style={[styles.statusBadgeText, { color: '#7E22CE' }]}>Resolved</Text>
                     </View>
-                  ) : (
-                    <View style={[styles.statusBadge, styles.statusBadgeOpen]}>
-                      <Text style={[styles.statusBadgeText, { color: '#0284C7' }]}>Open</Text>
+                  ) : isCharity ? (
+                    <View style={[styles.statusBadge, { backgroundColor: '#FFF1F2', borderColor: '#FECDD3' }]}>
+                      <Ionicons name="heart" size={11} color="#E11D48" />
+                      <Text style={[styles.statusBadgeText, { color: '#E11D48' }]}>Charity</Text>
                     </View>
-                  )}
+                  ) : null}
                 </View>
                 <Text style={styles.orgSub}>
                   Member ID: {authorMemberId || 'N/A'} • Citizen Reporter
@@ -415,6 +535,33 @@ const PostDetailScreen = ({ route, navigation }) => {
             )}
 
 
+
+            {/* Charity Donate Banner */}
+            {isCharity && (
+              <TouchableOpacity
+                style={styles.charityDonateBanner}
+                onPress={() => navigation.navigate('Donate', {
+                  postId: post.id,
+                  postAuthor: post.author?.full_name || post.author?.username || 'Community Member',
+                  initialNote: `Donation for community cause by ${post.author?.full_name || post.author?.username || 'Community Member'}`,
+                })}
+                activeOpacity={0.88}
+              >
+                <View style={styles.charityDonateLeft}>
+                  <View style={styles.charityDonateIconWrap}>
+                    <Ionicons name="heart" size={20} color="#FFFFFF" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.charityDonateTitle}>Charity Support</Text>
+                    <Text style={styles.charityDonateSub}>Tap to support this cause with a donation</Text>
+                  </View>
+                </View>
+                <View style={styles.charityDonateBtn}>
+                  <Text style={styles.charityDonateBtnText}>Donate Now</Text>
+                  <Ionicons name="arrow-forward" size={13} color="#FFFFFF" />
+                </View>
+              </TouchableOpacity>
+            )}
 
             {/* Engagement Actions (Like & Comment) */}
             <View style={styles.actionBarCard}>
@@ -549,6 +696,126 @@ const PostDetailScreen = ({ route, navigation }) => {
         </SafeAreaView>
       </Modal>
 
+      {/* Options Menu Bottom Sheet Modal */}
+      <Modal
+        visible={optionsModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setOptionsModalVisible(false)}
+      >
+        <TouchableOpacity
+          style={styles.optionsBackdrop}
+          activeOpacity={1}
+          onPress={() => setOptionsModalVisible(false)}
+        >
+          <View style={styles.optionsSheet}>
+            <View style={styles.sheetHandle} />
+
+            <TouchableOpacity
+              style={styles.optionItem}
+              onPress={() => {
+                setOptionsModalVisible(false);
+                handleShare();
+              }}
+            >
+              <Ionicons name="share-social-outline" size={20} color="#0F172A" />
+              <Text style={styles.optionItemText}>Share Post</Text>
+            </TouchableOpacity>
+
+            {Boolean(post.contact_number) && (
+              <>
+                <TouchableOpacity
+                  style={styles.optionItem}
+                  onPress={() => {
+                    setOptionsModalVisible(false);
+                    handleCall();
+                  }}
+                >
+                  <Ionicons name="call-outline" size={20} color="#0284c7" />
+                  <Text style={styles.optionItemText}>Call Contact</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.optionItem}
+                  onPress={() => {
+                    setOptionsModalVisible(false);
+                    handleWhatsApp();
+                  }}
+                >
+                  <Ionicons name="logo-whatsapp" size={20} color="#16A34A" />
+                  <Text style={[styles.optionItemText, { color: '#16A34A' }]}>WhatsApp Message</Text>
+                </TouchableOpacity>
+              </>
+            )}
+
+            <TouchableOpacity
+              style={styles.optionItem}
+              onPress={handleDelete}
+            >
+              <Ionicons name="trash-outline" size={20} color="#EF4444" />
+              <Text style={[styles.optionItemText, { color: '#EF4444', fontWeight: '600' }]}>Delete Post</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.optionItem, styles.cancelOptionItem]}
+              onPress={() => setOptionsModalVisible(false)}
+            >
+              <Text style={styles.cancelOptionText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        visible={deleteModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => {
+          if (!isDeleting) setDeleteModalVisible(false);
+        }}
+      >
+        <View style={styles.deleteOverlay}>
+          <View style={styles.deleteDialogCard}>
+            <View style={styles.deleteIconCircle}>
+              <Ionicons name="trash" size={28} color="#EF4444" />
+            </View>
+
+            <Text style={styles.deleteTitle}>Delete Post?</Text>
+            <Text style={styles.deleteMessage}>
+              Are you sure you want to delete this post? This cannot be undone.
+            </Text>
+
+            <View style={styles.deleteActionsRow}>
+              <TouchableOpacity
+                style={styles.deleteCancelBtn}
+                onPress={() => setDeleteModalVisible(false)}
+                disabled={isDeleting}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.deleteCancelBtnText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.deleteConfirmBtn}
+                onPress={handleConfirmDelete}
+                disabled={isDeleting}
+                activeOpacity={0.8}
+              >
+                {isDeleting ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <>
+                    <Ionicons name="trash-outline" size={16} color="#FFFFFF" />
+                    <Text style={styles.deleteConfirmBtnText}>Delete</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       <Toast />
     </KeyboardAvoidingView>
   );
@@ -573,8 +840,43 @@ const styles = StyleSheet.create({
   imageContainer: {
     width: '100%',
     aspectRatio: 3 / 2,
-    backgroundColor: '#f1f5f9',
+    backgroundColor: '#000000',
     position: 'relative',
+  },
+  videoPlayOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.25)',
+  },
+  videoPlayBtn: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(15, 23, 42, 0.75)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 6,
+  },
+  videoMuteBtn: {
+    position: 'absolute',
+    bottom: 12,
+    right: 12,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: 'rgba(15, 23, 42, 0.75)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 5,
   },
   heroImage: { width: '100%', height: '100%' },
   imagePlaceholderContainer: {
@@ -729,6 +1031,56 @@ const styles = StyleSheet.create({
 
 
   // Engagement Actions Row (Like & Comment)
+  charityDonateBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F0F9FF',
+    borderWidth: 1.5,
+    borderColor: '#BAE6FD',
+    borderRadius: 14,
+    padding: 12,
+    marginTop: 14,
+  },
+  charityDonateLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+    marginRight: 8,
+  },
+  charityDonateIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#0284c7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  charityDonateTitle: {
+    fontSize: 13.5,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  charityDonateSub: {
+    fontSize: 11,
+    color: '#64748B',
+    marginTop: 1,
+  },
+  charityDonateBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#0284c7',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 10,
+  },
+  charityDonateBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
   actionBarCard: {
     backgroundColor: '#ffffff',
     borderRadius: 12,
@@ -886,6 +1238,144 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   fullScreenImage: { width: SCREEN_WIDTH, height: '80%' },
+  headerMenuBtn: { padding: 4 },
+
+  // Options Bottom Sheet Styles
+  optionsBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.45)',
+    justifyContent: 'flex-end',
+  },
+  optionsSheet: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingTop: 10,
+    paddingBottom: Platform.OS === 'ios' ? 36 : 20,
+    paddingHorizontal: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 10,
+  },
+  sheetHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#CBD5E1',
+    alignSelf: 'center',
+    marginBottom: 12,
+  },
+  optionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    gap: 14,
+  },
+  optionItemText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#1E293B',
+  },
+  cancelOptionItem: {
+    marginTop: 4,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+    justifyContent: 'center',
+  },
+  cancelOptionText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#64748B',
+    textAlign: 'center',
+  },
+
+  // Delete Dialog Styles
+  deleteOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  deleteDialogCard: {
+    width: '100%',
+    maxWidth: 340,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    paddingTop: 28,
+    paddingBottom: 22,
+    paddingHorizontal: 22,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 24,
+    elevation: 12,
+  },
+  deleteIconCircle: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: '#FEE2E2',
+    borderWidth: 4,
+    borderColor: '#FEF2F2',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  deleteTitle: {
+    fontSize: 19,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  deleteMessage: {
+    fontSize: 14,
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 21,
+    marginBottom: 24,
+    paddingHorizontal: 8,
+  },
+  deleteActionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    width: '100%',
+  },
+  deleteCancelBtn: {
+    flex: 1,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 14,
+    paddingVertical: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deleteCancelBtnText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#475569',
+  },
+  deleteConfirmBtn: {
+    flex: 1,
+    backgroundColor: '#EF4444',
+    borderRadius: 14,
+    paddingVertical: 13,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  deleteConfirmBtnText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
 });
 
 export default PostDetailScreen;

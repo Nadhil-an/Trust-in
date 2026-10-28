@@ -49,6 +49,10 @@ const MemberHomeScreen = ({ navigation }) => {
   const [selectedPostId, setSelectedPostId] = useState(null);
   const [userProfile, setUserProfile] = useState(user);
 
+  useEffect(() => {
+    setUserProfile(user);
+  }, [user]);
+
   const memberName = userProfile?.full_name || user?.full_name || '';
   const memberId = userProfile?.username || user?.username || '';
 

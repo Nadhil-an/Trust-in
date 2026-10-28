@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   infoTitle: { fontSize: 15, fontWeight: '700', color: '#0369a1' },
-  infoSub: { fontSize: 12, color: '#075985', marginTop: 2, leading: 16 },
+  infoSub: { fontSize: 12, color: '#075985', marginTop: 2, lineHeight: 16 },
 
   label: { fontSize: 13, fontWeight: '700', color: Colors.gray700, marginTop: 4 },
   dropdownBtn: {

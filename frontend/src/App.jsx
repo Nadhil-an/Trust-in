@@ -62,6 +62,7 @@ import PartnersEntry from './pages/data-entry/PartnersEntry'
 import MaterialInward from './pages/data-entry/MaterialInward'
 import MaterialOutward from './pages/data-entry/MaterialOutward'
 import AssetsInStock from './pages/data-entry/AssetsInStock'
+import EventEntry from './pages/data-entry/EventEntry'
 import PublicIssuesPage from './pages/social-media/PublicIssuesPage'
 import SocialMediaDashboard from './pages/social-media/Dashboard'
 import ScheduledPayouts from './pages/shared/ScheduledPayouts'
@@ -155,6 +156,8 @@ export default function App() {
 
         {/* Legacy redirects so old /login still works */}
         <Route path="/login" element={<Navigate to="/slt/portal/auth" replace />} />
+        <Route path="/auth/*" element={<Navigate to="/slt/portal/auth" replace />} />
+        <Route path="/auth" element={<Navigate to="/slt/portal/auth" replace />} />
 
         {/* Protected */}
         <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>

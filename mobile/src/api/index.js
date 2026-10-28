@@ -342,6 +342,7 @@ export const memberPostsApi = {
   get: (id) => api.get(`/core/member-posts/${id}/`),
   create: (data) => {
     const formData = new FormData();
+    if (data.post_type) formData.append('post_type', data.post_type);
     if (data.description) formData.append('description', data.description);
     if (data.contact_number) formData.append('contact_number', data.contact_number);
     if (data.address) formData.append('address', data.address);

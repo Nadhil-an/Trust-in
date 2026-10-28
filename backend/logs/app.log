@@ -251957,3 +251957,2300 @@ Watching for file changes with StatReloader
 HTTP/2 support not enabled (install the http2 and tls Twisted extras)
 Configuring endpoint tcp:port=8000:interface=0.0.0.0
 Listening on TCP address 0.0.0.0:8000
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+Not Found: /api/
+HTTP GET /api/ 404 [0.05, 127.0.0.1:28052]
+Not Found: /api/auth/me/
+HTTP GET /api/auth/me/ 404 [0.02, 127.0.0.1:26896]
+Not Found: /api/auth/me/
+HTTP GET /api/auth/me/ 404 [0.02, 127.0.0.1:26899]
+Unauthorized: /api/auth/profile/
+HTTP GET /api/auth/profile/ 401 [0.01, 127.0.0.1:26920]
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listen failure: Couldn't listen on 0.0.0.0:8000: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted.
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:44054]
+WebSocket REJECT /ws/notify/ [10.162.176.130:44054]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:44054]
+Unauthorized: /api/auth/profile/
+Unauthorized: /api/auth/profile/
+HTTP GET /api/auth/profile/ 401 [0.44, 10.162.176.130:44078]
+Unauthorized: /api/core/member-posts/
+Unauthorized: /api/core/events/
+Unauthorized: /api/core/member-posts/
+HTTP GET /api/core/events/ 401 [0.50, 10.162.176.130:44064]
+HTTP GET /api/auth/profile/ 401 [0.70, 10.162.176.130:44052]
+HTTP GET /api/core/member-posts/ 401 [0.45, 10.162.176.130:44090]
+HTTP GET /api/core/member-posts/ 401 [0.56, 10.162.176.130:44070]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:44472]
+WebSocket REJECT /ws/notify/ [10.162.176.130:44472]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:44472]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:45470]
+WebSocket REJECT /ws/notify/ [10.162.176.130:45470]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:45470]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:45478]
+WebSocket REJECT /ws/notify/ [10.162.176.130:45478]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:45478]
+Unauthorized: /api/core/member-posts/
+HTTP GET /api/core/member-posts/?my_posts=true 401 [0.01, 10.162.176.130:45486]
+HTTP POST /api/auth/refresh/ 200 [0.07, 10.162.176.130:45486]
+HTTP GET /api/core/member-posts/?my_posts=true 200 [0.04, 10.162.176.130:45486]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:45500]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:45506]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:45500]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:45506]
+HTTP GET /api/core/users/fc12f0f9-3ce6-4bf2-84c4-f9a2c9296ca0/member-profile/ 200 [0.02, 10.162.176.130:45486]
+HTTP GET /api/core/users/fc12f0f9-3ce6-4bf2-84c4-f9a2c9296ca0/member-profile/ 200 [0.02, 10.162.176.130:45486]
+HTTP GET /api/core/member-posts/?my_posts=true 200 [0.01, 10.162.176.130:45486]
+HTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.10, 10.162.176.130:45486]
+HTTP GET /api/auth/profile/ 200 [0.16, 10.162.176.130:36248]
+HTTP GET /api/auth/profile/ 200 [0.02, 10.162.176.130:45486]
+HTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.04, 10.162.176.130:36248]
+HTTP GET /api/auth/profile/ 200 [0.02, 10.162.176.130:36248]
+HTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.04, 10.162.176.130:45486]
+HTTP GET /api/core/users/fc12f0f9-3ce6-4bf2-84c4-f9a2c9296ca0/member-profile/ 200 [0.02, 10.162.176.130:45486]
+HTTP GET /api/core/member-posts/?my_posts=true 200 [0.01, 10.162.176.130:45486]
+HTTP GET /api/auth/profile/ 200 [0.06, 10.162.176.130:36248]
+HTTP GET /api/auth/profile/ 200 [0.05, 10.162.176.130:40892]
+HTTP GET /api/core/events/ 200 [0.22, 10.162.176.130:40886]
+HTTP GET /api/core/member-posts/ 200 [0.24, 10.162.176.130:40888]
+HTTP GET /api/core/member-posts/ 200 [0.40, 10.162.176.130:45486]
+HTTP GET /api/auth/profile/ 200 [0.03, 10.162.176.130:36248]
+HTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.04, 10.162.176.130:45486]
+HTTP GET /api/core/member-posts/?my_posts=true 200 [0.02, 10.162.176.130:45486]
+HTTP GET /api/auth/profile/ 200 [0.02, 10.162.176.130:45486]
+HTTP GET /api/auth/profile/ 200 [0.01, 10.162.176.130:45486]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:45500]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:45506]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:39388]
+HTTP GET /api/auth/profile/ 200 [0.02, 10.162.176.130:39382]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:39388]
+HTTP GET /api/core/member-posts/ 200 [0.03, 10.162.176.130:39382]
+HTTP GET /api/core/events/ 200 [0.03, 10.162.176.130:39396]
+HTTP GET /api/auth/profile/ 200 [0.04, 10.162.176.130:39382]
+HTTP GET /api/core/member-posts/ 200 [0.05, 10.162.176.130:39408]
+HTTP GET /api/auth/profile/ 200 [0.02, 10.162.176.130:39418]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:45390]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:45390]
+HTTP GET /api/auth/profile/ 200 [0.02, 10.162.176.130:39408]
+HTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.04, 10.162.176.130:39382]
+HTTP GET /api/core/member-posts/?my_posts=true 200 [0.01, 10.162.176.130:39382]
+HTTP GET /api/core/member-posts/?my_posts=true 200 [0.01, 10.162.176.130:39408]
+HTTP GET /api/auth/profile/ 200 [0.04, 10.162.176.130:39382]
+HTTP GET /api/auth/profile/ 200 [0.02, 10.162.176.130:39408]
+HTTP GET /api/auth/profile/ 200 [0.05, 10.162.176.130:39382]
+HTTP GET /api/auth/profile/ 200 [0.01, 10.162.176.130:39382]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\serializers.py changed, reloading.
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\serializers.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listen failure: Couldn't listen on 0.0.0.0:8000: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted.
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:44242]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:44244]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:44242]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:44244]
+[mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.07, 10.162.176.130:44256][0m
+[mHTTP GET /api/auth/profile/ 200 [0.07, 10.162.176.130:44268][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.162.176.130:44272][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:44242]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:44244]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\views.py changed, reloading.
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listen failure: Couldn't listen on 0.0.0.0:8000: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted.
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.03, 10.162.176.130:33848][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.162.176.130:33864][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.26, 10.162.176.130:33848][0m
+[mHTTP GET /api/core/members/search/?unfollowed=true 200 [0.06, 10.162.176.130:33848][0m
+[mHTTP POST /api/core/users/e9471581-0a54-41f6-8326-f8f407a929e3/toggle-follow/ 200 [0.02, 10.162.176.130:33848][0m
+[mHTTP POST /api/core/users/e9471581-0a54-41f6-8326-f8f407a929e3/toggle-follow/ 200 [0.02, 10.162.176.130:33848][0m
+[mHTTP POST /api/core/users/e9471581-0a54-41f6-8326-f8f407a929e3/toggle-follow/ 200 [0.02, 10.162.176.130:33848][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.162.176.130:33864][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.07, 10.162.176.130:33848][0m
+[mHTTP GET /api/core/users/fc12f0f9-3ce6-4bf2-84c4-f9a2c9296ca0/member-profile/ 200 [0.01, 10.162.176.130:33848][0m
+[mHTTP GET /api/core/users/fc12f0f9-3ce6-4bf2-84c4-f9a2c9296ca0/following/ 200 [0.01, 10.162.176.130:33848][0m
+[mHTTP GET /api/core/users/e9471581-0a54-41f6-8326-f8f407a929e3/member-profile/ 200 [0.02, 10.162.176.130:33848][0m
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+Unauthorized: /api/core/member-posts/
+Unauthorized: /api/auth/profile/
+Unauthorized: /api/auth/profile/
+Unauthorized: /api/accounts/income/
+[31;1mHTTP GET /api/core/member-posts/?my_posts=true 401 [0.26, 10.162.176.130:42428][0m
+Unauthorized: /api/core/member-posts/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.27, 10.162.176.130:42414][0m
+[31;1mHTTP GET /api/auth/profile/ 401 [0.32, 10.162.176.130:42404][0m
+[31;1mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 401 [0.28, 10.162.176.130:42412][0m
+[31;1mHTTP GET /api/core/member-posts/?my_posts=true 401 [0.29, 10.162.176.130:42424][0m
+Unauthorized: /api/core/events/
+[31;1mHTTP GET /api/core/events/ 401 [0.02, 10.162.176.130:42428][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.09, 10.162.176.130:42404][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.07, 10.162.176.130:42424][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.09, 10.162.176.130:42428][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.08, 10.162.176.130:42412][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.06, 10.162.176.130:42414][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.04, 10.162.176.130:42404][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:42440]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:42454]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:42466]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:42472]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:42440]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:42480]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:42484]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:42454]
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.34, 10.162.176.130:42404][0m
+WebSocket CONNECT /ws/notify/ [10.162.176.130:42466]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:42472]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:42480]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:42484]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:42496]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:42512]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:42526]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:42542]
+[mHTTP GET /api/auth/profile/ 200 [0.30, 10.162.176.130:42428][0m
+[mHTTP GET /api/auth/profile/ 200 [0.40, 10.162.176.130:42424][0m
+WebSocket CONNECT /ws/notify/ [10.162.176.130:42496]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:42512]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:42526]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:42552]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:42568]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:42542]
+[mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.38, 10.162.176.130:42412][0m
+WebSocket CONNECT /ws/notify/ [10.162.176.130:42552]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:42568]
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.26, 10.162.176.130:42414][0m
+[mHTTP GET /api/auth/profile/ 200 [0.22, 10.162.176.130:42424][0m
+[mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.23, 10.162.176.130:42428][0m
+[mHTTP GET /api/auth/profile/ 200 [0.08, 10.162.176.130:42412][0m
+[mHTTP GET /api/auth/profile/ 200 [0.12, 10.162.176.130:42424][0m
+[mHTTP GET /api/auth/profile/ 200 [0.16, 10.162.176.130:42414][0m
+[mHTTP GET /api/auth/profile/ 200 [0.16, 10.162.176.130:42412][0m
+[mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.23, 10.162.176.130:42428][0m
+[mHTTP GET /api/auth/profile/ 200 [0.17, 10.162.176.130:42424][0m
+[mHTTP GET /api/auth/profile/ 200 [0.15, 10.162.176.130:42412][0m
+[mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.24, 10.162.176.130:42414][0m
+[mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.24, 10.162.176.130:42428][0m
+[mHTTP GET /api/core/events/ 200 [1.28, 10.162.176.130:42404][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:33628]
+WebSocket REJECT /ws/notify/ [10.162.176.130:33628]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:33628]
+[mHTTP GET /api/auth/profile/ 200 [0.08, 10.162.176.130:42404][0m
+[mHTTP GET /api/auth/profile/ 200 [0.12, 10.162.176.130:42424][0m
+[mHTTP GET /api/auth/profile/ 200 [0.14, 10.162.176.130:42428][0m
+[mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.18, 10.162.176.130:42412][0m
+[mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.22, 10.162.176.130:42414][0m
+[mHTTP GET /api/auth/profile/ 200 [0.15, 10.162.176.130:42404][0m
+[mHTTP GET /api/auth/profile/ 200 [0.11, 10.162.176.130:42428][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.16, 10.162.176.130:42424][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:42584]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:42584]
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.162.176.130:42404][0m
+[mHTTP GET /api/core/users/fc12f0f9-3ce6-4bf2-84c4-f9a2c9296ca0/member-profile/ 200 [0.03, 10.162.176.130:42404][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:42526]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:42440]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:42454]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:42480]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:42568]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:42542]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:42484]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:42472]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:42552]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:42466]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:42496]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:42512]
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.162.176.130:42404][0m
+[mHTTP POST /api/core/member-posts/ 201 [27.88, 10.162.176.130:42404][0m
+[mHTTP POST /api/core/member-posts/ 201 [4.99, 10.162.176.130:35566][0m
+[mHTTP GET /api/auth/profile/ 200 [0.02, 10.162.176.130:35566][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:42584]
+[mHTTP GET /api/auth/profile/ 200 [0.02, 10.162.176.130:49408][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:49424]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:49430]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:49424]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:49430]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:49436]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:49436]
+[mHTTP GET /api/auth/profile/ 200 [0.02, 10.162.176.130:49408][0m
+[mHTTP GET /api/auth/profile/ 200 [0.01, 10.162.176.130:49408][0m
+[mHTTP GET /api/auth/profile/ 200 [0.02, 10.162.176.130:49446][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:49470]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:49458]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:49512]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:49482]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:49502]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:49494]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:49520]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:49522]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:49542]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:49470]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:49458]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:49512]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:49482]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:49502]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:49494]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:49520]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:49522]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:49542]
+[mHTTP GET /api/auth/profile/ 200 [0.01, 10.162.176.130:49408][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.162.176.130:49408][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.162.176.130:49564][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.162.176.130:49558][0m
+[mHTTP GET /api/auth/profile/ 200 [0.07, 10.162.176.130:49408][0m
+[mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.14, 10.162.176.130:49446][0m
+[mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.11, 10.162.176.130:49578][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.162.176.130:49558][0m
+[mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.09, 10.162.176.130:49564][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.162.176.130:49408][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.162.176.130:49564][0m
+[mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.10, 10.162.176.130:49446][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.162.176.130:49408][0m
+[mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.15, 10.162.176.130:49578][0m
+[mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.15, 10.162.176.130:49558][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:49520]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:49542]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:49458]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:49502]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:49470]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:49494]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:49512]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:49436]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:49424]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:49522]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:49430]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:49482]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:19991]
+WebSocket REJECT /ws/notify/ [127.0.0.1:19991]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:19991]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:33629]
+WebSocket REJECT /ws/notify/ [127.0.0.1:33629]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:33629]
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.02, 127.0.0.1:33630][0m
+Unauthorized: /api/core/features/
+[31;1mHTTP GET /api/core/features/ 401 [0.02, 127.0.0.1:46024][0m
+Unauthorized: /api/auth/profile/
+Unauthorized: /api/core/features/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.02, 127.0.0.1:64991][0m
+[31;1mHTTP GET /api/core/features/ 401 [0.02, 127.0.0.1:64992][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.02, 127.0.0.1:38305][0m
+[mHTTP GET /api/core/features/ 200 [0.03, 127.0.0.1:38677][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 127.0.0.1:36943][0m
+[mHTTP GET /api/core/features/ 200 [0.02, 127.0.0.1:33256][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 127.0.0.1:2566][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:62225]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:62225]
+[mHTTP GET /api/accounts/dashboard/?date=2026-10-27 200 [0.05, 127.0.0.1:11618][0m
+[mHTTP GET /api/accounts/dashboard/?date=2026-10-27 200 [0.04, 127.0.0.1:38701][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:62225]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:6541]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:6541]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:47438]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:47438]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:6541]
+[mHTTP GET /api/auth/profile/ 200 [0.08, 127.0.0.1:47440][0m
+[mHTTP GET /api/core/features/ 200 [0.09, 127.0.0.1:47441][0m
+[mHTTP GET /api/accounts/dashboard/?date=2026-10-27 200 [0.17, 127.0.0.1:47439][0m
+[mHTTP GET /api/auth/profile/ 200 [0.10, 127.0.0.1:16615][0m
+[mHTTP GET /api/core/features/ 200 [0.08, 127.0.0.1:33816][0m
+[mHTTP GET /api/accounts/dashboard/?date=2026-10-27 200 [0.07, 127.0.0.1:42666][0m
+[mHTTP POST /api/auth/logout/ 200 [0.06, 127.0.0.1:13832][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:47438]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+[mHTTP POST /api/auth/login/ 200 [0.39, 127.0.0.1:18800][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:61954]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:61954]
+[mHTTP GET /api/core/features/ 200 [0.08, 127.0.0.1:8001][0m
+[mHTTP GET /api/auth/profile/ 200 [0.12, 127.0.0.1:7999][0m
+[mHTTP GET /api/core/users/ 200 [1.08, 127.0.0.1:8002][0m
+[mHTTP GET /api/core/users/ 200 [0.31, 127.0.0.1:18134][0m
+[mHTTP POST /api/core/users/ 201 [0.31, 127.0.0.1:53086][0m
+[mHTTP GET /api/core/users/ 200 [0.33, 127.0.0.1:4390][0m
+[mHTTP POST /api/auth/logout/ 200 [0.06, 127.0.0.1:57738][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:61954]
+[mHTTP POST /api/auth/login/ 200 [0.32, 127.0.0.1:44665][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:1054]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:1054]
+[mHTTP GET /api/core/features/ 200 [0.12, 127.0.0.1:63898][0m
+[mHTTP GET /api/auth/profile/ 200 [0.14, 127.0.0.1:63897][0m
+[mHTTP GET /api/core/member-posts/?status=ALL 200 [0.18, 127.0.0.1:35905][0m
+[mHTTP GET /api/core/member-posts/?status=ALL 200 [0.09, 127.0.0.1:31756][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.09, 127.0.0.1:53630][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.10, 127.0.0.1:51499][0m
+[mHTTP GET /api/core/member-posts/?status=ALL 200 [0.14, 127.0.0.1:56199][0m
+[mHTTP GET /api/core/member-posts/?status=ALL 200 [0.11, 127.0.0.1:50816][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.14, 127.0.0.1:4845][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.09, 127.0.0.1:36896][0m
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.02, 10.162.176.130:34624][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.02, 10.162.176.130:34624][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.162.176.130:34624][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:34632]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:34642]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:34632]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:34642]
+[mHTTP GET /api/auth/profile/ 200 [0.07, 10.162.176.130:34624][0m
+[mHTTP GET /api/auth/profile/ 200 [0.07, 10.162.176.130:34670][0m
+[mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.14, 10.162.176.130:34656][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:59224]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:59232]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:59234]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:59252]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:59260]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:59262]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:59264]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:59276]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:59292]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:59306]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:59224]
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.14, 10.162.176.130:34624][0m
+WebSocket CONNECT /ws/notify/ [10.162.176.130:59232]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:59234]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:59252]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:59260]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:59262]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:59264]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:59276]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:59292]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:59306]
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.162.176.130:34624][0m
+[mHTTP GET /api/auth/profile/ 200 [0.07, 10.162.176.130:34656][0m
+[mHTTP GET /api/auth/profile/ 200 [0.16, 10.162.176.130:34624][0m
+[mHTTP GET /api/auth/profile/ 200 [0.16, 10.162.176.130:34656][0m
+[mHTTP GET /api/auth/profile/ 200 [0.14, 10.162.176.130:59310][0m
+[mHTTP GET /api/auth/profile/ 200 [0.14, 10.162.176.130:59318][0m
+[mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.24, 10.162.176.130:34670][0m
+[mHTTP GET /api/auth/profile/ 200 [0.10, 10.162.176.130:34624][0m
+[mHTTP GET /api/auth/profile/ 200 [0.09, 10.162.176.130:59318][0m
+[mHTTP GET /api/auth/profile/ 200 [0.10, 10.162.176.130:34624][0m
+[mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.24, 10.162.176.130:34656][0m
+[mHTTP GET /api/auth/profile/ 200 [0.08, 10.162.176.130:34624][0m
+[mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.31, 10.162.176.130:59310][0m
+[mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.33, 10.162.176.130:34670][0m
+[mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.30, 10.162.176.130:59318][0m
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.07, 10.162.176.130:34624][0m
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.05, 10.162.176.130:34624][0m
+[mHTTP GET /api/core/users/fc12f0f9-3ce6-4bf2-84c4-f9a2c9296ca0/member-profile/ 200 [0.07, 10.162.176.130:34624][0m
+Not Found: /api/core/member-posts/3dbc8abc-de0f-4a0c-8257-64d75d95b33a/
+[33mHTTP GET /api/core/member-posts/3dbc8abc-de0f-4a0c-8257-64d75d95b33a/ 404 [0.05, 10.162.176.130:34624][0m
+Not Found: /api/core/member-posts/3dbc8abc-de0f-4a0c-8257-64d75d95b33a/comments/
+[33mHTTP GET /api/core/member-posts/3dbc8abc-de0f-4a0c-8257-64d75d95b33a/comments/ 404 [0.05, 10.162.176.130:34656][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:34632]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:34642]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:59224]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:59232]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:59234]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:59252]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:59262]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:59264]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:59276]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:59306]
+Internal Server Error: /api/core/member-posts/
+Traceback (most recent call last):
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\urllib3\connection.py", line 198, in _new_conn
+    sock = connection.create_connection(
+        (self._dns_host, self.port),
+    ...<2 lines>...
+        socket_options=self.socket_options,
+    )
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\urllib3\util\connection.py", line 60, in create_connection
+    for res in socket.getaddrinfo(host, port, family, socket.SOCK_STREAM):
+               ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\socket.py", line 987, in getaddrinfo
+    for res in _socket.getaddrinfo(host, port, family, type, proto, flags):
+               ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+socket.gaierror: [Errno 11001] getaddrinfo failed
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\botocore\httpsession.py", line 509, in send
+    urllib_response = conn.urlopen(
+        method=request.method,
+    ...<8 lines>...
+        **extra_kwargs,
+    )
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\urllib3\connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+        method, url, error=new_e, _pool=self, _stacktrace=sys.exc_info()[2]
+    )
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\urllib3\util\retry.py", line 449, in increment
+    raise reraise(type(error), error, _stacktrace)
+          ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\urllib3\util\util.py", line 39, in reraise
+    raise value
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+        conn,
+    ...<10 lines>...
+        **response_kw,
+    )
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\urllib3\connectionpool.py", line 488, in _make_request
+    raise new_e
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\urllib3\connectionpool.py", line 464, in _make_request
+    self._validate_conn(conn)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\urllib3\connectionpool.py", line 1093, in _validate_conn
+    conn.connect()
+    ~~~~~~~~~~~~^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\urllib3\connection.py", line 753, in connect
+    self.sock = sock = self._new_conn()
+                       ~~~~~~~~~~~~~~^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\urllib3\connection.py", line 205, in _new_conn
+    raise NameResolutionError(self.host, self, e) from e
+urllib3.exceptions.NameResolutionError: <botocore.awsrequest.AWSHTTPSConnection object at 0x00000173E4CA1090>: Failed to resolve '81e85cac86fa56b51d55c4bba70ca763.r2.cloudflarestorage.com' ([Errno 11001] getaddrinfo failed)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 552, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 552, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 502, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\concurrent\futures\thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "C:\Python314\Lib\concurrent\futures\thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 556, in thread_handler
+    return func(*args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\mixins.py", line 19, in create
+    self.perform_create(serializer)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\views.py", line 883, in perform_create
+    post = serializer.save(
+        author=self.request.user,
+    ...<2 lines>...
+        video=video_file
+    )
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\serializers.py", line 210, in save
+    self.instance = self.create(validated_data)
+                    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\serializers.py", line 991, in create
+    instance = ModelClass._default_manager.create(**validated_data)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 663, in create
+    obj.save(force_insert=True, using=self.db)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\base.py", line 902, in save
+    self.save_base(
+    ~~~~~~~~~~~~~~^
+        using=using,
+        ^^^^^^^^^^^^
+    ...<2 lines>...
+        update_fields=update_fields,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\base.py", line 1008, in save_base
+    updated = self._save_table(
+        raw,
+    ...<4 lines>...
+        update_fields,
+    )
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\base.py", line 1169, in _save_table
+    results = self._do_insert(
+        cls._base_manager, using, fields, returning_fields, raw
+    )
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\base.py", line 1210, in _do_insert
+    return manager._insert(
+           ~~~~~~~~~~~~~~~^
+        [self],
+        ^^^^^^^
+    ...<3 lines>...
+        raw=raw,
+        ^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\manager.py", line 87, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 1868, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\sql\compiler.py", line 1881, in execute_sql
+    for sql, params in self.as_sql():
+                       ~~~~~~~~~~~^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\sql\compiler.py", line 1806, in as_sql
+    self.prepare_value(field, self.pre_save_val(field, obj))
+                              ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\sql\compiler.py", line 1750, in pre_save_val
+    return field.pre_save(obj, add=True)
+           ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\fields\files.py", line 338, in pre_save
+    file.save(file.name, file.file, save=False)
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\fields\files.py", line 99, in save
+    self.name = self.storage.save(name, content, max_length=self.field.max_length)
+                ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\files\storage\base.py", line 44, in save
+    name = self.get_available_name(name, max_length=max_length)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\storages\backends\s3.py", line 707, in get_available_name
+    return super().get_available_name(name, max_length)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\files\storage\base.py", line 93, in get_available_name
+    while not self.is_name_available(name, max_length=max_length):
+              ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\files\storage\base.py", line 56, in is_name_available
+    return not self.exists(name) and not exceeds_max_length
+               ~~~~~~~~~~~^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\storages\backends\s3.py", line 586, in exists
+    self.connection.meta.client.head_object(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        Bucket=self.bucket_name, Key=name, **params
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\botocore\client.py", line 606, in _api_call
+    return self._make_api_call(operation_name, kwargs)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\botocore\context.py", line 123, in wrapper
+    return func(*args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\botocore\client.py", line 1076, in _make_api_call
+    http, parsed_response = self._make_request(
+                            ~~~~~~~~~~~~~~~~~~^
+        operation_model, request_dict, request_context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\botocore\client.py", line 1100, in _make_request
+    return self._endpoint.make_request(operation_model, request_dict)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\botocore\endpoint.py", line 119, in make_request
+    return self._send_request(request_dict, operation_model)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\botocore\endpoint.py", line 202, in _send_request
+    while self._needs_retry(
+          ~~~~~~~~~~~~~~~~~^
+        attempts,
+        ^^^^^^^^^
+    ...<3 lines>...
+        exception,
+        ^^^^^^^^^^
+    ):
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\botocore\endpoint.py", line 362, in _needs_retry
+    responses = self._event_emitter.emit(
+        event_name,
+    ...<5 lines>...
+        request_dict=request_dict,
+    )
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\botocore\hooks.py", line 412, in emit
+    return self._emitter.emit(aliased_event_name, **kwargs)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\botocore\hooks.py", line 256, in emit
+    return self._emit(event_name, kwargs)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\botocore\hooks.py", line 239, in _emit
+    response = handler(**kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\botocore\retryhandler.py", line 207, in __call__
+    if self._checker(**checker_kwargs):
+       ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\botocore\retryhandler.py", line 284, in __call__
+    should_retry = self._should_retry(
+        attempt_number, response, caught_exception
+    )
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\botocore\retryhandler.py", line 320, in _should_retry
+    return self._checker(attempt_number, response, caught_exception)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\botocore\retryhandler.py", line 363, in __call__
+    checker_response = checker(
+        attempt_number, response, caught_exception
+    )
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\botocore\retryhandler.py", line 247, in __call__
+    return self._check_caught_exception(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        attempt_number, caught_exception
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\botocore\retryhandler.py", line 416, in _check_caught_exception
+    raise caught_exception
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\botocore\endpoint.py", line 281, in _do_get_response
+    http_response = self._send(request)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\botocore\endpoint.py", line 385, in _send
+    return self.http_session.send(request)
+           ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\botocore\httpsession.py", line 539, in send
+    raise EndpointConnectionError(endpoint_url=request.url, error=e)
+botocore.exceptions.EndpointConnectionError: Could not connect to the endpoint URL: "https://81e85cac86fa56b51d55c4bba70ca763.r2.cloudflarestorage.com/trust-media/member_posts/videos/1000194820.mp4"
+[35;1mHTTP POST /api/core/member-posts/ 500 [38.24, 10.162.176.130:59310][0m
+[mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.11, 10.162.176.130:59384][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.162.176.130:59396][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:59260]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:59292]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:60726]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:60738]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:60726]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:60738]
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.162.176.130:60744][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.162.176.130:59396][0m
+[mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.09, 10.162.176.130:59384][0m
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.04, 10.162.176.130:59384][0m
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.05, 10.162.176.130:59384][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.162.176.130:59384][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:60726]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:60738]
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.162.176.130:53834][0m
+[mHTTP POST /api/core/member-posts/ 201 [117.41, 10.162.176.130:59384][0m
+[mHTTP POST /api/core/member-posts/ 201 [8.64, 10.162.176.130:53834][0m
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.06, 10.162.176.130:53834][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.07, 127.0.0.1:19346][0m
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.05, 10.162.176.130:55418][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:1054]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:31526]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:31526]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:31526]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:57042]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:57042]
+[mHTTP GET /api/core/features/ 200 [0.10, 127.0.0.1:31529][0m
+[mHTTP GET /api/auth/profile/ 200 [0.15, 127.0.0.1:31528][0m
+[mHTTP GET /api/core/features/ 200 [0.09, 127.0.0.1:57043][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.25, 127.0.0.1:31527][0m
+[mHTTP GET /api/auth/profile/ 200 [0.10, 127.0.0.1:57044][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.11, 127.0.0.1:57045][0m
+[mHTTP POST /api/core/member-posts/ 201 [10.62, 10.162.176.130:37406][0m
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.07, 10.162.176.130:37406][0m
+Not Found: /api/member-posts/
+[33mHTTP GET /api/member-posts/ 404 [0.02, 127.0.0.1:20091][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.05, 127.0.0.1:64510][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.162.176.130:46462][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:42878]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:42878]
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.162.176.130:42874][0m
+[mHTTP GET /api/core/events/ 200 [0.03, 10.162.176.130:42874][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.162.176.130:42898][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.09, 10.162.176.130:42874][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.10, 10.162.176.130:42888][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.162.176.130:42874][0m
+[mHTTP GET /api/core/events/ 200 [0.02, 10.162.176.130:42874][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:42878]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:38456]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:38456]
+[mHTTP GET /api/auth/profile/ 200 [0.12, 10.162.176.130:38476][0m
+[mHTTP GET /api/core/events/ 200 [0.14, 10.162.176.130:38464][0m
+[mHTTP GET /api/auth/profile/ 200 [0.16, 10.162.176.130:38444][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.18, 10.162.176.130:38478][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.18, 10.162.176.130:38472][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.162.176.130:38464][0m
+[mHTTP GET /api/core/events/ 200 [0.07, 10.162.176.130:38444][0m
+[mHTTP GET /api/auth/profile/ 200 [0.08, 10.162.176.130:38472][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.10, 10.162.176.130:38478][0m
+[mHTTP GET /api/core/events/ 200 [0.03, 10.162.176.130:38444][0m
+[mHTTP GET /api/core/users/fc12f0f9-3ce6-4bf2-84c4-f9a2c9296ca0/member-profile/ 200 [0.07, 10.162.176.130:38444][0m
+[mHTTP GET /api/core/users/fc12f0f9-3ce6-4bf2-84c4-f9a2c9296ca0/member-profile/ 200 [0.69, 10.162.176.130:38444][0m
+Not Found: /api/core/member-posts/62f87599-75fa-4fee-942a-85e66df11078/
+[33mHTTP GET /api/core/member-posts/62f87599-75fa-4fee-942a-85e66df11078/ 404 [0.05, 10.162.176.130:38444][0m
+Not Found: /api/core/member-posts/62f87599-75fa-4fee-942a-85e66df11078/comments/
+[33mHTTP GET /api/core/member-posts/62f87599-75fa-4fee-942a-85e66df11078/comments/ 404 [0.33, 10.162.176.130:38478][0m
+Not Found: /api/core/member-posts/e010dbc9-d74c-491a-9839-8214c42b0df9/comments/
+Not Found: /api/core/member-posts/e010dbc9-d74c-491a-9839-8214c42b0df9/
+[33mHTTP GET /api/core/member-posts/e010dbc9-d74c-491a-9839-8214c42b0df9/comments/ 404 [0.06, 10.162.176.130:38478][0m
+[33mHTTP GET /api/core/member-posts/e010dbc9-d74c-491a-9839-8214c42b0df9/ 404 [0.06, 10.162.176.130:38444][0m
+Not Found: /api/core/member-posts/3dbc8abc-de0f-4a0c-8257-64d75d95b33a/comments/
+Not Found: /api/core/member-posts/3dbc8abc-de0f-4a0c-8257-64d75d95b33a/
+[33mHTTP GET /api/core/member-posts/3dbc8abc-de0f-4a0c-8257-64d75d95b33a/comments/ 404 [0.04, 10.162.176.130:38478][0m
+[33mHTTP GET /api/core/member-posts/3dbc8abc-de0f-4a0c-8257-64d75d95b33a/ 404 [0.04, 10.162.176.130:38444][0m
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.08, 10.162.176.130:38444][0m
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.12, 10.162.176.130:38478][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:57822]
+WebSocket REJECT /ws/notify/ [10.162.176.130:57822]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:57822]
+Unauthorized: /api/auth/profile/
+Unauthorized: /api/accounts/income/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.03, 10.162.176.130:38478][0m
+[31;1mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 401 [0.04, 10.162.176.130:38444][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.05, 10.162.176.130:38444][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.04, 10.162.176.130:38478][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:38456]
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.162.176.130:38444][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:44664]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:44670]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:44664]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:44670]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:44664]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:44670]
+[mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.08, 10.162.176.130:38444][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.162.176.130:38478][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:44686]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:44702]
+[mHTTP GET /api/core/member-posts/ 200 [0.10, 10.162.176.130:38472][0m
+WebSocket CONNECT /ws/notify/ [10.162.176.130:44686]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:44702]
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.162.176.130:38476][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:57042]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:18375]
+WebSocket REJECT /ws/notify/ [127.0.0.1:18375]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:18375]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:45419]
+WebSocket REJECT /ws/notify/ [127.0.0.1:45419]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:45419]
+Unauthorized: /api/auth/profile/
+Unauthorized: /api/core/features/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.07, 127.0.0.1:45417][0m
+[31;1mHTTP GET /api/core/features/ 401 [0.06, 127.0.0.1:45418][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.12, 127.0.0.1:45416][0m
+Unauthorized: /api/core/features/
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/core/features/ 401 [0.05, 127.0.0.1:45421][0m
+[31;1mHTTP GET /api/auth/profile/ 401 [0.06, 127.0.0.1:45420][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.07, 127.0.0.1:45422][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.09, 127.0.0.1:63743][0m
+[mHTTP GET /api/core/features/ 200 [0.06, 127.0.0.1:61795][0m
+[mHTTP GET /api/auth/profile/ 200 [0.07, 127.0.0.1:61794][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 127.0.0.1:49756][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 127.0.0.1:17856][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:57011]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:57011]
+[mHTTP GET /api/core/users/fc12f0f9-3ce6-4bf2-84c4-f9a2c9296ca0/member-profile/ 200 [0.09, 10.162.176.130:38476][0m
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.09, 10.162.176.130:38476][0m
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.08, 10.162.176.130:38476][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:57011]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:12713]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:19563]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:12713]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:12713]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:19563]
+[mHTTP GET /api/core/features/ 200 [0.08, 127.0.0.1:12716][0m
+[mHTTP GET /api/auth/profile/ 200 [0.15, 127.0.0.1:12715][0m
+[mHTTP GET /api/core/features/ 200 [0.10, 127.0.0.1:19564][0m
+[mHTTP GET /api/auth/profile/ 200 [0.13, 127.0.0.1:19565][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.30, 127.0.0.1:12714][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.13, 127.0.0.1:19566][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:19563]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:15279]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:33917]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:15279]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:15279]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:33917]
+[mHTTP GET /api/core/features/ 200 [0.09, 127.0.0.1:15282][0m
+[mHTTP GET /api/auth/profile/ 200 [0.12, 127.0.0.1:15281][0m
+[mHTTP GET /api/core/features/ 200 [0.09, 127.0.0.1:33918][0m
+[mHTTP GET /api/auth/profile/ 200 [0.11, 127.0.0.1:33919][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.25, 127.0.0.1:15280][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.13, 127.0.0.1:33920][0m
+[mHTTP POST /api/core/member-posts/dc5e0501-3754-49ed-8c75-abfbeea1282d/approve/ 200 [0.07, 127.0.0.1:35381][0m
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.09, 10.162.176.130:38476][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.162.176.130:51160][0m
+[mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.10, 10.162.176.130:38476][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.162.176.130:51160][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.09, 10.162.176.130:38476][0m
+[mHTTP GET /api/auth/profile/ 200 [0.19, 10.162.176.130:39434][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.162.176.130:39434][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.11, 10.162.176.130:39434][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.162.176.130:39434][0m
+[mHTTP GET /api/core/users/fc12f0f9-3ce6-4bf2-84c4-f9a2c9296ca0/member-profile/ 200 [0.10, 10.162.176.130:39436][0m
+[mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.09, 10.162.176.130:39450][0m
+[mHTTP GET /api/core/events/ 200 [0.06, 10.162.176.130:51160][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.10, 10.162.176.130:38476][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:44702]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:44686]
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.162.176.130:55512][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:46326]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:46342]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:46326]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:46342]
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.162.176.130:55512][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.162.176.130:46346][0m
+[mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.08, 10.162.176.130:46360][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:46342]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:46326]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:47092]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:47092]
+[mHTTP GET /api/auth/profile/ 200 [0.08, 10.162.176.130:47076][0m
+[mHTTP GET /api/core/events/ 200 [0.03, 10.162.176.130:47076][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.162.176.130:47112][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.06, 10.162.176.130:47108][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.162.176.130:47112][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.08, 10.162.176.130:47076][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:47092]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:35758]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:35758]
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.162.176.130:35748][0m
+[mHTTP GET /api/core/events/ 200 [0.09, 10.162.176.130:35762][0m
+[mHTTP GET /api/auth/profile/ 200 [0.08, 10.162.176.130:35748][0m
+[mHTTP GET /api/auth/profile/ 200 [0.10, 10.162.176.130:35786][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.17, 10.162.176.130:35766][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.15, 10.162.176.130:35782][0m
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.13, 10.162.176.130:35748][0m
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.12, 10.162.176.130:35762][0m
+[mHTTP DELETE /api/core/member-posts/dc5e0501-3754-49ed-8c75-abfbeea1282d/ 204 [0.05, 127.0.0.1:3819][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:33917]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:8821]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:8821]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:8821]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:22578]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:22578]
+[mHTTP GET /api/core/features/ 200 [0.09, 127.0.0.1:8824][0m
+[mHTTP GET /api/auth/profile/ 200 [0.13, 127.0.0.1:8823][0m
+[mHTTP GET /api/core/features/ 200 [0.09, 127.0.0.1:22579][0m
+[mHTTP GET /api/auth/profile/ 200 [0.13, 127.0.0.1:22580][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.28, 127.0.0.1:8822][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.11, 127.0.0.1:22581][0m
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.09, 10.162.176.130:35748][0m
+[mHTTP POST /api/core/member-posts/62f87599-75fa-4fee-942a-85e66df11078/approve/ 200 [0.07, 127.0.0.1:60275][0m
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.10, 10.162.176.130:35748][0m
+[mHTTP GET /api/core/events/ 200 [0.04, 10.162.176.130:35748][0m
+[mHTTP GET /api/core/users/fc12f0f9-3ce6-4bf2-84c4-f9a2c9296ca0/member-profile/ 200 [0.09, 10.162.176.130:35748][0m
+[mHTTP GET /api/core/users/fc12f0f9-3ce6-4bf2-84c4-f9a2c9296ca0/member-profile/ 200 [0.14, 10.162.176.130:35748][0m
+[mHTTP GET /api/auth/profile/ 200 [0.10, 10.162.176.130:35762][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.13, 10.162.176.130:35748][0m
+[mHTTP POST /api/core/member-posts/1bdd7e4a-dc51-460f-90b0-f38d19c18da6/approve/ 200 [0.07, 127.0.0.1:25396][0m
+[mHTTP POST /api/core/member-posts/2a1c4be3-1512-49e6-ab1e-c259d694c12e/approve/ 200 [0.06, 127.0.0.1:56912][0m
+[mHTTP GET /api/core/events/ 200 [0.23, 10.162.176.130:35762][0m
+[mHTTP GET /api/auth/profile/ 200 [0.24, 10.162.176.130:47938][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.37, 10.162.176.130:35748][0m
+[mHTTP GET /api/core/events/ 200 [0.07, 10.162.176.130:35748][0m
+[mHTTP GET /api/auth/profile/ 200 [0.07, 10.162.176.130:47938][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.10, 10.162.176.130:35762][0m
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.08, 10.162.176.130:35748][0m
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.06, 10.162.176.130:35748][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:38186]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:38186]
+[mHTTP GET /api/auth/profile/ 200 [0.07, 10.162.176.130:35762][0m
+[mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.11, 10.162.176.130:35748][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.162.176.130:35748][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.08, 10.162.176.130:35762][0m
+[mHTTP GET /api/core/events/ 200 [0.11, 10.162.176.130:35748][0m
+[mHTTP GET /api/auth/profile/ 200 [0.15, 10.162.176.130:47938][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.18, 10.162.176.130:35762][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:22578]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:53567]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:48924]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:53567]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:53567]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:48924]
+[mHTTP GET /api/core/features/ 200 [0.09, 127.0.0.1:53570][0m
+[mHTTP GET /api/auth/profile/ 200 [0.12, 127.0.0.1:53569][0m
+[mHTTP GET /api/core/features/ 200 [0.09, 127.0.0.1:48925][0m
+[mHTTP GET /api/auth/profile/ 200 [0.10, 127.0.0.1:48926][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.24, 127.0.0.1:53568][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.10, 127.0.0.1:48927][0m
+[mHTTP GET /api/auth/profile/ 200 [0.09, 10.162.176.130:47938][0m
+[mHTTP GET /api/core/events/ 200 [0.11, 10.162.176.130:35748][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.13, 10.162.176.130:35762][0m
+[mHTTP POST /api/core/member-posts/3dbc8abc-de0f-4a0c-8257-64d75d95b33a/approve/ 200 [0.21, 127.0.0.1:40380][0m
+[mHTTP GET /api/core/events/ 200 [0.12, 10.162.176.130:35748][0m
+[mHTTP GET /api/auth/profile/ 200 [0.12, 10.162.176.130:47938][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.15, 10.162.176.130:35762][0m
+[mHTTP GET /api/core/events/ 200 [0.05, 10.162.176.130:35748][0m
+[mHTTP GET /api/auth/profile/ 200 [0.08, 10.162.176.130:47938][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.11, 10.162.176.130:35762][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:38186]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:35758]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\notify\service.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:59255]
+WebSocket REJECT /ws/notify/ [127.0.0.1:59255]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:59255]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:54451]
+WebSocket REJECT /ws/notify/ [127.0.0.1:54451]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:54451]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:34708]
+WebSocket REJECT /ws/notify/ [127.0.0.1:34708]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:34708]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:52612]
+WebSocket REJECT /ws/notify/ [127.0.0.1:52612]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:52612]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:46978]
+WebSocket REJECT /ws/notify/ [127.0.0.1:46978]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:46978]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:12133]
+WebSocket REJECT /ws/notify/ [127.0.0.1:12133]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:12133]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:55086]
+WebSocket REJECT /ws/notify/ [127.0.0.1:55086]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:55086]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:9335]
+WebSocket REJECT /ws/notify/ [127.0.0.1:9335]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:9335]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:22421]
+WebSocket REJECT /ws/notify/ [127.0.0.1:22421]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:22421]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:54981]
+WebSocket REJECT /ws/notify/ [127.0.0.1:54981]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:54981]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:62825]
+WebSocket REJECT /ws/notify/ [127.0.0.1:62825]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:62825]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:61107]
+WebSocket REJECT /ws/notify/ [127.0.0.1:61107]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:61107]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:1694]
+WebSocket REJECT /ws/notify/ [127.0.0.1:1694]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:1694]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\notify\service.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:28245]
+WebSocket REJECT /ws/notify/ [127.0.0.1:28245]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:28245]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:12687]
+WebSocket REJECT /ws/notify/ [127.0.0.1:12687]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:12687]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:11621]
+WebSocket REJECT /ws/notify/ [127.0.0.1:11621]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:11621]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:35109]
+WebSocket REJECT /ws/notify/ [127.0.0.1:35109]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:35109]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:32482]
+WebSocket REJECT /ws/notify/ [127.0.0.1:32482]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:32482]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:13873]
+WebSocket REJECT /ws/notify/ [127.0.0.1:13873]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:13873]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:53590]
+WebSocket REJECT /ws/notify/ [127.0.0.1:53590]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:53590]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:22549]
+WebSocket REJECT /ws/notify/ [127.0.0.1:22549]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:22549]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:2637]
+WebSocket REJECT /ws/notify/ [127.0.0.1:2637]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:2637]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:42629]
+WebSocket REJECT /ws/notify/ [127.0.0.1:42629]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:42629]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:30452]
+WebSocket REJECT /ws/notify/ [127.0.0.1:30452]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:30452]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:62822]
+WebSocket REJECT /ws/notify/ [127.0.0.1:62822]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:62822]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:54633]
+WebSocket REJECT /ws/notify/ [127.0.0.1:54633]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:54633]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:29783]
+WebSocket REJECT /ws/notify/ [127.0.0.1:29783]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:29783]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:59295]
+WebSocket REJECT /ws/notify/ [127.0.0.1:59295]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:59295]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:62975]
+WebSocket REJECT /ws/notify/ [127.0.0.1:62975]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:62975]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:12025]
+WebSocket REJECT /ws/notify/ [127.0.0.1:12025]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:12025]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:2025]
+WebSocket REJECT /ws/notify/ [127.0.0.1:2025]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:2025]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:2160]
+WebSocket REJECT /ws/notify/ [127.0.0.1:2160]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:2160]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:5186]
+WebSocket REJECT /ws/notify/ [127.0.0.1:5186]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:5186]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:64355]
+WebSocket REJECT /ws/notify/ [127.0.0.1:64355]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:64355]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:45404]
+WebSocket REJECT /ws/notify/ [127.0.0.1:45404]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:45404]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:32652]
+WebSocket REJECT /ws/notify/ [127.0.0.1:32652]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:32652]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:11649]
+WebSocket REJECT /ws/notify/ [127.0.0.1:11649]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:11649]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:21057]
+WebSocket REJECT /ws/notify/ [127.0.0.1:21057]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:21057]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:52933]
+WebSocket REJECT /ws/notify/ [127.0.0.1:52933]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:52933]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:29785]
+WebSocket REJECT /ws/notify/ [127.0.0.1:29785]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:29785]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:52480]
+WebSocket REJECT /ws/notify/ [127.0.0.1:52480]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:52480]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:16759]
+WebSocket REJECT /ws/notify/ [127.0.0.1:16759]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:16759]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:12367]
+WebSocket REJECT /ws/notify/ [127.0.0.1:12367]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:12367]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\models.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:51646]
+WebSocket REJECT /ws/notify/ [127.0.0.1:51646]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:51646]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:15422]
+WebSocket REJECT /ws/notify/ [127.0.0.1:15422]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:15422]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:13547]
+WebSocket REJECT /ws/notify/ [127.0.0.1:13547]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:13547]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:27235]
+WebSocket REJECT /ws/notify/ [127.0.0.1:27235]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:27235]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:56343]
+WebSocket REJECT /ws/notify/ [127.0.0.1:56343]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:56343]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:35469]
+WebSocket REJECT /ws/notify/ [127.0.0.1:35469]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:35469]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:16807]
+WebSocket REJECT /ws/notify/ [127.0.0.1:16807]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:16807]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:35567]
+WebSocket REJECT /ws/notify/ [127.0.0.1:35567]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:35567]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:42346]
+WebSocket REJECT /ws/notify/ [127.0.0.1:42346]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:42346]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:58883]
+WebSocket REJECT /ws/notify/ [127.0.0.1:58883]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:58883]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:56766]
+WebSocket REJECT /ws/notify/ [127.0.0.1:56766]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:56766]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:39805]
+WebSocket REJECT /ws/notify/ [127.0.0.1:39805]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:39805]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\serializers.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:1294]
+WebSocket REJECT /ws/notify/ [127.0.0.1:1294]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:1294]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:37551]
+WebSocket REJECT /ws/notify/ [127.0.0.1:37551]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:37551]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:50316]
+WebSocket REJECT /ws/notify/ [127.0.0.1:50316]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:50316]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:62529]
+WebSocket REJECT /ws/notify/ [127.0.0.1:62529]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:62529]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:33039]
+WebSocket REJECT /ws/notify/ [127.0.0.1:33039]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:33039]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:6976]
+WebSocket REJECT /ws/notify/ [127.0.0.1:6976]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:6976]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:10214]
+WebSocket REJECT /ws/notify/ [127.0.0.1:10214]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:10214]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:59654]
+WebSocket REJECT /ws/notify/ [127.0.0.1:59654]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:59654]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:3004]
+WebSocket REJECT /ws/notify/ [127.0.0.1:3004]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:3004]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:58195]
+WebSocket REJECT /ws/notify/ [127.0.0.1:58195]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:58195]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:40803]
+WebSocket REJECT /ws/notify/ [127.0.0.1:40803]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:40803]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:51269]
+WebSocket REJECT /ws/notify/ [127.0.0.1:51269]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:51269]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:37198]
+WebSocket REJECT /ws/notify/ [127.0.0.1:37198]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:37198]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:23780]
+WebSocket REJECT /ws/notify/ [127.0.0.1:23780]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:23780]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:29565]
+WebSocket REJECT /ws/notify/ [127.0.0.1:29565]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:29565]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:25349]
+WebSocket REJECT /ws/notify/ [127.0.0.1:25349]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:25349]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:7022]
+WebSocket REJECT /ws/notify/ [127.0.0.1:7022]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:7022]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:60891]
+WebSocket REJECT /ws/notify/ [127.0.0.1:60891]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:60891]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:30395]
+WebSocket REJECT /ws/notify/ [127.0.0.1:30395]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:30395]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:23295]
+WebSocket REJECT /ws/notify/ [127.0.0.1:23295]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:23295]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:6329]
+WebSocket REJECT /ws/notify/ [127.0.0.1:6329]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:6329]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:54655]
+WebSocket REJECT /ws/notify/ [127.0.0.1:54655]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:54655]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:11832]
+WebSocket REJECT /ws/notify/ [127.0.0.1:11832]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:11832]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:2970]
+WebSocket REJECT /ws/notify/ [127.0.0.1:2970]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:2970]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:24059]
+WebSocket REJECT /ws/notify/ [127.0.0.1:24059]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:24059]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:45271]
+WebSocket REJECT /ws/notify/ [127.0.0.1:45271]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:45271]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:11318]
+WebSocket REJECT /ws/notify/ [127.0.0.1:11318]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:11318]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:59262]
+WebSocket REJECT /ws/notify/ [127.0.0.1:59262]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:59262]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:5232]
+WebSocket REJECT /ws/notify/ [127.0.0.1:5232]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:5232]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:9779]
+WebSocket REJECT /ws/notify/ [127.0.0.1:9779]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:9779]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:12022]
+WebSocket REJECT /ws/notify/ [127.0.0.1:12022]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:12022]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:27883]
+WebSocket REJECT /ws/notify/ [127.0.0.1:27883]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:27883]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:54701]
+WebSocket REJECT /ws/notify/ [127.0.0.1:54701]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:54701]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:30115]
+WebSocket REJECT /ws/notify/ [127.0.0.1:30115]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:30115]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:58945]
+WebSocket REJECT /ws/notify/ [127.0.0.1:58945]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:58945]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:7400]
+WebSocket REJECT /ws/notify/ [127.0.0.1:7400]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:7400]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:22502]
+WebSocket REJECT /ws/notify/ [127.0.0.1:22502]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:22502]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:44601]
+WebSocket REJECT /ws/notify/ [127.0.0.1:44601]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:44601]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:28368]
+WebSocket REJECT /ws/notify/ [127.0.0.1:28368]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:28368]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:57048]
+WebSocket REJECT /ws/notify/ [127.0.0.1:57048]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:57048]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:49071]
+WebSocket REJECT /ws/notify/ [127.0.0.1:49071]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:49071]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:32066]
+WebSocket REJECT /ws/notify/ [127.0.0.1:32066]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:32066]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:28488]
+WebSocket REJECT /ws/notify/ [127.0.0.1:28488]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:28488]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:16220]
+WebSocket REJECT /ws/notify/ [127.0.0.1:16220]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:16220]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:48432]
+WebSocket REJECT /ws/notify/ [127.0.0.1:48432]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:48432]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:24652]
+WebSocket REJECT /ws/notify/ [127.0.0.1:24652]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:24652]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:62047]
+WebSocket REJECT /ws/notify/ [127.0.0.1:62047]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:62047]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:42636]
+WebSocket REJECT /ws/notify/ [127.0.0.1:42636]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:42636]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:15089]
+WebSocket REJECT /ws/notify/ [127.0.0.1:15089]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:15089]
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:42608]
+WebSocket REJECT /ws/notify/ [10.162.176.130:42608]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:42608]
+Unauthorized: /api/core/events/
+Unauthorized: /api/auth/profile/
+Unauthorized: /api/core/member-posts/
+[31;1mHTTP GET /api/core/events/ 401 [0.02, 10.162.176.130:42622][0m
+[31;1mHTTP GET /api/auth/profile/ 401 [0.05, 10.162.176.130:42598][0m
+[31;1mHTTP GET /api/core/member-posts/ 401 [0.02, 10.162.176.130:42630][0m
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.01, 10.162.176.130:42642][0m
+Unauthorized: /api/core/member-posts/
+[31;1mHTTP GET /api/core/member-posts/ 401 [0.01, 10.162.176.130:42650][0m
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.01, 10.162.176.130:42598][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.02, 10.162.176.130:42622][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.03, 10.162.176.130:42598][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.01, 10.162.176.130:42630][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.01, 10.162.176.130:42642][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.01, 10.162.176.130:42650][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.01, 10.162.176.130:42598][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:42654]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:42654]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:42654]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:42662]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:42662]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:42662]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:42664]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:42664]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:42664]
+Internal Server Error: /api/core/member-posts/
+Traceback (most recent call last):
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such column: core_member_posts.post_type
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 552, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 552, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 502, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\concurrent\futures\thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "C:\Python314\Lib\concurrent\futures\thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 556, in thread_handler
+    return func(*args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\mixins.py", line 40, in list
+    page = self.paginate_queryset(queryset)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\generics.py", line 175, in paginate_queryset
+    return self.paginator.paginate_queryset(queryset, self.request, view=self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\pagination.py", line 222, in paginate_queryset
+    return list(self.page)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\paginator.py", line 191, in __len__
+    return len(self.object_list)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 366, in __len__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.OperationalError: no such column: core_member_posts.post_type
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:42672]
+[35;1mHTTP GET /api/core/member-posts/ 500 [0.11, 10.162.176.130:42622][0m
+[mHTTP GET /api/auth/profile/ 200 [0.08, 10.162.176.130:42630][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:42686]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:42672]
+[mHTTP GET /api/auth/profile/ 200 [0.07, 10.162.176.130:42642][0m
+WebSocket CONNECT /ws/notify/ [10.162.176.130:42686]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:42700]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:42700]
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.162.176.130:42642][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.162.176.130:42630][0m
+Internal Server Error: /api/core/member-posts/
+Traceback (most recent call last):
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such column: core_member_posts.post_type
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 552, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 552, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 502, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\concurrent\futures\thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "C:\Python314\Lib\concurrent\futures\thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 556, in thread_handler
+    return func(*args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\mixins.py", line 40, in list
+    page = self.paginate_queryset(queryset)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\generics.py", line 175, in paginate_queryset
+    return self.paginator.paginate_queryset(queryset, self.request, view=self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\pagination.py", line 222, in paginate_queryset
+    return list(self.page)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\paginator.py", line 191, in __len__
+    return len(self.object_list)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 366, in __len__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.OperationalError: no such column: core_member_posts.post_type
+[35;1mHTTP GET /api/core/member-posts/ 500 [0.11, 10.162.176.130:42622][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.162.176.130:42650][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.162.176.130:42622][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.162.176.130:42642][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.162.176.130:42630][0m
+[mHTTP GET /api/core/events/ 200 [0.45, 10.162.176.130:42598][0m
+Internal Server Error: /api/core/users/fc12f0f9-3ce6-4bf2-84c4-f9a2c9296ca0/member-profile/
+Traceback (most recent call last):
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such column: core_member_posts.post_type
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 552, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 552, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 502, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\concurrent\futures\thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "C:\Python314\Lib\concurrent\futures\thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 556, in thread_handler
+    return func(*args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\views.py", line 1176, in get
+    'posts': serializer.data,
+             ^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\serializers.py", line 797, in data
+    ret = super().data
+          ^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+                 ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\serializers.py", line 716, in to_representation
+    self.child.to_representation(item) for item in iterable
+                                                   ^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 384, in __iter__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.OperationalError: no such column: core_member_posts.post_type
+[35;1mHTTP GET /api/core/users/fc12f0f9-3ce6-4bf2-84c4-f9a2c9296ca0/member-profile/ 500 [0.04, 10.162.176.130:51452][0m
+Internal Server Error: /api/core/users/fc12f0f9-3ce6-4bf2-84c4-f9a2c9296ca0/member-profile/
+Traceback (most recent call last):
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such column: core_member_posts.post_type
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 552, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 552, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 502, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\concurrent\futures\thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "C:\Python314\Lib\concurrent\futures\thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 556, in thread_handler
+    return func(*args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\views.py", line 1176, in get
+    'posts': serializer.data,
+             ^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\serializers.py", line 797, in data
+    ret = super().data
+          ^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+                 ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\serializers.py", line 716, in to_representation
+    self.child.to_representation(item) for item in iterable
+                                                   ^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 384, in __iter__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.OperationalError: no such column: core_member_posts.post_type
+[35;1mHTTP GET /api/core/users/fc12f0f9-3ce6-4bf2-84c4-f9a2c9296ca0/member-profile/ 500 [0.03, 10.162.176.130:51452][0m
+Internal Server Error: /api/core/users/fc12f0f9-3ce6-4bf2-84c4-f9a2c9296ca0/member-profile/
+Traceback (most recent call last):
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such column: core_member_posts.post_type
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 552, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 552, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 502, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\concurrent\futures\thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "C:\Python314\Lib\concurrent\futures\thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 556, in thread_handler
+    return func(*args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\views.py", line 1176, in get
+    'posts': serializer.data,
+             ^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\serializers.py", line 797, in data
+    ret = super().data
+          ^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\serializers.py", line 251, in data
+    self._data = self.to_representation(self.instance)
+                 ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\serializers.py", line 716, in to_representation
+    self.child.to_representation(item) for item in iterable
+                                                   ^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 384, in __iter__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.OperationalError: no such column: core_member_posts.post_type
+[35;1mHTTP GET /api/core/users/fc12f0f9-3ce6-4bf2-84c4-f9a2c9296ca0/member-profile/ 500 [0.03, 10.162.176.130:51452][0m
+[mHTTP GET /api/core/events/ 200 [0.01, 10.162.176.130:51452][0m
+Internal Server Error: /api/core/member-posts/
+Traceback (most recent call last):
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such column: core_member_posts.post_type
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 552, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 552, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 502, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\concurrent\futures\thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "C:\Python314\Lib\concurrent\futures\thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 556, in thread_handler
+    return func(*args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\mixins.py", line 40, in list
+    page = self.paginate_queryset(queryset)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\generics.py", line 175, in paginate_queryset
+    return self.paginator.paginate_queryset(queryset, self.request, view=self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\pagination.py", line 222, in paginate_queryset
+    return list(self.page)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\paginator.py", line 191, in __len__
+    return len(self.object_list)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 366, in __len__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.OperationalError: no such column: core_member_posts.post_type
+Internal Server Error: /api/core/member-posts/
+Traceback (most recent call last):
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such column: core_member_posts.post_type
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 552, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 552, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 502, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\concurrent\futures\thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "C:\Python314\Lib\concurrent\futures\thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 556, in thread_handler
+    return func(*args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\mixins.py", line 40, in list
+    page = self.paginate_queryset(queryset)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\generics.py", line 175, in paginate_queryset
+    return self.paginator.paginate_queryset(queryset, self.request, view=self)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\pagination.py", line 222, in paginate_queryset
+    return list(self.page)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\paginator.py", line 191, in __len__
+    return len(self.object_list)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 366, in __len__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.OperationalError: no such column: core_member_posts.post_type
+[35;1mHTTP GET /api/core/member-posts/?my_posts=true 500 [0.05, 10.162.176.130:51464][0m
+[35;1mHTTP GET /api/core/member-posts/?my_posts=true 500 [0.05, 10.162.176.130:51452][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:42700]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:42686]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:42672]
+[mHTTP GET /api/auth/profile/ 200 [0.01, 10.162.176.130:40992][0m
+[mHTTP GET /api/core/users/fc12f0f9-3ce6-4bf2-84c4-f9a2c9296ca0/member-profile/ 200 [0.03, 10.162.176.130:40992][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:41002]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:41016]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:41020]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:41002]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:41016]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:41020]
+[mHTTP GET /api/auth/profile/ 200 [0.01, 10.162.176.130:40992][0m
+[mHTTP GET /api/auth/profile/ 200 [0.01, 10.162.176.130:41028][0m
+[mHTTP GET /api/auth/profile/ 200 [0.01, 10.162.176.130:40992][0m
+[mHTTP GET /api/core/users/fc12f0f9-3ce6-4bf2-84c4-f9a2c9296ca0/member-profile/ 200 [0.03, 10.162.176.130:40992][0m
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.03, 10.162.176.130:40992][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:1454]
+WebSocket REJECT /ws/notify/ [127.0.0.1:1454]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:1454]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:28943]
+WebSocket REJECT /ws/notify/ [127.0.0.1:28943]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:28943]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:15275]
+WebSocket REJECT /ws/notify/ [127.0.0.1:15275]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:15275]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:1743]
+WebSocket REJECT /ws/notify/ [127.0.0.1:1743]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:1743]
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.06, 127.0.0.1:15277][0m
+Unauthorized: /api/core/features/
+[31;1mHTTP GET /api/core/features/ 401 [0.07, 127.0.0.1:15278][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.14, 127.0.0.1:15276][0m
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.07, 127.0.0.1:1744][0m
+Unauthorized: /api/core/features/
+[31;1mHTTP GET /api/core/features/ 401 [0.07, 127.0.0.1:1746][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.08, 127.0.0.1:1745][0m
+[mHTTP GET /api/core/features/ 200 [0.07, 127.0.0.1:6000][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.12, 127.0.0.1:42767][0m
+[mHTTP GET /api/auth/profile/ 200 [0.10, 127.0.0.1:44987][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 127.0.0.1:48024][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 127.0.0.1:8363][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:29682]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:29682]
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.03, 10.162.176.130:60964][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:60968]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:60968]
+[mHTTP GET /api/auth/profile/ 200 [0.02, 10.162.176.130:60964][0m
+[mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.03, 10.162.176.130:60972][0m
+[mHTTP GET /api/auth/profile/ 200 [0.02, 10.162.176.130:60964][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.03, 10.162.176.130:60972][0m
+[mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.03, 10.162.176.130:60964][0m
+[mHTTP GET /api/auth/profile/ 200 [0.01, 10.162.176.130:60972][0m
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.02, 10.162.176.130:60964][0m
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.02, 127.0.0.1:12794][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:60968]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:41002]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:41020]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:41016]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:39711]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:39711]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:12354]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:12354]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:28051]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:28051]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:37441]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:37441]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:10371]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:10371]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:44714]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:44714]
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:42434]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:42434]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:20176]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:20176]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\hr_module\serializers.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:56362]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:56362]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\hr_module\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:65510]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:65510]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:65510]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:62493]
+WebSocket REJECT /ws/notify/ [127.0.0.1:62493]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:62493]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:18857]
+WebSocket REJECT /ws/notify/ [127.0.0.1:18857]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:18857]
+Unauthorized: /api/core/features/
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/core/features/ 401 [0.22, 127.0.0.1:62494][0m
+[31;1mHTTP GET /api/auth/profile/ 401 [0.22, 127.0.0.1:62496][0m
+Unauthorized: /api/core/features/
+[31;1mHTTP GET /api/core/features/ 401 [0.06, 127.0.0.1:18858][0m
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.06, 127.0.0.1:18859][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.07, 127.0.0.1:18860][0m
+[mHTTP GET /api/core/features/ 200 [0.06, 127.0.0.1:39032][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 127.0.0.1:24284][0m
+[mHTTP GET /api/auth/profile/ 200 [0.15, 127.0.0.1:39033][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 127.0.0.1:13146][0m
+[mHTTP GET /api/core/member-posts/ 200 [1.14, 127.0.0.1:62495][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.07, 127.0.0.1:55787][0m
+[mHTTP POST /api/auth/logout/ 200 [0.07, 127.0.0.1:4595][0m
+[mHTTP POST /api/auth/login/ 200 [0.32, 127.0.0.1:6765][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:21414]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:21414]
+[mHTTP GET /api/core/features/ 200 [0.08, 127.0.0.1:52566][0m
+[mHTTP GET /api/auth/profile/ 200 [0.11, 127.0.0.1:28029][0m
+[mHTTP GET /api/hr/dashboard/ 200 [0.34, 127.0.0.1:52567][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.06, 127.0.0.1:63480][0m
+[mHTTP GET /api/hr/birthday-alerts/ 200 [0.06, 127.0.0.1:5702][0m
+[mHTTP GET /api/hr/dashboard/ 200 [0.32, 127.0.0.1:43665][0m
+[mHTTP GET /api/hr/members/ 200 [2.56, 127.0.0.1:42931][0m
+[mHTTP GET /api/hr/members/ 200 [0.32, 127.0.0.1:20233][0m
+[mHTTP GET /api/hr/members/ 200 [0.46, 127.0.0.1:8303][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:60254]
+WebSocket REJECT /ws/notify/ [10.162.176.130:60254]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:60254]
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.01, 10.162.176.130:60240][0m
+Unauthorized: /api/core/events/
+[31;1mHTTP GET /api/core/events/ 401 [0.01, 10.162.176.130:60240][0m
+Unauthorized: /api/core/member-posts/
+[31;1mHTTP GET /api/core/member-posts/ 401 [0.01, 10.162.176.130:60240][0m
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.01, 10.162.176.130:60258][0m
+Unauthorized: /api/core/member-posts/
+[31;1mHTTP GET /api/core/member-posts/ 401 [0.01, 10.162.176.130:60240][0m
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.01, 10.162.176.130:60240][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.05, 10.162.176.130:60258][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.05, 10.162.176.130:60260][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.06, 10.162.176.130:60240][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.05, 10.162.176.130:60266][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.05, 10.162.176.130:60268][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.01, 10.162.176.130:60240][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:60270]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:60270]
+[mHTTP GET /api/core/member-posts/ 200 [0.03, 10.162.176.130:60240][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:60270]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:60274]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:60274]
+[mHTTP GET /api/auth/profile/ 200 [0.02, 10.162.176.130:60258][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:60274]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:60280]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:60280]
+[mHTTP GET /api/core/events/ 200 [0.02, 10.162.176.130:60240][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:60280]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:60294]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:60294]
+[mHTTP GET /api/auth/profile/ 200 [0.02, 10.162.176.130:60240][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:60294]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:60306]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:60306]
+[mHTTP GET /api/core/member-posts/ 200 [0.03, 10.162.176.130:60240][0m
+[mHTTP GET /api/auth/profile/ 200 [0.01, 10.162.176.130:60240][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:60306]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:60312]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:60312]
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.162.176.130:60240][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.162.176.130:60260][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.162.176.130:60258][0m
+[mHTTP GET /api/auth/profile/ 200 [0.01, 10.162.176.130:60240][0m
+[mHTTP GET /api/auth/profile/ 200 [0.01, 10.162.176.130:60240][0m
+[mHTTP GET /api/core/users/fc12f0f9-3ce6-4bf2-84c4-f9a2c9296ca0/member-profile/ 200 [0.04, 10.162.176.130:60240][0m
+[mHTTP GET /api/core/events/ 200 [0.01, 10.162.176.130:60240][0m
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.04, 10.162.176.130:60240][0m
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.04, 10.162.176.130:60258][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:53594]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:53594]
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.162.176.130:60258][0m
+[mHTTP GET /api/accounts/income/?my=true&source=DONATION&page_size=1000 200 [0.09, 10.162.176.130:60240][0m
+[mHTTP GET /api/auth/profile/ 200 [0.02, 10.162.176.130:60258][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.04, 10.162.176.130:60240][0m
+[mHTTP GET /api/core/users/fc12f0f9-3ce6-4bf2-84c4-f9a2c9296ca0/member-profile/ 200 [0.03, 10.162.176.130:60240][0m
+[mHTTP GET /api/auth/profile/ 200 [0.02, 10.162.176.130:60240][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.04, 10.162.176.130:60258][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:60312]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:53594]
+Not Found: /api/core/member-posts/18ee7f00-8f9e-42f1-b837-7a5c19924f81/
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\hr_module\serializers.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:6303]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:6303]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\hr_module\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:36036]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:36036]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:48714]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:48714]
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.162.176.130:48698][0m
+[mHTTP GET /api/auth/profile/ 200 [0.02, 10.162.176.130:48722][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.162.176.130:48722][0m
+[mHTTP GET /api/core/events/ 200 [0.26, 10.162.176.130:48698][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.23, 10.162.176.130:48738][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.26, 10.162.176.130:48720][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:48714]
+[mHTTP GET /api/hr/members/ 200 [0.08, 127.0.0.1:30959][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:54984]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:54984]
+[mHTTP GET /api/auth/profile/ 200 [0.01, 10.162.176.130:54968][0m
+[mHTTP GET /api/core/events/ 200 [0.01, 10.162.176.130:54968][0m
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.162.176.130:54968][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.04, 10.162.176.130:54988][0m
+[mHTTP GET /api/auth/profile/ 200 [0.02, 10.162.176.130:54988][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.03, 10.162.176.130:54968][0m
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.06, 10.162.176.130:54988][0m
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.07, 10.162.176.130:54968][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.162.176.130:54968][0m
+Application instance <Task pending name='Task-77' coro=<ASGIStaticFilesHandler.__call__() running at C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\contrib\staticfiles\handlers.py:101> wait_for=<_GatheringFuture pending cb=[Task.task_wakeup()]>> for connection <WebRequest at 0x15502e0f610 method=POST uri=/api/core/member-posts/ clientproto=HTTP/1.1> took too long to shut down and was killed.
+[mHTTP POST /api/core/member-posts/ 201 [10.79, 10.162.176.130:51474][0m
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.03, 10.162.176.130:51474][0m
+[mHTTP GET /api/payments/my-subscription/ 200 [0.02, 10.162.176.130:51474][0m
+[mHTTP GET /api/core/member-posts/?my_posts=true 200 [0.03, 10.162.176.130:51474][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:54984]
+Unauthorized: /api/auth/profile/
+Forbidden: /api/core/users/909d2d24-d7d5-40c4-9dc9-06fba4534188/
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.03, 10.162.176.130:34900][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.02, 10.162.176.130:34900][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:34908]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:34908]
+[mHTTP GET /api/auth/profile/ 200 [0.03, 10.162.176.130:34900][0m
+[mHTTP GET /api/auth/profile/ 200 [0.01, 10.162.176.130:34900][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:34908]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:52262]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:52262]
+[mHTTP GET /api/auth/profile/ 200 [0.02, 10.162.176.130:52258][0m
+[mHTTP GET /api/core/events/ 200 [0.03, 10.162.176.130:52264][0m
+[mHTTP GET /api/auth/profile/ 200 [0.02, 10.162.176.130:52280][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.04, 10.162.176.130:52258][0m
+[mHTTP GET /api/auth/profile/ 200 [0.02, 10.162.176.130:52302][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.03, 10.162.176.130:52292][0m

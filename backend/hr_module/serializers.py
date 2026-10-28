@@ -17,6 +17,19 @@ class MemberSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['id', 'member_id', 'created_by', 'created_at', 'updated_at']
 
+    def to_internal_value(self, data):
+        if hasattr(data, 'copy'):
+            data = data.copy()
+        else:
+            data = dict(data)
+        if 'date_of_birth' in data and not data.get('date_of_birth'):
+            data['date_of_birth'] = None
+        if 'photo' in data and isinstance(data['photo'], str):
+            data.pop('photo')
+        if 'document' in data and isinstance(data['document'], str):
+            data.pop('document')
+        return super().to_internal_value(data)
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
         from core.models import User, Role
@@ -40,6 +53,11 @@ class MemberSerializer(serializers.ModelSerializer):
             user = User.objects.filter(role=Role.MEMBER, email__iexact=instance.email.strip()).first()
         
         data['username'] = user.username if user else (clean_phone or instance.member_id or '')
+        data['role'] = 'MEMBER'
+        data['is_phone_signup'] = bool(
+            (instance.created_by and getattr(instance.created_by, 'role', None) == Role.MEMBER) or
+            (user and user.role == Role.MEMBER)
+        )
 
         # Membership validity and expiration calculation
         from hr_module.views import calculate_member_validity

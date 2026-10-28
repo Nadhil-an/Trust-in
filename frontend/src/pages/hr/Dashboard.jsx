@@ -323,10 +323,10 @@ export default function HRDashboard() {
       {/* ── 3 SUMMARY CARDS ──────────────────────────────────── */}
       <div style={{ display: 'flex', gap: 14, marginBottom: 18, flexWrap: 'wrap' }}>
         <SummaryCard
-          icon="👥" label="People" color={C.blue} active={active === 'people'}
-          value={(d.members?.active || 0) + (d.volunteers?.active || 0)}
-          sub={`${d.members?.active || 0} members · ${d.volunteers?.active || 0} volunteers`}
-          onClick={() => toggle('people')}
+          icon="👥" label="Members & Directory" color={C.blue} active={active === 'people' || active === 'members'}
+          value={d.members?.total || 0}
+          sub={`${d.members?.active || 0} active · ${d.phone_signup_members || (d.recent_members || []).filter(m => m.is_phone_signup).length || 0} mobile · ${d.volunteers?.total || 0} volunteers`}
+          onClick={() => toggle('members')}
         />
         <SummaryCard
           icon="📋" label="Today's Attendance" color={C.green} active={active === 'attendance'}
@@ -343,7 +343,7 @@ export default function HRDashboard() {
       </div>
 
       {/* ── EXPANDED: PEOPLE ──────────────────────────────────── */}
-      {active === 'people' && (
+      {(active === 'people' || active === 'members') && (
         <Panel>
           <PLabel>👥 People Overview</PLabel>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 20 }}>
@@ -351,6 +351,7 @@ export default function HRDashboard() {
             <MiniTile icon="✅" label="Active Members"   value={d.members?.active     || 0} color={C.green}  />
             <MiniTile icon="🙋" label="Volunteers"       value={d.volunteers?.total   || 0} color={C.purple} />
             <MiniTile icon="🙋‍♂️" label="Active Volunteers" value={d.volunteers?.active || 0} color={C.indigo} />
+            <MiniTile icon="📱" label="Phone Signups"    value={d.phone_signup_members || (d.recent_members || []).filter(m => m.is_phone_signup).length || 0} color={C.purple} />
             <MiniTile icon="👔" label="Exec. Members"    value={d.executive_members   || 0} color={C.yellow} />
             <MiniTile icon="🧑‍💼" label="Staff Officers"   value={d.executive_officers  || 0} color={C.gray}   />
           </div>
@@ -372,7 +373,7 @@ export default function HRDashboard() {
             {/* Recent members */}
             <div style={{ background: 'white', borderRadius: 12, border: '1px solid #f0f0f4', overflow: 'hidden' }}>
               <div style={{ padding: '14px 16px', borderBottom: '1px solid #f3f4f6' }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#6b7280' }}>RECENTLY JOINED MEMBERS</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#6b7280' }}>MEMBERS DIRECTORY (PHONE SIGNUPS & ALL MEMBERS)</div>
               </div>
               <div className="table-wrap" style={{ margin: 0 }}>
                 <table>
@@ -391,6 +392,8 @@ export default function HRDashboard() {
                       )}
                       <th>ID</th>
                       <th>Name</th>
+                      <th>Phone</th>
+                      <th>Role</th>
                       <th>Type</th>
                       <th>Status</th>
                       {secretDeleteMode && <th>Action</th>}
@@ -398,7 +401,7 @@ export default function HRDashboard() {
                   </thead>
                   <tbody>
                     {(d.recent_members || []).length === 0
-                      ? <tr><td colSpan={secretDeleteMode ? 5 : 4}><EmptyState icon="👥" title="No members yet" /></td></tr>
+                      ? <tr><td colSpan={secretDeleteMode ? 7 : 6}><EmptyState icon="👥" title="No members yet" /></td></tr>
                       : (d.recent_members || []).map(m => {
                         const isSelected = selectedRowIds.includes(m.id);
                         return (
@@ -421,8 +424,19 @@ export default function HRDashboard() {
                               </td>
                             )}
                             <td className="td-mono" style={{ fontSize: 11 }}>{m.member_id}</td>
-                            <td style={{ fontWeight: isSelected ? 700 : undefined }}>{m.full_name}</td>
-                            <td><span className="badge badge-blue" style={{ fontSize: 10 }}>{m.membership_type}</span></td>
+                            <td style={{ fontWeight: isSelected ? 700 : 600 }}>
+                              {m.full_name}
+                              {m.is_phone_signup && (
+                                <span className="badge badge-purple" style={{ fontSize: 9, marginLeft: 6, padding: '2px 5px' }}>📱 Mobile</span>
+                              )}
+                            </td>
+                            <td style={{ fontSize: 12 }}>{m.phone || '-'}</td>
+                            <td>
+                              <span className="badge badge-indigo" style={{ fontSize: 10, fontWeight: 700 }}>
+                                {m.role || 'MEMBER'}
+                              </span>
+                            </td>
+                            <td><span className="badge badge-blue" style={{ fontSize: 10 }}>{m.membership_type || 'GENERAL'}</span></td>
                             <td><span className={`badge ${m.status === 'ACTIVE' ? 'badge-green' : 'badge-gray'}`} style={{ fontSize: 10 }}>{m.status}</span></td>
                             {secretDeleteMode && (
                               <td onClick={e => e.stopPropagation()}>
@@ -452,7 +466,7 @@ export default function HRDashboard() {
                 </table>
               </div>
               <div style={{ padding: '10px 16px', textAlign: 'right' }}>
-                <button className="btn btn-sm btn-secondary" onClick={() => navigate('/hr/members')}>View All Members →</button>
+                <button className="btn btn-sm btn-secondary" onClick={() => navigate('/slt/hr/members')}>View All Members →</button>
               </div>
             </div>
           </div>

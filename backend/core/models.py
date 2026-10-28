@@ -212,9 +212,15 @@ class MemberPostStatus(models.TextChoices):
     CLOSED = 'CLOSED', 'Closed'
 
 
+class MemberPostType(models.TextChoices):
+    AWARENESS = 'AWARENESS', 'Awareness'
+    CHARITY = 'CHARITY', 'Charity'
+
+
 class MemberPost(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='member_posts')
+    post_type = models.CharField(max_length=20, choices=MemberPostType.choices, default=MemberPostType.AWARENESS)
     description = models.TextField()
     contact_number = models.CharField(max_length=25, blank=True)
     address = models.TextField(blank=True)

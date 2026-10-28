@@ -39,6 +39,7 @@ export default function CreatePostScreen({ navigation }) {
       navigation.replace('Auth');
     }
   }, [isAuthenticated]);
+  const [postType, setPostType] = useState('AWARENESS');
   const [description, setDescription] = useState('');
   const [contactNumber, setContactNumber] = useState(user?.phone || '');
   const [selectedState, setSelectedState] = useState('Kerala');
@@ -172,6 +173,7 @@ export default function CreatePostScreen({ navigation }) {
     setLoading(true);
     try {
       await memberPostsApi.create({
+        post_type: postType,
         description: description.trim(),
         contact_number: contactNumber.trim(),
         address: fullAddress,
@@ -263,6 +265,78 @@ export default function CreatePostScreen({ navigation }) {
           <View style={{ flex: 1 }}>
             <Text style={styles.authorName}>{user?.full_name || user?.username || 'Community Member'}</Text>
             <Text style={styles.postingPubliclyText}>Posting to Community Feed</Text>
+          </View>
+        </View>
+
+        {/* Post Type Selector (Awareness vs Charity) */}
+        <View style={styles.typeSelectorCard}>
+          <Text style={styles.typeSelectorLabel}>
+            Post Category / Type <Text style={{ color: '#EF4444' }}>*</Text>
+          </Text>
+          <View style={styles.typeButtonsRow}>
+            <TouchableOpacity
+              style={[
+                styles.typeBtn,
+                postType === 'AWARENESS' && styles.typeBtnActiveAwareness,
+              ]}
+              onPress={() => setPostType('AWARENESS')}
+              activeOpacity={0.8}
+            >
+              <Ionicons
+                name="megaphone"
+                size={18}
+                color={postType === 'AWARENESS' ? '#FFFFFF' : '#0284c7'}
+              />
+              <Text
+                style={[
+                  styles.typeBtnText,
+                  postType === 'AWARENESS' && styles.typeBtnTextActive,
+                ]}
+              >
+                Awareness
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.typeBtn,
+                postType === 'CHARITY' && styles.typeBtnActiveCharity,
+              ]}
+              onPress={() => setPostType('CHARITY')}
+              activeOpacity={0.8}
+            >
+              <Ionicons
+                name="heart"
+                size={18}
+                color={postType === 'CHARITY' ? '#FFFFFF' : '#EF4444'}
+              />
+              <Text
+                style={[
+                  styles.typeBtnText,
+                  postType === 'CHARITY' && styles.typeBtnTextActive,
+                ]}
+              >
+                Charity
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <View style={[
+            styles.typeHelperBanner,
+            postType === 'CHARITY' ? styles.typeHelperBannerCharity : styles.typeHelperBannerAwareness
+          ]}>
+            <Ionicons
+              name={postType === 'CHARITY' ? 'heart-circle' : 'information-circle'}
+              size={18}
+              color={postType === 'CHARITY' ? '#E11D48' : '#0284c7'}
+            />
+            <Text style={[
+              styles.typeHelperText,
+              postType === 'CHARITY' ? { color: '#9F1239' } : { color: '#0369A1' }
+            ]}>
+              {postType === 'CHARITY'
+                ? 'Charity: Adds a "Donate Now" button directly on the post so members can contribute financially.'
+                : 'Awareness: Shared with the community to raise awareness about social issues or general updates.'}
+            </Text>
           </View>
         </View>
 
@@ -646,6 +720,73 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#64748B',
     marginTop: 2,
+  },
+  typeSelectorCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginBottom: 16,
+  },
+  typeSelectorLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 10,
+  },
+  typeButtonsRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  typeBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#F8FAFC',
+  },
+  typeBtnActiveAwareness: {
+    backgroundColor: '#0284c7',
+    borderColor: '#0284c7',
+  },
+  typeBtnActiveCharity: {
+    backgroundColor: '#E11D48',
+    borderColor: '#E11D48',
+  },
+  typeBtnText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#475569',
+  },
+  typeBtnTextActive: {
+    color: '#FFFFFF',
+  },
+  typeHelperBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  typeHelperBannerAwareness: {
+    backgroundColor: '#F0F9FF',
+  },
+  typeHelperBannerCharity: {
+    backgroundColor: '#FFF1F2',
+  },
+  typeHelperText: {
+    flex: 1,
+    fontSize: 12,
+    lineHeight: 16,
+    fontWeight: '500',
   },
   inputCard: {
     backgroundColor: '#fff',

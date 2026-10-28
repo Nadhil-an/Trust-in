@@ -16,8 +16,8 @@ def get_user_member(user):
     target_phone = str(getattr(user, 'phone', '') or '').strip()
     target_name = (user.full_name or '').strip().lower()
 
-    member = None
-    if target_username:
+    member = Member.objects.filter(created_by=user).first()
+    if not member and target_username:
         member = Member.objects.filter(member_id__iexact=target_username).first()
     if not member and target_name:
         member = Member.objects.filter(full_name__iexact=user.full_name.strip()).first()
@@ -317,7 +317,7 @@ class MemberPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = MemberPost
         fields = [
-            'id', 'author', 'description', 'contact_number', 'address',
+            'id', 'author', 'post_type', 'description', 'contact_number', 'address',
             'video', 'media_type', 'is_following_author',
             'status', 'rejection_reason', 'approved_by', 'approved_at',
             'assessment_request', 'assessment_request_number',

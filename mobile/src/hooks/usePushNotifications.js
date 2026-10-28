@@ -4,6 +4,7 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { coreApi } from '../api';
+import { useAuthStore } from '../store/authStore';
 
 // Push notifications are not supported inside the Expo Go app starting from SDK 53+
 const isExpoGo =
@@ -23,54 +24,58 @@ if (!isExpoGo) {
 }
 
 export function usePushNotifications() {
+  const { isAuthenticated, accessToken } = useAuthStore();
   const [expoPushToken, setExpoPushToken] = useState('');
   const [notification, setNotification] = useState(false);
   const notificationListener = useRef();
   const responseListener = useRef();
 
   useEffect(() => {
-    // Skip remote push token registration inside Expo Go to avoid SDK 53+ error
     if (isExpoGo) {
       return;
     }
 
-    try {
-      registerForPushNotificationsAsync().then(token => {
+    registerForPushNotificationsAsync()
+      .then(token => {
         if (token) {
           setExpoPushToken(token);
-          // Send to backend
-          try {
-            coreApi.updatePushToken({ push_token: token });
-          } catch (e) {
-            console.log('Failed to send push token', e);
-          }
         }
-      }).catch(err => {
-        console.log('Push notification registration skipped:', err?.message || err);
+      })
+      .catch(err => {
+        console.log('[Push] Registration error:', err?.message || err);
       });
 
+    try {
       notificationListener.current = Notifications.addNotificationReceivedListener(notif => {
         setNotification(notif);
       });
 
       responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-        console.log('Push response:', response);
+        console.log('[Push] User responded to notification:', response?.notification?.request?.content?.data);
       });
-    } catch (err) {
-      console.log('Push notification setup error:', err);
-    }
+    } catch (_) {}
 
     return () => {
       try {
-        if (notificationListener.current) {
-          notificationListener.current.remove();
-        }
-        if (responseListener.current) {
-          responseListener.current.remove();
-        }
+        if (notificationListener.current) notificationListener.current.remove();
+        if (responseListener.current) responseListener.current.remove();
       } catch (_) {}
     };
   }, []);
+
+  // When user is authenticated and token is obtained, send to backend
+  useEffect(() => {
+    if (isExpoGo) return;
+    if (isAuthenticated && accessToken && expoPushToken) {
+      coreApi.updatePushToken({ push_token: expoPushToken })
+        .then(() => {
+          console.log('[Push] Token successfully synced with backend for authenticated user');
+        })
+        .catch(err => {
+          console.log('[Push] Failed to update push token on backend:', err?.message || err);
+        });
+    }
+  }, [isAuthenticated, accessToken, expoPushToken]);
 
   return { expoPushToken, notification };
 }
@@ -88,7 +93,10 @@ async function registerForPushNotificationsAsync() {
         name: 'default',
         importance: Notifications.AndroidImportance.MAX,
         vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#FF231F7C',
+        lightColor: '#0284c7',
+        sound: 'default',
+        enableVibrate: true,
+        showBadge: true,
       });
     }
 
@@ -100,7 +108,7 @@ async function registerForPushNotificationsAsync() {
         finalStatus = status;
       }
       if (finalStatus !== 'granted') {
-        console.log('Push permission not granted');
+        console.log('[Push] Push notification permission not granted');
         return null;
       }
 
@@ -114,7 +122,7 @@ async function registerForPushNotificationsAsync() {
       token = tokenRes?.data;
     }
   } catch (e) {
-    console.log('Push token registration skipped or unsupported in this client:', e?.message || e);
+    console.log('[Push] Push token registration skipped or unsupported in this client:', e?.message || e);
   }
 
   return token;

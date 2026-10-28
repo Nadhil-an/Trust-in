@@ -12,34 +12,54 @@ import requests
 
 def send_expo_push(user, title, message, data=None):
     from core.models import ExpoDevice
-    tokens = user.expo_devices.values_list('push_token', flat=True)
+    tokens = list(user.expo_devices.values_list('push_token', flat=True))
     if not tokens:
         return
 
-    payloads = []
-    for token in tokens:
-        payload = {
-            'to': token,
-            'title': title,
-            'body': message,
-            'data': data or {},
-            'sound': 'default',
-        }
-        payloads.append(payload)
+    broadcast_expo_push(tokens, title, message, data)
 
-    try:
-        requests.post(
-            'https://exp.host/--/api/v2/push/send',
-            json=payloads,
-            headers={
-                'Accept': 'application/json',
-                'Accept-encoding': 'gzip, deflate',
-                'Content-Type': 'application/json',
-            },
-            timeout=5
-        )
-    except Exception as e:
-        print(f"Error sending Expo push: {e}")
+
+def broadcast_expo_push(tokens, title, message, data=None):
+    """Send push notifications to a list of Expo tokens in batches of 100."""
+    if not tokens:
+        return
+
+    # Deduplicate tokens and filter invalid ones
+    unique_tokens = list(set([t for t in tokens if t and (t.startswith('ExponentPushToken') or t.startswith('ExpoPushToken'))]))
+    if not unique_tokens:
+        return
+
+    # Split into batches of 100 as required by Expo
+    batch_size = 100
+    for i in range(0, len(unique_tokens), batch_size):
+        batch = unique_tokens[i:i + batch_size]
+        payloads = [
+            {
+                'to': token,
+                'title': title,
+                'body': message,
+                'data': data or {},
+                'sound': 'default',
+                'priority': 'high',
+                'channelId': 'default',
+                'badge': 1,
+            }
+            for token in batch
+        ]
+
+        try:
+            requests.post(
+                'https://exp.host/--/api/v2/push/send',
+                json=payloads,
+                headers={
+                    'Accept': 'application/json',
+                    'Accept-encoding': 'gzip, deflate',
+                    'Content-Type': 'application/json',
+                },
+                timeout=8
+            )
+        except Exception as e:
+            print(f"Error sending Expo push batch: {e}")
 
 def push_notification(recipient: User, title: str, message: str,
                       notification_type: str, reference_id: str = '',
@@ -129,3 +149,81 @@ def push_dashboard_refresh(roles: list = None, module: str = 'ALL', user_id=None
             )
         except Exception:
             pass
+
+
+def notify_post_approved_and_published(post):
+    """
+    Sends real-time push notification outside the mobile application when a user's
+    post is approved and published.
+    1. Notifies the post author directly.
+    2. Broadcasts push notification outside the mobile app to all registered members.
+    3. Pushes real-time WebSocket refresh so active apps update instantly.
+    """
+    from core.models import ExpoDevice
+    author = getattr(post, 'author', None)
+    if not author:
+        return
+
+    author_name = author.full_name or author.username or 'A member'
+    snippet = (post.description or '').strip()
+    if len(snippet) > 60:
+        snippet = snippet[:60] + '...'
+    elif not snippet:
+        snippet = 'Check it out now on the community feed!'
+
+    # 1. Direct notification to Post Author
+    author_title = "Post Approved & Published! 🎉"
+    author_msg = f"Your post \"{snippet}\" has been approved and published to the mobile application feed."
+    try:
+        push_notification(
+            recipient=author,
+            title=author_title,
+            message=author_msg,
+            notification_type='POST_APPROVED',
+            reference_id=str(post.id),
+            reference_type='MemberPost',
+            priority='HIGH'
+        )
+    except Exception as e:
+        print(f"Error sending author post approval notification: {e}")
+
+    # 2. Push notification to all other community members (outside the mobile app)
+    member_title = "New Community Post 📢"
+    member_msg = f"{author_name} posted: \"{snippet}\""
+    member_data = {
+        'type': 'NEW_POST',
+        'postId': str(post.id),
+        'reference_id': str(post.id),
+    }
+
+    try:
+        other_tokens = list(
+            ExpoDevice.objects.exclude(user=author)
+            .values_list('push_token', flat=True)
+            .distinct()
+        )
+        if other_tokens:
+            broadcast_expo_push(other_tokens, member_title, member_msg, member_data)
+    except Exception as e:
+        print(f"Error broadcasting new post push notification: {e}")
+
+    # 3. Real-time WebSocket broadcast to refresh feed in all open sessions
+    try:
+        channel_layer = get_channel_layer()
+        if channel_layer:
+            async_to_sync(channel_layer.group_send)(
+                "notify_all",
+                {
+                    'type': 'send_notification',
+                    'notification': {
+                        'type': 'FEED_REFRESH',
+                        'post_id': str(post.id),
+                        'author_id': str(author.id),
+                        'title': member_title,
+                        'message': member_msg,
+                    }
+                }
+            )
+    except Exception:
+        pass
+

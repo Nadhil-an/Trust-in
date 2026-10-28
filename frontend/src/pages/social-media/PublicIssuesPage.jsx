@@ -307,8 +307,19 @@ export default function PublicIssuesPage() {
                     }}
                     title="Click row to view full details and moderation controls"
                   >
-                    <td style={{ padding: '14px 16px', color: '#64748B', whiteSpace: 'nowrap' }}>
-                      {item.created_at ? format(new Date(item.created_at), 'dd MMM yyyy, hh:mm a') : '—'}
+                    <td style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
+                      {item.created_at ? (
+                        <div>
+                          <div style={{ fontWeight: '600', color: '#0F172A', fontSize: '13px', lineHeight: 1.25 }}>
+                            {format(new Date(item.created_at), 'dd MMM yyyy')}
+                          </div>
+                          <div style={{ fontSize: '11px', color: '#64748B', marginTop: '3px', fontWeight: '500' }}>
+                            {format(new Date(item.created_at), 'hh:mm a')}
+                          </div>
+                        </div>
+                      ) : (
+                        <span style={{ color: '#94A3B8' }}>—</span>
+                      )}
                     </td>
                     <td style={{ padding: '14px 16px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -326,6 +337,21 @@ export default function PublicIssuesPage() {
                         <div>
                           <div style={{ fontWeight: '600', color: '#0F172A' }}>{item.author?.full_name || item.author?.username}</div>
                           <div style={{ fontSize: '11px', color: '#64748B' }}>@{item.author?.username}</div>
+                          <span style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '3px',
+                            background: item.post_type === 'CHARITY' ? '#FFF1F2' : '#F0F9FF',
+                            color: item.post_type === 'CHARITY' ? '#E11D48' : '#0284C7',
+                            border: `1px solid ${item.post_type === 'CHARITY' ? '#FECDD3' : '#BAE6FD'}`,
+                            padding: '2px 7px',
+                            borderRadius: '10px',
+                            fontSize: '10px',
+                            fontWeight: '700',
+                            marginTop: '3px',
+                          }}>
+                            {item.post_type === 'CHARITY' ? '💖 Charity' : '📢 Awareness'}
+                          </span>
                         </div>
                       </div>
                     </td>
@@ -464,7 +490,21 @@ export default function PublicIssuesPage() {
                 </div>
               </div>
 
-              <div>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <span style={{
+                  padding: '4px 10px',
+                  borderRadius: '12px',
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  background: selectedItem.post_type === 'CHARITY' ? '#FFF1F2' : '#F0F9FF',
+                  color: selectedItem.post_type === 'CHARITY' ? '#E11D48' : '#0284C7',
+                  border: `1px solid ${selectedItem.post_type === 'CHARITY' ? '#FECDD3' : '#BAE6FD'}`,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                }}>
+                  {selectedItem.post_type === 'CHARITY' ? '💖 Charity Post' : '📢 Awareness Post'}
+                </span>
                 {getStatusBadge(selectedItem.status)}
               </div>
             </div>

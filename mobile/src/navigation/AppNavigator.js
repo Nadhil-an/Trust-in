@@ -150,7 +150,7 @@ const GEOTabs = () => (
 );
 
 const MainStack = () => {
-  const { isStaff, isMember, isFAO, isACO, isGEO, isManager, isAuthenticated } = useAuthStore();
+  const { isStaff, isMember, isFAO, isACO, isGEO, isManager, isAuthenticated, user } = useAuthStore();
   
   // Default to MemberTabs for unauthenticated guests and regular members
   let HomeTabs = MemberTabs;
@@ -163,8 +163,10 @@ const MainStack = () => {
     if (isMember()) HomeTabs = MemberTabs;
   }
 
+  const stackKey = isAuthenticated ? `auth_${user?.id || user?.role || 'member'}` : 'guest';
+
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false, animation: 'slide_from_right', animationDuration: 280 }}>
+    <Stack.Navigator key={stackKey} screenOptions={{ headerShown: false, animation: 'slide_from_right', animationDuration: 280 }}>
       <Stack.Screen name="Root" component={HomeTabs} options={{ animation: 'slide_from_left' }} />
       
       {/* Staff Actions */}

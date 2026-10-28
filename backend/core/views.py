@@ -73,7 +73,8 @@ class LoginView(APIView):
                 if u not in candidates:
                     candidates.append(u)
             for u in User.objects.exclude(phone='').iterator():
-                if u.phone and u.phone.strip() in [clean_username, clean_digits]:
+                clean_u_phone = re.sub(r'\D', '', str(u.phone or ''))[-10:]
+                if clean_u_phone and clean_u_phone == clean_digits:
                     if u not in candidates:
                         candidates.append(u)
 
@@ -88,7 +89,8 @@ class LoginView(APIView):
         ))
         if len(clean_digits) >= 10:
             for m in Member.objects.all():
-                if m.phone and m.phone.strip() in [clean_username, clean_digits] and m not in member_matches:
+                clean_m_phone = re.sub(r'\D', '', str(m.phone or ''))[-10:]
+                if clean_m_phone and clean_m_phone == clean_digits and m not in member_matches:
                     member_matches.append(m)
 
         for m in member_matches:
@@ -104,9 +106,10 @@ class LoginView(APIView):
                 if u not in candidates:
                     candidates.append(u)
             if m.phone:
-                clean_mphone = m.phone.strip()
+                clean_mphone = re.sub(r'\D', '', str(m.phone))[-10:]
                 for u in User.objects.filter(role=Role.MEMBER).iterator():
-                    if u.phone and u.phone.strip() == clean_mphone and u not in candidates:
+                    clean_u = re.sub(r'\D', '', str(u.phone or ''))[-10:]
+                    if clean_u and clean_u == clean_mphone and u not in candidates:
                         candidates.append(u)
 
         # Authenticate against all matching candidates
@@ -244,80 +247,100 @@ class MemberSignupView(APIView):
         import logging
         logger = logging.getLogger(__name__)
 
-        data = request.data
+        data = request.data or {}
 
-        full_name  = (data.get('full_name') or '').strip()
-        phone      = (data.get('phone') or '').strip()
-        email      = (data.get('email') or '').strip()
+        # 1. Clean & normalize incoming inputs
+        full_name  = ' '.join((data.get('full_name') or '').strip().split())
+        raw_phone  = str(data.get('phone') or '').strip()
+        phone_digits = re.sub(r'\D', '', raw_phone)
+        # Normalize if user typed country code +91
+        if len(phone_digits) > 10 and phone_digits.startswith('91'):
+            phone = phone_digits[2:]
+        else:
+            phone = phone_digits
+
+        email      = (data.get('email') or '').strip().lower()
         place      = (data.get('place') or '').strip()
-        pincode    = (data.get('pincode') or '').strip()
+        pincode    = re.sub(r'\D', '', str(data.get('pincode') or ''))
         occupation = (data.get('occupation') or '').strip()
         password   = data.get('password') or ''
 
-        # Combine place and pincode for address
-        full_address = place
-        if pincode:
-            full_address += f" - {pincode}"
-
-        # Validate required fields
+        # 2. Validation
         errors = {}
-        if not full_name:
-            errors['full_name'] = 'Full name is required.'
-        if not phone:
-            errors['phone'] = 'Phone number is required.'
-        elif not re.match(r'^\d{10}$', phone):
-            errors['phone'] = 'Phone number must be exactly 10 digits.'
+        if not full_name or len(full_name) < 2:
+            errors['full_name'] = 'Full name is required (minimum 2 characters).'
 
-        # 6-digit pincode validation
-        if pincode and not re.match(r'^\d{6}$', pincode):
+        if not phone or len(phone) != 10:
+            errors['phone'] = 'Please enter a valid 10-digit mobile number.'
+
+        if pincode and len(pincode) != 6:
             errors['pincode'] = 'Pincode must be exactly 6 digits.'
 
         if not password or len(password) < 6:
             errors['password'] = 'Password must be at least 6 characters.'
 
-        # Validate email if provided
         if email:
             if not re.match(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', email):
                 errors['email'] = 'Enter a valid email address.'
             elif User.objects.filter(email__iexact=email).exists():
                 errors['email'] = 'An account with this email already exists. Please log in.'
 
-        # Check duplicate phone across Users & Members
+        # Check duplicate mobile number across existing users and members safely
         if 'phone' not in errors:
+            phone_exists = False
             for u in User.objects.exclude(phone='').iterator():
-                if u.phone and str(u.phone).strip() == phone:
-                    errors['phone'] = 'An account with this phone number already exists. Please log in.'
-                    break
-        if 'phone' not in errors:
-            for m in Member.objects.exclude(phone='').iterator():
-                if m.phone and str(m.phone).strip() == phone:
-                    errors['phone'] = 'An account with this phone number already exists. Please log in.'
-                    break
+                try:
+                    u_phone = re.sub(r'\D', '', str(u.phone or ''))[-10:]
+                    if u_phone and u_phone == phone:
+                        phone_exists = True
+                        break
+                except Exception:
+                    continue
+
+            if not phone_exists:
+                for m in Member.objects.exclude(phone='').iterator():
+                    try:
+                        m_phone = re.sub(r'\D', '', str(m.phone or ''))[-10:]
+                        if m_phone and m_phone == phone:
+                            phone_exists = True
+                            break
+                    except Exception:
+                        continue
+
+            if phone_exists:
+                errors['phone'] = 'An account with this mobile number already exists. Please log in.'
 
         if errors:
             return Response(errors, status=400)
 
-        # Build a unique username from full_name (not phone number)
-        clean_name = re.sub(r'[^a-zA-Z0-9_]', '', re.sub(r'\s+', '_', full_name.strip().lower()))
-        base_username = clean_name or ('member_' + (re.sub(r'[^0-9]', '', phone)[-4:] or 'user'))
-        username = base_username
-        counter = 1
-        while User.objects.filter(username=username).exists():
-            username = f"{base_username}_{counter}"
-            counter += 1
+        # 3. Clean unique username (phone number preferred for seamless 1-click mobile login)
+        if not User.objects.filter(username__iexact=phone).exists():
+            username = phone
+        else:
+            name_slug = re.sub(r'[^a-z0-9]+', '_', full_name.lower()).strip('_')
+            base_username = (name_slug[:30] if name_slug else f"member_{phone[-4:]}")
+            username = base_username
+            counter = 1
+            while User.objects.filter(username__iexact=username).exists():
+                username = f"{base_username}_{counter}"
+                counter += 1
 
-        # Fallback for optional email (ensure uniqueness)
+        # 4. Fallback email if user didn't enter one (User model requires unique email)
         if not email:
             candidate_email = f"{username}@member.local"
             email_counter = 1
-            while User.objects.filter(email=candidate_email).exists():
+            while User.objects.filter(email__iexact=candidate_email).exists():
                 candidate_email = f"{username}_{email_counter}@member.local"
                 email_counter += 1
             email = candidate_email
 
+        # 5. Build address string
+        address_parts = [p for p in [place, pincode] if p]
+        full_address = " - ".join(address_parts)
+
+        # 6. Atomic database creation
         try:
             with transaction.atomic():
-                # Create the auth User
                 user = User.objects.create_user(
                     username=username,
                     email=email,
@@ -328,14 +351,16 @@ class MemberSignupView(APIView):
                     is_active=True,
                 )
 
-                # Create the corresponding Member profile
-                Member.objects.create(
+                # Create corresponding Member record linked via created_by
+                member = Member.objects.create(
                     full_name=full_name,
                     phone=phone,
-                    email=email,
+                    email=email if not email.endswith('@member.local') else '',
                     address=full_address,
                     occupation=occupation,
                     created_by=user,
+                    status='ACTIVE',
+                    membership_type='GENERAL',
                 )
         except IntegrityError as e:
             err_str = str(e).lower()
@@ -348,16 +373,35 @@ class MemberSignupView(APIView):
             logger.exception("Member signup failed: %s", e)
             return Response({'error': f'Signup failed: {str(e)}'}, status=400)
 
-        # Auto-login — generate tokens
+        # 7. Generate authentication tokens for instant auto-login
         refresh = RefreshToken.for_user(user)
         access  = refresh.access_token
 
         AuditLog.objects.create(
-            user=user, action='MEMBER_SIGNUP', module='AUTH',
-            record_type='User', record_id=str(user.id),
-            description=f"New member self-registered: {user.full_name}",
+            user=user,
+            action='MEMBER_SIGNUP',
+            module='AUTH',
+            record_type='User',
+            record_id=str(user.id),
+            description=f"New member self-registered: {user.full_name} ({user.username})",
             ip_address=getattr(request, 'audit_ip', None) or None
         )
+
+        # Real-time WebSocket refresh to HR, Manager, and Admin dashboards
+        try:
+            from notify.service import push_dashboard_refresh, push_to_role
+            push_dashboard_refresh(['HR', 'MANAGER', 'ADMIN', 'STAFF'])
+            push_to_role(
+                'HR',
+                'New Member Registered',
+                f"New member joined via mobile app: {user.full_name} (Phone: {phone}, ID: {member.member_id})",
+                'MEMBER_SIGNUP',
+                reference_id=str(member.id),
+                priority='MEDIUM',
+                reference_type='MEMBER'
+            )
+        except Exception as e:
+            logger.warning("Could not dispatch push notification for member signup: %s", e)
 
         response = Response({
             'user':    UserSerializer(user).data,
@@ -871,6 +915,13 @@ class MemberPostViewSet(ModelViewSet):
         for idx, img in enumerate(images[:10]):
             MemberPostImage.objects.create(post=post, image=img, order=idx)
 
+        if post.status == MemberPostStatus.APPROVED:
+            try:
+                from notify.service import notify_post_approved_and_published
+                notify_post_approved_and_published(post)
+            except Exception as e:
+                print(f"Error notifying post publish on create: {e}")
+
     def perform_update(self, serializer):
         post = serializer.save()
         images = self.request.FILES.getlist('images') or self.request.FILES.getlist('photos')
@@ -886,12 +937,12 @@ class MemberPostViewSet(ModelViewSet):
 
     def check_object_permissions(self, request, obj):
         super().check_object_permissions(request, obj)
-        if self.action in ['update', 'partial_update', 'destroy']:
+        if self.action in ['update', 'partial_update']:
             user_role = getattr(request.user, 'role', '')
             is_staff_user = getattr(request.user, 'is_staff', False) or getattr(request.user, 'is_superuser', False)
-            if obj.author != request.user and user_role not in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA', 'DATA_ENTRY', 'HR'] and not is_staff_user:
+            if obj.author != request.user and user_role not in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA', 'DATA_ENTRY', 'HR', 'STAFF'] and not is_staff_user:
                 from rest_framework.exceptions import PermissionDenied
-                raise PermissionDenied("You can only edit or delete your own posts.")
+                raise PermissionDenied("You can only edit your own posts.")
 
     @action(detail=True, methods=['post'], url_path='toggle-like')
     def toggle_like(self, request, pk=None):
@@ -1024,6 +1075,13 @@ class MemberPostViewSet(ModelViewSet):
             description=f"Public issue post by @{post.author.username} approved by {request.user.full_name or request.user.username}",
             ip_address=getattr(request, 'audit_ip', None)
         )
+
+        # Trigger real-time push notification outside the mobile application
+        try:
+            from notify.service import notify_post_approved_and_published
+            notify_post_approved_and_published(post)
+        except Exception as e:
+            print(f"Error notifying post approval: {e}")
 
         return Response({
             'message': 'Post approved successfully! It is now published and visible to all members in the mobile application.',

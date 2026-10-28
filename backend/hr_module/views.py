@@ -203,8 +203,18 @@ class HRDashboardView(APIView):
                 'leave': Attendance.objects.filter(date=d, status='LEAVE').count(),
             })
 
+        try:
+            ensure_member_records_for_users()
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"[HRDashboardView] Error ensuring member records: {e}")
+
+        from core.models import Role
+        phone_signup_count = Member.objects.filter(created_by__role=Role.MEMBER).count()
+
         return Response({
             'members': {'total': Member.objects.count(), 'active': Member.objects.filter(status='ACTIVE').count()},
+            'phone_signup_members': phone_signup_count,
             'volunteers': {'total': Volunteer.objects.count(), 'active': Volunteer.objects.filter(status='ACTIVE').count()},
             'executive_members': ExecutiveMember.objects.filter(status='ACTIVE').count(),
             'executive_officers': ExecutiveOfficer.objects.filter(status='ACTIVE', employment_type='FULL_TIME').count(),
@@ -223,7 +233,7 @@ class HRDashboardView(APIView):
                 'upcoming_birthdays': upcoming_bdays,
             },
             'recent_members': MemberSerializer(
-                Member.objects.order_by('-created_at')[:5], many=True
+                Member.objects.order_by('-created_at')[:20], many=True
             ).data,
         })
 
@@ -412,6 +422,39 @@ def sync_member_subscription_status(member, notify=True):
     return validity
 
 
+def ensure_member_records_for_users():
+    """
+    Guarantees every User with role=Role.MEMBER (all phone signups and mobile members)
+    has a corresponding Member entry in hr_members, so they display in the HR dashboard.
+    """
+    from core.models import User, Role
+    from hr_module.models import Member
+    import re
+    member_users = User.objects.filter(role=Role.MEMBER)
+    for u in member_users:
+        m = Member.objects.filter(created_by=u).first()
+        if not m and u.phone:
+            clean_p = re.sub(r'\D', '', str(u.phone))[-10:]
+            if clean_p:
+                for cand in Member.objects.all():
+                    if cand.phone and re.sub(r'\D', '', str(cand.phone))[-10:] == clean_p:
+                        m = cand
+                        if not m.created_by:
+                            m.created_by = u
+                            m.save(update_fields=['created_by'])
+                        break
+        if not m:
+            clean_phone_val = re.sub(r'\D', '', str(u.phone or ''))[-10:] if u.phone else ''
+            Member.objects.create(
+                full_name=u.full_name or u.username,
+                phone=clean_phone_val or u.phone or '',
+                email=u.email if not (u.email or '').endswith('@member.local') else '',
+                created_by=u,
+                status='ACTIVE' if u.is_active else 'INACTIVE',
+                membership_type='GENERAL',
+            )
+
+
 def sync_all_members_expiry(notify=True):
     """
     Scans all ACTIVE members that are subject to expiry, sets expired members to EXPIRED,
@@ -440,6 +483,13 @@ class MemberListCreateView(generics.ListCreateAPIView):
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get_queryset(self):
+        # Automatically ensure all phone signups and member users have Member records
+        try:
+            ensure_member_records_for_users()
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"[MemberListCreateView] Error ensuring member records: {e}")
+
         # Automatically verify and sync expired memberships with notifications to HR & Manager
         try:
             sync_all_members_expiry(notify=True)
@@ -616,8 +666,14 @@ class MemberDetailView(generics.RetrieveUpdateDestroyAPIView):
     def perform_update(self, serializer):
         member = serializer.save()
         password = self.request.data.get('password')
-        if password and str(password).strip():
-            sync_member_user_password(member, str(password).strip(), request_user=self.request.user)
+        username = self.request.data.get('username')
+        if (password and str(password).strip()) or (username and str(username).strip()):
+            sync_member_user_account(
+                member,
+                password=str(password).strip() if (password and str(password).strip()) else None,
+                username=str(username).strip() if (username and str(username).strip()) else None,
+                request_user=self.request.user
+            )
         push_dashboard_refresh(['HR', 'MANAGER', 'ADMIN', 'STAFF'])
 
     def perform_destroy(self, instance):
@@ -669,7 +725,14 @@ class MemberResetPasswordView(APIView):
         if not password or len(str(password).strip()) < 6:
             return Response({'error': 'Password must be at least 6 characters.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        sync_member_user_password(member, str(password).strip(), request_user=request.user)
+        username = request.data.get('username')
+        sync_member_user_account(
+            member,
+            password=str(password).strip(),
+            username=str(username).strip() if (username and str(username).strip()) else None,
+            request_user=request.user
+        )
+        push_dashboard_refresh(['HR', 'MANAGER', 'ADMIN', 'STAFF'])
         return Response({'message': f'Password for member "{member.full_name}" has been reset successfully.'})
 
 

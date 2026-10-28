@@ -126,19 +126,70 @@ export default function Members() {
     if (form.monthly_fee && !isPositiveNumber(form.monthly_fee)) return toast.error("Fee must be positive");
     if (form.password && form.password.trim().length < 6) return toast.error("Password must be at least 6 characters");
     
-    setSaving(true)
+    setSaving(true);
     try {
-      const payload = { ...form }
-      if (!payload.password || !payload.password.trim()) {
-        delete payload.password
+      const payload = { ...form };
+
+      // Clean read-only & computed metadata fields so server validation never rejects them
+      delete payload.id;
+      delete payload.member_id;
+      delete payload.created_at;
+      delete payload.updated_at;
+      delete payload.created_by;
+      delete payload.role;
+      delete payload.is_phone_signup;
+      delete payload.valid_upto;
+      delete payload.days_left;
+      delete payload.is_expired;
+      delete payload.receipts;
+
+      if (typeof payload.photo === 'string') delete payload.photo;
+      if (typeof payload.document === 'string') delete payload.document;
+      if (!payload.date_of_birth) payload.date_of_birth = null;
+      if (!payload.email || !payload.email.trim()) payload.email = '';
+
+      const hasPassword = Boolean(payload.password && payload.password.trim());
+      const newPassword = hasPassword ? payload.password.trim() : null;
+
+      if (!hasPassword) {
+        delete payload.password;
       }
-      if (selected) await hrApi.members.update(selected.id, payload)
-      else await hrApi.members.create(payload)
-      toast.success(selected ? (form.password ? "Member updated & password reset successfully!" : "Member updated successfully.") : "Member added successfully.");
+
+      if (selected) {
+        // Update member record details
+        await hrApi.members.update(selected.id, payload);
+
+        // Explicitly guarantee password reset on member's linked user account
+        if (newPassword) {
+          await hrApi.members.resetPassword(selected.id, {
+            password: newPassword,
+            username: payload.username || undefined,
+          });
+        }
+      } else {
+        await hrApi.members.create(payload);
+      }
+
+      toast.success(
+        selected
+          ? (newPassword ? "Member updated & password reset successfully!" : "Member updated successfully.")
+          : "Member added successfully."
+      );
       setShowModal(false);
-      load()
-    } catch (_) { toast.error("Save failed") } finally { setSaving(false) }
-  }
+      load();
+    } catch (err) {
+      const msg = err.response?.data?.error || 
+                  err.response?.data?.detail || 
+                  (err.response?.data && typeof err.response.data === 'object'
+                    ? Object.entries(err.response.data).map(([k, v]) => `${k}: ${Array.isArray(v) ? v[0] : v}`).join(', ')
+                    : null) || 
+                  err.message || 
+                  "Save failed";
+      toast.error(msg);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div>
@@ -237,6 +288,7 @@ export default function Members() {
                   <th>Member ID</th>
                   <th>Name</th>
                   <th>Phone</th>
+                  <th>Role</th>
                   <th>Type</th>
                   <th>Joining Date</th>
                   <th>Status</th>
@@ -244,7 +296,7 @@ export default function Members() {
                 </tr>
               </thead>
               <tbody>
-                {items.length===0 ? <tr><td colSpan={secretDeleteMode ? 8 : 7}><EmptyState icon="👥" title="No members" /></td></tr>
+                {items.length===0 ? <tr><td colSpan={secretDeleteMode ? 9 : 8}><EmptyState icon="👥" title="No members" /></td></tr>
                   : items.map(m=>{
                     const isRowSelected = selectedRowIds.includes(m.id);
                     return (
@@ -275,9 +327,19 @@ export default function Members() {
                           </td>
                         )}
                         <td className="td-mono">{m.member_id}</td>
-                        <td style={{ fontWeight: isRowSelected ? 700 : undefined }}>{m.full_name}</td>
-                        <td>{m.phone}</td>
-                        <td><span className="badge badge-blue">{m.membership_type}</span></td>
+                        <td style={{ fontWeight: isRowSelected ? 700 : 600 }}>
+                          {m.full_name}
+                          {m.is_phone_signup && (
+                            <span className="badge badge-purple" style={{ fontSize: 9, marginLeft: 6, padding: '2px 5px' }}>📱 Mobile</span>
+                          )}
+                        </td>
+                        <td>{m.phone || '-'}</td>
+                        <td>
+                          <span className="badge badge-indigo" style={{ fontWeight: 700, fontSize: 10 }}>
+                            {m.role || 'MEMBER'}
+                          </span>
+                        </td>
+                        <td><span className="badge badge-blue">{m.membership_type || 'GENERAL'}</span></td>
                         <td>{m.joining_date ? format(new Date(m.joining_date),"dd MMM yyyy") : "-"}</td>
                         <td>
                           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>

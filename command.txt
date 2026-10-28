@@ -26,6 +26,8 @@ pm2 stop sree-trust-whatsapp-gateway
 
 == STEP 3 - Frontend (Web Dashboard) ==
 cd frontend
+npm run dev
+Open in browser: http://localhost:5174
 
 
 == MOBILE SETUP (Run these in ORDER in a new terminal) ==
