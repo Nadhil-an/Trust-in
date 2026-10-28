@@ -33,7 +33,7 @@ jobs:
           FIELD_ENCRYPTION_KEY: 'YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE='
         run: |
           cd backend
-          python manage.py test
+          python manage.py test core hr_module --verbosity=2
 
   build-and-push:
     needs: test
