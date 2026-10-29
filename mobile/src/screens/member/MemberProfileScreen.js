@@ -24,7 +24,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Colors } from '../../constants/Colors';
 import { useAuthStore } from '../../store/authStore';
-import { memberPostsApi, authApi, verificationsApi } from '../../api';
+import { memberPostsApi, authApi, verificationsApi, rewardsApi } from '../../api';
 import * as ImagePicker from 'expo-image-picker';
 import { Video, ResizeMode } from 'expo-av';
 import { resolveImageUrl } from '../../utils/imageUrl';
@@ -63,6 +63,11 @@ export default function MemberProfileScreen() {
   const [followSearchText, setFollowSearchText] = useState('');
   const [followMap, setFollowMap] = useState({});
   const [followBtnLoading, setFollowBtnLoading] = useState({});
+
+  // ── Free Offers for Best Members State ──
+  const [rewardSummary, setRewardSummary] = useState(null);
+  const [loadingRewards, setLoadingRewards] = useState(false);
+  const [claimingOfferId, setClaimingOfferId] = useState(null);
 
   // ── Account Verification Modal State & Handlers ──
   const [verificationModalVisible, setVerificationModalVisible] = useState(false);
@@ -316,6 +321,53 @@ export default function MemberProfileScreen() {
     } catch (_) {}
   };
 
+  const fetchRewardSummary = async () => {
+    try {
+      setLoadingRewards(true);
+      const res = await rewardsApi.getSummary();
+      setRewardSummary(res.data);
+    } catch (e) {
+      // ignore
+    } finally {
+      setLoadingRewards(false);
+    }
+  };
+
+  const handleClaimOffer = (offer) => {
+    if (offer.status !== 'AVAILABLE') return;
+    Alert.alert(
+      `Claim ${offer.title}`,
+      `Claim ₹${offer.reward_value} ${offer.title}? This will be recorded for Trust administration fulfillment.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Claim Now',
+          onPress: async () => {
+            setClaimingOfferId(offer.id);
+            try {
+              const res = await rewardsApi.redeemOffer(offer.id);
+              Toast.show({
+                type: 'success',
+                text1: 'Offer Claimed!',
+                text2: res.data?.message || 'Reward claim submitted successfully!',
+              });
+              if (res.data?.summary) {
+                setRewardSummary(res.data.summary);
+              } else {
+                fetchRewardSummary();
+              }
+            } catch (err) {
+              const msg = err?.response?.data?.error || err?.message || 'Failed to claim offer';
+              Alert.alert('Claim Error', msg);
+            } finally {
+              setClaimingOfferId(null);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const pickIdDocument = async (fromCamera = false) => {
     try {
       if (fromCamera) {
@@ -429,15 +481,23 @@ export default function MemberProfileScreen() {
   useEffect(() => {
     if (targetUserId) {
       fetchProfile(true);
+      if (isMe) {
+        checkVerificationStatus();
+        fetchRewardSummary();
+      }
     } else {
       setLoading(false);
     }
-  }, [targetUserId]);
+  }, [targetUserId, isMe]);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     fetchProfile(false);
-  }, [targetUserId]);
+    if (isMe) {
+      checkVerificationStatus();
+      fetchRewardSummary();
+    }
+  }, [targetUserId, isMe]);
 
   const handleToggleFollow = async () => {
     if (!isAuthenticated) {
@@ -558,6 +618,28 @@ export default function MemberProfileScreen() {
           {Boolean(profileData?.is_verified ?? initialUser?.is_verified ?? currentUser?.is_verified) && (
             <Ionicons name="checkmark-circle" size={15} color="#0284c7" style={{ marginLeft: 4 }} />
           )}
+          {Boolean(rewardSummary?.current_badge && rewardSummary?.current_badge?.tier_key !== 'NONE') && (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('MemberRewards')}
+              activeOpacity={0.8}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: rewardSummary.current_badge.color ? `${rewardSummary.current_badge.color}20` : '#FEF3C7',
+                borderColor: rewardSummary.current_badge.color || '#F59E0B',
+                borderWidth: 1,
+                paddingHorizontal: 7,
+                paddingVertical: 1.5,
+                borderRadius: 10,
+                marginLeft: 6,
+              }}
+            >
+              <Text style={{ fontSize: 10, marginRight: 2 }}>{rewardSummary.current_badge.icon || '🏅'}</Text>
+              <Text style={{ fontSize: 10, fontWeight: '800', color: rewardSummary.current_badge.color || '#B45309' }}>
+                {rewardSummary.current_badge.name}
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {Boolean(district) && (
@@ -632,83 +714,157 @@ export default function MemberProfileScreen() {
         )}
       </View>
 
-      {/* ── Verification Badge / Application Button ── */}
-      {isMe && !(profileData?.is_verified || currentUser?.is_verified) && (
+      {/* ── Free Offers for Best Members Reward Section & Verification ── */}
+      {isMe && (
         <View style={{ marginTop: 12, width: '100%' }}>
-          {myVerificationRequest?.status === 'PENDING' ? (
-            <View style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              backgroundColor: '#FEF3C7',
-              borderWidth: 1,
-              borderColor: '#FDE68A',
-              borderRadius: 10,
-              paddingVertical: 10,
-              paddingHorizontal: 14,
-            }}>
-              <Ionicons name="time" size={18} color="#D97706" />
-              <View style={{ marginLeft: 8, flex: 1 }}>
-                <Text style={{ fontSize: 13, fontWeight: '700', color: '#92400E' }}>
-                  ID Verification Under Review ⏳
+          {/* If NOT verified: Show Verification CTA + Best Member Rewards Invitation */}
+          {!(profileData?.is_verified || currentUser?.is_verified || rewardSummary?.is_verified) ? (
+            <View>
+              {myVerificationRequest?.status === 'PENDING' ? (
+                <View style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: '#FEF3C7',
+                  borderWidth: 1,
+                  borderColor: '#FDE68A',
+                  borderRadius: 10,
+                  paddingVertical: 10,
+                  paddingHorizontal: 14,
+                }}>
+                  <Ionicons name="time" size={18} color="#D97706" />
+                  <View style={{ marginLeft: 8, flex: 1 }}>
+                    <Text style={{ fontSize: 13, fontWeight: '700', color: '#92400E' }}>
+                      ID Verification Under Review ⏳
+                    </Text>
+                    <Text style={{ fontSize: 11, color: '#B45309', marginTop: 1 }}>
+                      Submitted to Trust moderators for review
+                    </Text>
+                  </View>
+                </View>
+              ) : myVerificationRequest?.status === 'REJECTED' ? (
+                <TouchableOpacity
+                  onPress={() => setVerificationModalVisible(true)}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    backgroundColor: '#FEE2E2',
+                    borderWidth: 1,
+                    borderColor: '#FECACA',
+                    borderRadius: 10,
+                    paddingVertical: 10,
+                    paddingHorizontal: 14,
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="alert-circle" size={18} color="#DC2626" />
+                  <View style={{ marginLeft: 8, flex: 1 }}>
+                    <Text style={{ fontSize: 13, fontWeight: '700', color: '#991B1B' }}>
+                      Verification Not Approved • Tap to Reapply
+                    </Text>
+                    {Boolean(myVerificationRequest?.rejection_reason) && (
+                      <Text style={{ fontSize: 11, color: '#B91C1C', marginTop: 1 }} numberOfLines={1}>
+                        Reason: {myVerificationRequest.rejection_reason}
+                      </Text>
+                    )}
+                  </View>
+                  <Ionicons name="chevron-forward" size={16} color="#DC2626" />
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  onPress={() => setVerificationModalVisible(true)}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    backgroundColor: '#F0F9FF',
+                    borderWidth: 1.5,
+                    borderColor: '#BAE6FD',
+                    borderRadius: 10,
+                    paddingVertical: 10,
+                    paddingHorizontal: 14,
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="shield-checkmark-outline" size={18} color="#0284c7" />
+                  <View style={{ marginLeft: 8, flex: 1 }}>
+                    <Text style={{ fontSize: 13, fontWeight: '700', color: '#0369A1' }}>
+                      Get Verified (Request Blue Tick ✓)
+                    </Text>
+                    <Text style={{ fontSize: 11, color: '#0284C7', marginTop: 1 }}>
+                      Upload ID proof for official Trust verification
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={16} color="#0284c7" />
+                </TouchableOpacity>
+              )}
+
+              {/* Best Member Teaser Banner */}
+              <View style={{
+                marginTop: 8,
+                backgroundColor: '#FFFBEB',
+                borderWidth: 1,
+                borderColor: '#FDE68A',
+                borderRadius: 10,
+                padding: 12,
+              }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Text style={{ fontSize: 14 }}>⭐</Text>
+                  <Text style={{ fontSize: 13, fontWeight: '700', color: '#B45309', marginLeft: 6 }}>
+                    Unlock Best Member Rewards & Free Offers
+                  </Text>
+                </View>
+                <Text style={{ fontSize: 11, color: '#92400E', marginTop: 4, lineHeight: 15 }}>
+                  Verified members unlock automatic 30-day reward cycles with free petrol, mobile recharges, and tour allowances!
                 </Text>
-                <Text style={{ fontSize: 11, color: '#B45309', marginTop: 1 }}>
-                  Submitted to Trust moderators for review
-                </Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+                  <View style={{ backgroundColor: '#FEF3C7', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+                    <Text style={{ fontSize: 10, fontWeight: '600', color: '#92400E' }}>⛽ ₹100 Petrol (20d)</Text>
+                  </View>
+                  <View style={{ backgroundColor: '#FEF3C7', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+                    <Text style={{ fontSize: 10, fontWeight: '600', color: '#92400E' }}>📱 ₹399 Recharge (Monthly)</Text>
+                  </View>
+                  <View style={{ backgroundColor: '#FEF3C7', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
+                    <Text style={{ fontSize: 10, fontWeight: '600', color: '#92400E' }}>✈️ ₹3,000 Tour Allowance</Text>
+                  </View>
+                </View>
               </View>
             </View>
-          ) : myVerificationRequest?.status === 'REJECTED' ? (
-            <TouchableOpacity
-              onPress={() => setVerificationModalVisible(true)}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: '#FEE2E2',
-                borderWidth: 1,
-                borderColor: '#FECACA',
-                borderRadius: 10,
-                paddingVertical: 10,
-                paddingHorizontal: 14,
-              }}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="alert-circle" size={18} color="#DC2626" />
-              <View style={{ marginLeft: 8, flex: 1 }}>
-                <Text style={{ fontSize: 13, fontWeight: '700', color: '#991B1B' }}>
-                  Verification Not Approved • Tap to Reapply
-                </Text>
-                {Boolean(myVerificationRequest?.rejection_reason) && (
-                  <Text style={{ fontSize: 11, color: '#B91C1C', marginTop: 1 }} numberOfLines={1}>
-                    Reason: {myVerificationRequest.rejection_reason}
-                  </Text>
-                )}
-              </View>
-              <Ionicons name="chevron-forward" size={16} color="#DC2626" />
-            </TouchableOpacity>
           ) : (
+            /* If VERIFIED: Clean "Free Offers for You" button only (No graphs on this profile page) */
             <TouchableOpacity
-              onPress={() => setVerificationModalVisible(true)}
+              onPress={() => navigation.navigate('MemberRewards')}
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
-                backgroundColor: '#F0F9FF',
+                backgroundColor: '#FFFBEB',
                 borderWidth: 1.5,
-                borderColor: '#BAE6FD',
+                borderColor: '#FDE68A',
                 borderRadius: 10,
-                paddingVertical: 10,
+                paddingVertical: 12,
                 paddingHorizontal: 14,
               }}
               activeOpacity={0.8}
             >
-              <Ionicons name="shield-checkmark-outline" size={18} color="#0284c7" />
-              <View style={{ marginLeft: 8, flex: 1 }}>
-                <Text style={{ fontSize: 13, fontWeight: '700', color: '#0369A1' }}>
-                  Get Verified (Request Blue Tick ✓)
-                </Text>
-                <Text style={{ fontSize: 11, color: '#0284C7', marginTop: 1 }}>
-                  Upload ID proof for official Trust verification
+              <Ionicons name="gift-outline" size={18} color="#D97706" />
+              <View style={{ marginLeft: 10, flex: 1 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <Text style={{ fontSize: 13, fontWeight: '700', color: '#92400E' }}>
+                    Free Offers for You
+                  </Text>
+                  <View style={{
+                    backgroundColor: '#DCFCE7',
+                    paddingHorizontal: 6,
+                    paddingVertical: 1,
+                    borderRadius: 4,
+                    marginLeft: 6,
+                  }}>
+                    <Text style={{ fontSize: 9, fontWeight: '800', color: '#15803D' }}>UNLOCKED</Text>
+                  </View>
+                </View>
+                <Text style={{ fontSize: 11, color: '#B45309', marginTop: 1 }}>
+                  Tap to view awards & claim your free offers
                 </Text>
               </View>
-              <Ionicons name="chevron-forward" size={16} color="#0284c7" />
+              <Ionicons name="chevron-forward" size={16} color="#D97706" />
             </TouchableOpacity>
           )}
         </View>

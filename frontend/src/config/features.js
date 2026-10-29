@@ -27,6 +27,7 @@ export const MASTER_NAV_CONFIG = [
   { key: 'social_mrm_members', label: 'Member Directory', icon: '👥', path: '/slt/social/overview?tab=mrm_members', category: 'SOCIAL MEDIA DASHBOARD', subCategory: 'Member Management (MRM)' },
   { key: 'social_mrm_tasks', label: 'Tasks & Targets', icon: '🎯', path: '/slt/social/overview?tab=mrm_tasks', category: 'SOCIAL MEDIA DASHBOARD', subCategory: 'Member Management (MRM)' },
   { key: 'social_mrm_badges', label: 'Badges & Recognition', icon: '🎖️', path: '/slt/social/overview?tab=mrm_badges', category: 'SOCIAL MEDIA DASHBOARD', subCategory: 'Member Management (MRM)' },
+  { key: 'social_free_offers', label: 'Free Offers & Rewards', icon: '🎁', path: '/slt/social/overview?tab=offers', category: 'SOCIAL MEDIA DASHBOARD', subCategory: 'Member Management (MRM)' },
   { key: 'social_mrm_volunteers', label: 'Volunteers & Desk', icon: '🤝', path: '/slt/social/overview?tab=mrm_volunteers', category: 'SOCIAL MEDIA DASHBOARD', subCategory: 'Member Management (MRM)' },
   { key: 'social_mrm_appreciation', label: 'Appreciation Studio', icon: '🏆', path: '/slt/social/overview?tab=mrm_appreciation', category: 'SOCIAL MEDIA DASHBOARD', subCategory: 'Member Management (MRM)' },
   { key: 'social_posts', label: 'Post Moderation', icon: '🛡️', path: '/slt/social/overview?tab=posts', category: 'SOCIAL MEDIA DASHBOARD', subCategory: 'Moderation & Governance' },
@@ -102,6 +103,7 @@ export const SOCIAL_MEDIA_NAV_CONFIG = [
   { key: 'social_mrm_members', label: 'Member Directory', icon: '👥', path: '/slt/social/overview?tab=mrm_members', category: 'MEMBER MANAGEMENT (MRM)' },
   { key: 'social_mrm_tasks', label: 'Tasks & Targets', icon: '🎯', path: '/slt/social/overview?tab=mrm_tasks', category: 'MEMBER MANAGEMENT (MRM)' },
   { key: 'social_mrm_badges', label: 'Badges & Recognition', icon: '🎖️', path: '/slt/social/overview?tab=mrm_badges', category: 'MEMBER MANAGEMENT (MRM)' },
+  { key: 'social_free_offers', label: 'Free Offers & Rewards', icon: '🎁', path: '/slt/social/overview?tab=offers', category: 'MEMBER MANAGEMENT (MRM)' },
   { key: 'social_mrm_volunteers', label: 'Volunteers & Desk', icon: '🤝', path: '/slt/social/overview?tab=mrm_volunteers', category: 'MEMBER MANAGEMENT (MRM)' },
   { key: 'social_mrm_appreciation', label: 'Appreciation Studio', icon: '🏆', path: '/slt/social/overview?tab=mrm_appreciation', category: 'MEMBER MANAGEMENT (MRM)' },
 

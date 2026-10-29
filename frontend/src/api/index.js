@@ -477,3 +477,20 @@ export const mrmApi = {
     publish: (data) => api.post('/mrm/appreciations/', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
   }
 };
+
+export const rewardsAdminApi = {
+  overview: () => api.get('/core/rewards/admin/overview/'),
+  members: (params) => api.get('/core/rewards/admin/members/', { params }),
+  tiers: {
+    list: () => api.get('/core/rewards/admin/tiers/'),
+    update: (id, data) => api.put(`/core/rewards/admin/tiers/${id}/`, data),
+  },
+  offers: {
+    list: () => api.get('/core/rewards/admin/offers/'),
+    update: (id, data) => api.put(`/core/rewards/admin/offers/${id}/`, data),
+  },
+  redemptions: {
+    list: (params) => api.get('/core/rewards/admin/redemptions/', { params }),
+    action: (id, data) => api.post(`/core/rewards/admin/redemptions/${id}/fulfill/`, data),
+  },
+};

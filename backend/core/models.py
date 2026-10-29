@@ -727,3 +727,160 @@ class SocialPollVote(models.Model):
 
     def __str__(self):
         return f"Vote by {self.voter.username} on {self.poll.title}"
+
+
+# ============================================================================
+# --- FREE OFFERS FOR BEST MEMBERS REWARD SYSTEM -----------------------------
+# ============================================================================
+
+class BestMemberBadgeTier(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    tier_key = models.CharField(max_length=50, unique=True, db_index=True)
+    name = models.CharField(max_length=100)
+    icon = models.CharField(max_length=30, default='⭐')
+    color = models.CharField(max_length=30, default='#EAB308')
+    min_subscription_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    min_self_service_count = models.PositiveIntegerField(default=0)
+    level_order = models.PositiveSmallIntegerField(default=1)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'core_best_member_badge_tiers'
+        ordering = ['level_order']
+
+    def __str__(self):
+        return f"{self.icon} {self.name} (₹{self.min_subscription_amount} / {self.min_self_service_count} services)"
+
+
+class BestMemberOffer(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    offer_key = models.CharField(max_length=50, unique=True, db_index=True)
+    title = models.CharField(max_length=150)
+    reward_value = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    cooldown_days = models.PositiveIntegerField(default=30)
+    cooldown_independent = models.BooleanField(
+        default=False,
+        help_text="If True, the cooldown period is enforced independently of the monthly badge cycle (e.g., 20 days for Petrol)."
+    )
+    min_badge_tier = models.ForeignKey(
+        BestMemberBadgeTier,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='eligible_offers'
+    )
+    description = models.TextField(blank=True)
+    terms_conditions = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'core_best_member_offers'
+        ordering = ['reward_value']
+
+    def __str__(self):
+        return f"{self.title} (₹{self.reward_value}) - {self.cooldown_days}d cooldown"
+
+
+class MemberRewardCycle(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reward_cycles')
+    member = models.ForeignKey('hr_module.Member', on_delete=models.SET_NULL, null=True, blank=True, related_name='reward_cycles')
+    cycle_number = models.PositiveIntegerField(default=1)
+    start_date = models.DateField(default=timezone.localdate)
+    end_date = models.DateField()
+    subscription_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    self_service_count = models.PositiveIntegerField(default=0)
+    earned_badge = models.ForeignKey(BestMemberBadgeTier, on_delete=models.SET_NULL, null=True, blank=True)
+    is_active = models.BooleanField(default=True, db_index=True)
+    is_finalized = models.BooleanField(default=False)
+    finalized_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'core_member_reward_cycles'
+        ordering = ['-start_date', '-cycle_number']
+
+    def __str__(self):
+        return f"Cycle #{self.cycle_number} for {self.user.username} ({self.start_date} to {self.end_date})"
+
+
+class MemberSelfServiceEvent(models.Model):
+    class ActivityType(models.TextChoices):
+        PROBLEM_REPORT = 'PROBLEM_REPORT', 'Community Problem / Issue Report'
+        POLL_VOTE = 'POLL_VOTE', 'Community Poll Voting'
+        TASK_COMPLETION = 'TASK_COMPLETION', 'Member Task Completion'
+        VOLUNTEER_ACTION = 'VOLUNTEER_ACTION', 'Volunteer Assistance Action'
+        OTHER = 'OTHER', 'Other Self-Service Activity'
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='self_service_events')
+    member = models.ForeignKey('hr_module.Member', on_delete=models.SET_NULL, null=True, blank=True)
+    cycle = models.ForeignKey(MemberRewardCycle, on_delete=models.SET_NULL, null=True, blank=True, related_name='events')
+    activity_type = models.CharField(max_length=50, choices=ActivityType.choices, default=ActivityType.OTHER)
+    reference_id = models.CharField(max_length=100)
+    title = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(default=timezone.now, db_index=True)
+
+    class Meta:
+        db_table = 'core_member_self_service_events'
+        unique_together = ('user', 'activity_type', 'reference_id')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.activity_type} by {self.user.username} ({self.reference_id})"
+
+
+class RewardRedemptionStatus(models.TextChoices):
+    ACTIVATED = 'ACTIVATED', 'Activated'
+    PENDING_FULFILLMENT = 'PENDING_FULFILLMENT', 'Pending Fulfillment'
+    FULFILLED = 'FULFILLED', 'Fulfilled'
+    REJECTED = 'REJECTED', 'Rejected'
+    CANCELLED = 'CANCELLED', 'Cancelled'
+
+
+class MemberOfferRedemption(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='offer_redemptions')
+    member = models.ForeignKey('hr_module.Member', on_delete=models.SET_NULL, null=True, blank=True)
+    offer = models.ForeignKey(BestMemberOffer, on_delete=models.CASCADE, related_name='redemptions')
+    cycle = models.ForeignKey(MemberRewardCycle, on_delete=models.SET_NULL, null=True, blank=True, related_name='redemptions')
+    reward_value = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=30, choices=RewardRedemptionStatus.choices, default=RewardRedemptionStatus.PENDING_FULFILLMENT)
+    cooldown_until = models.DateTimeField(null=True, blank=True, db_index=True)
+    redeemed_at = models.DateTimeField(default=timezone.now)
+    fulfilled_at = models.DateTimeField(null=True, blank=True)
+    fulfilled_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='fulfilled_rewards')
+    notes = models.TextField(blank=True)
+    admin_remarks = models.TextField(blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'core_member_offer_redemptions'
+        ordering = ['-redeemed_at']
+
+    def __str__(self):
+        return f"{self.offer.title} for {self.user.username} - {self.status}"
+
+
+class RewardAuditLog(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reward_audit_logs')
+    actor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='actor_reward_audit_logs')
+    action = models.CharField(max_length=60)
+    description = models.TextField()
+    metadata = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = 'core_reward_audit_logs'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"RewardAudit [{self.action}] - {self.user.username} at {self.created_at}"

@@ -43,6 +43,7 @@ import CreatePostScreen from '../screens/member/CreatePostScreen';
 import MyPostsScreen from '../screens/member/MyPostsScreen';
 import PostDetailScreen from '../screens/member/PostDetailScreen';
 import MemberProfileScreen from '../screens/member/MemberProfileScreen';
+import MemberRewardsScreen from '../screens/member/MemberRewardsScreen';
 import MemberSearchScreen from '../screens/member/MemberSearchScreen';
 import EventsScreen from '../screens/member/EventsScreen';
 import EventDetailScreen from '../screens/member/EventDetailScreen';
@@ -228,6 +229,7 @@ const MainStack = () => {
       <Stack.Screen name="MyPosts" component={MyPostsScreen} />
       <Stack.Screen name="PostDetail" component={PostDetailScreen} />
       <Stack.Screen name="MemberProfile" component={MemberProfileScreen} />
+      <Stack.Screen name="MemberRewards" component={MemberRewardsScreen} />
       <Stack.Screen name="ProfileSettings" component={ProfileScreen} />
       <Stack.Screen name="MemberSearch" component={MemberSearchScreen} />
       <Stack.Screen name="Events" component={EventsScreen} />

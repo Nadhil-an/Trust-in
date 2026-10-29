@@ -1017,6 +1017,15 @@ class MemberPostViewSet(ModelViewSet):
             import logging
             logging.getLogger(__name__).error(f"Error notifying post on create: {e}")
 
+        # Record qualifying self-service activity for Best Member Rewards
+        try:
+            from core.reward_service import record_self_service_activity
+            activity_type = 'PROBLEM_REPORT' if post.post_type == MemberPostType.PROBLEM else 'OTHER'
+            record_self_service_activity(self.request.user, activity_type, post.id, post.title or 'Member Community Post')
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Error recording post self-service: {e}")
+
     def perform_update(self, serializer):
         post = serializer.save()
         images = self.request.FILES.getlist('images') or self.request.FILES.getlist('photos')
@@ -1850,6 +1859,14 @@ class MemberVerificationViewSet(ModelViewSet):
         except Exception as e:
             logging.getLogger(__name__).error(f"Error notifying verification approval: {e}")
 
+        # Initialize Best Member Reward cycle & evaluate initial badge
+        try:
+            from core.reward_service import get_or_create_active_cycle, evaluate_member_rewards
+            get_or_create_active_cycle(req.user)
+            evaluate_member_rewards(req.user)
+        except Exception as e:
+            logging.getLogger(__name__).error(f"Error initializing rewards on verification approval: {e}")
+
         AuditLog.objects.create(
             user=request.user,
             action='APPROVE_VERIFICATION',
@@ -2141,6 +2158,13 @@ class SocialPollViewSet(ModelViewSet):
                     option=option,
                     voter=request.user
                 )
+
+            # Record self-service activity for Best Member Rewards
+            try:
+                from core.reward_service import record_self_service_activity
+                record_self_service_activity(request.user, 'POLL_VOTE', poll.id, f"Voted in poll: {poll.title}")
+            except Exception as e:
+                logging.getLogger(__name__).error(f"Error recording poll vote self-service: {e}")
 
             # Re-sync exact counts for all options in this poll
             for opt in poll.options.all():

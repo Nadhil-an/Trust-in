@@ -1,6 +1,6 @@
 """Core shared URL patterns — users, audit log, notifications, search, social platform admin"""
 from django.urls import path
-from core import views
+from core import views, reward_views
 
 from rest_framework.routers import DefaultRouter
 
@@ -27,4 +27,16 @@ urlpatterns = [
     path('features/', views.RoleFeaturePermissionView.as_view(), name='features'),
     path('update-push-token/', views.ExpoPushTokenView.as_view(), name='update_push_token'),
     path('social-analytics/', views.SocialAnalyticsView.as_view(), name='social_analytics'),
+
+    # ─── Free Offers for Best Members Reward Endpoints ─────────────────────────
+    path('rewards/summary/', reward_views.MemberRewardSummaryView.as_view(), name='member_reward_summary'),
+    path('rewards/offers/<uuid:offer_id>/redeem/', reward_views.MemberOfferRedeemView.as_view(), name='member_offer_redeem'),
+    path('rewards/admin/overview/', reward_views.AdminRewardOverviewView.as_view(), name='admin_reward_overview'),
+    path('rewards/admin/members/', reward_views.AdminRewardMembersView.as_view(), name='admin_reward_members'),
+    path('rewards/admin/tiers/', reward_views.AdminBadgeTiersView.as_view(), name='admin_badge_tiers'),
+    path('rewards/admin/tiers/<uuid:tier_id>/', reward_views.AdminBadgeTiersView.as_view(), name='admin_badge_tier_detail'),
+    path('rewards/admin/offers/', reward_views.AdminRewardOffersView.as_view(), name='admin_reward_offers'),
+    path('rewards/admin/offers/<uuid:offer_id>/', reward_views.AdminRewardOffersView.as_view(), name='admin_reward_offer_detail'),
+    path('rewards/admin/redemptions/', reward_views.AdminRedemptionsView.as_view(), name='admin_redemptions'),
+    path('rewards/admin/redemptions/<uuid:redemption_id>/fulfill/', reward_views.AdminRedemptionsView.as_view(), name='admin_redemption_fulfill'),
 ] + router.urls

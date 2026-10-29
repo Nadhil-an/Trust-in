@@ -434,5 +434,11 @@ export const pomApi = {
   incrementView: (id) => api.post(`/core/pom-messages/${id}/increment-view/`),
 };
 
+// ── Free Offers for Best Members Rewards (api/core/rewards/) ──
+export const rewardsApi = {
+  getSummary: () => api.get('/core/rewards/summary/'),
+  redeemOffer: (offerId, notes = '') => api.post(`/core/rewards/offers/${offerId}/redeem/`, { notes }),
+};
+
 export default api;
 

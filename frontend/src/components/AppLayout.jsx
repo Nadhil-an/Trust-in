@@ -13,6 +13,7 @@ import {
   Users,
   Target,
   Award,
+  Gift,
   HeartHandshake,
   Trophy,
   ShieldCheck,
@@ -42,6 +43,7 @@ const resolveNavIcon = (item) => {
   if (item.key === 'social_mrm_members' || item.path?.includes('tab=mrm_members')) return <Users size={17} strokeWidth={2} />
   if (item.key === 'social_mrm_tasks' || item.path?.includes('tab=mrm_tasks')) return <Target size={17} strokeWidth={2} />
   if (item.key === 'social_mrm_badges' || item.path?.includes('tab=mrm_badges')) return <Award size={17} strokeWidth={2} />
+  if (item.key === 'social_free_offers' || item.path?.includes('tab=offers')) return <Gift size={17} strokeWidth={2} />
   if (item.key === 'social_mrm_volunteers' || item.path?.includes('tab=mrm_volunteers')) return <HeartHandshake size={17} strokeWidth={2} />
   if (item.key === 'social_mrm_appreciation' || item.path?.includes('tab=mrm_appreciation')) return <Trophy size={17} strokeWidth={2} />
   if (item.key === 'social_posts' || item.path?.includes('tab=posts')) return <ShieldCheck size={17} strokeWidth={2} />

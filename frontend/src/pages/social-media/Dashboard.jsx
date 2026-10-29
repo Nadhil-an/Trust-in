@@ -10,6 +10,7 @@ import VerificationTab from './tabs/VerificationTab'
 import OfficialPublishingTab from './tabs/OfficialPublishingTab'
 import PomTab from './tabs/PomTab'
 import VotingTab from './tabs/VotingTab'
+import FreeOffersTab from './tabs/FreeOffersTab'
 
 // Member Management, Achievements & Recognition (MRM) Tabs
 import MRMMembersTab from './tabs/MRMMembersTab'
@@ -23,6 +24,7 @@ const TAB_FEATURE_MAP = {
   mrm_members: 'social_mrm_members',
   mrm_tasks: 'social_mrm_tasks',
   mrm_badges: 'social_mrm_badges',
+  offers: 'social_mrm_badges',
   mrm_volunteers: 'social_mrm_volunteers',
   mrm_appreciation: 'social_mrm_appreciation',
   posts: 'social_posts',
@@ -48,6 +50,10 @@ const TAB_CONFIG = {
   mrm_badges: {
     label: 'Badges & Recognition',
     desc: 'Automated 25% incremental progression badges, merit evaluations and awards registry'
+  },
+  offers: {
+    label: 'Free Offers for Best Members',
+    desc: 'Monitor verified member performance, configure badge thresholds, and manage free offer fulfillments'
   },
   mrm_volunteers: {
     label: 'Volunteers & Desk',
@@ -150,6 +156,7 @@ export default function SocialMediaDashboard() {
         {activeTab === 'mrm_members' && <MRMMembersTab />}
         {activeTab === 'mrm_tasks' && <MRMTasksTab />}
         {activeTab === 'mrm_badges' && <MRMBadgesTab />}
+        {activeTab === 'offers' && <FreeOffersTab />}
         {activeTab === 'mrm_volunteers' && <MRMVolunteersTab />}
         {activeTab === 'mrm_appreciation' && <MRMAppreciationTab />}
         {activeTab === 'posts' && <PostManagementTab />}
