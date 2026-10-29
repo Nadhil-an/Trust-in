@@ -3,7 +3,7 @@ import { coreApi } from '../../../api'
 import { LoadingState, EmptyState, Modal, FilterBar, StatusBadge } from '../../../components/shared'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
-import { Eye, CheckCircle2, XCircle, Pin, RefreshCw } from 'lucide-react'
+import { Eye, CheckCircle2, XCircle, RefreshCw } from 'lucide-react'
 
 export default function PostManagementTab() {
   const [posts, setPosts] = useState([])
@@ -19,7 +19,6 @@ export default function PostManagementTab() {
   const [rejecting, setRejecting] = useState(false)
   const [selectedPost, setSelectedPost] = useState(null)
   const [activePhoto, setActivePhoto] = useState(null)
-  const [togglingPinId, setTogglingPinId] = useState(null)
 
   const loadPosts = useCallback(async () => {
     setLoading(true)
@@ -91,22 +90,6 @@ export default function PostManagementTab() {
       toast.error(err.response?.data?.error || 'Failed to reject post')
     } finally {
       setRejecting(false)
-    }
-  }
-
-  const handleTogglePin = async (post, e) => {
-    if (e) e.stopPropagation()
-    setTogglingPinId(post.id)
-    try {
-      const res = await coreApi.memberPosts.togglePin(post.id)
-      const isPinned = res.data?.is_pinned
-      toast.success(isPinned ? 'Post pinned to top' : 'Post unpinned')
-      setPosts(prev => prev.map(p => p.id === post.id ? { ...p, is_pinned: isPinned } : p))
-    } catch (err) {
-      console.error('Pin toggle error:', err)
-      toast.error('Failed to update pin state')
-    } finally {
-      setTogglingPinId(null)
     }
   }
 
@@ -238,11 +221,6 @@ export default function PostManagementTab() {
                       </td>
                       <td>
                         <StatusBadge status={post.status} />
-                        {post.is_pinned && (
-                          <span className="badge badge-yellow" style={{ marginLeft: 4, fontSize: 10 }}>
-                            Pinned
-                          </span>
-                        )}
                       </td>
                       <td style={{ textAlign: 'right' }}>
                         <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center' }}>
@@ -272,15 +250,6 @@ export default function PostManagementTab() {
                               </button>
                             </>
                           )}
-                          <button
-                            onClick={(e) => handleTogglePin(post, e)}
-                            disabled={togglingPinId === post.id}
-                            className="btn btn-secondary btn-sm"
-                            title={post.is_pinned ? 'Unpin post' : 'Pin post to top'}
-                          >
-                            <Pin size={12} />
-                            {post.is_pinned ? 'Unpin' : 'Pin'}
-                          </button>
                         </div>
                       </td>
                     </tr>
