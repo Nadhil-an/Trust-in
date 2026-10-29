@@ -81,40 +81,52 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            echo "=== Step 1: Navigating to project directory ==="
+            echo "=== 1. DIAGNOSE RUNNING PROCESSES & CONTAINERS ==="
+            pwd
+            whoami
+            docker ps -a || true
+            ps aux | grep -E "daphne|gunicorn|python|manage.py" | grep -v grep || true
+            ss -tlpn 2>/dev/null | grep 8000 || netstat -tlpn 2>/dev/null | grep 8000 || true
+
+            echo "=== 2. LOCATE ALL PROJECT DIRECTORIES ==="
+            find /home /opt -maxdepth 3 -name "docker-compose.yml" 2>/dev/null || true
+
+            echo "=== 3. DEPLOY IN ~/Trust-in ==="
             if [ -d "$HOME/Trust-in" ]; then
               cd "$HOME/Trust-in"
-            elif [ -d "Trust-in" ]; then
-              cd Trust-in
-            elif [ -d "/opt/sree-trust" ]; then
-              cd /opt/sree-trust
+              echo "In $HOME/Trust-in"
+              git fetch origin main || true
+              git reset --hard origin/main || true
+              git clean -fd -e backend/.env -e .env -e backend/media -e backend/whatsapp_gateway/auth_info_baileys || true
+              echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin || true
+              docker compose pull backend || true
+              docker compose down backend || true
+              docker compose up -d --force-recreate backend
+              sleep 5
+              docker compose exec -T backend python manage.py migrate --noinput || true
+              docker compose exec -T backend python manage.py collectstatic --noinput || true
             fi
-            echo "Current directory: $(pwd)"
 
-            echo "=== Step 2: Syncing git repository to main ==="
-            git fetch origin main || true
-            git reset --hard origin/main || true
-            git clean -fd -e backend/.env -e .env -e backend/media -e backend/whatsapp_gateway/auth_info_baileys || true
+            echo "=== 4. DEPLOY IN /opt/sree-trust (IF EXISTS) ==="
+            if [ -d "/opt/sree-trust" ]; then
+              cd "/opt/sree-trust"
+              echo "In /opt/sree-trust"
+              if [ -d ".git" ]; then
+                git fetch origin main || true
+                git reset --hard origin/main || true
+                git clean -fd -e backend/.env -e .env -e backend/media -e backend/whatsapp_gateway/auth_info_baileys || true
+              fi
+              docker compose pull backend || true
+              docker compose down backend || true
+              docker compose up -d --force-recreate backend
+              sleep 5
+              docker compose exec -T backend python manage.py migrate --noinput || true
+            fi
 
-            echo "=== Step 3: Logging into GitHub Container Registry ==="
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin || true
+            echo "=== 5. CHECK RUNNING CONTAINERS AND TEST LOCAL PORT 8000 ==="
+            docker ps
+            curl -I http://127.0.0.1:8000/api/core/events/ || true
+            curl -I http://127.0.0.1:8000/api/core/social-polls/ || true
+            docker compose logs --tail=30 backend || true
 
-            echo "=== Step 4: Pulling latest pre-built container image ==="
-            docker compose pull backend || docker-compose pull backend || true
-
-            echo "=== Step 5: Restarting backend with latest image ==="
-            docker compose up -d --force-recreate backend || docker-compose up -d --force-recreate backend || docker compose up -d --build --force-recreate backend
-
-            echo "=== Step 6: Waiting for backend container to stabilize ==="
-            sleep 8
-
-            echo "=== Step 7: Running migrations on EC2 ==="
-            docker compose exec -T backend python manage.py migrate --noinput || docker-compose exec -T backend python manage.py migrate --noinput || true
-
-            echo "=== Step 8: Collecting static files ==="
-            docker compose exec -T backend python manage.py collectstatic --noinput || docker-compose exec -T backend python manage.py collectstatic --noinput || true
-
-            echo "=== Step 9: Verifying container health & routes ==="
-            docker compose ps || docker-compose ps || true
-            
-            echo "=== Deployment Finished Successfully ==="
+            echo "=== DEPLOYMENT SCRIPT FINISHED ==="
