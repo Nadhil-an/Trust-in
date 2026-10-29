@@ -284,6 +284,9 @@ export default function Officers() {
   const [voucherStaff, setVoucherStaff] = useState(null)
   const [showBatchVoucherModal, setShowBatchVoucherModal] = useState(false)
   const [voucherList, setVoucherList] = useState([])
+  const [allStaffForVouchers, setAllStaffForVouchers] = useState([])
+  const [voucherSearch, setVoucherSearch] = useState('')
+  const [loadingVouchersModal, setLoadingVouchersModal] = useState(false)
 
   const [deleteId, setDeleteId] = useState(null)
   const [deleting, setDeleting] = useState(false)
@@ -337,9 +340,28 @@ export default function Officers() {
 
   const F = (k,v) => setForm(f=>({...f,[k]:v}))
   
+  const loadAllStaffForVouchers = useCallback(async () => {
+    setLoadingVouchersModal(true)
+    try {
+      const [stRes, vRes] = await Promise.all([
+        hrApi.officers.list({ designation: 'STAFF', status: 'ACTIVE', page_size: 1000 }),
+        hrApi.vouchers.list().catch(() => ({ data: [] }))
+      ])
+      const stList = Array.isArray(stRes.data) ? stRes.data : (stRes.data?.results || [])
+      const isStaff = (o) => {
+        const r = (o.role || '').toUpperCase()
+        const d = (o.designation || '').toUpperCase()
+        return r === 'STAFF' || d === 'STAFF' || d.includes('STAFF') || r.includes('STAFF') || d.includes('PROMOTER')
+      }
+      setAllStaffForVouchers(stList.filter(isStaff))
+      setVoucherList(vRes.data || [])
+    } catch (_) {}
+    finally { setLoadingVouchersModal(false) }
+  }, [])
+
   const load = useCallback(async () => {
     setLoading(true)
-    const params = { search, status: showTerminated ? 'INACTIVE' : 'ACTIVE' }
+    const params = { search, status: showTerminated ? 'INACTIVE' : 'ACTIVE', page_size: 1000 }
     if (employmentTypeFilter) params.employment_type = employmentTypeFilter
     if (roleFilter) params.designation = roleFilter
     
@@ -353,9 +375,10 @@ export default function Officers() {
       setItems(listData);
       setDynamicRoles(rolesRes.data || []);
       setVoucherList(vouchersRes.data || []);
+      loadAllStaffForVouchers();
     }
     catch (_) {} finally { setLoading(false) }
-  }, [search, employmentTypeFilter, roleFilter, showTerminated])
+  }, [search, employmentTypeFilter, roleFilter, showTerminated, loadAllStaffForVouchers])
   
   useEffect(() => { load() }, [load])
 
@@ -616,7 +639,7 @@ export default function Officers() {
     <div>
       <PageHeader title={employmentTypeFilter === 'FULL_TIME' ? "Full-Time Staff" : "Staff Members"} subtitle="Staff and employees">
         <div style={{ display: 'flex', gap: '8px' }}>
-          <button className="btn btn-secondary" style={{ color: '#4F46E5', borderColor: '#C7D2FE', background: '#EEF2FF', fontWeight: 600 }} onClick={() => setShowBatchVoucherModal(true)}>🎫 Manage Vouchers</button>
+          <button className="btn btn-secondary" style={{ color: '#4F46E5', borderColor: '#C7D2FE', background: '#EEF2FF', fontWeight: 600 }} onClick={() => { loadAllStaffForVouchers(); setShowBatchVoucherModal(true); }}>🎫 Manage Vouchers</button>
           <button className="btn btn-primary" onClick={()=>{
             setSelected(null);
             setPlatform("WEB");
@@ -1142,6 +1165,17 @@ export default function Officers() {
             </div>
             
             <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
+              <div style={{ marginBottom: 14 }}>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Search staff by name or EMP ID..."
+                  value={voucherSearch}
+                  onChange={e => setVoucherSearch(e.target.value)}
+                  style={{ width: '100%', fontSize: '13px', padding: '8px 12px' }}
+                />
+              </div>
+
               <div className="table-wrap">
                 <table>
                   <thead>
@@ -1152,9 +1186,22 @@ export default function Officers() {
                     </tr>
                   </thead>
                   <tbody>
-                    {items.filter(o => o.role === 'STAFF' || o.designation === 'STAFF' || o.designation === 'Staff').map(o => (
+                    {allStaffForVouchers
+                      .filter(o => {
+                        if (!voucherSearch.trim()) return true;
+                        const q = voucherSearch.toLowerCase();
+                        return (
+                          (o.full_name && o.full_name.toLowerCase().includes(q)) ||
+                          (o.employee_id && o.employee_id.toLowerCase().includes(q)) ||
+                          (o.phone && o.phone.toLowerCase().includes(q))
+                        );
+                      })
+                      .map(o => (
                       <tr key={o.id}>
-                        <td>{o.full_name}</td>
+                        <td>
+                          <div style={{ fontWeight: 600, color: '#111827' }}>{o.full_name}</div>
+                          {Boolean(o.employee_id) && <div style={{ fontSize: '11px', color: '#6B7280' }}>{o.employee_id}</div>}
+                        </td>
                         <td>{formatRole(o.designation)}</td>
                         <td>
                           {(() => {
@@ -1162,33 +1209,43 @@ export default function Officers() {
                             if (vb && vb.book_number > 0) {
                               return (
                                 <button className="btn btn-sm btn-secondary" style={{ color: '#4F46E5', borderColor: '#C7D2FE', background: '#EEF2FF', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: '1.2', padding: '4px 10px' }} onClick={() => {
-                                  setVoucherStaff(o);
-                                  setShowVoucherModal(true);
-                                }}>
-                                  <span style={{fontWeight: 600}}>Book #{vb.book_number}</span>
-                                  <span style={{fontSize: '10px', color: '#6B7280'}}>Voucher #{vb.current_voucher}</span>
-                                </button>
-                              );
-                            }
-                            return (
-                              <button className="btn btn-sm btn-secondary" style={{ color: '#4F46E5', borderColor: '#C7D2FE', background: '#EEF2FF' }} onClick={() => {
-                                setVoucherStaff(o);
-                                setShowVoucherModal(true);
-                              }}>Assign</button>
-                            );
-                          })()}
-                        </td>
-                      </tr>
-                    ))}
-                    {items.filter(o => o.role === 'STAFF' || o.designation === 'STAFF' || o.designation === 'Staff').length === 0 && (
-                      <tr>
-                        <td colSpan={3} style={{ textAlign: 'center', padding: '20px', color: '#6B7280' }}>No staff members found.</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                                   setVoucherStaff(o);
+                                   setShowVoucherModal(true);
+                                 }}>
+                                   <span style={{fontWeight: 600}}>Book #{vb.book_number}</span>
+                                   <span style={{fontSize: '10px', color: '#6B7280'}}>Voucher #{vb.current_voucher}</span>
+                                 </button>
+                               );
+                             }
+                             return (
+                               <button className="btn btn-sm btn-secondary" style={{ color: '#4F46E5', borderColor: '#C7D2FE', background: '#EEF2FF' }} onClick={() => {
+                                 setVoucherStaff(o);
+                                 setShowVoucherModal(true);
+                               }}>Assign</button>
+                             );
+                           })()}
+                         </td>
+                       </tr>
+                     ))}
+                     {allStaffForVouchers
+                       .filter(o => {
+                         if (!voucherSearch.trim()) return true;
+                         const q = voucherSearch.toLowerCase();
+                         return (
+                           (o.full_name && o.full_name.toLowerCase().includes(q)) ||
+                           (o.employee_id && o.employee_id.toLowerCase().includes(q))
+                         );
+                       }).length === 0 && (
+                       <tr>
+                         <td colSpan={3} style={{ textAlign: 'center', padding: '24px', color: '#6B7280' }}>
+                           {loadingVouchersModal ? 'Loading staff members...' : 'No staff members found.'}
+                         </td>
+                       </tr>
+                     )}
+                   </tbody>
+                 </table>
+               </div>
+             </div>
           </div>
           
           <style>{`
@@ -1460,4 +1517,3 @@ export default function Officers() {
     </div>
   )
 }
-

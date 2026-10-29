@@ -1145,6 +1145,34 @@ class ExecutiveOfficerListCreateView(generics.ListCreateAPIView):
         return [IsHR()]
 
     def get_queryset(self):
+        # Self-healing: ensure any active User with role='STAFF' has an ExecutiveOfficer record
+        try:
+            from core.models import User
+            from django.utils import timezone
+            from django.db.models import Q
+            staff_users = User.objects.filter(role__iexact='STAFF', is_active=True)
+            for u in staff_users:
+                name = (u.full_name or u.username or '').strip()
+                if not name:
+                    continue
+                q = Q(full_name__iexact=name)
+                if u.email and u.email.strip():
+                    q |= Q(email__iexact=u.email.strip())
+                if u.phone and str(u.phone).strip():
+                    q |= Q(phone__iexact=str(u.phone).strip())
+                if not ExecutiveOfficer.objects.filter(q).exists():
+                    ExecutiveOfficer.objects.create(
+                        full_name=name,
+                        email=u.email or '',
+                        phone=str(u.phone or ''),
+                        designation='Staff',
+                        department='General',
+                        status='ACTIVE',
+                        joining_date=getattr(u, 'date_joined', timezone.now()).date() if hasattr(u, 'date_joined') else timezone.now().date()
+                    )
+        except Exception:
+            pass
+
         qs = super().get_queryset()
         status_param = self.request.query_params.get('status')
         if status_param:
@@ -1161,7 +1189,8 @@ class ExecutiveOfficerListCreateView(generics.ListCreateAPIView):
             qs = qs.filter(
                 Q(designation__iexact=designation) | 
                 Q(designation__iexact=designation.replace('_', ' ')) |
-                Q(designation__iexact=designation.replace(' ', '_'))
+                Q(designation__iexact=designation.replace(' ', '_')) |
+                Q(designation__icontains=designation)
             )
         return qs
 

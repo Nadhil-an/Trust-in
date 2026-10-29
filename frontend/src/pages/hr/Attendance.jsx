@@ -17,13 +17,19 @@ export default function AttendancePage() {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const [aRes, oRes] = await Promise.all([hrApi.attendance.list({date}), hrApi.officers.list({})])
+      const [aRes, oRes] = await Promise.all([
+        hrApi.attendance.list({ date, page_size: 1000 }), 
+        hrApi.officers.list({ designation: 'STAFF', status: 'ACTIVE', page_size: 1000 })
+      ])
       const attendanceData = aRes.data.results || aRes.data;
-      const officersData = (oRes.data.results || oRes.data).filter(o => 
-        o.status !== 'INACTIVE' && 
-        o.status !== 'TERMINATED' && 
-        (String(o.role).toUpperCase() === 'STAFF' || String(o.designation).toUpperCase() === 'STAFF')
-      );
+      const officersList = Array.isArray(oRes.data) ? oRes.data : (oRes.data?.results || []);
+      const isStaff = (o) => {
+        if (o.status === 'INACTIVE' || o.status === 'TERMINATED') return false;
+        const r = (o.role || '').toUpperCase();
+        const d = (o.designation || '').toUpperCase();
+        return r === 'STAFF' || d === 'STAFF' || d.includes('STAFF') || r.includes('STAFF') || d.includes('PROMOTER');
+      };
+      const officersData = officersList.filter(isStaff);
       setOfficers(officersData)
       
       const compositeRecords = officersData.map(o => {

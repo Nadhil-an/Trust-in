@@ -652,9 +652,12 @@ class UserListCreateView(generics.ListCreateAPIView):
         from django.db.models import Q
         from hr_module.models import ExecutiveOfficer
         dob = self.request.data.get('date_of_birth') if hasattr(self.request, 'data') else None
-        if not ExecutiveOfficer.objects.filter(
-            Q(email__iexact=user.email) | Q(full_name__iexact=user.full_name)
-        ).exists():
+        q = Q(full_name__iexact=user.full_name)
+        if user.email and user.email.strip():
+            q |= Q(email__iexact=user.email.strip())
+        if user.phone and str(user.phone).strip():
+            q |= Q(phone__iexact=str(user.phone).strip())
+        if not ExecutiveOfficer.objects.filter(q).exists():
             ExecutiveOfficer.objects.create(
                 full_name=user.full_name,
                 email=user.email,
