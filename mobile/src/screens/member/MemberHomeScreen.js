@@ -343,11 +343,7 @@ const MemberHomeScreen = ({ navigation }) => {
           <Ionicons name="menu-outline" size={26} color={Colors.textPrimary} />
         </TouchableOpacity>
 
-        {/* Center: Brand Title (Icon removed & perfectly centered) */}
-        <View style={styles.centerBrandContainer} pointerEvents="none">
-          <Text style={styles.headerBrandTitle}>Sree Lakshmi</Text>
-          <Text style={styles.headerBrandSub}>CHARITABLE TRUST</Text>
-        </View>
+
 
         {/* Right Icons: Search Icon (opens suggestions & search), Notification, Profile */}
         <View style={styles.rightIcons}>
@@ -422,7 +418,7 @@ const MemberHomeScreen = ({ navigation }) => {
               </View>
             </View>
           </TouchableOpacity>
-        ) : (isAuthenticated && isExpiringSoon) ? (
+        ) : (isAuthenticated && isExpiringSoon && !inFeedBannerDismissed) ? (
           <TouchableOpacity
             style={styles.notifBannerOrange}
             activeOpacity={0.88}
@@ -435,10 +431,22 @@ const MemberHomeScreen = ({ navigation }) => {
               <View style={styles.notifBannerContent}>
                 <View style={styles.notifTitleRow}>
                   <Text style={styles.notifBannerTitleOrange}>Membership Expiring Soon</Text>
-                  <View style={styles.actionPillOrange}>
-                    <Text style={styles.actionPillOrangeText}>
-                      {daysLeftToExpire === 0 ? 'Today' : (daysLeftToExpire + 'd left')}
-                    </Text>
+                  <View style={styles.notifHeaderRight}>
+                    <View style={styles.actionPillOrange}>
+                      <Text style={styles.actionPillOrangeText}>
+                        {daysLeftToExpire === 0 ? 'Today' : (daysLeftToExpire + 'd left')}
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      style={styles.notifCardCloseBtnOrange}
+                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        setInFeedBannerDismissed(true);
+                      }}
+                    >
+                      <Ionicons name="close" size={16} color="#c2410c" />
+                    </TouchableOpacity>
                   </View>
                 </View>
                 <Text style={styles.notifBannerDescOrange}>
@@ -451,7 +459,7 @@ const MemberHomeScreen = ({ navigation }) => {
               </View>
             </View>
           </TouchableOpacity>
-        ) : (isAuthenticated && isExpired) ? (
+        ) : (isAuthenticated && isExpired && !inFeedBannerDismissed) ? (
           <TouchableOpacity
             style={styles.notifBannerRed}
             activeOpacity={0.88}
@@ -464,8 +472,20 @@ const MemberHomeScreen = ({ navigation }) => {
               <View style={styles.notifBannerContent}>
                 <View style={styles.notifTitleRow}>
                   <Text style={styles.notifBannerTitleRed}>Membership Expired</Text>
-                  <View style={styles.actionPillRed}>
-                    <Text style={styles.actionPillRedText}>EXPIRED</Text>
+                  <View style={styles.notifHeaderRight}>
+                    <View style={styles.actionPillRed}>
+                      <Text style={styles.actionPillRedText}>EXPIRED</Text>
+                    </View>
+                    <TouchableOpacity
+                      style={styles.notifCardCloseBtnRed}
+                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        setInFeedBannerDismissed(true);
+                      }}
+                    >
+                      <Ionicons name="close" size={16} color="#b91c1c" />
+                    </TouchableOpacity>
                   </View>
                 </View>
                 <Text style={styles.notifBannerDescRed}>
@@ -1118,6 +1138,22 @@ const styles = StyleSheet.create({
     height: 22,
     borderRadius: 11,
     backgroundColor: '#fef3c7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  notifCardCloseBtnOrange: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#ffedd5',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  notifCardCloseBtnRed: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#fee2e2',
     alignItems: 'center',
     justifyContent: 'center',
   },
