@@ -214,8 +214,15 @@ const MemberHomeScreen = ({ navigation }) => {
       setPollsLoading(true);
       const res = await pollsApi.list({ status: 'ACTIVE' });
       const list = Array.isArray(res.data) ? res.data : (res.data?.results || []);
+      const now = new Date();
+      // Exclude any poll that is closed, cancelled, or whose deadline has expired
+      const validActiveList = list.filter((p) => {
+        const isClosed = p.status === 'CLOSED' || p.status === 'CANCELLED';
+        const isExpired = p.end_time && new Date(p.end_time) <= now;
+        return !isClosed && !isExpired;
+      });
       setActivePolls((prevList) => {
-        return list.map((incoming) => {
+        return validActiveList.map((incoming) => {
           const current = prevList.find((p) => p.id === incoming.id);
           if (current?.my_voted_option_id && incoming.my_voted_option_id !== current.my_voted_option_id) {
             return {

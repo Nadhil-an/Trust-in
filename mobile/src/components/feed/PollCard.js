@@ -30,7 +30,13 @@ export default function PollCard({
   if (!localPoll) return null;
 
   const currentPoll = localPoll;
-  const isClosed = currentPoll.status === 'CLOSED' || (currentPoll.end_time && new Date() > new Date(currentPoll.end_time));
+  const isClosed = currentPoll.status === 'CLOSED' || currentPoll.status === 'CANCELLED' || (currentPoll.end_time && new Date() >= new Date(currentPoll.end_time));
+
+  // Automatically disappear from mobile application feed once voting is closed or expired
+  if (isClosed) {
+    return null;
+  }
+
   const totalVotes = currentPoll.total_votes || 0;
   const myVotedOptionId = currentPoll.my_voted_option_id;
 

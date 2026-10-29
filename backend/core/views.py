@@ -2036,9 +2036,15 @@ class SocialPollViewSet(ModelViewSet):
         return [IsAuthenticated()]
 
     def get_queryset(self):
+        now = timezone.now()
+        # Automatically mark expired ACTIVE polls as CLOSED in database
+        SocialPoll.objects.filter(status=PollStatus.ACTIVE, end_time__isnull=False, end_time__lte=now).update(status=PollStatus.CLOSED)
+
         qs = super().get_queryset()
         status_param = self.request.query_params.get('status')
-        if status_param and status_param != 'ALL':
+        if status_param == 'ACTIVE':
+            qs = qs.filter(status=PollStatus.ACTIVE).filter(models.Q(end_time__isnull=True) | models.Q(end_time__gt=now))
+        elif status_param and status_param != 'ALL':
             qs = qs.filter(status=status_param)
         search = (self.request.query_params.get('search') or '').strip()
         if search:
