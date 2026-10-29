@@ -89,8 +89,14 @@ class SocialPlatformAdminTests(TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(SocialPollVote.objects.filter(poll=poll).count(), 1)
 
-        # Attempt duplicate vote (must fail)
+        # Switch vote to second option (must succeed and maintain exactly 1 total vote)
         res2 = self.client.post(f'/api/core/social-polls/{poll.id}/vote/', {'option_id': str(opt2.id)})
-        self.assertEqual(res2.status_code, 400)
-        self.assertIn('already cast', res2.data['error'])
+        self.assertEqual(res2.status_code, 200)
+        self.assertEqual(SocialPollVote.objects.filter(poll=poll).count(), 1)
+        vote = SocialPollVote.objects.get(poll=poll, voter=self.member_user)
+        self.assertEqual(str(vote.option_id), str(opt2.id))
+        opt1.refresh_from_db()
+        opt2.refresh_from_db()
+        self.assertEqual(opt1.votes_count, 0)
+        self.assertEqual(opt2.votes_count, 1)
 
