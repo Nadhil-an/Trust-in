@@ -2053,10 +2053,10 @@ class SocialPollViewSet(ModelViewSet):
             existing_vote = SocialPollVote.objects.select_for_update().filter(poll=poll, voter=request.user).first()
             if existing_vote:
                 if str(existing_vote.option_id) == str(option.id):
-                    # Same option clicked again, keep vote
+                    # Same option already chosen
                     pass
                 else:
-                    # Allow member to change their vote to another option
+                    # Switch vote to the new option seamlessly
                     existing_vote.option = option
                     existing_vote.voted_at = timezone.now()
                     existing_vote.save(update_fields=['option', 'voted_at'])

@@ -421,5 +421,13 @@ export const verificationsApi = {
   }),
 };
 
+// ── Public Cooperation Messages (POM) (api/core/pom-messages/) ──
+export const pomApi = {
+  list: (params) => api.get('/core/pom-messages/', { params }),
+  get: (id) => api.get(`/core/pom-messages/${id}/`),
+  respond: (id) => api.post(`/core/pom-messages/${id}/respond/`),
+  incrementView: (id) => api.post(`/core/pom-messages/${id}/increment-view/`),
+};
+
 export default api;
 

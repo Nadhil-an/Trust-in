@@ -461,6 +461,7 @@ class PublicCooperationMessageSerializer(serializers.ModelSerializer):
     created_by_name = serializers.SerializerMethodField()
     image_url = serializers.SerializerMethodField()
     attachment_url = serializers.SerializerMethodField()
+    is_expired = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = PublicCooperationMessage
@@ -469,7 +470,7 @@ class PublicCooperationMessageSerializer(serializers.ModelSerializer):
             'image', 'image_url', 'attachment', 'attachment_url',
             'contact_person', 'contact_phone', 'target_location',
             'views_count', 'responses_count', 'is_pinned',
-            'created_by', 'created_by_name', 'published_at',
+            'created_by', 'created_by_name', 'published_at', 'expires_at', 'is_expired',
             'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'views_count', 'responses_count', 'created_by', 'created_at', 'updated_at']

@@ -15,8 +15,9 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Colors } from '../../constants/Colors';
 import { useAuthStore } from '../../store/authStore';
 import { useNotificationSocket } from '../../hooks/useWebSocket';
-import { authApi, eventsApi, memberPostsApi, pollsApi } from '../../api';
+import { authApi, eventsApi, memberPostsApi, pollsApi, pomApi } from '../../api';
 import PollCard from '../../components/feed/PollCard';
+import PomPosterCard from '../../components/feed/PomPosterCard';
 import Toast from 'react-native-toast-message';
 import SideDrawer from '../../components/SideDrawer';
 import { EventBanner } from '../../components/shared';
@@ -38,6 +39,7 @@ const MemberHomeScreen = ({ navigation }) => {
           .catch(() => {});
       }
       fetchActivePolls();
+      fetchPoms();
       fetchPosts();
     }
   });
@@ -51,6 +53,7 @@ const MemberHomeScreen = ({ navigation }) => {
   const [postsLoading, setPostsLoading] = useState(false);
   const [activePolls, setActivePolls] = useState([]);
   const [pollsLoading, setPollsLoading] = useState(false);
+  const [poms, setPoms] = useState([]);
   const [commentsModalVisible, setCommentsModalVisible] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState(null);
   const [userProfile, setUserProfile] = useState(user);
@@ -171,6 +174,14 @@ const MemberHomeScreen = ({ navigation }) => {
     }
   };
 
+  const fetchPoms = async () => {
+    try {
+      const res = await pomApi.list({ status: 'PUBLISHED' });
+      const list = Array.isArray(res.data) ? res.data : (res.data?.results || []);
+      setPoms(list);
+    } catch (_) {}
+  };
+
   const fetchPosts = async () => {
     try {
       setPostsLoading(true);
@@ -187,6 +198,7 @@ const MemberHomeScreen = ({ navigation }) => {
     fetchPosts();
     fetchProfileAndCheck();
     fetchActivePolls();
+    fetchPoms();
   }, []);
 
   useFocusEffect(
@@ -194,6 +206,7 @@ const MemberHomeScreen = ({ navigation }) => {
       fetchPosts();
       fetchProfileAndCheck();
       fetchActivePolls();
+      fetchPoms();
 
       // Real-time polling timer: auto-updates vote counts and percentages live without manual refresh
       const liveTimer = setInterval(() => {
@@ -206,7 +219,13 @@ const MemberHomeScreen = ({ navigation }) => {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await Promise.all([fetchUpcomingEvents(), fetchPosts(), fetchProfileAndCheck(), fetchActivePolls()]);
+    await Promise.all([
+      fetchUpcomingEvents(),
+      fetchPosts(),
+      fetchProfileAndCheck(),
+      fetchActivePolls(),
+      fetchPoms(),
+    ]);
     setTimeout(() => setRefreshing(false), 800);
   }, []);
 
@@ -383,6 +402,15 @@ const MemberHomeScreen = ({ navigation }) => {
             <Ionicons name="images-outline" size={20} color="#0284c7" />
           </View>
         </TouchableOpacity>
+
+        {/* ── Public Cooperation & Emergency Appeals (Poster Style) ── */}
+        {poms.map((pom) => (
+          <PomPosterCard
+            key={pom.id}
+            item={pom}
+            onResponseSuccess={fetchPoms}
+          />
+        ))}
 
         {/* ── Community Polls & Voting (Integrated with Community Help & Issues) ── */}
         {activePolls.map((poll) => (

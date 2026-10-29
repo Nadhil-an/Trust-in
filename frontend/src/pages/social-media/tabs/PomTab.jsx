@@ -16,7 +16,9 @@ import {
   Eye,
   MessageSquare,
   Archive,
-  Send
+  Send,
+  Clock,
+  AlertCircle
 } from 'lucide-react'
 
 const CATEGORY_MAP = {
@@ -43,6 +45,7 @@ export default function PomTab() {
   const [contactPerson, setContactPerson] = useState('')
   const [contactPhone, setContactPhone] = useState('')
   const [targetLocation, setTargetLocation] = useState('')
+  const [expiresAt, setExpiresAt] = useState('')
   const [imageFile, setImageFile] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -92,6 +95,7 @@ export default function PomTab() {
       if (contactPerson) formData.append('contact_person', contactPerson.trim())
       if (contactPhone) formData.append('contact_phone', contactPhone.trim())
       if (targetLocation) formData.append('target_location', targetLocation.trim())
+      if (expiresAt) formData.append('expires_at', new Date(expiresAt).toISOString())
       formData.append('status', 'PUBLISHED')
       if (imageFile) {
         formData.append('image', imageFile)
@@ -106,6 +110,7 @@ export default function PomTab() {
       setContactPerson('')
       setContactPhone('')
       setTargetLocation('')
+      setExpiresAt('')
       setImageFile(null)
       loadMessages()
     } catch (err) {
@@ -245,9 +250,15 @@ export default function PomTab() {
                           <Pin size={10} /> PINNED
                         </span>
                       )}
-                      <span className={`badge ${item.status === 'PUBLISHED' ? 'badge-green' : item.status === 'DRAFT' ? 'badge-yellow' : 'badge-gray'}`}>
-                        {item.status}
-                      </span>
+                      {item.is_expired ? (
+                        <span className="badge badge-red" style={{ fontSize: 10, display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                          <AlertCircle size={10} /> EXPIRED
+                        </span>
+                      ) : (
+                        <span className={`badge ${item.status === 'PUBLISHED' ? 'badge-green' : item.status === 'DRAFT' ? 'badge-yellow' : 'badge-gray'}`}>
+                          {item.status}
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -277,6 +288,22 @@ export default function PomTab() {
                       <Calendar size={13} />
                       <span>Published: {item.published_at ? format(new Date(item.published_at), 'dd MMM yyyy') : 'Recently'}</span>
                     </div>
+                    {item.expires_at && (
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        color: item.is_expired ? 'var(--danger)' : '#b45309',
+                        fontWeight: item.is_expired ? 700 : 500,
+                        marginTop: 2
+                      }}>
+                        <Clock size={13} />
+                        <span>
+                          {item.is_expired ? 'Expired on: ' : 'Expires on: '}
+                          {format(new Date(item.expires_at), 'dd MMM yyyy, HH:mm')}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -415,6 +442,19 @@ export default function PomTab() {
                   placeholder="+91 98765 43210"
                 />
               </div>
+            </div>
+
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label">Expiry Date & Time (Optional)</label>
+              <input
+                type="datetime-local"
+                className="form-control"
+                value={expiresAt}
+                onChange={e => setExpiresAt(e.target.value)}
+              />
+              <span style={{ fontSize: 11, color: 'var(--gray-500)', marginTop: 4, display: 'block' }}>
+                Optional deadline for this cooperation request. After this time, it automatically retires from the public mobile feed.
+              </span>
             </div>
 
             <div className="form-group" style={{ marginBottom: 0 }}>
