@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -330,6 +330,38 @@ const MemberHomeScreen = ({ navigation }) => {
     );
   }, [navigation]);
 
+  // Unified chronological feed combining Member Posts, Trust Appeals (POMs), and Polls in natural posting order
+  const combinedFeed = useMemo(() => {
+    const feedItems = [];
+
+    (posts || []).forEach((p) => {
+      feedItems.push({
+        ...p,
+        feedType: 'POST',
+        _sortDate: new Date(p.created_at || 0).getTime(),
+      });
+    });
+
+    (poms || []).forEach((pom) => {
+      feedItems.push({
+        ...pom,
+        feedType: 'POM',
+        _sortDate: new Date(pom.created_at || 0).getTime(),
+      });
+    });
+
+    (activePolls || []).forEach((poll) => {
+      feedItems.push({
+        ...poll,
+        feedType: 'POLL',
+        _sortDate: new Date(poll.created_at || poll.start_time || 0).getTime(),
+      });
+    });
+
+    feedItems.sort((a, b) => b._sortDate - a._sortDate);
+    return feedItems;
+  }, [posts, poms, activePolls]);
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {/* Top Navigation Header */}
@@ -553,32 +585,12 @@ const MemberHomeScreen = ({ navigation }) => {
           )}
         </View>
 
-        {/* ── Public Cooperation & Emergency Appeals (Poster Style) ── */}
-        {poms.map((pom) => (
-          <PomPosterCard
-            key={pom.id}
-            item={pom}
-            onResponseSuccess={fetchPoms}
-          />
-        ))}
-
-        {/* ── Community Polls & Voting (Integrated with Community Help & Issues) ── */}
-        {activePolls.map((poll) => (
-          <PollCard
-            key={poll.id}
-            poll={poll}
-            isAuthenticated={isAuthenticated}
-            navigation={navigation}
-            onVoteSuccess={handleVoteSuccess}
-          />
-        ))}
-
-        {/* Posts List */}
-        {postsLoading && posts.length === 0 ? (
+        {/* ── Unified Chronological Feed (Member Posts, Trust Appeals, Polls in Posting Order) ── */}
+        {postsLoading && combinedFeed.length === 0 ? (
           <View style={styles.loadingFeedCard}>
             <Text style={styles.loadingFeedText}>Loading community feed...</Text>
           </View>
-        ) : posts.length === 0 ? (
+        ) : combinedFeed.length === 0 ? (
           <View style={styles.emptyFeedCard}>
             <Ionicons name="chatbubbles-outline" size={40} color="#CBD5E1" />
             <Text style={styles.emptyFeedTitle}>No Community Posts Yet</Text>
@@ -593,20 +605,42 @@ const MemberHomeScreen = ({ navigation }) => {
             </TouchableOpacity>
           </View>
         ) : (
-          posts.map((post) => (
-            <PostCard
-              key={post.id}
-              post={post}
-              currentUserId={user?.id}
-              onOpenComments={(id) => {
-                setSelectedPostId(id);
-                setCommentsModalVisible(true);
-              }}
-              onPostDeleted={(deletedId) => {
-                setPosts((prev) => prev.filter((p) => p.id !== deletedId));
-              }}
-            />
-          ))
+          combinedFeed.map((item) => {
+            if (item.feedType === 'POM') {
+              return (
+                <PomPosterCard
+                  key={`pom-${item.id}`}
+                  item={item}
+                  onResponseSuccess={fetchPoms}
+                />
+              );
+            }
+            if (item.feedType === 'POLL') {
+              return (
+                <PollCard
+                  key={`poll-${item.id}`}
+                  poll={item}
+                  isAuthenticated={isAuthenticated}
+                  navigation={navigation}
+                  onVoteSuccess={handleVoteSuccess}
+                />
+              );
+            }
+            return (
+              <PostCard
+                key={`post-${item.id}`}
+                post={item}
+                currentUserId={user?.id}
+                onOpenComments={(id) => {
+                  setSelectedPostId(id);
+                  setCommentsModalVisible(true);
+                }}
+                onPostDeleted={(deletedId) => {
+                  setPosts((prev) => prev.filter((p) => p.id !== deletedId));
+                }}
+              />
+            );
+          })
         )}
 
         {/* Upcoming Events Section (Placed below community feed) */}
