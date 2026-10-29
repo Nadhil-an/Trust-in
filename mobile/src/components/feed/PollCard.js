@@ -110,11 +110,19 @@ export default function PollCard({
     setSubmittingOptionId(option.id);
     try {
       const res = await pollsApi.vote(currentPoll.id, option.id);
-      if (res.data?.poll) {
-        setLocalPoll(res.data.poll);
+      const pollData = res.data?.poll || (res.data?.id ? res.data : null);
+      if (pollData) {
+        setLocalPoll(pollData);
       }
       if (onVoteSuccess) {
         onVoteSuccess();
+      }
+      if (!isSameOption && previousVotedId) {
+        Toast.show({
+          type: 'success',
+          text1: 'Vote Changed',
+          text2: `Your vote was changed to "${option.option_text}".`,
+        });
       }
     } catch (err) {
       const errMsg = err?.response?.data?.error || 'Failed to submit vote. Reverting.';
