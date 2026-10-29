@@ -2105,20 +2105,13 @@ class SocialPollViewSet(ModelViewSet):
         with transaction.atomic():
             existing_vote = SocialPollVote.objects.select_for_update().filter(poll=poll, voter=request.user).first()
             if existing_vote:
-                if str(existing_vote.option_id) == str(option.id):
-                    # Same option already chosen
-                    pass
-                else:
-                    # Switch vote to the new option seamlessly
-                    existing_vote.option = option
-                    existing_vote.voted_at = timezone.now()
-                    existing_vote.save(update_fields=['option', 'voted_at'])
-            else:
-                SocialPollVote.objects.create(
-                    poll=poll,
-                    option=option,
-                    voter=request.user
-                )
+                return Response({'error': 'You have already cast your vote for this poll.'}, status=400)
+
+            SocialPollVote.objects.create(
+                poll=poll,
+                option=option,
+                voter=request.user
+            )
 
             # Re-sync exact counts for all options in this poll
             for opt in poll.options.all():

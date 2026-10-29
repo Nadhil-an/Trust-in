@@ -261272,3 +261272,8 @@ WebSocket DISCONNECT /ws/notify/ [127.0.0.1:35648]
 WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:50128]
 WebSocket REJECT /ws/notify/ [127.0.0.1:50128]
 WebSocket DISCONNECT /ws/notify/ [127.0.0.1:50128]
+Bad Request: /api/core/social-polls/668a27f1-2ff4-4428-981e-6dda30b78cf3/vote/
+Forbidden: /api/core/users/b7e13396-1c03-418c-9a3f-db28de37aec4/
+Bad Request: /api/core/social-polls/6c36c420-cdb7-4d27-91e1-9933434783dc/vote/
+Forbidden: /api/hr/leave/cd1fa195-0eac-4997-a7d5-de486fc91e3e/action/
+Forbidden: /api/hr/leave/5e8ae200-f1e5-46df-8c85-c15cfbe90f3d/notes/
