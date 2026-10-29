@@ -3,7 +3,7 @@ import { coreApi } from '../../../api'
 import { LoadingState, EmptyState, Modal, FilterBar, StatusBadge } from '../../../components/shared'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
-import { Eye, CheckCircle2, XCircle, RefreshCw } from 'lucide-react'
+import { Eye, CheckCircle2, XCircle, RefreshCw, Trash2 } from 'lucide-react'
 
 export default function PostManagementTab() {
   const [posts, setPosts] = useState([])
@@ -19,6 +19,8 @@ export default function PostManagementTab() {
   const [rejecting, setRejecting] = useState(false)
   const [selectedPost, setSelectedPost] = useState(null)
   const [activePhoto, setActivePhoto] = useState(null)
+  const [deletingItem, setDeletingItem] = useState(null)
+  const [deleting, setDeleting] = useState(false)
 
   const loadPosts = useCallback(async () => {
     setLoading(true)
@@ -68,6 +70,30 @@ export default function PostManagementTab() {
     if (e) e.stopPropagation()
     setRejectingItem(post)
     setRejectionReason('Violation of community guidelines / unverified issue')
+  }
+
+  const handleOpenDelete = (post, e) => {
+    if (e) e.stopPropagation()
+    setDeletingItem(post)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!deletingItem) return
+    setDeleting(true)
+    try {
+      await coreApi.memberPosts.delete(deletingItem.id)
+      toast.success('Post deleted successfully and removed from mobile feed')
+      setPosts(prev => prev.filter(p => p.id !== deletingItem.id))
+      if (selectedPost?.id === deletingItem.id) {
+        setSelectedPost(null)
+      }
+      setDeletingItem(null)
+    } catch (err) {
+      console.error('Delete post error:', err)
+      toast.error(err.response?.data?.error || 'Failed to delete post')
+    } finally {
+      setDeleting(false)
+    }
   }
 
   const handleConfirmReject = async () => {
@@ -250,6 +276,14 @@ export default function PostManagementTab() {
                               </button>
                             </>
                           )}
+                          <button
+                            onClick={(e) => handleOpenDelete(post, e)}
+                            className="btn btn-danger btn-sm"
+                            title="Delete Post from dashboard and mobile"
+                          >
+                            <Trash2 size={12} />
+                            Delete
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -286,6 +320,13 @@ export default function PostManagementTab() {
                   </button>
                 </>
               )}
+              <button
+                className="btn btn-danger btn-sm"
+                onClick={() => { const p = selectedPost; setSelectedPost(null); handleOpenDelete(p); }}
+              >
+                <Trash2 size={12} />
+                Delete Post
+              </button>
               <button
                 className="btn btn-secondary btn-sm"
                 onClick={() => setSelectedPost(null)}
@@ -370,6 +411,57 @@ export default function PostManagementTab() {
               placeholder="Provide a clear, policy-based reason..."
               required
             />
+          </div>
+        </Modal>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingItem && (
+        <Modal
+          isOpen={true}
+          title="Delete Post"
+          onClose={() => setDeletingItem(null)}
+          footer={
+            <>
+              <button
+                className="btn btn-secondary btn-sm"
+                onClick={() => setDeletingItem(null)}
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-danger btn-sm"
+                disabled={deleting}
+                onClick={handleConfirmDelete}
+              >
+                {deleting ? 'Deleting...' : 'Delete Post'}
+              </button>
+            </>
+          }
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <p style={{ margin: 0, fontSize: 14, color: 'var(--gray-700)' }}>
+              Are you sure you want to delete this post by <strong>{deletingItem.author?.full_name || deletingItem.author?.username}</strong>?
+            </p>
+            {deletingItem.content && (
+              <div style={{
+                padding: '10px 14px',
+                background: 'var(--gray-50)',
+                border: '1px solid var(--gray-200)',
+                borderRadius: '6px',
+                fontSize: 13,
+                color: 'var(--gray-600)',
+                fontStyle: 'italic',
+                maxHeight: 100,
+                overflow: 'hidden'
+              }}>
+                "{deletingItem.content}"
+              </div>
+            )}
+            <p style={{ margin: 0, fontSize: 13, color: 'var(--danger)', fontWeight: 500 }}>
+              ⚠️ This will immediately delete the post from both the dashboard and the mobile application.
+            </p>
           </div>
         </Modal>
       )}

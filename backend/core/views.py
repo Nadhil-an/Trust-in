@@ -1029,6 +1029,11 @@ class MemberPostViewSet(ModelViewSet):
         # Soft delete post so historical relationships remain safe
         instance.is_active = False
         instance.save(update_fields=['is_active', 'updated_at'])
+        try:
+            from notify.service import push_dashboard_refresh
+            push_dashboard_refresh(['SOCIAL_MEDIA', 'MANAGER', 'ADMIN', 'MEMBER', 'STAFF'], module='MEMBER_POSTS')
+        except Exception:
+            pass
 
     def check_object_permissions(self, request, obj):
         super().check_object_permissions(request, obj)
