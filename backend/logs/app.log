@@ -262739,3 +262739,4 @@ AttributeError: 'SystemNotification' object has no attribute 'mark_read'
 [mHTTP GET /api/core/social-polls/?status=ACTIVE 200 [0.01, 10.162.176.130:59910][0m
 [mHTTP GET /api/core/social-polls/?status=ACTIVE 200 [0.02, 10.162.176.130:59910][0m
 WebSocket DISCONNECT /ws/notify/ [10.162.176.130:59926]
+Forbidden: /api/core/users/0b11de1e-b281-4e90-9657-320767baba02/
