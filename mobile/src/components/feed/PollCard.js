@@ -22,10 +22,10 @@ export default function PollCard({
 
   // Sync whenever parent provides fresh poll data (e.g., from real-time websocket)
   useEffect(() => {
-    if (poll) {
+    if (poll && !submittingOptionId) {
       setLocalPoll(poll);
     }
-  }, [poll]);
+  }, [poll, submittingOptionId]);
 
   if (!localPoll) return null;
 
@@ -74,6 +74,11 @@ export default function PollCard({
 
     const previousVotedId = myVotedOptionId;
     const isSameOption = String(previousVotedId) === String(option.id);
+
+    if (isSameOption) {
+      // Already selected this option, keep it without toggling back
+      return;
+    }
 
     // Optimistic local state update (0ms instant UI update)
     setLocalPoll((prev) => {
@@ -131,8 +136,10 @@ export default function PollCard({
         text1: 'Voting Notice',
         text2: errMsg,
       });
-      // Revert to original prop poll on failure
-      setLocalPoll(poll);
+      // Only revert if it is not an already-voted message
+      if (!errMsg.toLowerCase().includes('already')) {
+        setLocalPoll(poll);
+      }
     } finally {
       setSubmittingOptionId(null);
     }
