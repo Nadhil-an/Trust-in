@@ -427,6 +427,7 @@ export const coreApi = {
     close: (id) => api.post(`/core/social-polls/${id}/close/`),
     delete: (id) => api.delete(`/core/social-polls/${id}/`),
     results: (id) => api.get(`/core/social-polls/${id}/results/`),
+    voters: (id) => api.get(`/core/social-polls/${id}/voters/`),
   }
 }
 

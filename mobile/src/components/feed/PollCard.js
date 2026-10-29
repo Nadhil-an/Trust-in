@@ -1,5 +1,5 @@
 // components/feed/PollCard.js
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -19,23 +19,12 @@ export default function PollCard({
 }) {
   const [localPoll, setLocalPoll] = useState(poll);
   const [submittingOptionId, setSubmittingOptionId] = useState(null);
-  const selectedOptionIdRef = useRef(poll?.my_voted_option_id || null);
 
-  // Sync whenever parent provides fresh poll data (without reverting an active user choice)
+  // Sync whenever parent provides fresh poll data (e.g., from real-time websocket)
   useEffect(() => {
-    if (!poll) return;
-    setLocalPoll((current) => {
-      if (!current) return poll;
-      const activeChoice = selectedOptionIdRef.current || current.my_voted_option_id;
-      if (activeChoice) {
-        return {
-          ...poll,
-          has_voted: true,
-          my_voted_option_id: activeChoice,
-        };
-      }
-      return poll;
-    });
+    if (poll) {
+      setLocalPoll(poll);
+    }
   }, [poll]);
 
   if (!localPoll) return null;
@@ -83,16 +72,8 @@ export default function PollCard({
       return;
     }
 
-    const previousVotedId = selectedOptionIdRef.current || myVotedOptionId;
+    const previousVotedId = myVotedOptionId;
     const isSameOption = String(previousVotedId) === String(option.id);
-
-    if (isSameOption) {
-      // Already selected this option, keep it locked without toggling
-      return;
-    }
-
-    // Immediately lock user choice in ref and state
-    selectedOptionIdRef.current = option.id;
 
     // Optimistic local state update (0ms instant UI update)
     setLocalPoll((prev) => {
@@ -129,32 +110,21 @@ export default function PollCard({
     setSubmittingOptionId(option.id);
     try {
       const res = await pollsApi.vote(currentPoll.id, option.id);
-      const pollData = res.data?.poll || (res.data?.id ? res.data : null);
-      if (pollData) {
-        selectedOptionIdRef.current = pollData.my_voted_option_id || option.id;
-        setLocalPoll(pollData);
+      if (res.data?.poll) {
+        setLocalPoll(res.data.poll);
       }
       if (onVoteSuccess) {
-        onVoteSuccess(pollData || { ...currentPoll, my_voted_option_id: option.id });
-      }
-      if (!isSameOption && previousVotedId) {
-        Toast.show({
-          type: 'success',
-          text1: 'Vote Changed',
-          text2: `Your vote was changed to "${option.option_text}".`,
-        });
+        onVoteSuccess();
       }
     } catch (err) {
-      const errMsg = err?.response?.data?.error || 'Failed to submit vote.';
-      if (!errMsg.toLowerCase().includes('already')) {
-        Toast.show({
-          type: 'error',
-          text1: 'Voting Notice',
-          text2: errMsg,
-        });
-        selectedOptionIdRef.current = previousVotedId;
-        setLocalPoll(poll);
-      }
+      const errMsg = err?.response?.data?.error || 'Failed to submit vote. Reverting.';
+      Toast.show({
+        type: 'error',
+        text1: 'Voting Notice',
+        text2: errMsg,
+      });
+      // Revert to original prop poll on failure
+      setLocalPoll(poll);
     } finally {
       setSubmittingOptionId(null);
     }
@@ -192,7 +162,7 @@ export default function PollCard({
         <Text style={styles.pollDescription}>{currentPoll.description}</Text>
       )}
 
-      {/* Interactive Options List — Every option displays percentage, count & allows re-clicking */}
+      {/* Interactive Options List — Every option displays full text without truncation, percentage, count & allows re-clicking */}
       <View style={styles.optionsContainer}>
         {(currentPoll.options || []).map((opt) => {
           const isSelected = String(myVotedOptionId) === String(opt.id);
@@ -227,7 +197,7 @@ export default function PollCard({
 
               {/* Option Content Overlay */}
               <View style={styles.optionContent}>
-                {/* Left: Radio/Check Indicator + Text + Badge */}
+                {/* Left: Radio/Check Indicator + Full Words Text + Badge */}
                 <View style={styles.optionLeftGroup}>
                   <View
                     style={[
@@ -242,20 +212,22 @@ export default function PollCard({
                     ) : null}
                   </View>
 
-                  <View style={styles.textWithBadgeRow}>
+                  <View style={styles.textWithBadgeCol}>
                     <Text
                       style={[
                         styles.optionLabel,
                         isSelected && styles.optionLabelSelected,
                       ]}
-                      numberOfLines={2}
                     >
                       {opt.option_text}
                     </Text>
 
                     {isSelected && (
-                      <View style={styles.yourVoteBadge}>
-                        <Text style={styles.yourVoteBadgeText}>Your Vote</Text>
+                      <View style={styles.yourVoteBadgeRow}>
+                        <View style={styles.yourVoteBadge}>
+                          <Ionicons name="checkmark-circle" size={10} color="#FFFFFF" style={{ marginRight: 3 }} />
+                          <Text style={styles.yourVoteBadgeText}>YOUR VOTE</Text>
+                        </View>
                       </View>
                     )}
                   </View>
@@ -384,7 +356,7 @@ const styles = StyleSheet.create({
   pollDescription: {
     fontSize: 13,
     color: '#475569',
-    lineHeight: 18,
+    lineHeight: 19,
     marginBottom: 14,
   },
   optionsContainer: {
@@ -393,13 +365,14 @@ const styles = StyleSheet.create({
   },
   optionRow: {
     position: 'relative',
-    height: 52,
+    minHeight: 56,
     borderRadius: 12,
     borderWidth: 1.5,
     borderColor: '#e2e8f0',
     backgroundColor: '#ffffff',
     overflow: 'hidden',
     justifyContent: 'center',
+    paddingVertical: 10,
   },
   optionRowSelected: {
     borderColor: '#0284c7',
@@ -426,7 +399,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    marginRight: 8,
+    marginRight: 10,
   },
   checkCircle: {
     width: 20,
@@ -438,30 +411,37 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 10,
     backgroundColor: '#ffffff',
+    flexShrink: 0,
   },
   checkCircleSelected: {
     borderColor: '#0284c7',
     backgroundColor: '#0284c7',
   },
-  textWithBadgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  textWithBadgeCol: {
+    flexDirection: 'column',
+    justifyContent: 'center',
     flex: 1,
-    gap: 6,
   },
   optionLabel: {
     fontSize: 13.5,
     fontWeight: '600',
     color: '#1e293b',
-    flexShrink: 1,
+    lineHeight: 19,
+    flexWrap: 'wrap',
   },
   optionLabelSelected: {
     color: '#0284c7',
     fontWeight: '700',
   },
+  yourVoteBadgeRow: {
+    flexDirection: 'row',
+    marginTop: 4,
+  },
   yourVoteBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#0284c7',
-    paddingHorizontal: 6,
+    paddingHorizontal: 7,
     paddingVertical: 2,
     borderRadius: 6,
   },
@@ -469,12 +449,15 @@ const styles = StyleSheet.create({
     fontSize: 9.5,
     fontWeight: '700',
     color: '#FFFFFF',
-    textTransform: 'uppercase',
+    letterSpacing: 0.3,
   },
   optionStatsGroup: {
     flexDirection: 'column',
     alignItems: 'flex-end',
+    justifyContent: 'center',
     minWidth: 55,
+    marginLeft: 6,
+    flexShrink: 0,
   },
   statPercent: {
     fontSize: 13,

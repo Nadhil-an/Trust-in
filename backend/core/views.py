@@ -2189,3 +2189,56 @@ class SocialPollViewSet(ModelViewSet):
             'is_anonymous': poll.is_anonymous,
             'show_results_before_close': poll.show_results_before_close,
         })
+
+    @action(detail=True, methods=['get'], url_path='voters')
+    def voters(self, request, pk=None):
+        """Retrieve full details of voters for each option in a poll for administrative outreach and support"""
+        user_role = getattr(request.user, 'role', '')
+        is_staff_user = getattr(request.user, 'is_staff', False) or getattr(request.user, 'is_superuser', False)
+        if user_role not in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA'] and not is_staff_user:
+            return Response({'error': 'Permission denied. Only Trust administrators and managers can view voter details.'}, status=403)
+
+        poll = self.get_object()
+        options_data = []
+        for opt in poll.options.all().order_by('order', 'id'):
+            votes = opt.votes.select_related('voter').prefetch_related('voter__member_set').order_by('-voted_at')
+            voters_list = []
+            for v in votes:
+                if v.voter:
+                    member_record = v.voter.member_set.first()
+                    phone_val = getattr(v.voter, 'phone', '') or ''
+                    if not phone_val and member_record and member_record.phone:
+                        phone_val = member_record.phone
+                    if not phone_val and v.voter.username and v.voter.username.isdigit():
+                        phone_val = v.voter.username
+
+                    member_id_val = member_record.member_id if member_record else getattr(v.voter, 'staff_uid', '') or v.voter.username
+                    address_val = member_record.address if member_record else ''
+
+                    voters_list.append({
+                        'vote_id': str(v.id),
+                        'user_id': str(v.voter.id),
+                        'full_name': v.voter.full_name or (member_record.full_name if member_record else v.voter.username),
+                        'username': v.voter.username,
+                        'phone': str(phone_val) if phone_val else '',
+                        'email': v.voter.email or '',
+                        'role': v.voter.role,
+                        'member_id': member_id_val,
+                        'address': address_val,
+                        'voted_at': v.voted_at.isoformat() if v.voted_at else None,
+                    })
+            options_data.append({
+                'option_id': str(opt.id),
+                'option_text': opt.option_text,
+                'votes_count': len(voters_list),
+                'voters': voters_list
+            })
+
+        return Response({
+            'poll_id': str(poll.id),
+            'title': poll.title,
+            'description': poll.description,
+            'status': poll.status,
+            'total_votes': poll.votes.count(),
+            'options': options_data
+        })

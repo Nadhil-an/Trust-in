@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { coreApi } from '../../../api'
 import { LoadingState, EmptyState, Modal, ConfirmModal, FilterBar } from '../../../components/shared'
 import { format } from 'date-fns'
@@ -13,7 +13,13 @@ import {
   Lock,
   CheckCircle2,
   X,
-  Send
+  Send,
+  Eye,
+  Users,
+  Phone,
+  MessageCircle,
+  Copy,
+  Search
 } from 'lucide-react'
 
 export default function VotingTab() {
@@ -37,6 +43,13 @@ export default function VotingTab() {
   const [votingPollId, setVotingPollId] = useState(null)
   const [closingPoll, setClosingPoll] = useState(null)
   const [deletingPoll, setDeletingPoll] = useState(null)
+
+  // Voter Details Modal State
+  const [votersModalPoll, setVotersModalPoll] = useState(null)
+  const [selectedOptionFilter, setSelectedOptionFilter] = useState('ALL')
+  const [votersData, setVotersData] = useState(null)
+  const [votersLoading, setVotersLoading] = useState(false)
+  const [voterSearch, setVoterSearch] = useState('')
 
   const loadPolls = useCallback(async (showLoading = true) => {
     if (showLoading) setLoading(true)
@@ -78,27 +91,36 @@ export default function VotingTab() {
   }, [loadPolls])
 
   const handleAddOption = () => {
-    if (options.length >= 6) {
-      toast.error('Maximum 6 options allowed per poll')
-      return
+    if (options.length < 8) {
+      setOptions([...options, ''])
+    } else {
+      toast.error('Maximum 8 options allowed per poll')
     }
-    setOptions(prev => [...prev, ''])
-  }
-
-  const handleOptionChange = (index, value) => {
-    setOptions(prev => {
-      const next = [...prev]
-      next[index] = value
-      return next
-    })
   }
 
   const handleRemoveOption = (index) => {
-    if (options.length <= 2) {
-      toast.error('A poll requires at least 2 options')
-      return
+    if (options.length > 2) {
+      setOptions(options.filter((_, i) => i !== index))
+    } else {
+      toast.error('Poll must have at least 2 options')
     }
-    setOptions(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const handleOptionChange = (index, value) => {
+    const next = [...options]
+    next[index] = value
+    setOptions(next)
+  }
+
+  const handleOpenCreateModal = () => {
+    setTitle('')
+    setDescription('')
+    setOptions(['', ''])
+    setEndTime('')
+    setIsAnonymous(true)
+    setShowResultsBeforeClose(true)
+    setEligibleRoles('ALL')
+    setIsModalOpen(true)
   }
 
   const handleCreatePoll = async (e) => {
@@ -107,34 +129,36 @@ export default function VotingTab() {
       toast.error('Please enter a poll title')
       return
     }
+
     const validOptions = options.map(o => o.trim()).filter(Boolean)
     if (validOptions.length < 2) {
-      toast.error('Please provide at least 2 valid options')
+      toast.error('Please provide at least 2 options')
       return
     }
 
     setIsSubmitting(true)
     try {
-      await coreApi.socialPolls.create({
+      const payload = {
         title: title.trim(),
         description: description.trim(),
         options: validOptions,
-        end_time: endTime || null,
         is_anonymous: isAnonymous,
         show_results_before_close: showResultsBeforeClose,
         eligible_roles: eligibleRoles,
         status: 'ACTIVE'
-      })
-      toast.success('Voting campaign launched and accessible across all member apps!')
+      }
+      if (endTime) {
+        payload.end_time = new Date(endTime).toISOString()
+      }
+
+      await coreApi.socialPolls.create(payload)
+      toast.success('Voting campaign launched successfully!')
       setIsModalOpen(false)
-      setTitle('')
-      setDescription('')
-      setOptions(['', ''])
-      setEndTime('')
-      loadPolls()
+      loadPolls(false)
     } catch (err) {
-      console.error('Create poll error:', err)
-      toast.error(err.response?.data?.detail || 'Failed to create poll')
+      console.error('Failed to create poll:', err)
+      const msg = err.response?.data?.error || 'Failed to create voting campaign'
+      toast.error(msg)
     } finally {
       setIsSubmitting(false)
     }
@@ -143,11 +167,19 @@ export default function VotingTab() {
   const handleVote = async (pollId, optionId) => {
     setVotingPollId(pollId)
     try {
-      await coreApi.socialPolls.vote(pollId, { option_id: optionId })
-      toast.success('Vote recorded!')
-      loadPolls()
+      const res = await coreApi.socialPolls.vote(pollId, { option_id: optionId })
+      toast.success(res.data?.message || 'Vote recorded successfully')
+
+      // Update local state smoothly
+      if (res.data?.poll) {
+        setPolls(prev => prev.map(p => p.id === pollId ? res.data.poll : p))
+      } else {
+        loadPolls(false)
+      }
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Failed to cast vote')
+      console.error('Failed to cast vote:', err)
+      const msg = err.response?.data?.error || 'Failed to record vote'
+      toast.error(msg)
     } finally {
       setVotingPollId(null)
     }
@@ -156,12 +188,13 @@ export default function VotingTab() {
   const handleConfirmClosePoll = async () => {
     if (!closingPoll) return
     try {
-      await coreApi.socialPolls.update(closingPoll.id, { status: 'CLOSED' })
-      toast.success('Voting closed.')
+      await coreApi.socialPolls.close(closingPoll.id)
+      toast.success(`Poll "${closingPoll.title}" has been closed.`)
       setClosingPoll(null)
-      loadPolls()
+      loadPolls(false)
     } catch (err) {
-      toast.error('Failed to close poll')
+      console.error('Failed to close poll:', err)
+      toast.error('Failed to close voting campaign')
     }
   }
 
@@ -169,114 +202,196 @@ export default function VotingTab() {
     if (!deletingPoll) return
     try {
       await coreApi.socialPolls.delete(deletingPoll.id)
-      toast.success('Poll deleted.')
-      setPolls(prev => prev.filter(p => p.id !== deletingPoll.id))
+      toast.success('Poll deleted successfully.')
       setDeletingPoll(null)
+      loadPolls(false)
     } catch (err) {
-      toast.error('Failed to delete poll')
+      console.error('Failed to delete poll:', err)
+      toast.error('Failed to delete voting campaign')
     }
   }
 
+  // Voter Details Modal logic
+  const handleOpenVotersModal = async (poll, option = null) => {
+    setVotersModalPoll(poll)
+    setSelectedOptionFilter(option ? option.id : 'ALL')
+    setVoterSearch('')
+    setVotersLoading(true)
+    try {
+      const res = await coreApi.socialPolls.voters(poll.id)
+      setVotersData(res.data)
+    } catch (err) {
+      console.error('Failed to fetch voter details:', err)
+      toast.error('Failed to load voter details')
+    } finally {
+      setVotersLoading(false)
+    }
+  }
+
+  const handleCloseVotersModal = () => {
+    setVotersModalPoll(null)
+    setVotersData(null)
+    setSelectedOptionFilter('ALL')
+    setVoterSearch('')
+  }
+
+  const filteredVoters = useMemo(() => {
+    if (!votersData?.options) return []
+    let list = []
+    votersData.options.forEach(opt => {
+      if (selectedOptionFilter === 'ALL' || selectedOptionFilter === opt.option_id) {
+        opt.voters?.forEach(v => {
+          list.push({
+            ...v,
+            parent_option_id: opt.option_id,
+            option_text: opt.option_text
+          })
+        })
+      }
+    })
+    if (voterSearch.trim()) {
+      const q = voterSearch.toLowerCase().trim()
+      list = list.filter(v =>
+        (v.full_name && v.full_name.toLowerCase().includes(q)) ||
+        (v.phone && v.phone.includes(q)) ||
+        (v.username && v.username.toLowerCase().includes(q)) ||
+        (v.member_id && v.member_id.toLowerCase().includes(q)) ||
+        (v.address && v.address.toLowerCase().includes(q))
+      )
+    }
+    return list
+  }, [votersData, selectedOptionFilter, voterSearch])
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Top Action Bar */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* Top Filter and Actions Bar */}
       <FilterBar
-        search={search}
-        onSearch={setSearch}
-        placeholder="Search voting campaigns..."
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginLeft: 'auto' }}>
-          <select
-            className="form-control"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            style={{ width: '150px' }}
-          >
-            <option value="ALL">All Campaigns</option>
-            <option value="ACTIVE">Live Voting</option>
-            <option value="CLOSED">Concluded Polls</option>
-          </select>
-
-          {(search || statusFilter !== 'ALL') && (
+        title="Voting Campaigns"
+        searchPlaceholder="Search voting campaigns..."
+        searchValue={search}
+        onSearchChange={setSearch}
+        filters={[
+          {
+            label: 'All Campaigns',
+            value: statusFilter,
+            onChange: setStatusFilter,
+            options: [
+              { label: 'All Campaigns', value: 'ALL' },
+              { label: 'Live Voting', value: 'ACTIVE' },
+              { label: 'Closed / Concluded', value: 'CLOSED' },
+              { label: 'Draft', value: 'DRAFT' }
+            ]
+          }
+        ]}
+        actions={
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <button
-              onClick={() => { setStatusFilter('ALL'); setSearch(''); }}
+              type="button"
+              onClick={() => loadPolls(true)}
               className="btn btn-secondary btn-sm"
+              title="Refresh Polls"
+              disabled={loading}
             >
-              <RefreshCw size={12} />
-              Reset
+              <RefreshCw size={13} className={loading ? 'spin' : ''} />
+              <span>Refresh</span>
             </button>
-          )}
-
-          <button
-            type="button"
-            onClick={() => setIsModalOpen(true)}
-            className="btn btn-primary btn-sm"
-          >
-            <Plus size={14} />
-            Launch Voting Campaign
-          </button>
-        </div>
-      </FilterBar>
+            <button
+              type="button"
+              onClick={handleOpenCreateModal}
+              className="btn btn-primary btn-sm"
+            >
+              <Plus size={14} />
+              <span>Launch Voting Campaign</span>
+            </button>
+          </div>
+        }
+      />
 
       {/* Main Polls Grid */}
       {loading ? (
-        <div style={{ padding: '40px 0' }}>
-          <LoadingState />
-        </div>
+        <LoadingState message="Loading voting and polls directory..." />
       ) : polls.length === 0 ? (
         <EmptyState
-          title="No voting campaigns found"
-          message="Engage Trust members on key community decisions by launching a voting campaign above."
+          icon={Vote}
+          title="No Voting Campaigns Found"
+          message={
+            search || statusFilter !== 'ALL'
+              ? 'No polls matched your filter criteria.'
+              : 'Launch your first verified Trust poll to engage members and volunteers in democratic decision making.'
+          }
+          actionLabel="Launch Voting Campaign"
+          onAction={handleOpenCreateModal}
         />
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: '16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(460px, 1fr))', gap: 20 }}>
           {polls.map(poll => {
             const isActive = poll.status === 'ACTIVE'
-            const totalVotes = poll.total_votes || 0
+            const isClosed = poll.status === 'CLOSED'
+            const total = poll.total_votes || 0
 
             return (
               <div
                 key={poll.id}
-                className="data-card"
                 style={{
-                  marginBottom: 0,
+                  background: 'var(--white)',
+                  border: '1px solid var(--gray-200)',
+                  borderRadius: 'var(--border-radius-md)',
+                  boxShadow: 'var(--shadow-sm)',
                   display: 'flex',
                   flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  border: isActive ? '1px solid var(--primary-500)' : '1px solid var(--gray-200)'
+                  overflow: 'hidden'
                 }}
               >
-                <div style={{ padding: '20px' }}>
-                  {/* Status, Turnout & Timing Badge */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span className={`badge ${isActive ? 'badge-green' : 'badge-gray'}`}>
-                        {isActive ? 'LIVE VOTING' : 'CONCLUDED'}
+                {/* Header */}
+                <div style={{ padding: '16px 20px 12px 20px', borderBottom: '1px solid var(--gray-100)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 700,
+                          padding: '3px 8px',
+                          borderRadius: 12,
+                          textTransform: 'uppercase',
+                          letterSpacing: 0.5,
+                          background: isActive ? '#ecfdf5' : '#f3f4f6',
+                          color: isActive ? '#059669' : '#6b7280',
+                          border: isActive ? '1px solid #a7f3d0' : '1px solid #e5e7eb',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4
+                        }}
+                      >
+                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: isActive ? '#10b981' : '#9ca3af' }} />
+                        {isActive ? 'LIVE VOTING' : poll.status}
                       </span>
 
                       {poll.is_anonymous && (
-                        <span className="badge badge-gray" style={{ fontSize: 10, display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-                          <Lock size={10} /> Anonymous
+                        <span style={{ fontSize: 11, color: 'var(--gray-500)', display: 'flex', alignItems: 'center', gap: 3 }}>
+                          <Lock size={11} /> Anonymous
                         </span>
                       )}
                     </div>
 
-                    <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--primary-700)' }}>
-                      {totalVotes} {totalVotes === 1 ? 'Vote' : 'Votes'} Cast
-                    </span>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--gray-600)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <Vote size={13} />
+                      <span>{total} {total === 1 ? 'Vote Cast' : 'Votes Cast'}</span>
+                    </div>
                   </div>
 
-                  {/* Title and Description */}
-                  <h3 style={{ margin: '0 0 6px 0', fontSize: 15, fontWeight: 700, color: 'var(--gray-900)', lineHeight: 1.4 }}>
+                  <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--gray-900)', margin: '0 0 6px 0', lineHeight: 1.4 }}>
                     {poll.title}
                   </h3>
+
                   {poll.description && (
-                    <p style={{ margin: '0 0 16px 0', fontSize: 12.5, color: 'var(--gray-600)', lineHeight: 1.5 }}>
+                    <p style={{ fontSize: 13, color: 'var(--gray-600)', margin: 0, lineHeight: 1.5 }}>
                       {poll.description}
                     </p>
                   )}
+                </div>
 
-                  {/* Dedicated Results & Options Box */}
+                {/* Options and Live Progress List */}
+                <div style={{ padding: '16px 20px', flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
                   <div style={{
                     background: 'var(--gray-50)',
                     border: '1px solid var(--gray-200)',
@@ -320,21 +435,47 @@ export default function VotingTab() {
                             }}
                           />
 
-                          <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                              {isVoted && <CheckCircle2 size={13} color="var(--primary-600)" />}
-                              <span style={{ fontSize: 12.5, fontWeight: isVoted ? 700 : 500, color: 'var(--gray-900)' }}>
+                          <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+                              {isVoted && <CheckCircle2 size={13} color="var(--primary-600)" style={{ flexShrink: 0 }} />}
+                              <span style={{ fontSize: 12.5, fontWeight: isVoted ? 700 : 500, color: 'var(--gray-900)', wordBreak: 'break-word', lineHeight: 1.4 }}>
                                 {opt.option_text}
                               </span>
                             </div>
 
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                               <span style={{ fontSize: 11.5, color: 'var(--gray-500)' }}>
                                 {opt.votes_count || 0} votes
                               </span>
                               <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--gray-900)', minWidth: 38, textAlign: 'right' }}>
                                 {pct}%
                               </span>
+
+                              {/* View Voter Names & Outreach Button */}
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  handleOpenVotersModal(poll, opt)
+                                }}
+                                className="btn btn-secondary btn-sm"
+                                style={{
+                                  height: 24,
+                                  padding: '2px 8px',
+                                  fontSize: 11,
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: 4,
+                                  color: (opt.votes_count || 0) > 0 ? 'var(--primary-700)' : 'var(--gray-600)',
+                                  borderColor: (opt.votes_count || 0) > 0 ? 'var(--primary-200)' : 'var(--gray-300)',
+                                  background: (opt.votes_count || 0) > 0 ? '#eff6ff' : 'var(--white)',
+                                  fontWeight: 600
+                                }}
+                                title="View voter names and details to help them"
+                              >
+                                <Eye size={12} />
+                                <span>View</span>
+                              </button>
 
                               {isActive && (
                                 <button
@@ -357,7 +498,7 @@ export default function VotingTab() {
                 </div>
 
                 {/* Footer Controls */}
-                <div style={{ padding: '12px 20px', borderTop: '1px solid var(--gray-100)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, color: 'var(--gray-500)', background: 'var(--white)' }}>
+                <div style={{ padding: '12px 20px', borderTop: '1px solid var(--gray-100)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, color: 'var(--gray-500)', background: 'var(--white)', flexWrap: 'wrap', gap: 10 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                     <Clock size={12} />
                     {poll.end_time ? (
@@ -368,11 +509,22 @@ export default function VotingTab() {
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <button
+                      type="button"
+                      onClick={() => handleOpenVotersModal(poll, null)}
+                      className="btn btn-secondary btn-sm"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11.5 }}
+                      title="View all voter responses and details"
+                    >
+                      <Users size={12} />
+                      <span>View All Voters ({poll.total_votes || 0})</span>
+                    </button>
                     {isActive && (
                       <button
                         type="button"
                         onClick={() => setClosingPoll(poll)}
                         className="btn btn-secondary btn-sm"
+                        style={{ fontSize: 11.5 }}
                       >
                         Close Voting
                       </button>
@@ -394,6 +546,259 @@ export default function VotingTab() {
         </div>
       )}
 
+      {/* Voter Details & Help Directory Modal */}
+      {votersModalPoll && (
+        <Modal
+          isOpen={true}
+          title={
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: '50%',
+                  background: 'var(--primary-50)',
+                  border: '1px solid var(--primary-200)',
+                  color: 'var(--primary-600)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <Users size={18} />
+              </div>
+              <div>
+                <div style={{ fontSize: 15.5, fontWeight: 700, color: 'var(--gray-900)' }}>
+                  Voter Details & Support Directory
+                </div>
+                <div style={{ fontSize: 12, fontWeight: 400, color: 'var(--gray-500)', marginTop: 2 }}>
+                  {votersModalPoll.title}
+                </div>
+              </div>
+            </div>
+          }
+          onClose={handleCloseVotersModal}
+          size="modal-lg"
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {/* Filter Pills for options */}
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', paddingBottom: 10, borderBottom: '1px solid var(--gray-200)' }}>
+              <button
+                type="button"
+                onClick={() => setSelectedOptionFilter('ALL')}
+                className={`btn btn-sm ${selectedOptionFilter === 'ALL' ? 'btn-primary' : 'btn-secondary'}`}
+                style={{ borderRadius: 20, fontSize: 12, padding: '4px 12px' }}
+              >
+                All Options ({votersData?.total_votes || 0})
+              </button>
+              {votersData?.options?.map(opt => {
+                const isSelected = selectedOptionFilter === opt.option_id
+                return (
+                  <button
+                    key={opt.option_id}
+                    type="button"
+                    onClick={() => setSelectedOptionFilter(opt.option_id)}
+                    className={`btn btn-sm ${isSelected ? 'btn-primary' : 'btn-secondary'}`}
+                    style={{
+                      borderRadius: 20,
+                      fontSize: 12,
+                      padding: '4px 12px',
+                      maxWidth: 320,
+                      textOverflow: 'ellipsis',
+                      overflow: 'hidden',
+                      whiteSpace: 'nowrap'
+                    }}
+                    title={opt.option_text}
+                  >
+                    {opt.option_text} ({opt.votes_count})
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Search Input */}
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+              <div style={{ position: 'relative', flex: 1 }}>
+                <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--gray-400)' }} />
+                <input
+                  type="text"
+                  placeholder="Search by person name, phone, member ID, or location..."
+                  value={voterSearch}
+                  onChange={(e) => setVoterSearch(e.target.value)}
+                  className="form-control"
+                  style={{ paddingLeft: 34, height: 36, fontSize: 12.5 }}
+                />
+              </div>
+              {voterSearch && (
+                <button
+                  type="button"
+                  onClick={() => setVoterSearch('')}
+                  className="btn btn-secondary btn-sm"
+                  style={{ height: 36 }}
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+
+            {/* Voters List Area */}
+            {votersLoading ? (
+              <LoadingState message="Loading voter details and contact records..." />
+            ) : filteredVoters.length === 0 ? (
+              <EmptyState
+                icon={Users}
+                title="No voters found"
+                message={voterSearch ? 'No voters match your search criteria.' : 'No votes recorded for this option yet.'}
+              />
+            ) : (
+              <div style={{ maxHeight: 420, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 10, paddingRight: 4 }}>
+                {filteredVoters.map((voter) => {
+                  const rawPhone = voter.phone || ''
+                  const cleanPhone = rawPhone.replace(/\D/g, '').slice(-10)
+
+                  return (
+                    <div
+                      key={voter.vote_id}
+                      style={{
+                        background: 'var(--white)',
+                        border: '1px solid var(--gray-200)',
+                        borderRadius: 'var(--border-radius-sm)',
+                        padding: '12px 14px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 12,
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      {/* Left: Avatar & Voter details */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: 1 }}>
+                        <div
+                          style={{
+                            width: 42,
+                            height: 42,
+                            borderRadius: '50%',
+                            background: '#eff6ff',
+                            color: '#1d4ed8',
+                            border: '1px solid #bfdbfe',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontWeight: 700,
+                            fontSize: 16,
+                            flexShrink: 0
+                          }}
+                        >
+                          {(voter.full_name || voter.username || '?').charAt(0).toUpperCase()}
+                        </div>
+
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--gray-900)' }}>
+                              {voter.full_name}
+                            </span>
+                            {voter.member_id && (
+                              <span style={{ fontSize: 11, padding: '1px 6px', background: 'var(--gray-100)', color: 'var(--gray-700)', borderRadius: 4, fontWeight: 600 }}>
+                                ID: {voter.member_id}
+                              </span>
+                            )}
+                            <span style={{ fontSize: 10.5, padding: '1px 6px', background: voter.role === 'MEMBER' ? '#e0f2fe' : '#fef3c7', color: voter.role === 'MEMBER' ? '#0369a1' : '#b45309', borderRadius: 4, fontWeight: 600 }}>
+                              {voter.role}
+                            </span>
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4, flexWrap: 'wrap', fontSize: 12, color: 'var(--gray-600)' }}>
+                            {cleanPhone && (
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontWeight: 600, color: 'var(--gray-900)' }}>
+                                <Phone size={11} color="var(--gray-500)" />
+                                {cleanPhone}
+                              </span>
+                            )}
+                            {voter.address && (
+                              <span style={{ color: 'var(--gray-600)', fontSize: 11.5 }}>
+                                • {voter.address}
+                              </span>
+                            )}
+                            {voter.voted_at && (
+                              <span style={{ color: 'var(--gray-400)', fontSize: 11 }}>
+                                • {format(new Date(voter.voted_at), 'dd MMM yyyy, hh:mm a')}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Option badge */}
+                          <div style={{ marginTop: 6 }}>
+                            <span style={{ fontSize: 11.5, background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', padding: '2px 8px', borderRadius: 12, display: 'inline-block' }}>
+                              Option: <strong>{voter.option_text}</strong>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right: Assistance Actions */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                        {cleanPhone ? (
+                          <>
+                            <a
+                              href={`tel:${cleanPhone}`}
+                              className="btn btn-secondary btn-sm"
+                              style={{ height: 28, padding: '2px 9px', fontSize: 11.5, display: 'inline-flex', alignItems: 'center', gap: 4, color: '#16a34a', borderColor: '#bbf7d0', background: '#f0fdf4' }}
+                              title="Call member directly"
+                            >
+                              <Phone size={12} />
+                              <span>Call</span>
+                            </a>
+                            <a
+                              href={`https://wa.me/91${cleanPhone}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="btn btn-secondary btn-sm"
+                              style={{ height: 28, padding: '2px 9px', fontSize: 11.5, display: 'inline-flex', alignItems: 'center', gap: 4, color: '#059669', borderColor: '#a7f3d0' }}
+                              title="Message via WhatsApp"
+                            >
+                              <MessageCircle size={12} />
+                              <span>WhatsApp</span>
+                            </a>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                navigator.clipboard.writeText(cleanPhone)
+                                toast.success(`Phone copied: ${cleanPhone}`)
+                              }}
+                              className="btn btn-secondary btn-sm"
+                              style={{ height: 28, padding: '2px 7px' }}
+                              title="Copy phone number"
+                            >
+                              <Copy size={12} />
+                            </button>
+                          </>
+                        ) : (
+                          <span style={{ fontSize: 11, color: 'var(--gray-400)', fontStyle: 'italic' }}>
+                            No phone recorded
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
+            {/* Footer */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--gray-200)', paddingTop: 12, marginTop: 4, fontSize: 12, color: 'var(--gray-500)' }}>
+              <span>Showing <strong>{filteredVoters.length}</strong> voter response{filteredVoters.length === 1 ? '' : 's'}</span>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={handleCloseVotersModal}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
       {/* Create Poll Wizard Modal */}
       {isModalOpen && (
         <Modal
@@ -408,60 +813,64 @@ export default function VotingTab() {
               <input
                 type="text"
                 required
-                className="form-control"
+                placeholder="e.g. Select Location for Annual Medical Camp 2026"
                 value={title}
                 onChange={e => setTitle(e.target.value)}
-                placeholder="e.g. Which community health initiative should the Trust prioritize next quarter?"
+                className="form-control"
               />
             </div>
 
             <div className="form-group" style={{ marginBottom: 0 }}>
-              <label className="form-label">Description / Context (Optional)</label>
+              <label className="form-label">Description / Instructions</label>
               <textarea
-                rows={2}
-                className="form-control"
+                rows={3}
+                placeholder="Provide additional context or instructions for voters..."
                 value={description}
                 onChange={e => setDescription(e.target.value)}
-                placeholder="Brief background information for voters..."
+                className="form-control"
               />
             </div>
 
-            {/* Dynamic Options List */}
+            {/* Voting Options */}
             <div className="form-group" style={{ marginBottom: 0 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                <label className="form-label required" style={{ marginBottom: 0 }}>Poll Options (Min: 2, Max: 6)</label>
-                <button
-                  type="button"
-                  onClick={handleAddOption}
-                  className="btn btn-secondary btn-sm"
-                >
-                  <Plus size={12} /> Add Option
-                </button>
-              </div>
+              <label className="form-label required" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>Ballot Options ({options.length}/8)</span>
+                {options.length < 8 && (
+                  <button
+                    type="button"
+                    onClick={handleAddOption}
+                    className="btn btn-secondary btn-sm"
+                    style={{ height: 22, padding: '0 6px', fontSize: 11 }}
+                  >
+                    <Plus size={11} /> Add Option
+                  </button>
+                )}
+              </label>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 6 }}>
                 {options.map((opt, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--gray-500)', width: 20 }}>
-                      #{i + 1}
-                    </span>
+                  <div key={i} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--gray-400)', minWidth: 20 }}>
+                      {i + 1}.
+                    </div>
                     <input
                       type="text"
                       required
-                      className="form-control"
+                      placeholder={`Option ${i + 1}`}
                       value={opt}
                       onChange={e => handleOptionChange(i, e.target.value)}
-                      placeholder={`Option ${i + 1}`}
+                      className="form-control"
+                      style={{ flex: 1 }}
                     />
                     {options.length > 2 && (
                       <button
                         type="button"
                         onClick={() => handleRemoveOption(i)}
                         className="btn btn-secondary btn-sm"
-                        style={{ color: 'var(--danger)', borderColor: 'var(--danger-light)' }}
+                        style={{ height: 34, padding: '0 8px', color: 'var(--danger)' }}
                         title="Remove option"
                       >
-                        <X size={12} />
+                        <X size={13} />
                       </button>
                     )}
                   </div>
@@ -469,19 +878,35 @@ export default function VotingTab() {
               </div>
             </div>
 
-            {/* Voting Deadline */}
-            <div className="form-group" style={{ marginBottom: 0 }}>
-              <label className="form-label">Voting Deadline (Optional)</label>
-              <input
-                type="datetime-local"
-                className="form-control"
-                value={endTime}
-                onChange={e => setEndTime(e.target.value)}
-              />
+            {/* Target Audience & Schedule */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label">Eligible Roles</label>
+                <select
+                  value={eligibleRoles}
+                  onChange={e => setEligibleRoles(e.target.value)}
+                  className="form-control"
+                >
+                  <option value="ALL">Everyone (Members & Staff)</option>
+                  <option value="MEMBER">Members Only</option>
+                  <option value="STAFF,MANAGER,ADMIN">Trust Staff Only</option>
+                  <option value="VOLUNTEER">Volunteers Only</option>
+                </select>
+              </div>
+
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <label className="form-label">Voting Deadline (Optional)</label>
+                <input
+                  type="datetime-local"
+                  value={endTime}
+                  onChange={e => setEndTime(e.target.value)}
+                  className="form-control"
+                />
+              </div>
             </div>
 
-            {/* Settings Toggles */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 12, background: 'var(--gray-50)', borderRadius: 'var(--border-radius-sm)', border: '1px solid var(--gray-200)' }}>
+            {/* Integrity Flags */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '10px 12px', background: 'var(--gray-50)', borderRadius: 'var(--border-radius-sm)', border: '1px solid var(--gray-200)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <input
                   type="checkbox"
@@ -491,7 +916,7 @@ export default function VotingTab() {
                   style={{ width: 16, height: 16, cursor: 'pointer' }}
                 />
                 <label htmlFor="anonCheck" style={{ fontSize: 12.5, color: 'var(--gray-800)', cursor: 'pointer' }}>
-                  <strong>Anonymous Voting:</strong> Keep individual member voting choices confidential.
+                  <strong>Anonymous Ballot:</strong> Hide voter identities from public feed.
                 </label>
               </div>
 
