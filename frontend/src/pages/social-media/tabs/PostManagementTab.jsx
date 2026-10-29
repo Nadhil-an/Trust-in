@@ -21,6 +21,7 @@ export default function PostManagementTab() {
   const [activePhoto, setActivePhoto] = useState(null)
   const [deletingItem, setDeletingItem] = useState(null)
   const [deleting, setDeleting] = useState(false)
+  const [bulkApproving, setBulkApproving] = useState(false)
 
   const loadPosts = useCallback(async () => {
     setLoading(true)
@@ -119,6 +120,30 @@ export default function PostManagementTab() {
     }
   }
 
+  const handleApproveAll = async () => {
+    const unapproved = posts.filter(p => p.status !== 'APPROVED')
+    if (unapproved.length === 0) {
+      toast.info('No pending or open posts to approve.')
+      return
+    }
+    if (!window.confirm(`Approve all ${unapproved.length} open/pending post(s) and publish them to the mobile feed?`)) {
+      return
+    }
+    setBulkApproving(true)
+    let approvedCount = 0
+    for (const post of unapproved) {
+      try {
+        await coreApi.memberPosts.approve(post.id)
+        approvedCount++
+      } catch (err) {
+        console.error('Failed to approve post:', post.id, err)
+      }
+    }
+    setBulkApproving(false)
+    toast.success(`Successfully approved ${approvedCount} post(s)!`)
+    loadPosts()
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       {/* Standard Filter Bar */}
@@ -143,6 +168,7 @@ export default function PostManagementTab() {
             style={{ width: '160px' }}
           >
             <option value="ALL">All Statuses</option>
+            <option value="OPEN">Open (Default)</option>
             <option value="PENDING_APPROVAL">Pending Review</option>
             <option value="APPROVED">Approved & Live</option>
             <option value="FORWARDED_TO_FAO">Forwarded to FAO</option>
@@ -170,7 +196,19 @@ export default function PostManagementTab() {
               {posts.length} Posts
             </span>
           </div>
-          <div className="data-card-actions">
+          <div className="data-card-actions" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {posts.some(p => p.status !== 'APPROVED') && (
+              <button
+                onClick={handleApproveAll}
+                disabled={bulkApproving}
+                className="btn btn-success btn-sm"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                title="Approve all pending and open posts at once"
+              >
+                <CheckCircle2 size={13} />
+                {bulkApproving ? 'Approving All...' : `Approve All (${posts.filter(p => p.status !== 'APPROVED').length})`}
+              </button>
+            )}
             <span style={{ fontSize: 12, color: 'var(--gray-500)' }}>
               Showing {posts.length} content submissions
             </span>
@@ -232,7 +270,7 @@ export default function PostManagementTab() {
                       </td>
                       <td>
                         <div style={{ fontSize: 13, color: 'var(--gray-800)', maxWidth: 380, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {post.content || '(No text content)'}
+                          {post.description || post.content || '(No text content)'}
                         </div>
                         {post.images && post.images.length > 0 && (
                           <div style={{ fontSize: 11, color: 'var(--primary-700)', marginTop: 2 }}>
@@ -257,24 +295,26 @@ export default function PostManagementTab() {
                             <Eye size={12} />
                             Details
                           </button>
-                          {isPending && (
-                            <>
-                              <button
-                                onClick={(e) => handleApprove(post, e)}
-                                disabled={approvingId === post.id}
-                                className="btn btn-success btn-sm"
-                              >
-                                <CheckCircle2 size={12} />
-                                {approvingId === post.id ? 'Approving...' : 'Approve'}
-                              </button>
-                              <button
-                                onClick={(e) => handleOpenReject(post, e)}
-                                className="btn btn-danger btn-sm"
-                              >
-                                <XCircle size={12} />
-                                Reject
-                              </button>
-                            </>
+                          {post.status !== 'APPROVED' && (
+                            <button
+                              onClick={(e) => handleApprove(post, e)}
+                              disabled={approvingId === post.id}
+                              className="btn btn-success btn-sm"
+                              title="Approve and publish post to feed"
+                            >
+                              <CheckCircle2 size={12} />
+                              {approvingId === post.id ? 'Approving...' : 'Approve'}
+                            </button>
+                          )}
+                          {post.status !== 'REJECTED' && (
+                            <button
+                              onClick={(e) => handleOpenReject(post, e)}
+                              className="btn btn-danger btn-sm"
+                              title="Reject post"
+                            >
+                              <XCircle size={12} />
+                              Reject
+                            </button>
                           )}
                           <button
                             onClick={(e) => handleOpenDelete(post, e)}
@@ -304,21 +344,24 @@ export default function PostManagementTab() {
           size="modal-lg"
           footer={
             <>
-              {selectedPost.status === 'PENDING_APPROVAL' && (
-                <>
-                  <button
-                    className="btn btn-danger btn-sm"
-                    onClick={() => { const p = selectedPost; setSelectedPost(null); handleOpenReject(p); }}
-                  >
-                    Reject Post
-                  </button>
-                  <button
-                    className="btn btn-success btn-sm"
-                    onClick={() => handleApprove(selectedPost)}
-                  >
-                    Approve & Publish
-                  </button>
-                </>
+              {selectedPost.status !== 'APPROVED' && (
+                <button
+                  className="btn btn-success btn-sm"
+                  disabled={approvingId === selectedPost.id}
+                  onClick={() => handleApprove(selectedPost)}
+                >
+                  <CheckCircle2 size={12} />
+                  {approvingId === selectedPost.id ? 'Approving...' : 'Approve & Publish'}
+                </button>
+              )}
+              {selectedPost.status !== 'REJECTED' && (
+                <button
+                  className="btn btn-danger btn-sm"
+                  onClick={() => { const p = selectedPost; setSelectedPost(null); handleOpenReject(p); }}
+                >
+                  <XCircle size={12} />
+                  Reject Post
+                </button>
               )}
               <button
                 className="btn btn-danger btn-sm"
@@ -348,7 +391,7 @@ export default function PostManagementTab() {
             </div>
 
             <div style={{ background: 'var(--gray-50)', padding: '16px', borderRadius: 'var(--border-radius-sm)', border: '1px solid var(--gray-200)', fontSize: 14, lineHeight: 1.6 }}>
-              {selectedPost.content}
+              {selectedPost.description || selectedPost.content || '(No text content)'}
             </div>
 
             {selectedPost.images && selectedPost.images.length > 0 && (
