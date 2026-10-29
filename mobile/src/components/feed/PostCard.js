@@ -31,6 +31,7 @@ export default function PostCard({
   onPostDeleted,
   onEditPost,
   showStatusBadge = false,
+  isActiveVideo = false,
 }) {
   const [isLiked, setIsLiked] = useState(Boolean(post.is_liked_by_me));
   const [likesCount, setLikesCount] = useState(post.likes_count || 0);
@@ -54,9 +55,10 @@ export default function PostCard({
   const lastTapRef = useRef(0);
   const navigation = useNavigation();
 
-  // Custom Video Player state (Hides native forward, backward, and pause controls during playback)
+  // Custom Video Player state (Auto-plays when active in viewport, pauses when scrolled away)
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [isVideoMuted, setIsVideoMuted] = useState(false);
+  const [isManuallyPaused, setIsManuallyPaused] = useState(false);
   const videoRef = useRef(null);
 
   const togglePlayVideo = async () => {
@@ -66,12 +68,38 @@ export default function PostCard({
       if (status.isPlaying) {
         await videoRef.current.pauseAsync();
         setIsVideoPlaying(false);
+        setIsManuallyPaused(true);
       } else {
         await videoRef.current.playAsync();
         setIsVideoPlaying(true);
+        setIsManuallyPaused(false);
       }
     } catch (_) {}
   };
+
+  // Synchronize playback with viewport focus (autoplay on view, auto-pause on scroll away)
+  useEffect(() => {
+    if (!post.video) return;
+
+    if (isActiveVideo) {
+      if (!isManuallyPaused) {
+        setIsVideoPlaying(true);
+        videoRef.current?.playAsync().catch(() => {});
+      }
+    } else {
+      setIsVideoPlaying(false);
+      setIsManuallyPaused(false);
+      videoRef.current?.pauseAsync().catch(() => {});
+    }
+  }, [isActiveVideo, post.video]);
+
+  useEffect(() => {
+    return () => {
+      if (videoRef.current) {
+        videoRef.current.pauseAsync().catch(() => {});
+      }
+    };
+  }, []);
 
   const handleOpenDetail = () => {
     navigation.navigate('PostDetail', { post, postId: post.id });

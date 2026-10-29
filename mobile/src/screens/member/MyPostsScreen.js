@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
   Platform,
   StatusBar,
   KeyboardAvoidingView,
+  Dimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -41,6 +42,77 @@ export default function MyPostsScreen({ navigation }) {
   // Comments state
   const [commentsModalVisible, setCommentsModalVisible] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState(null);
+
+  // Active Video Playback on Scroll
+  const [activeVideoPostId, setActiveVideoPostId] = useState(null);
+  const [isScreenFocused, setIsScreenFocused] = useState(true);
+  const postLayoutsRef = useRef({});
+  const lastScrollYRef = useRef(0);
+  const lastViewportHeightRef = useRef(Dimensions.get('window').height);
+
+  const calculateActiveVideo = useCallback((scrollY, viewportHeight) => {
+    if (!isScreenFocused || commentsModalVisible) {
+      setActiveVideoPostId(null);
+      return;
+    }
+
+    const vHeight = viewportHeight || lastViewportHeightRef.current || Dimensions.get('window').height;
+    const focalCenter = scrollY + vHeight * 0.45;
+    const windowTop = scrollY;
+    const windowBottom = scrollY + vHeight;
+
+    let bestId = null;
+    let maxVisibleHeight = 0;
+
+    const layouts = postLayoutsRef.current;
+    for (const [id, layout] of Object.entries(layouts)) {
+      if (!layout.hasVideo) continue;
+
+      const postTop = layout.y;
+      const postBottom = layout.y + layout.height;
+
+      const visibleTop = Math.max(postTop, windowTop);
+      const visibleBottom = Math.min(postBottom, windowBottom);
+      const visibleHeight = Math.max(0, visibleBottom - visibleTop);
+
+      if (visibleHeight > 120) {
+        if (focalCenter >= postTop && focalCenter <= postBottom) {
+          bestId = id;
+          break;
+        }
+
+        if (visibleHeight > maxVisibleHeight) {
+          maxVisibleHeight = visibleHeight;
+          bestId = id;
+        }
+      }
+    }
+
+    setActiveVideoPostId((prev) => (prev === bestId ? prev : bestId));
+  }, [isScreenFocused, commentsModalVisible]);
+
+  const handleFeedScroll = useCallback((e) => {
+    const scrollY = e.nativeEvent.contentOffset.y;
+    const viewportHeight = e.nativeEvent.layoutMeasurement.height;
+    lastScrollYRef.current = scrollY;
+    lastViewportHeightRef.current = viewportHeight;
+    calculateActiveVideo(scrollY, viewportHeight);
+  }, [calculateActiveVideo]);
+
+  useFocusEffect(
+    useCallback(() => {
+      setIsScreenFocused(true);
+      const timer = setTimeout(() => {
+        calculateActiveVideo(lastScrollYRef.current, lastViewportHeightRef.current);
+      }, 350);
+
+      return () => {
+        setIsScreenFocused(false);
+        setActiveVideoPostId(null);
+        clearTimeout(timer);
+      };
+    }, [calculateActiveVideo])
+  );
 
   // Edit Modal state
   const [editingPost, setEditingPost] = useState(null);
@@ -219,6 +291,8 @@ export default function MyPostsScreen({ navigation }) {
       {/* Posts Feed ScrollView */}
       <ScrollView
         contentContainerStyle={styles.scrollContent}
+        scrollEventThrottle={32}
+        onScroll={handleFeedScroll}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -254,21 +328,35 @@ export default function MyPostsScreen({ navigation }) {
           </View>
         ) : (
           posts.map((post) => (
-            <PostCard
+            <View
               key={post.id}
-              post={post}
-              currentUserId={user?.id}
-              onOpenComments={(id) => {
-                setSelectedPostId(id);
-                setCommentsModalVisible(true);
+              onLayout={(e) => {
+                const { y, height } = e.nativeEvent.layout;
+                postLayoutsRef.current[String(post.id)] = {
+                  y,
+                  height,
+                  hasVideo: Boolean(post.video),
+                };
+                calculateActiveVideo(lastScrollYRef.current, lastViewportHeightRef.current);
               }}
-              onPostDeleted={(deletedId) => {
-                setPosts((prev) => prev.filter((p) => p.id !== deletedId));
-                Toast.show({ type: 'success', text1: 'Post Deleted', text2: 'Your post was successfully deleted.' });
-              }}
-              onEditPost={handleOpenEdit}
-              showStatusBadge={true}
-            />
+            >
+              <PostCard
+                post={post}
+                currentUserId={user?.id}
+                isActiveVideo={isScreenFocused && !commentsModalVisible && String(activeVideoPostId) === String(post.id)}
+                onOpenComments={(id) => {
+                  setSelectedPostId(id);
+                  setCommentsModalVisible(true);
+                }}
+                onPostDeleted={(deletedId) => {
+                  setPosts((prev) => prev.filter((p) => p.id !== deletedId));
+                  delete postLayoutsRef.current[String(deletedId)];
+                  Toast.show({ type: 'success', text1: 'Post Deleted', text2: 'Your post was successfully deleted.' });
+                }}
+                onEditPost={handleOpenEdit}
+                showStatusBadge={true}
+              />
+            </View>
           ))
         )}
       </ScrollView>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   Image,
   TextInput,
   FlatList,
+  Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -64,6 +65,13 @@ const MemberHomeScreen = ({ navigation }) => {
   const [commentsModalVisible, setCommentsModalVisible] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState(null);
   const [userProfile, setUserProfile] = useState(user);
+
+  // Active Video Playback on Scroll
+  const [activeVideoPostId, setActiveVideoPostId] = useState(null);
+  const [isScreenFocused, setIsScreenFocused] = useState(true);
+  const postLayoutsRef = useRef({});
+  const lastScrollYRef = useRef(0);
+  const lastViewportHeightRef = useRef(Dimensions.get('window').height);
 
   useEffect(() => {
     setUserProfile(user);
@@ -266,21 +274,80 @@ const MemberHomeScreen = ({ navigation }) => {
     fetchStoryMembers();
   }, []);
 
+  const calculateActiveVideo = useCallback((scrollY, viewportHeight) => {
+    if (!isScreenFocused || commentsModalVisible) {
+      setActiveVideoPostId(null);
+      return;
+    }
+
+    const vHeight = viewportHeight || lastViewportHeightRef.current || Dimensions.get('window').height;
+    const focalCenter = scrollY + vHeight * 0.45;
+    const windowTop = scrollY;
+    const windowBottom = scrollY + vHeight;
+
+    let bestId = null;
+    let maxVisibleHeight = 0;
+
+    const layouts = postLayoutsRef.current;
+    for (const [id, layout] of Object.entries(layouts)) {
+      if (!layout.hasVideo) continue;
+
+      const postTop = layout.y;
+      const postBottom = layout.y + layout.height;
+
+      const visibleTop = Math.max(postTop, windowTop);
+      const visibleBottom = Math.min(postBottom, windowBottom);
+      const visibleHeight = Math.max(0, visibleBottom - visibleTop);
+
+      if (visibleHeight > 120) {
+        if (focalCenter >= postTop && focalCenter <= postBottom) {
+          bestId = id;
+          break;
+        }
+
+        if (visibleHeight > maxVisibleHeight) {
+          maxVisibleHeight = visibleHeight;
+          bestId = id;
+        }
+      }
+    }
+
+    setActiveVideoPostId((prev) => (prev === bestId ? prev : bestId));
+  }, [isScreenFocused, commentsModalVisible]);
+
+  const handleFeedScroll = useCallback((e) => {
+    const scrollY = e.nativeEvent.contentOffset.y;
+    const viewportHeight = e.nativeEvent.layoutMeasurement.height;
+    lastScrollYRef.current = scrollY;
+    lastViewportHeightRef.current = viewportHeight;
+    calculateActiveVideo(scrollY, viewportHeight);
+  }, [calculateActiveVideo]);
+
   useFocusEffect(
     useCallback(() => {
+      setIsScreenFocused(true);
       fetchPosts();
       fetchProfileAndCheck();
       fetchActivePolls();
       fetchPoms();
       fetchStoryMembers();
 
+      const timer = setTimeout(() => {
+        calculateActiveVideo(lastScrollYRef.current, lastViewportHeightRef.current);
+      }, 350);
+
       // Real-time polling timer: auto-updates vote counts and percentages live without manual refresh
       const liveTimer = setInterval(() => {
         fetchActivePolls();
       }, 12000);
 
-      return () => clearInterval(liveTimer);
-    }, [])
+      return () => {
+        setIsScreenFocused(false);
+        setActiveVideoPostId(null);
+        clearTimeout(timer);
+        clearInterval(liveTimer);
+      };
+    }, [calculateActiveVideo])
   );
 
   const onRefresh = useCallback(async () => {
@@ -409,6 +476,8 @@ const MemberHomeScreen = ({ navigation }) => {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#0284c7" />}
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
+        scrollEventThrottle={32}
+        onScroll={handleFeedScroll}
       >
         {/* Subscription Hover / Attention Banner on App Open */}
         {isAuthenticated && isNotSubscribed && !inFeedBannerDismissed ? (
@@ -627,18 +696,32 @@ const MemberHomeScreen = ({ navigation }) => {
               );
             }
             return (
-              <PostCard
+              <View
                 key={`post-${item.id}`}
-                post={item}
-                currentUserId={user?.id}
-                onOpenComments={(id) => {
-                  setSelectedPostId(id);
-                  setCommentsModalVisible(true);
+                onLayout={(e) => {
+                  const { y, height } = e.nativeEvent.layout;
+                  postLayoutsRef.current[String(item.id)] = {
+                    y,
+                    height,
+                    hasVideo: Boolean(item.video),
+                  };
+                  calculateActiveVideo(lastScrollYRef.current, lastViewportHeightRef.current);
                 }}
-                onPostDeleted={(deletedId) => {
-                  setPosts((prev) => prev.filter((p) => p.id !== deletedId));
-                }}
-              />
+              >
+                <PostCard
+                  post={item}
+                  currentUserId={user?.id}
+                  isActiveVideo={isScreenFocused && !commentsModalVisible && String(activeVideoPostId) === String(item.id)}
+                  onOpenComments={(id) => {
+                    setSelectedPostId(id);
+                    setCommentsModalVisible(true);
+                  }}
+                  onPostDeleted={(deletedId) => {
+                    setPosts((prev) => prev.filter((p) => p.id !== deletedId));
+                    delete postLayoutsRef.current[String(deletedId)];
+                  }}
+                />
+              </View>
             );
           })
         )}
