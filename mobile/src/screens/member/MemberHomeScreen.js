@@ -7,8 +7,10 @@ import {
   TouchableOpacity,
   RefreshControl,
   Image,
-  TextInput
+  TextInput,
+  FlatList,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -16,6 +18,7 @@ import { Colors } from '../../constants/Colors';
 import { useAuthStore } from '../../store/authStore';
 import { useNotificationSocket } from '../../hooks/useWebSocket';
 import { authApi, eventsApi, memberPostsApi, pollsApi, pomApi } from '../../api';
+import { resolveImageUrl } from '../../utils/imageUrl';
 import PollCard from '../../components/feed/PollCard';
 import PomPosterCard from '../../components/feed/PomPosterCard';
 import Toast from 'react-native-toast-message';
@@ -41,6 +44,7 @@ const MemberHomeScreen = ({ navigation }) => {
       fetchActivePolls();
       fetchPoms();
       fetchPosts();
+      fetchStoryMembers();
     }
   });
   const insets = useSafeAreaInsets();
@@ -54,6 +58,9 @@ const MemberHomeScreen = ({ navigation }) => {
   const [activePolls, setActivePolls] = useState([]);
   const [pollsLoading, setPollsLoading] = useState(false);
   const [poms, setPoms] = useState([]);
+  const [storyMembers, setStoryMembers] = useState([]);
+  const [inFeedBannerDismissed, setInFeedBannerDismissed] = useState(false);
+  const [showFloatingReminder, setShowFloatingReminder] = useState(false);
   const [commentsModalVisible, setCommentsModalVisible] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState(null);
   const [userProfile, setUserProfile] = useState(user);
@@ -61,6 +68,28 @@ const MemberHomeScreen = ({ navigation }) => {
   useEffect(() => {
     setUserProfile(user);
   }, [user]);
+
+  // Recurring 2-minute reminder over circle profiles for non-subscribed members (auto-disappears in 2 seconds)
+  useEffect(() => {
+    if (!isAuthenticated || !isNotSubscribed) {
+      setShowFloatingReminder(false);
+      return;
+    }
+
+    let hideTimeout = null;
+    const interval = setInterval(() => {
+      setShowFloatingReminder(true);
+      if (hideTimeout) clearTimeout(hideTimeout);
+      hideTimeout = setTimeout(() => {
+        setShowFloatingReminder(false);
+      }, 2000); // Disappears within 2 seconds
+    }, 120000); // Every 2 minutes
+
+    return () => {
+      clearInterval(interval);
+      if (hideTimeout) clearTimeout(hideTimeout);
+    };
+  }, [isAuthenticated, isNotSubscribed]);
 
   const memberName = userProfile?.full_name || user?.full_name || '';
   const memberId = userProfile?.username || user?.username || '';
@@ -162,12 +191,34 @@ const MemberHomeScreen = ({ navigation }) => {
     navigation.navigate('MembershipPayment');
   };
 
+  const handleVoteSuccess = (updatedPoll) => {
+    if (updatedPoll?.id) {
+      setActivePolls((prev) =>
+        prev.map((p) => (p.id === updatedPoll.id ? { ...p, ...updatedPoll } : p))
+      );
+    } else {
+      fetchActivePolls();
+    }
+  };
+
   const fetchActivePolls = async () => {
     try {
       setPollsLoading(true);
       const res = await pollsApi.list({ status: 'ACTIVE' });
       const list = Array.isArray(res.data) ? res.data : (res.data?.results || []);
-      setActivePolls(list);
+      setActivePolls((prevList) => {
+        return list.map((incoming) => {
+          const current = prevList.find((p) => p.id === incoming.id);
+          if (current?.my_voted_option_id && incoming.my_voted_option_id !== current.my_voted_option_id) {
+            return {
+              ...incoming,
+              has_voted: true,
+              my_voted_option_id: current.my_voted_option_id,
+            };
+          }
+          return incoming;
+        });
+      });
     } catch (_) {}
     finally {
       setPollsLoading(false);
@@ -193,12 +244,26 @@ const MemberHomeScreen = ({ navigation }) => {
     }
   };
 
+  const fetchStoryMembers = async () => {
+    try {
+      const res = await memberPostsApi.getActiveMembers();
+      const rawList = Array.isArray(res.data) ? res.data : (res.data?.results || []);
+      const eligibleMembers = rawList.filter((m) => {
+        const isMember = (m.role || '').toLowerCase() === 'member';
+        const isActive = (m.status || '').toLowerCase() === 'active';
+        return isMember && isActive;
+      });
+      setStoryMembers(eligibleMembers);
+    } catch (_) {}
+  };
+
   useEffect(() => {
     fetchUpcomingEvents();
     fetchPosts();
     fetchProfileAndCheck();
     fetchActivePolls();
     fetchPoms();
+    fetchStoryMembers();
   }, []);
 
   useFocusEffect(
@@ -207,11 +272,12 @@ const MemberHomeScreen = ({ navigation }) => {
       fetchProfileAndCheck();
       fetchActivePolls();
       fetchPoms();
+      fetchStoryMembers();
 
       // Real-time polling timer: auto-updates vote counts and percentages live without manual refresh
       const liveTimer = setInterval(() => {
         fetchActivePolls();
-      }, 4000);
+      }, 12000);
 
       return () => clearInterval(liveTimer);
     }, [])
@@ -225,9 +291,44 @@ const MemberHomeScreen = ({ navigation }) => {
       fetchProfileAndCheck(),
       fetchActivePolls(),
       fetchPoms(),
+      fetchStoryMembers(),
     ]);
     setTimeout(() => setRefreshing(false), 800);
   }, []);
+
+  const renderStoryItem = useCallback(({ item }) => {
+    const photoUrl = resolveImageUrl(item.photo);
+    return (
+      <TouchableOpacity
+        style={styles.storyItemWrap}
+        activeOpacity={0.8}
+        onPress={() => navigation.navigate('MemberProfile', { userId: item.id, user: item })}
+      >
+        <LinearGradient
+          colors={['#CA1D7E', '#E052A0', '#F15C3C', '#FC8F44', '#FCC862']}
+          start={{ x: 0, y: 1 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.storyRingGradient}
+        >
+          <View style={styles.storyRingInner}>
+            {photoUrl ? (
+              <Image
+                source={{ uri: photoUrl }}
+                style={styles.storyImage}
+                resizeMode="cover"
+              />
+            ) : (
+              <View style={styles.storyFallbackAvatar}>
+                <Text style={styles.storyFallbackText}>
+                  {(item.full_name?.[0] || item.username?.[0] || 'U').toUpperCase()}
+                </Text>
+              </View>
+            )}
+          </View>
+        </LinearGradient>
+      </TouchableOpacity>
+    );
+  }, [navigation]);
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -282,7 +383,7 @@ const MemberHomeScreen = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
       >
         {/* Subscription Hover / Attention Banner on App Open */}
-        {isAuthenticated && isNotSubscribed ? (
+        {isAuthenticated && isNotSubscribed && !inFeedBannerDismissed ? (
           <TouchableOpacity
             style={styles.notifBannerAmber}
             activeOpacity={0.88}
@@ -295,8 +396,20 @@ const MemberHomeScreen = ({ navigation }) => {
               <View style={styles.notifBannerContent}>
                 <View style={styles.notifTitleRow}>
                   <Text style={styles.notifBannerTitleAmber}>Trust Membership Required</Text>
-                  <View style={styles.actionPillAmber}>
-                    <Text style={styles.actionPillAmberText}>₹100/mo</Text>
+                  <View style={styles.notifHeaderRight}>
+                    <View style={styles.actionPillAmber}>
+                      <Text style={styles.actionPillAmberText}>₹100/mo</Text>
+                    </View>
+                    <TouchableOpacity
+                      style={styles.notifCardCloseBtn}
+                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        setInFeedBannerDismissed(true);
+                      }}
+                    >
+                      <Ionicons name="close" size={16} color="#92400e" />
+                    </TouchableOpacity>
                   </View>
                 </View>
                 <Text style={styles.notifBannerDescAmber}>
@@ -367,41 +480,58 @@ const MemberHomeScreen = ({ navigation }) => {
           </TouchableOpacity>
         ) : null}
 
-        {/* Community Problem & Help Feed (Instagram-Style) */}
-        <View style={styles.feedHeaderRow}>
-          <View>
-            <Text style={styles.sectionTitle}>Community Help & Issues</Text>
-            <Text style={styles.feedSubtitle}>Problems & assistance requested by members</Text>
-          </View>
-          <TouchableOpacity
-            style={styles.createPostSmallBtn}
-            onPress={handleCreatePost}
-          >
-            <Ionicons name="add" size={16} color="#fff" />
-            <Text style={styles.createPostSmallBtnText}>Post Issue</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Create Post Prompt Card */}
-        <TouchableOpacity
-          style={styles.createPromptCard}
-          activeOpacity={0.85}
-          onPress={handleCreatePost}
-        >
-          {user?.avatar || user?.photo ? (
-            <Image source={{ uri: user.avatar || user.photo }} style={styles.promptAvatar} />
-          ) : (
-            <View style={styles.promptAvatarPlaceholder}>
-              <Text style={styles.promptAvatarText}>{(user?.full_name || user?.username || 'U')[0].toUpperCase()}</Text>
+        {/* Active Member Profile Stories (Instagram-Style) */}
+        <View style={styles.storiesContainerWrap}>
+          {storyMembers.length > 0 && (
+            <View style={styles.storiesSection}>
+              <FlatList
+                horizontal
+                nestedScrollEnabled
+                showsHorizontalScrollIndicator={false}
+                data={storyMembers}
+                keyExtractor={(item) => String(item.id)}
+                renderItem={renderStoryItem}
+                contentContainerStyle={styles.storiesListContent}
+              />
             </View>
           )}
-          <View style={styles.promptFakeInput}>
-            <Text style={styles.promptPlaceholderText}>Share a problem or ask for help...</Text>
-          </View>
-          <View style={styles.promptPhotoBtn}>
-            <Ionicons name="images-outline" size={20} color="#0284c7" />
-          </View>
-        </TouchableOpacity>
+
+          {/* Floating 2-minute reminder notification over circle profile stories (auto-disappears in 2s, has X button) */}
+          {showFloatingReminder && isAuthenticated && isNotSubscribed && (
+            <View style={styles.storiesOverlayNotification}>
+              <TouchableOpacity
+                activeOpacity={0.9}
+                style={styles.floatingReminderCard}
+                onPress={handleMembershipPayment}
+              >
+                <View style={styles.floatingReminderIconWrap}>
+                  <Ionicons name="card-outline" size={18} color="#b45309" />
+                </View>
+                <View style={styles.floatingReminderTextWrap}>
+                  <View style={styles.floatingReminderTitleRow}>
+                    <Text style={styles.floatingReminderTitle}>Trust Membership Required</Text>
+                    <View style={styles.floatingPill}>
+                      <Text style={styles.floatingPillText}>₹100/mo</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.floatingReminderSubtitle} numberOfLines={1}>
+                    Activate now to unlock your digital ID card & benefits
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.floatingCloseBtn}
+                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    setShowFloatingReminder(false);
+                  }}
+                >
+                  <Ionicons name="close" size={16} color="#78350f" />
+                </TouchableOpacity>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
 
         {/* ── Public Cooperation & Emergency Appeals (Poster Style) ── */}
         {poms.map((pom) => (
@@ -419,7 +549,7 @@ const MemberHomeScreen = ({ navigation }) => {
             poll={poll}
             isAuthenticated={isAuthenticated}
             navigation={navigation}
-            onVoteSuccess={fetchActivePolls}
+            onVoteSuccess={handleVoteSuccess}
           />
         ))}
 
@@ -978,74 +1108,143 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  feedHeaderRow: {
+  notifHeaderRight: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 4,
+    gap: 8,
   },
-  feedSubtitle: {
+  notifCardCloseBtn: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#fef3c7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  storiesContainerWrap: {
+    position: 'relative',
+  },
+  storiesOverlayNotification: {
+    position: 'absolute',
+    top: 4,
+    left: 0,
+    right: 0,
+    zIndex: 99,
+    elevation: 8,
+    alignItems: 'center',
+    paddingHorizontal: 8,
+  },
+  floatingReminderCard: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fffbeb',
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#fcd34d',
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    shadowColor: '#d97706',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 8,
+    gap: 8,
+  },
+  floatingReminderIconWrap: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#fef3c7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  floatingReminderTextWrap: {
+    flex: 1,
+  },
+  floatingReminderTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  floatingReminderTitle: {
+    fontSize: 12.5,
+    fontWeight: '800',
+    color: '#92400e',
+  },
+  floatingPill: {
+    backgroundColor: '#fde68a',
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 8,
+  },
+  floatingPillText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#92400e',
+  },
+  floatingReminderSubtitle: {
     fontSize: 11,
-    color: Colors.gray500,
+    color: '#78350f',
     marginTop: 1,
   },
-  createPostSmallBtn: {
-    flexDirection: 'row',
+  floatingCloseBtn: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#fef3c7',
     alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#0284c7',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 14,
+    justifyContent: 'center',
+    marginLeft: 4,
   },
-  createPostSmallBtnText: {
-    color: '#fff',
-    fontSize: 11,
-    fontWeight: '700',
+  storiesSection: {
+    marginHorizontal: -16,
+    marginBottom: 4,
   },
-  createPromptCard: {
-    flexDirection: 'row',
+  storiesListContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     alignItems: 'center',
-    backgroundColor: Colors.white,
-    borderRadius: 14,
-    padding: 10,
-    gap: 10,
-    borderWidth: 1,
-    borderColor: Colors.gray100,
-    marginBottom: 10,
   },
-  promptAvatar: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+  storyItemWrap: {
+    marginRight: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  promptAvatarPlaceholder: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+  storyRingGradient: {
+    width: 78,
+    height: 78,
+    borderRadius: 39,
+    padding: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  storyRingInner: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 2,
+  },
+  storyImage: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+  },
+  storyFallbackAvatar: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
     backgroundColor: '#E0F2FE',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  promptAvatarText: {
+  storyFallbackText: {
     color: '#0284c7',
-    fontSize: 13,
+    fontSize: 22,
     fontWeight: '700',
-  },
-  promptFakeInput: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  promptPlaceholderText: {
-    fontSize: 12.5,
-    color: '#94A3B8',
-  },
-  promptPhotoBtn: {
-    padding: 6,
   },
   loadingFeedCard: {
     paddingVertical: 24,

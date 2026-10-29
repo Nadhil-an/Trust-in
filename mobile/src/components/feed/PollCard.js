@@ -1,5 +1,5 @@
 // components/feed/PollCard.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -19,13 +19,24 @@ export default function PollCard({
 }) {
   const [localPoll, setLocalPoll] = useState(poll);
   const [submittingOptionId, setSubmittingOptionId] = useState(null);
+  const selectedOptionIdRef = useRef(poll?.my_voted_option_id || null);
 
-  // Sync whenever parent provides fresh poll data (e.g., from real-time websocket)
+  // Sync whenever parent provides fresh poll data (without reverting an active user choice)
   useEffect(() => {
-    if (poll && !submittingOptionId) {
-      setLocalPoll(poll);
-    }
-  }, [poll, submittingOptionId]);
+    if (!poll) return;
+    setLocalPoll((current) => {
+      if (!current) return poll;
+      const activeChoice = selectedOptionIdRef.current || current.my_voted_option_id;
+      if (activeChoice) {
+        return {
+          ...poll,
+          has_voted: true,
+          my_voted_option_id: activeChoice,
+        };
+      }
+      return poll;
+    });
+  }, [poll]);
 
   if (!localPoll) return null;
 
@@ -72,13 +83,16 @@ export default function PollCard({
       return;
     }
 
-    const previousVotedId = myVotedOptionId;
+    const previousVotedId = selectedOptionIdRef.current || myVotedOptionId;
     const isSameOption = String(previousVotedId) === String(option.id);
 
     if (isSameOption) {
-      // Already selected this option, keep it without toggling back
+      // Already selected this option, keep it locked without toggling
       return;
     }
+
+    // Immediately lock user choice in ref and state
+    selectedOptionIdRef.current = option.id;
 
     // Optimistic local state update (0ms instant UI update)
     setLocalPoll((prev) => {
@@ -117,10 +131,11 @@ export default function PollCard({
       const res = await pollsApi.vote(currentPoll.id, option.id);
       const pollData = res.data?.poll || (res.data?.id ? res.data : null);
       if (pollData) {
+        selectedOptionIdRef.current = pollData.my_voted_option_id || option.id;
         setLocalPoll(pollData);
       }
       if (onVoteSuccess) {
-        onVoteSuccess();
+        onVoteSuccess(pollData || { ...currentPoll, my_voted_option_id: option.id });
       }
       if (!isSameOption && previousVotedId) {
         Toast.show({
@@ -130,14 +145,14 @@ export default function PollCard({
         });
       }
     } catch (err) {
-      const errMsg = err?.response?.data?.error || 'Failed to submit vote. Reverting.';
-      Toast.show({
-        type: 'error',
-        text1: 'Voting Notice',
-        text2: errMsg,
-      });
-      // Only revert if it is not an already-voted message
+      const errMsg = err?.response?.data?.error || 'Failed to submit vote.';
       if (!errMsg.toLowerCase().includes('already')) {
+        Toast.show({
+          type: 'error',
+          text1: 'Voting Notice',
+          text2: errMsg,
+        });
+        selectedOptionIdRef.current = previousVotedId;
         setLocalPoll(poll);
       }
     } finally {

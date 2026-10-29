@@ -2143,7 +2143,9 @@ class SocialPollViewSet(ModelViewSet):
         except Exception:
             pass
 
-        serializer = self.get_serializer(poll)
+        # Reload fresh poll instance with updated relations to guarantee 100% accurate serializer data
+        fresh_poll = SocialPoll.objects.prefetch_related('options', 'votes').select_related('created_by').get(id=poll.id)
+        serializer = self.get_serializer(fresh_poll)
         return Response({
             'message': 'Your vote has been recorded successfully!',
             'poll': serializer.data
