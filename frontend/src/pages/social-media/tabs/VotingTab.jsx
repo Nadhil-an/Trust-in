@@ -38,8 +38,8 @@ export default function VotingTab() {
   const [closingPoll, setClosingPoll] = useState(null)
   const [deletingPoll, setDeletingPoll] = useState(null)
 
-  const loadPolls = useCallback(async () => {
-    setLoading(true)
+  const loadPolls = useCallback(async (showLoading = true) => {
+    if (showLoading) setLoading(true)
     try {
       const params = {}
       if (statusFilter !== 'ALL') params.status = statusFilter
@@ -52,29 +52,28 @@ export default function VotingTab() {
       console.error('Failed to load polls:', err)
       toast.error('Failed to load voting campaigns')
     } finally {
-      setLoading(false)
+      if (showLoading) setLoading(false)
     }
   }, [statusFilter, search])
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      loadPolls()
+      loadPolls(true)
     }, 250)
     return () => clearTimeout(timer)
   }, [loadPolls])
 
-  // Real-time synchronization: listen for WebSocket dashboard-refresh & poll every 5s
+  // Real-time synchronization: listen for WebSocket dashboard-refresh only (NO aggressive interval polling)
   useEffect(() => {
     const handleRefresh = (e) => {
-      loadPolls()
+      const mod = e?.detail?.module
+      if (!mod || mod === 'SOCIAL_POLLS') {
+        loadPolls(false)
+      }
     }
     window.addEventListener('dashboard-refresh', handleRefresh)
-    const interval = setInterval(() => {
-      loadPolls()
-    }, 5000)
     return () => {
       window.removeEventListener('dashboard-refresh', handleRefresh)
-      clearInterval(interval)
     }
   }, [loadPolls])
 
