@@ -81,52 +81,27 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            echo "=== 1. DIAGNOSE RUNNING PROCESSES & CONTAINERS ==="
-            pwd
-            whoami
-            docker ps -a || true
-            ps aux | grep -E "daphne|gunicorn|python|manage.py" | grep -v grep || true
-            ss -tlpn 2>/dev/null | grep 8000 || netstat -tlpn 2>/dev/null | grep 8000 || true
+            echo "=== 1. SYNC REPOSITORY ==="
+            cd "$HOME/Trust-in" || cd Trust-in
+            git fetch origin main
+            git reset --hard origin/main
+            git clean -fd -e backend/.env -e .env -e backend/media -e backend/whatsapp_gateway/auth_info_baileys
 
-            echo "=== 2. LOCATE ALL PROJECT DIRECTORIES ==="
-            find /home /opt -maxdepth 3 -name "docker-compose.yml" 2>/dev/null || true
+            echo "=== 2. LOGIN TO GHCR AND PULL LATEST IMAGE ==="
+            sudo usermod -aG docker $USER 2>/dev/null || true
+            echo "${{ secrets.GITHUB_TOKEN }}" | sudo docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+            sudo docker compose pull backend
 
-            echo "=== 3. DEPLOY IN ~/Trust-in ==="
-            if [ -d "$HOME/Trust-in" ]; then
-              cd "$HOME/Trust-in"
-              echo "In $HOME/Trust-in"
-              git fetch origin main || true
-              git reset --hard origin/main || true
-              git clean -fd -e backend/.env -e .env -e backend/media -e backend/whatsapp_gateway/auth_info_baileys || true
-              echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin || true
-              docker compose pull backend || true
-              docker compose down backend || true
-              docker compose up -d --force-recreate backend
-              sleep 5
-              docker compose exec -T backend python manage.py migrate --noinput || true
-              docker compose exec -T backend python manage.py collectstatic --noinput || true
-            fi
+            echo "=== 3. RECREATE BACKEND CONTAINER WITH LATEST IMAGE ==="
+            sudo docker compose up -d --force-recreate backend
 
-            echo "=== 4. DEPLOY IN /opt/sree-trust (IF EXISTS) ==="
-            if [ -d "/opt/sree-trust" ]; then
-              cd "/opt/sree-trust"
-              echo "In /opt/sree-trust"
-              if [ -d ".git" ]; then
-                git fetch origin main || true
-                git reset --hard origin/main || true
-                git clean -fd -e backend/.env -e .env -e backend/media -e backend/whatsapp_gateway/auth_info_baileys || true
-              fi
-              docker compose pull backend || true
-              docker compose down backend || true
-              docker compose up -d --force-recreate backend
-              sleep 5
-              docker compose exec -T backend python manage.py migrate --noinput || true
-            fi
+            echo "=== 4. RUN MIGRATIONS AND COLLECTSTATIC ==="
+            sleep 6
+            sudo docker compose exec -T backend python manage.py migrate --noinput
+            sudo docker compose exec -T backend python manage.py collectstatic --noinput
 
-            echo "=== 5. CHECK RUNNING CONTAINERS AND TEST LOCAL PORT 8000 ==="
-            docker ps
-            curl -I http://127.0.0.1:8000/api/core/events/ || true
-            curl -I http://127.0.0.1:8000/api/core/social-polls/ || true
-            docker compose logs --tail=30 backend || true
+            echo "=== 5. VERIFY CONTAINER STATUS AND LOCAL ROUTES ==="
+            sudo docker ps
+            curl -I http://127.0.0.1:8000/api/core/social-polls/
 
-            echo "=== DEPLOYMENT SCRIPT FINISHED ==="
+            echo "=== DEPLOYMENT COMPLETED SUCCESSFULLY ==="
