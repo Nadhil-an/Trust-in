@@ -240,6 +240,7 @@ class MemberPost(models.Model):
     assessment_request = models.ForeignKey('manager_module.AssessmentRequest', on_delete=models.SET_NULL, null=True, blank=True, related_name='member_posts')
     is_pinned = models.BooleanField(default=False)
     scheduled_at = models.DateTimeField(null=True, blank=True)
+    expires_at = models.DateTimeField(null=True, blank=True, help_text="Expiry date after which announcement automatically disappears")
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(default=timezone.now, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)

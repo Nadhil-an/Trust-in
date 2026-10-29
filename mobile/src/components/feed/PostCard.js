@@ -77,6 +77,7 @@ export default function PostCard({
   };
 
   const handleOpenAuthorProfile = () => {
+    if (isOfficialAnnouncement) return;
     if (post.author?.id) {
       navigation.navigate('MemberProfile', {
         userId: post.author.id,
@@ -122,11 +123,15 @@ export default function PostCard({
     }))
     .filter((img) => Boolean(img.resolvedUrl));
 
+  const isOfficialAnnouncement = (post.post_category || '').toUpperCase() === 'OFFICIAL_TRUST';
   const isAuthor = String(post.author?.id) === String(currentUserId);
-  const authorName = post.author?.full_name || post.author?.username || 'Community Member';
-  const authorPhotoUrl = resolveImageUrl(post.author?.photo);
+  const authorName = isOfficialAnnouncement
+    ? 'Announcement'
+    : (post.author?.full_name || post.author?.username || 'Community Member');
+  const authorPhotoUrl = isOfficialAnnouncement ? null : resolveImageUrl(post.author?.photo);
   const districtName = formatDistrictKerala(post.address);
   const isCharity = (post.post_type || '').toUpperCase() === 'CHARITY';
+  const displaySubtitle = isOfficialAnnouncement ? 'Sree Lakshmi Charitable Trust' : districtName;
 
   const handleDonate = () => {
     if (!currentUserId) {
@@ -302,15 +307,21 @@ export default function PostCard({
       <View style={styles.postHeader}>
         <TouchableOpacity
           style={styles.authorRow}
-          onPress={handleOpenAuthorProfile}
-          activeOpacity={0.8}
+          onPress={isOfficialAnnouncement ? undefined : handleOpenAuthorProfile}
+          activeOpacity={isOfficialAnnouncement ? 1 : 0.8}
         >
           {authorPhotoUrl ? (
             <Image source={{ uri: authorPhotoUrl }} style={styles.avatarImg} />
           ) : (
-            <View style={styles.avatarPlaceholder}>
-              <Text style={styles.avatarInitials}>
-                {(authorName[0] || 'U').toUpperCase()}
+            <View style={[
+              styles.avatarPlaceholder,
+              isOfficialAnnouncement && { backgroundColor: '#0284c7' }
+            ]}>
+              <Text style={[
+                styles.avatarInitials,
+                isOfficialAnnouncement && { color: '#FFFFFF', fontWeight: '800' }
+              ]}>
+                {isOfficialAnnouncement ? 'A' : (authorName[0] || 'U').toUpperCase()}
               </Text>
             </View>
           )}
@@ -320,21 +331,56 @@ export default function PostCard({
               <Text style={styles.authorUsername} numberOfLines={1}>
                 {authorName}
               </Text>
-              <Ionicons name="checkmark-circle" size={13} color="#0284c7" style={{ marginLeft: 3 }} />
+              {Boolean(post.author?.is_verified) && (
+                <Ionicons name="checkmark-circle" size={13} color="#0284c7" style={{ marginLeft: 3 }} />
+              )}
             </View>
 
-            {/* Subtitle with Location */}
+            {/* Subtitle with Location & Non-colliding Status Badge */}
             <View style={styles.subtitleRow}>
-              <Text style={styles.subtitleText} numberOfLines={1}>
-                {districtName}
-              </Text>
+              {displaySubtitle ? (
+                <Text
+                  style={[
+                    styles.subtitleText,
+                    isOfficialAnnouncement && styles.announcementSubtitleText,
+                  ]}
+                  numberOfLines={1}
+                >
+                  {displaySubtitle}
+                </Text>
+              ) : null}
+              {post.status && post.status !== 'APPROVED' ? (
+                <View style={[
+                  styles.statusBadgeSubtitle,
+                  {
+                    backgroundColor:
+                      (post.status === 'PENDING_APPROVAL' || post.status === 'OPEN') ? '#FEF3C7' :
+                      post.status === 'REJECTED' ? '#FEE2E2' : '#DBEAFE',
+                    borderColor:
+                      (post.status === 'PENDING_APPROVAL' || post.status === 'OPEN') ? '#FDE68A' :
+                      post.status === 'REJECTED' ? '#FCA5A5' : '#BFDBFE',
+                  }
+                ]}>
+                  <Text style={[
+                    styles.statusBadgeSubtitleText,
+                    {
+                      color:
+                        (post.status === 'PENDING_APPROVAL' || post.status === 'OPEN') ? '#B45309' :
+                        post.status === 'REJECTED' ? '#DC2626' : '#1E40AF',
+                    }
+                  ]}>
+                    {(post.status === 'PENDING_APPROVAL' || post.status === 'OPEN') ? 'Under Review ⏳' :
+                     post.status === 'REJECTED' ? 'Rejected ⚠️' : 'With FAO 🚀'}
+                  </Text>
+                </View>
+              ) : null}
             </View>
           </View>
         </TouchableOpacity>
 
-        {/* Right side: Follow Button + 3-dots options icon */}
+        {/* Right side: Fixed Alignment Follow Button + 3-dots options icon (hidden on announcements) */}
         <View style={styles.headerRightActions}>
-          {!isAuthor && post.author?.id && (
+          {!isOfficialAnnouncement && !isAuthor && post.author?.id && (
             <TouchableOpacity
               style={[
                 styles.headerFollowBtn,
@@ -354,37 +400,16 @@ export default function PostCard({
             </TouchableOpacity>
           )}
 
-          {post.status && post.status !== 'APPROVED' ? (
-            <View style={{
-              paddingHorizontal: 8,
-              paddingVertical: 3,
-              borderRadius: 10,
-              marginRight: 6,
-              backgroundColor:
-                (post.status === 'PENDING_APPROVAL' || post.status === 'OPEN') ? '#FEF3C7' :
-                post.status === 'REJECTED' ? '#FEE2E2' : '#DBEAFE',
-            }}>
-              <Text style={{
-                fontSize: 10.5,
-                fontWeight: '700',
-                color:
-                  (post.status === 'PENDING_APPROVAL' || post.status === 'OPEN') ? '#B45309' :
-                  post.status === 'REJECTED' ? '#DC2626' : '#1E40AF',
-              }}>
-                {(post.status === 'PENDING_APPROVAL' || post.status === 'OPEN') ? 'Under Review ⏳' :
-                 post.status === 'REJECTED' ? 'Rejected ⚠️' : 'With FAO 🚀'}
-              </Text>
-            </View>
-          ) : null}
-
-          <TouchableOpacity
-            style={styles.headerMenuBtn}
-            onPress={() => setOptionsModalVisible(true)}
-            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="ellipsis-horizontal" size={20} color="#0F172A" />
-          </TouchableOpacity>
+          {!isOfficialAnnouncement && (
+            <TouchableOpacity
+              style={styles.headerMenuBtn}
+              onPress={() => setOptionsModalVisible(true)}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="ellipsis-horizontal" size={20} color="#0F172A" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
@@ -877,6 +902,24 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '500',
     color: '#64748B',
+    maxWidth: 120,
+  },
+  announcementSubtitleText: {
+    maxWidth: 320,
+    fontSize: 11.5,
+    fontWeight: '600',
+    color: '#475569',
+  },
+  statusBadgeSubtitle: {
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  statusBadgeSubtitleText: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.2,
   },
   headerRightActions: {
     flexDirection: 'row',

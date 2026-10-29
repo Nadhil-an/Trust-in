@@ -1,7 +1,7 @@
 // Shared utility components for all pages
 
 import React from 'react'
-import { Search, X, Inbox } from 'lucide-react'
+import { Search, X, Inbox, AlertTriangle, AlertCircle, HelpCircle } from 'lucide-react'
 
 export function StatCard({ label, value, icon, variant = '', sub = '', onClick }) {
   return (
@@ -114,7 +114,17 @@ export function Modal({ isOpen, onClose, title, children, footer, size = '', ove
   )
 }
 
-export function ConfirmModal({ isOpen, onClose, onConfirm, title="Are you sure?", message="This action cannot be undone.", confirmText="Confirm", cancelText="Cancel", isDanger=true }) {
+export function ConfirmModal({ 
+  isOpen, 
+  onClose, 
+  onConfirm, 
+  title = "Are you sure?", 
+  message = "This action cannot be undone.", 
+  confirmText = "Confirm", 
+  cancelText = "Cancel", 
+  isDanger = true,
+  icon = null
+}) {
   const mouseDownTarget = React.useRef(null)
 
   if (!isOpen) return null
@@ -129,19 +139,114 @@ export function ConfirmModal({ isOpen, onClose, onConfirm, title="Are you sure?"
         }
       }}
     >
-      <div className="modal" style={{ maxWidth: 400 }}>
-        <div className="modal-header">
-          <div className="modal-title" style={{ color: isDanger ? 'var(--red-600)' : 'inherit' }}>{title}</div>
-          <button className="modal-close-btn" onClick={onClose} aria-label="Close modal">
-            <X size={16} />
+      <div 
+        className="modal" 
+        style={{ 
+          maxWidth: 440,
+          borderRadius: 16,
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+          overflow: 'hidden',
+          border: '1px solid var(--gray-200)',
+          background: '#ffffff'
+        }}
+      >
+        <div 
+          style={{ 
+            padding: '24px 24px 18px',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: 16,
+          }}
+        >
+          <div 
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: '50%',
+              backgroundColor: isDanger ? '#FEE2E2' : '#FEF3C7',
+              color: isDanger ? '#DC2626' : '#D97706',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              boxShadow: isDanger ? '0 0 0 4px #FEF2F2' : '0 0 0 4px #FFFBEB'
+            }}
+          >
+            {icon || (isDanger ? <AlertTriangle size={22} strokeWidth={2.2} /> : <AlertCircle size={22} strokeWidth={2.2} />)}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <h3 
+              style={{ 
+                margin: 0, 
+                fontSize: 17, 
+                fontWeight: 600, 
+                color: 'var(--gray-900)',
+                lineHeight: 1.3
+              }}
+            >
+              {title}
+            </h3>
+            <div 
+              style={{ 
+                marginTop: 8, 
+                fontSize: 14, 
+                color: 'var(--gray-600)', 
+                lineHeight: 1.5,
+                wordBreak: 'break-word'
+              }}
+            >
+              {typeof message === 'string' ? <p style={{ margin: 0 }}>{message}</p> : message}
+            </div>
+          </div>
+          <button 
+            type="button"
+            className="modal-close-btn" 
+            onClick={onClose} 
+            aria-label="Close modal"
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: 'var(--gray-400)',
+              padding: 4,
+              borderRadius: 6,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <X size={18} />
           </button>
         </div>
-        <div className="modal-body">
-          <p>{message}</p>
-        </div>
-        <div className="modal-footer">
-          <button className="btn btn-secondary" onClick={onClose}>{cancelText}</button>
-          <button className={`btn ${isDanger ? 'btn-danger' : 'btn-primary'}`} onClick={() => { onConfirm(); onClose(); }}>{confirmText}</button>
+        <div 
+          style={{ 
+            padding: '14px 24px', 
+            background: 'var(--gray-50)',
+            display: 'flex', 
+            justifyContent: 'flex-end', 
+            gap: 12,
+            borderTop: '1px solid var(--gray-100)'
+          }}
+        >
+          <button 
+            type="button"
+            className="btn btn-secondary" 
+            onClick={onClose}
+            style={{ minWidth: 84 }}
+          >
+            {cancelText}
+          </button>
+          <button 
+            type="button"
+            className={`btn ${isDanger ? 'btn-danger' : 'btn-primary'}`} 
+            onClick={() => { onConfirm(); onClose(); }}
+            style={{ 
+              minWidth: 100,
+              ...(isDanger ? { backgroundColor: '#DC2626', borderColor: '#DC2626', color: '#ffffff' } : {})
+            }}
+          >
+            {confirmText}
+          </button>
         </div>
       </div>
     </div>

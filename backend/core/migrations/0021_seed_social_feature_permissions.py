@@ -33,3 +33,4 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunPython(seed_social_permissions, unseed_social_permissions),
     ]
+

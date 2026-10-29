@@ -15,7 +15,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Colors } from '../../constants/Colors';
 import { useAuthStore } from '../../store/authStore';
 import { useNotificationSocket } from '../../hooks/useWebSocket';
-import { authApi, eventsApi, memberPostsApi } from '../../api';
+import { authApi, eventsApi, memberPostsApi, pollsApi } from '../../api';
+import PollCard from '../../components/feed/PollCard';
 import Toast from 'react-native-toast-message';
 import SideDrawer from '../../components/SideDrawer';
 import { EventBanner } from '../../components/shared';
@@ -26,15 +27,18 @@ const MemberHomeScreen = ({ navigation }) => {
   const { user, isAuthenticated } = useAuthStore();
 
   useNotificationSocket((data) => {
-    if (!isAuthenticated) return;
     if (data?.type === 'DASHBOARD_REFRESH' || data?.type === 'dashboard_refresh') {
-      authApi.getProfile()
-        .then(res => {
-          if (res.data) {
-            useAuthStore.getState().updateUser(res.data);
-          }
-        })
-        .catch(() => {});
+      if (isAuthenticated) {
+        authApi.getProfile()
+          .then(res => {
+            if (res.data) {
+              useAuthStore.getState().updateUser(res.data);
+            }
+          })
+          .catch(() => {});
+      }
+      fetchActivePolls();
+      fetchPosts();
     }
   });
   const insets = useSafeAreaInsets();
@@ -45,6 +49,8 @@ const MemberHomeScreen = ({ navigation }) => {
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [posts, setPosts] = useState([]);
   const [postsLoading, setPostsLoading] = useState(false);
+  const [activePolls, setActivePolls] = useState([]);
+  const [pollsLoading, setPollsLoading] = useState(false);
   const [commentsModalVisible, setCommentsModalVisible] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState(null);
   const [userProfile, setUserProfile] = useState(user);
@@ -153,6 +159,18 @@ const MemberHomeScreen = ({ navigation }) => {
     navigation.navigate('MembershipPayment');
   };
 
+  const fetchActivePolls = async () => {
+    try {
+      setPollsLoading(true);
+      const res = await pollsApi.list({ status: 'ACTIVE' });
+      const list = Array.isArray(res.data) ? res.data : (res.data?.results || []);
+      setActivePolls(list);
+    } catch (_) {}
+    finally {
+      setPollsLoading(false);
+    }
+  };
+
   const fetchPosts = async () => {
     try {
       setPostsLoading(true);
@@ -168,18 +186,27 @@ const MemberHomeScreen = ({ navigation }) => {
     fetchUpcomingEvents();
     fetchPosts();
     fetchProfileAndCheck();
+    fetchActivePolls();
   }, []);
 
   useFocusEffect(
     useCallback(() => {
       fetchPosts();
       fetchProfileAndCheck();
+      fetchActivePolls();
+
+      // Real-time polling timer: auto-updates vote counts and percentages live without manual refresh
+      const liveTimer = setInterval(() => {
+        fetchActivePolls();
+      }, 4000);
+
+      return () => clearInterval(liveTimer);
     }, [])
   );
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await Promise.all([fetchUpcomingEvents(), fetchPosts(), fetchProfileAndCheck()]);
+    await Promise.all([fetchUpcomingEvents(), fetchPosts(), fetchProfileAndCheck(), fetchActivePolls()]);
     setTimeout(() => setRefreshing(false), 800);
   }, []);
 
@@ -356,6 +383,17 @@ const MemberHomeScreen = ({ navigation }) => {
             <Ionicons name="images-outline" size={20} color="#0284c7" />
           </View>
         </TouchableOpacity>
+
+        {/* ── Community Polls & Voting (Integrated with Community Help & Issues) ── */}
+        {activePolls.map((poll) => (
+          <PollCard
+            key={poll.id}
+            poll={poll}
+            isAuthenticated={isAuthenticated}
+            navigation={navigation}
+            onVoteSuccess={fetchActivePolls}
+          />
+        ))}
 
         {/* Posts List */}
         {postsLoading && posts.length === 0 ? (
@@ -888,6 +926,30 @@ const styles = StyleSheet.create({
   eventMetaItem: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   eventMetaText: { fontSize: 10, color: Colors.gray500, fontWeight: '500' },
 
+  pollsSectionContainer: {
+    marginBottom: 8,
+  },
+  pollsSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    marginBottom: 10,
+    marginTop: 6,
+  },
+  pollsSectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  pollIconWrap: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: '#e0f2fe',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   feedHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',

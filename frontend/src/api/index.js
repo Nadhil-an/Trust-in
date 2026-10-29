@@ -465,6 +465,11 @@ export const mrmApi = {
     saveAllowance: (data) => api.post('/mrm/volunteers/allowances/', data),
     approveAllowance: (id, data) => api.post(`/mrm/volunteers/allowances/${id}/approve/`, data),
   },
+  allowances: {
+    list: (params) => api.get('/mrm/volunteers/allowances/', { params }),
+    create: (data) => api.post('/mrm/volunteers/allowances/', data),
+    updateStatus: (id, data) => api.post(`/mrm/volunteers/allowances/${id}/approve/`, data),
+  },
   appreciations: {
     list: () => api.get('/mrm/appreciations/'),
     publish: (data) => api.post('/mrm/appreciations/', data, { headers: { 'Content-Type': 'multipart/form-data' } }),

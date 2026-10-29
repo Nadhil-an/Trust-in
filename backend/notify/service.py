@@ -48,7 +48,7 @@ def broadcast_expo_push(tokens, title, message, data=None):
         ]
 
         try:
-            requests.post(
+            resp = requests.post(
                 'https://exp.host/--/api/v2/push/send',
                 json=payloads,
                 headers={
@@ -58,8 +58,11 @@ def broadcast_expo_push(tokens, title, message, data=None):
                 },
                 timeout=8
             )
+            import logging
+            logging.getLogger(__name__).info(f"[Expo Push] Sent batch of {len(batch)} push tickets, status={resp.status_code}")
         except Exception as e:
-            print(f"Error sending Expo push batch: {e}")
+            import logging
+            logging.getLogger(__name__).error(f"[Expo Push] Error sending Expo push batch: {e}")
 
 def push_notification(recipient: User, title: str, message: str,
                       notification_type: str, reference_id: str = '',
@@ -227,3 +230,66 @@ def notify_post_approved_and_published(post):
     except Exception:
         pass
 
+
+
+def notify_post_created(post):
+    """
+    Sends push notifications outside the mobile application when a new post is created:
+    - If already approved (Admin/Manager/Social Media): Broadcasts to all members immediately.
+    - If pending approval: Notifies author of submission, and alerts moderators/managers/admins outside the app.
+    """
+    from core.models import MemberPostStatus
+    if post.status == MemberPostStatus.APPROVED:
+        notify_post_approved_and_published(post)
+        return
+
+    author = getattr(post, 'author', None)
+    if not author:
+        return
+
+    author_name = author.full_name or author.username or 'A member'
+    snippet = (post.description or '').strip()
+    if len(snippet) > 60:
+        snippet = snippet[:60] + '...'
+    elif not snippet:
+        snippet = 'Check it out now on the review dashboard!'
+
+    # 1. Confirmation push notification outside app to author
+    try:
+        push_notification(
+            recipient=author,
+            title="Post Submitted for Review 📤",
+            message=f"Your post \"{snippet}\" has been submitted and is under review by moderators.",
+            notification_type='POST_PENDING',
+            reference_id=str(post.id),
+            reference_type='MemberPost',
+            priority='NORMAL'
+        )
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Error sending author post submission push: {e}")
+
+    # 2. Push notification outside the mobile app to Social Media, Manager, and Admin roles
+    post_type_label = 'Charity' if getattr(post, 'post_type', 'AWARENESS') == 'CHARITY' else 'Public Issue'
+    mod_title = f"New {post_type_label} Post for Review 📝"
+    mod_msg = f"{author_name} submitted a new post: \"{snippet}\""
+    for role in ['SOCIAL_MEDIA', 'MANAGER', 'ADMIN']:
+        try:
+            push_to_role(
+                role,
+                mod_title,
+                mod_msg,
+                'NEW_POST_PENDING',
+                reference_id=str(post.id),
+                reference_type='MemberPost',
+                priority='HIGH'
+            )
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Error notifying {role} of new post: {e}")
+
+    # 3. Real-time refresh of Social Media moderation dashboard
+    try:
+        push_dashboard_refresh(['SOCIAL_MEDIA', 'MANAGER', 'ADMIN'])
+    except Exception:
+        pass

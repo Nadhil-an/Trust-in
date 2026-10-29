@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { coreApi } from '../../../api'
-import { LoadingState, EmptyState, Modal, FilterBar } from '../../../components/shared'
+import { LoadingState, EmptyState, Modal, ConfirmModal, FilterBar } from '../../../components/shared'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 import {
@@ -45,6 +45,10 @@ export default function PomTab() {
   const [targetLocation, setTargetLocation] = useState('')
   const [imageFile, setImageFile] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Delete confirmation modal state
+  const [deletingPom, setDeletingPom] = useState(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const loadMessages = useCallback(async () => {
     setLoading(true)
@@ -132,14 +136,18 @@ export default function PomTab() {
     }
   }
 
-  const handleDelete = async (item) => {
-    if (!window.confirm(`Are you sure you want to delete POM "${item.title}"?`)) return
+  const handleConfirmDelete = async () => {
+    if (!deletingPom) return
+    setIsDeleting(true)
     try {
-      await coreApi.pomMessages.delete(item.id)
-      toast.success('POM message deleted.')
-      setMessages(prev => prev.filter(m => m.id !== item.id))
+      await coreApi.pomMessages.delete(deletingPom.id)
+      toast.success('Public cooperation (POM) message deleted successfully.')
+      setMessages(prev => prev.filter(m => m.id !== deletingPom.id))
+      setDeletingPom(null)
     } catch (err) {
       toast.error('Failed to delete message')
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -311,7 +319,7 @@ export default function PomTab() {
 
                     <button
                       type="button"
-                      onClick={() => handleDelete(item)}
+                      onClick={() => setDeletingPom(item)}
                       className="btn btn-secondary btn-sm"
                       style={{ color: 'var(--danger)', borderColor: 'var(--danger-light)' }}
                       title="Delete POM"
@@ -440,6 +448,28 @@ export default function PomTab() {
           </form>
         </Modal>
       )}
+
+      {/* Styled Delete Confirmation Dialog */}
+      <ConfirmModal
+        isOpen={Boolean(deletingPom)}
+        onClose={() => setDeletingPom(null)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Public Cooperation (POM)"
+        message={
+          deletingPom ? (
+            <div>
+              <span>Are you sure you want to delete POM </span>
+              <strong style={{ color: 'var(--gray-900)' }}>"{deletingPom.title}"</strong>?
+              <div style={{ marginTop: 8, fontSize: 13, color: 'var(--gray-500)', lineHeight: 1.4 }}>
+                This cooperation broadcast banner and its member responses will be permanently removed.
+              </div>
+            </div>
+          ) : ''
+        }
+        confirmText={isDeleting ? 'Deleting...' : 'Delete POM'}
+        cancelText="Cancel"
+        isDanger={true}
+      />
     </div>
   )
 }

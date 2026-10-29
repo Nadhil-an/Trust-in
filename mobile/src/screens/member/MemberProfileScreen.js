@@ -21,7 +21,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Colors } from '../../constants/Colors';
 import { useAuthStore } from '../../store/authStore';
-import { memberPostsApi, authApi } from '../../api';
+import { memberPostsApi, authApi, verificationsApi } from '../../api';
 import * as ImagePicker from 'expo-image-picker';
 import { Video, ResizeMode } from 'expo-av';
 import { resolveImageUrl } from '../../utils/imageUrl';
@@ -60,6 +60,15 @@ export default function MemberProfileScreen() {
   const [followSearchText, setFollowSearchText] = useState('');
   const [followMap, setFollowMap] = useState({});
   const [followBtnLoading, setFollowBtnLoading] = useState({});
+
+  // ── Account Verification Modal State & Handlers ──
+  const [verificationModalVisible, setVerificationModalVisible] = useState(false);
+  const [idProofType, setIdProofType] = useState('AADHAAR');
+  const [idProofNumber, setIdProofNumber] = useState('');
+  const [idProofDocument, setIdProofDocument] = useState(null);
+  const [additionalNotes, setAdditionalNotes] = useState('');
+  const [isSubmittingVerification, setIsSubmittingVerification] = useState(false);
+  const [myVerificationRequest, setMyVerificationRequest] = useState(null);
 
   // ── Edit Profile Modal State & Handlers ──
   const [editModal, setEditModal] = useState(false);
@@ -294,6 +303,86 @@ export default function MemberProfileScreen() {
     }
   };
 
+  const checkVerificationStatus = async () => {
+    try {
+      const res = await verificationsApi.getMyStatus();
+      const list = Array.isArray(res.data) ? res.data : (res.data?.results || []);
+      if (list.length > 0) {
+        setMyVerificationRequest(list[0]);
+      }
+    } catch (_) {}
+  };
+
+  const pickIdDocument = async (fromCamera = false) => {
+    try {
+      if (fromCamera) {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== 'granted') {
+          return Alert.alert('Permission needed', 'Camera permission is required.');
+        }
+        const res = await ImagePicker.launchCameraAsync({
+          quality: 0.8,
+          allowsEditing: true,
+        });
+        if (!res.canceled && res.assets && res.assets[0]) {
+          setIdProofDocument(res.assets[0]);
+        }
+      } else {
+        const res = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ['images'],
+          quality: 0.8,
+          allowsEditing: true,
+        });
+        if (!res.canceled && res.assets && res.assets[0]) {
+          setIdProofDocument(res.assets[0]);
+        }
+      }
+    } catch (e) {
+      Toast.show({ type: 'error', text1: 'Image selection error' });
+    }
+  };
+
+  const handleApplyVerification = async () => {
+    if (!idProofNumber.trim()) {
+      Alert.alert('Required', 'Please enter your ID document number.');
+      return;
+    }
+    if (!idProofDocument) {
+      Alert.alert('Document Required', 'Please attach a photo of your ID proof document.');
+      return;
+    }
+
+    setIsSubmittingVerification(true);
+    try {
+      const formData = new FormData();
+      formData.append('id_proof_type', idProofType);
+      formData.append('id_proof_number', idProofNumber.trim());
+      if (additionalNotes.trim()) {
+        formData.append('additional_notes', additionalNotes.trim());
+      }
+      const filename = idProofDocument.uri.split('/').pop() || 'id_proof.jpg';
+      const ext = filename.split('.').pop() || 'jpg';
+      formData.append('id_proof_document', {
+        uri: idProofDocument.uri,
+        name: filename,
+        type: `image/${ext === 'png' ? 'png' : 'jpeg'}`,
+      });
+
+      await verificationsApi.submit(formData);
+      Alert.alert('Application Submitted', 'Your verification request has been submitted to the Trust moderators. Once approved, the blue verified badge will appear on your profile!');
+      setVerificationModalVisible(false);
+      setIdProofNumber('');
+      setIdProofDocument(null);
+      setAdditionalNotes('');
+      checkVerificationStatus();
+    } catch (err) {
+      const errMsg = err?.response?.data?.error || err?.response?.data?.detail || 'Failed to submit verification request';
+      Alert.alert('Submission Error', errMsg);
+    } finally {
+      setIsSubmittingVerification(false);
+    }
+  };
+
   const handleSelectMember = (item) => {
     setFollowModalVisible(false);
     if (String(item.id) === String(targetUserId)) return;
@@ -463,7 +552,9 @@ export default function MemberProfileScreen() {
       <View style={styles.bioSection}>
         <View style={styles.nameRow}>
           <Text style={styles.bioName}>{fullName}</Text>
-          <Ionicons name="checkmark-circle" size={15} color="#0284c7" style={{ marginLeft: 4 }} />
+          {Boolean(profileData?.is_verified ?? initialUser?.is_verified ?? currentUser?.is_verified) && (
+            <Ionicons name="checkmark-circle" size={15} color="#0284c7" style={{ marginLeft: 4 }} />
+          )}
         </View>
 
         {Boolean(district) && (
@@ -537,6 +628,104 @@ export default function MemberProfileScreen() {
           </>
         )}
       </View>
+
+      {/* ── Verification Badge / Application Button ── */}
+      {isMe && (
+        <View style={{ marginTop: 12, width: '100%' }}>
+          {(profileData?.is_verified || currentUser?.is_verified) ? (
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: '#EFF6FF',
+              borderWidth: 1,
+              borderColor: '#BFDBFE',
+              borderRadius: 10,
+              paddingVertical: 10,
+              paddingHorizontal: 14,
+            }}>
+              <Ionicons name="shield-checkmark" size={18} color="#0284c7" />
+              <Text style={{ marginLeft: 8, fontSize: 13, fontWeight: '600', color: '#0369A1' }}>
+                Account Verified • Blue Badge Active ✓
+              </Text>
+            </View>
+          ) : myVerificationRequest?.status === 'PENDING' ? (
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: '#FEF3C7',
+              borderWidth: 1,
+              borderColor: '#FDE68A',
+              borderRadius: 10,
+              paddingVertical: 10,
+              paddingHorizontal: 14,
+            }}>
+              <Ionicons name="time" size={18} color="#D97706" />
+              <View style={{ marginLeft: 8, flex: 1 }}>
+                <Text style={{ fontSize: 13, fontWeight: '700', color: '#92400E' }}>
+                  ID Verification Under Review ⏳
+                </Text>
+                <Text style={{ fontSize: 11, color: '#B45309', marginTop: 1 }}>
+                  Submitted to Trust moderators for review
+                </Text>
+              </View>
+            </View>
+          ) : myVerificationRequest?.status === 'REJECTED' ? (
+            <TouchableOpacity
+              onPress={() => setVerificationModalVisible(true)}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: '#FEE2E2',
+                borderWidth: 1,
+                borderColor: '#FECACA',
+                borderRadius: 10,
+                paddingVertical: 10,
+                paddingHorizontal: 14,
+              }}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="alert-circle" size={18} color="#DC2626" />
+              <View style={{ marginLeft: 8, flex: 1 }}>
+                <Text style={{ fontSize: 13, fontWeight: '700', color: '#991B1B' }}>
+                  Verification Not Approved • Tap to Reapply
+                </Text>
+                {Boolean(myVerificationRequest?.rejection_reason) && (
+                  <Text style={{ fontSize: 11, color: '#B91C1C', marginTop: 1 }} numberOfLines={1}>
+                    Reason: {myVerificationRequest.rejection_reason}
+                  </Text>
+                )}
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#DC2626" />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              onPress={() => setVerificationModalVisible(true)}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: '#F0F9FF',
+                borderWidth: 1.5,
+                borderColor: '#BAE6FD',
+                borderRadius: 10,
+                paddingVertical: 10,
+                paddingHorizontal: 14,
+              }}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="shield-checkmark-outline" size={18} color="#0284c7" />
+              <View style={{ marginLeft: 8, flex: 1 }}>
+                <Text style={{ fontSize: 13, fontWeight: '700', color: '#0369A1' }}>
+                  Get Verified (Request Blue Tick ✓)
+                </Text>
+                <Text style={{ fontSize: 11, color: '#0284C7', marginTop: 1 }}>
+                  Upload ID proof for official Trust verification
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color="#0284c7" />
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
 
       {/* ── Tabs (Grid & Video Reels) ── */}
       <View style={styles.tabsRow}>
@@ -1042,6 +1231,248 @@ export default function MemberProfileScreen() {
           </View>
         </TouchableOpacity>
       </Modal>
+
+      {/* ── Verification Request Modal ── */}
+      <Modal
+        visible={verificationModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setVerificationModalVisible(false)}
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' }}
+        >
+          <View style={{
+            backgroundColor: '#FFFFFF',
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            maxHeight: '92%',
+            paddingBottom: insets.bottom + 16,
+          }}>
+            {/* Modal Header */}
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingHorizontal: 20,
+              paddingTop: 18,
+              paddingBottom: 14,
+              borderBottomWidth: 1,
+              borderBottomColor: '#F1F5F9',
+            }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <View style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 18,
+                  backgroundColor: '#E0F2FE',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: 10,
+                }}>
+                  <Ionicons name="shield-checkmark" size={20} color="#0284c7" />
+                </View>
+                <View>
+                  <Text style={{ fontSize: 17, fontWeight: '700', color: '#0F172A' }}>Account Verification</Text>
+                  <Text style={{ fontSize: 12, color: '#64748B' }}>Apply for official verified blue badge</Text>
+                </View>
+              </View>
+              <TouchableOpacity onPress={() => setVerificationModalVisible(false)} style={{ padding: 6 }}>
+                <Ionicons name="close" size={22} color="#64748B" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={{ paddingHorizontal: 20, paddingTop: 16 }}>
+              {/* ID Type Selector */}
+              <Text style={{ fontSize: 13, fontWeight: '700', color: '#334155', marginBottom: 8 }}>
+                Select ID Proof Document
+              </Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+                {[
+                  { key: 'AADHAAR', label: 'Aadhaar Card' },
+                  { key: 'VOTER_ID', label: 'Voter ID' },
+                  { key: 'PAN', label: 'PAN Card' },
+                  { key: 'DRIVING_LICENSE', label: 'Driving License' },
+                  { key: 'PASSPORT', label: 'Passport' },
+                ].map((item) => (
+                  <TouchableOpacity
+                    key={item.key}
+                    onPress={() => setIdProofType(item.key)}
+                    style={{
+                      paddingVertical: 8,
+                      paddingHorizontal: 12,
+                      borderRadius: 8,
+                      borderWidth: 1.5,
+                      borderColor: idProofType === item.key ? '#0284c7' : '#E2E8F0',
+                      backgroundColor: idProofType === item.key ? '#F0F9FF' : '#F8FAFC',
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={{
+                      fontSize: 12,
+                      fontWeight: idProofType === item.key ? '700' : '500',
+                      color: idProofType === item.key ? '#0284c7' : '#475569',
+                    }}>
+                      {item.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {/* ID Document Number */}
+              <Text style={{ fontSize: 13, fontWeight: '700', color: '#334155', marginBottom: 6 }}>
+                ID Document Number *
+              </Text>
+              <TextInput
+                style={{
+                  backgroundColor: '#F8FAFC',
+                  borderWidth: 1,
+                  borderColor: '#E2E8F0',
+                  borderRadius: 10,
+                  paddingHorizontal: 14,
+                  paddingVertical: 10,
+                  fontSize: 14,
+                  color: '#0F172A',
+                  marginBottom: 16,
+                }}
+                placeholder="Enter document number (e.g., Aadhaar / Voter / PAN)"
+                placeholderTextColor="#94A3B8"
+                value={idProofNumber}
+                onChangeText={setIdProofNumber}
+              />
+
+              {/* Document Photo Upload */}
+              <Text style={{ fontSize: 13, fontWeight: '700', color: '#334155', marginBottom: 6 }}>
+                Upload ID Document Photo *
+              </Text>
+              {idProofDocument ? (
+                <View style={{
+                  position: 'relative',
+                  borderRadius: 12,
+                  overflow: 'hidden',
+                  borderWidth: 1,
+                  borderColor: '#0284c7',
+                  marginBottom: 16,
+                }}>
+                  <Image
+                    source={{ uri: idProofDocument.uri }}
+                    style={{ width: '100%', height: 180, resizeMode: 'cover' }}
+                  />
+                  <TouchableOpacity
+                    onPress={() => setIdProofDocument(null)}
+                    style={{
+                      position: 'absolute',
+                      top: 10,
+                      right: 10,
+                      backgroundColor: 'rgba(0,0,0,0.6)',
+                      borderRadius: 16,
+                      padding: 6,
+                    }}
+                  >
+                    <Ionicons name="trash-outline" size={18} color="#FFFFFF" />
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
+                  <TouchableOpacity
+                    onPress={() => pickIdDocument(false)}
+                    style={{
+                      flex: 1,
+                      backgroundColor: '#F8FAFC',
+                      borderWidth: 1.5,
+                      borderStyle: 'dashed',
+                      borderColor: '#CBD5E1',
+                      borderRadius: 12,
+                      paddingVertical: 18,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="images-outline" size={26} color="#0284c7" />
+                    <Text style={{ marginTop: 6, fontSize: 13, fontWeight: '600', color: '#0284c7' }}>
+                      From Gallery
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={() => pickIdDocument(true)}
+                    style={{
+                      flex: 1,
+                      backgroundColor: '#F8FAFC',
+                      borderWidth: 1.5,
+                      borderStyle: 'dashed',
+                      borderColor: '#CBD5E1',
+                      borderRadius: 12,
+                      paddingVertical: 18,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="camera-outline" size={26} color="#0284c7" />
+                    <Text style={{ marginTop: 6, fontSize: 13, fontWeight: '600', color: '#0284c7' }}>
+                      Take Photo
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {/* Additional Notes */}
+              <Text style={{ fontSize: 13, fontWeight: '700', color: '#334155', marginBottom: 6 }}>
+                Additional Notes (Optional)
+              </Text>
+              <TextInput
+                style={{
+                  backgroundColor: '#F8FAFC',
+                  borderWidth: 1,
+                  borderColor: '#E2E8F0',
+                  borderRadius: 10,
+                  paddingHorizontal: 14,
+                  paddingVertical: 10,
+                  fontSize: 14,
+                  color: '#0F172A',
+                  minHeight: 60,
+                  textAlignVertical: 'top',
+                  marginBottom: 20,
+                }}
+                placeholder="Any additional information for verification moderators..."
+                placeholderTextColor="#94A3B8"
+                multiline
+                numberOfLines={2}
+                value={additionalNotes}
+                onChangeText={setAdditionalNotes}
+              />
+
+              {/* Submit Button */}
+              <TouchableOpacity
+                onPress={handleApplyVerification}
+                disabled={isSubmittingVerification}
+                style={{
+                  backgroundColor: '#0284c7',
+                  borderRadius: 12,
+                  paddingVertical: 14,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: 30,
+                  opacity: isSubmittingVerification ? 0.7 : 1,
+                }}
+                activeOpacity={0.85}
+              >
+                {isSubmittingVerification ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <Text style={{ fontSize: 15, fontWeight: '700', color: '#FFFFFF' }}>
+                    Submit for Verification
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
     </View>
   );
 }

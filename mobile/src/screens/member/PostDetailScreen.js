@@ -123,6 +123,7 @@ const PostDetailScreen = ({ route, navigation }) => {
   const authorPhotoUrl = resolveImageUrl(post.author?.photo);
   const isAuthor = String(post.author?.id) === String(user?.id);
   const isCharity = (post.post_type || '').toUpperCase() === 'CHARITY';
+  const isOfficialAnnouncement = (post.post_category || '').toUpperCase() === 'OFFICIAL_TRUST';
 
   // Derive prominent headline/title for the issue just like EventDetailScreen
   const descRaw = (post.description || '').trim();
@@ -456,8 +457,9 @@ const PostDetailScreen = ({ route, navigation }) => {
             {/* Reporter / Member Info Box (Styled exactly like EventDetail orgBox) */}
             <TouchableOpacity
               style={styles.orgBox}
-              activeOpacity={0.8}
+              activeOpacity={isOfficialAnnouncement ? 1 : 0.8}
               onPress={() => {
+                if (isOfficialAnnouncement) return;
                 if (post.author?.id) {
                   navigation.navigate('MemberProfile', {
                     userId: post.author.id,
@@ -466,12 +468,18 @@ const PostDetailScreen = ({ route, navigation }) => {
                 }
               }}
             >
-              {authorPhotoUrl ? (
+              {authorPhotoUrl && !isOfficialAnnouncement ? (
                 <Image source={{ uri: authorPhotoUrl }} style={styles.authorAvatar} />
               ) : (
-                <View style={styles.avatarPlaceholder}>
-                  <Text style={styles.avatarText}>
-                    {(post.author?.full_name || post.author?.username || 'U')[0].toUpperCase()}
+                <View style={[
+                  styles.avatarPlaceholder,
+                  isOfficialAnnouncement && { backgroundColor: '#0284c7' }
+                ]}>
+                  <Text style={[
+                    styles.avatarText,
+                    isOfficialAnnouncement && { color: '#FFFFFF', fontWeight: '800' }
+                  ]}>
+                    {isOfficialAnnouncement ? 'A' : (post.author?.full_name || post.author?.username || 'U')[0].toUpperCase()}
                   </Text>
                 </View>
               )}
@@ -479,7 +487,7 @@ const PostDetailScreen = ({ route, navigation }) => {
                 <View style={styles.orgHeaderRow}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, flex: 1 }}>
                     <Text style={styles.orgTitle} numberOfLines={1}>
-                      {post.author?.full_name || post.author?.username || 'Community Member'}
+                      {isOfficialAnnouncement ? 'Announcement' : (post.author?.full_name || post.author?.username || 'Community Member')}
                     </Text>
                     <Ionicons name="checkmark-circle" size={14} color="#0284c7" />
                   </View>
@@ -510,7 +518,7 @@ const PostDetailScreen = ({ route, navigation }) => {
                   ) : null}
                 </View>
                 <Text style={styles.orgSub}>
-                  Member ID: {authorMemberId || 'N/A'} • Citizen Reporter
+                  {isOfficialAnnouncement ? 'Sree Lakshmi Charitable Trust' : `Member ID: ${authorMemberId || 'N/A'} • Citizen Reporter`}
                 </Text>
               </View>
             </TouchableOpacity>

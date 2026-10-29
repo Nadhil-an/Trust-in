@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
+import * as Updates from 'expo-updates';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { useOfflineSync } from './src/hooks/useOfflineSync';
 import { usePushNotifications } from './src/hooks/usePushNotifications';
@@ -27,6 +28,23 @@ const AppContent = () => {
 
 export default function App() {
   const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    // Check for OTA updates automatically on launch in production
+    async function checkOTAUpdates() {
+      if (__DEV__) return;
+      try {
+        const update = await Updates.checkForUpdateAsync();
+        if (update.isAvailable) {
+          await Updates.fetchUpdateAsync();
+          await Updates.reloadAsync();
+        }
+      } catch (err) {
+        console.log('[EAS Updates] Check error or offline:', err?.message);
+      }
+    }
+    checkOTAUpdates();
+  }, []);
 
   useEffect(() => {
     // Wait for i18n to load before rendering

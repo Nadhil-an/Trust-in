@@ -405,5 +405,21 @@ export const volunteersApi = {
   }),
 };
 
+// ── Voting & Polls (api/core/social-polls/) ──
+export const pollsApi = {
+  list: (params) => api.get('/core/social-polls/', { params }),
+  get: (id) => api.get(`/core/social-polls/${id}/`),
+  vote: (id, optionId) => api.post(`/core/social-polls/${id}/vote/`, { option_id: optionId }),
+  results: (id) => api.get(`/core/social-polls/${id}/results/`),
+};
+
+// ── Account Verification (api/core/verifications/) ──
+export const verificationsApi = {
+  getMyStatus: () => api.get('/core/verifications/'),
+  submit: (formData) => api.post('/core/verifications/', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
+};
+
 export default api;
 

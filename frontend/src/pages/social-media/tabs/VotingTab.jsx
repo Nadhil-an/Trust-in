@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { coreApi } from '../../../api'
-import { LoadingState, EmptyState, Modal, FilterBar } from '../../../components/shared'
+import { LoadingState, EmptyState, Modal, ConfirmModal, FilterBar } from '../../../components/shared'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 import {
@@ -35,6 +35,8 @@ export default function VotingTab() {
 
   // Voting interaction state
   const [votingPollId, setVotingPollId] = useState(null)
+  const [closingPoll, setClosingPoll] = useState(null)
+  const [deletingPoll, setDeletingPoll] = useState(null)
 
   const loadPolls = useCallback(async () => {
     setLoading(true)
@@ -59,6 +61,21 @@ export default function VotingTab() {
       loadPolls()
     }, 250)
     return () => clearTimeout(timer)
+  }, [loadPolls])
+
+  // Real-time synchronization: listen for WebSocket dashboard-refresh & poll every 5s
+  useEffect(() => {
+    const handleRefresh = (e) => {
+      loadPolls()
+    }
+    window.addEventListener('dashboard-refresh', handleRefresh)
+    const interval = setInterval(() => {
+      loadPolls()
+    }, 5000)
+    return () => {
+      window.removeEventListener('dashboard-refresh', handleRefresh)
+      clearInterval(interval)
+    }
   }, [loadPolls])
 
   const handleAddOption = () => {
@@ -137,23 +154,25 @@ export default function VotingTab() {
     }
   }
 
-  const handleClosePoll = async (poll) => {
-    if (!window.confirm(`Close voting for "${poll.title}"? No further votes will be accepted.`)) return
+  const handleConfirmClosePoll = async () => {
+    if (!closingPoll) return
     try {
-      await coreApi.socialPolls.update(poll.id, { status: 'CLOSED' })
+      await coreApi.socialPolls.update(closingPoll.id, { status: 'CLOSED' })
       toast.success('Voting closed.')
+      setClosingPoll(null)
       loadPolls()
     } catch (err) {
       toast.error('Failed to close poll')
     }
   }
 
-  const handleDeletePoll = async (poll) => {
-    if (!window.confirm(`Delete voting campaign "${poll.title}"?`)) return
+  const handleConfirmDeletePoll = async () => {
+    if (!deletingPoll) return
     try {
-      await coreApi.socialPolls.delete(poll.id)
+      await coreApi.socialPolls.delete(deletingPoll.id)
       toast.success('Poll deleted.')
-      setPolls(prev => prev.filter(p => p.id !== poll.id))
+      setPolls(prev => prev.filter(p => p.id !== deletingPoll.id))
+      setDeletingPoll(null)
     } catch (err) {
       toast.error('Failed to delete poll')
     }
@@ -318,15 +337,16 @@ export default function VotingTab() {
                                 {pct}%
                               </span>
 
-                              {isActive && !poll.has_voted && (
+                              {isActive && (
                                 <button
                                   type="button"
                                   onClick={() => handleVote(poll.id, opt.id)}
                                   disabled={votingPollId === poll.id}
-                                  className="btn btn-primary btn-sm"
+                                  className={`btn ${isVoted ? 'btn-primary' : 'btn-secondary'} btn-sm`}
                                   style={{ height: 24, padding: '2px 8px', fontSize: 11 }}
+                                  title={isVoted ? 'Your currently selected vote' : 'Click to cast or change vote'}
                                 >
-                                  Vote
+                                  {isVoted ? 'Selected' : 'Vote'}
                                 </button>
                               )}
                             </div>
@@ -352,7 +372,7 @@ export default function VotingTab() {
                     {isActive && (
                       <button
                         type="button"
-                        onClick={() => handleClosePoll(poll)}
+                        onClick={() => setClosingPoll(poll)}
                         className="btn btn-secondary btn-sm"
                       >
                         Close Voting
@@ -360,7 +380,7 @@ export default function VotingTab() {
                     )}
                     <button
                       type="button"
-                      onClick={() => handleDeletePoll(poll)}
+                      onClick={() => setDeletingPoll(poll)}
                       className="btn btn-secondary btn-sm"
                       style={{ color: 'var(--danger)', borderColor: 'var(--danger-light)' }}
                       title="Delete Campaign"
@@ -512,6 +532,50 @@ export default function VotingTab() {
           </form>
         </Modal>
       )}
+
+      {/* Close Voting Confirm Modal */}
+      <ConfirmModal
+        isOpen={Boolean(closingPoll)}
+        onClose={() => setClosingPoll(null)}
+        onConfirm={handleConfirmClosePoll}
+        title="Close Voting Campaign"
+        message={
+          closingPoll ? (
+            <div>
+              <span>Are you sure you want to close voting for </span>
+              <strong style={{ color: 'var(--gray-900)' }}>"{closingPoll.title}"</strong>?
+              <div style={{ marginTop: 8, fontSize: 13, color: 'var(--gray-500)', lineHeight: 1.4 }}>
+                No further member or staff votes will be accepted once closed.
+              </div>
+            </div>
+          ) : ''
+        }
+        confirmText="Close Voting"
+        cancelText="Cancel"
+        isDanger={false}
+      />
+
+      {/* Delete Poll Confirm Modal */}
+      <ConfirmModal
+        isOpen={Boolean(deletingPoll)}
+        onClose={() => setDeletingPoll(null)}
+        onConfirm={handleConfirmDeletePoll}
+        title="Delete Voting Campaign"
+        message={
+          deletingPoll ? (
+            <div>
+              <span>Are you sure you want to permanently delete </span>
+              <strong style={{ color: 'var(--gray-900)' }}>"{deletingPoll.title}"</strong>?
+              <div style={{ marginTop: 8, fontSize: 13, color: 'var(--gray-500)', lineHeight: 1.4 }}>
+                All collected votes and results for this poll will be erased.
+              </div>
+            </div>
+          ) : ''
+        }
+        confirmText="Delete Poll"
+        cancelText="Cancel"
+        isDanger={true}
+      />
     </div>
   )
 }

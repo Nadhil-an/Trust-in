@@ -49,7 +49,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id', 'username', 'email', 'full_name', 'role', 'phone', 'photo',
-            'is_active', 'date_joined',
+            'is_active', 'is_verified', 'date_joined',
             'member_id', 'member_name', 'member_since', 'valid_upto',
             'is_subscription_expired', 'has_active_subscription', 'is_paid_member',
             'subscription_status', 'days_left_to_expire', 'monthly_fee'
@@ -284,6 +284,21 @@ class MemberPostCommentSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'post', 'author', 'created_at']
 
     def get_author(self, obj):
+        if getattr(obj, 'post_category', None) == MemberPostCategory.OFFICIAL_TRUST:
+            return {
+                'id': str(obj.author.id),
+                'username': 'Announcement',
+                'full_name': 'Announcement',
+                'photo': None,
+                'role': 'OFFICIAL_TRUST',
+                'phone': getattr(obj.author, 'phone', ''),
+                'member_id': 'ANNOUNCEMENT',
+                'followers_count': 0,
+                'following_count': 0,
+                'posts_count': 0,
+                'is_following': False,
+                'is_verified': True,
+            }
         request = self.context.get('request')
         photo_url = None
         if obj.user.photo:
@@ -315,7 +330,7 @@ class MemberPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = MemberPost
         fields = [
-            'id', 'author', 'post_type', 'post_category', 'is_pinned', 'scheduled_at',
+            'id', 'author', 'post_type', 'post_category', 'is_pinned', 'scheduled_at', 'expires_at',
             'description', 'contact_number', 'address',
             'video', 'media_type', 'is_following_author',
             'status', 'rejection_reason', 'approved_by', 'approved_at',

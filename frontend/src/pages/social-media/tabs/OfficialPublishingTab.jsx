@@ -14,7 +14,10 @@ import {
   ShieldCheck,
   Heart,
   MessageSquare,
-  X
+  X,
+  Calendar,
+  Trash2,
+  Clock
 } from 'lucide-react'
 
 export default function OfficialPublishingTab() {
@@ -22,10 +25,12 @@ export default function OfficialPublishingTab() {
   const [address, setAddress] = useState('Sree Lakshmi Charitable Trust HQ')
   const [contactNumber, setContactNumber] = useState('')
   const [isPinned, setIsPinned] = useState(true)
+  const [expiresAt, setExpiresAt] = useState('')
   const [images, setImages] = useState([])
   const [imagePreviews, setImagePreviews] = useState([])
   const [videoFile, setVideoFile] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [deletingId, setDeletingId] = useState(null)
 
   // Published announcements history
   const [officialPosts, setOfficialPosts] = useState([])
@@ -80,6 +85,9 @@ export default function OfficialPublishingTab() {
       formData.append('is_pinned', isPinned ? 'true' : 'false')
       if (address) formData.append('address', address)
       if (contactNumber) formData.append('contact_number', contactNumber)
+      if (expiresAt) {
+        formData.append('expires_at', new Date(expiresAt).toISOString())
+      }
 
       images.forEach(img => {
         formData.append('images', img)
@@ -90,10 +98,11 @@ export default function OfficialPublishingTab() {
       }
 
       await coreApi.memberPosts.create(formData)
-      toast.success('Official Trust Announcement published and pushed to all members!')
+      toast.success('Official Announcement published and broadcasted to members!')
 
       // Reset form
       setDescription('')
+      setExpiresAt('')
       setImages([])
       setImagePreviews([])
       setVideoFile(null)
@@ -103,6 +112,23 @@ export default function OfficialPublishingTab() {
       toast.error(err.response?.data?.detail || 'Failed to publish announcement')
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handleDelete = async (postId) => {
+    if (!window.confirm('Are you sure you want to permanently delete this official announcement?')) {
+      return
+    }
+    setDeletingId(postId)
+    try {
+      await coreApi.memberPosts.delete(postId)
+      toast.success('Announcement deleted successfully')
+      setOfficialPosts(prev => prev.filter(p => p.id !== postId))
+    } catch (err) {
+      console.error('Delete announcement error:', err)
+      toast.error('Failed to delete announcement')
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -155,6 +181,23 @@ export default function OfficialPublishingTab() {
                   placeholder="Sree Lakshmi Trust HQ"
                 />
               </div>
+            </div>
+
+            {/* Expiry Date (Auto-removal) */}
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Calendar size={14} color="var(--primary-600)" />
+                Post Expiry Date & Time (Optional)
+              </label>
+              <input
+                type="datetime-local"
+                className="form-control"
+                value={expiresAt}
+                onChange={e => setExpiresAt(e.target.value)}
+              />
+              <small style={{ color: 'var(--gray-500)', fontSize: 11, marginTop: 4, display: 'block' }}>
+                After this date and time, the announcement will automatically be removed from member mobile feeds.
+              </small>
             </div>
 
             {/* Media Uploaders */}
@@ -256,17 +299,19 @@ export default function OfficialPublishingTab() {
                   <Pin size={12} /> PINNED ANNOUNCEMENT
                 </div>
               )}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--primary-900)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 12 }}>
-                  SLT
-                </div>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontWeight: 700, fontSize: 13, color: 'var(--gray-900)' }}>
-                    <span>Sree Lakshmi Trust</span>
-                    <ShieldCheck size={14} color="var(--primary-600)" />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 38, height: 38, borderRadius: '50%', background: '#0284c7', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 15 }}>
+                    A
                   </div>
-                  <div style={{ fontSize: 11, color: 'var(--gray-500)' }}>
-                    Official Account &bull; Just now
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontWeight: 700, fontSize: 14, color: '#0F172A' }}>
+                      <span>Announcement</span>
+                      <ShieldCheck size={14} color="#0284c7" />
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--gray-500)' }}>
+                      Official Trust Notice &bull; Just now
+                    </div>
                   </div>
                 </div>
               </div>
@@ -319,45 +364,88 @@ export default function OfficialPublishingTab() {
           />
         ) : (
           <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {officialPosts.map(post => (
-              <div
-                key={post.id}
-                style={{
-                  background: 'var(--gray-50)',
-                  borderRadius: 'var(--border-radius-sm)',
-                  border: post.is_pinned ? '1px solid var(--primary-400)' : '1px solid var(--gray-200)',
-                  padding: '14px 18px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
-                  gap: 12
-                }}
-              >
-                <div style={{ flex: 1, minWidth: 280 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                    {post.is_pinned && (
-                      <span className="badge badge-blue" style={{ fontSize: 10, padding: '1px 6px', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-                        <Pin size={10} /> PINNED
+            {officialPosts.map(post => {
+              const isExpired = post.expires_at && new Date(post.expires_at) < new Date()
+              return (
+                <div
+                  key={post.id}
+                  style={{
+                    background: 'var(--gray-50)',
+                    borderRadius: 'var(--border-radius-sm)',
+                    border: post.is_pinned ? '1px solid var(--primary-400)' : '1px solid var(--gray-200)',
+                    padding: '14px 18px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: 12
+                  }}
+                >
+                  <div style={{ flex: 1, minWidth: 280 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
+                      <span style={{ fontWeight: 700, fontSize: 13, color: '#0F172A', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                        <Megaphone size={13} color="var(--primary-600)" />
+                        Announcement
                       </span>
-                    )}
-                    <span style={{ fontSize: 12, color: 'var(--gray-500)' }}>
-                      {post.created_at ? format(new Date(post.created_at), 'dd MMM yyyy, hh:mm a') : 'Recently'}
-                    </span>
-                    <span style={{ fontSize: 12, color: 'var(--gray-500)' }}>&bull; {post.likes_count || 0} likes &bull; {post.comments_count || 0} comments</span>
+                      {post.is_pinned && (
+                        <span className="badge badge-blue" style={{ fontSize: 10, padding: '1px 6px', display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                          <Pin size={10} /> PINNED
+                        </span>
+                      )}
+                      <span style={{ fontSize: 12, color: 'var(--gray-500)' }}>
+                        {post.created_at ? format(new Date(post.created_at), 'dd MMM yyyy, hh:mm a') : 'Recently'}
+                      </span>
+                      {post.expires_at && (
+                        <span style={{
+                          fontSize: 11,
+                          fontWeight: 600,
+                          color: isExpired ? '#DC2626' : '#B45309',
+                          background: isExpired ? '#FEE2E2' : '#FEF3C7',
+                          padding: '1px 7px',
+                          borderRadius: 4,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 3
+                        }}>
+                          <Clock size={10} />
+                          {isExpired ? 'Expired' : `Expires: ${format(new Date(post.expires_at), 'dd MMM, hh:mm a')}`}
+                        </span>
+                      )}
+                      <span style={{ fontSize: 12, color: 'var(--gray-500)' }}>&bull; {post.likes_count || 0} likes &bull; {post.comments_count || 0} comments</span>
+                    </div>
+                    <p style={{ margin: 0, fontSize: 13, color: 'var(--gray-800)', lineHeight: 1.4 }}>
+                      {post.description}
+                    </p>
                   </div>
-                  <p style={{ margin: 0, fontSize: 13, color: 'var(--gray-800)', lineHeight: 1.4 }}>
-                    {post.description}
-                  </p>
-                </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span className="badge badge-green">
-                    LIVE
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span className={isExpired ? "badge badge-gray" : "badge badge-green"}>
+                      {isExpired ? 'EXPIRED' : 'LIVE'}
+                    </span>
+                    <button
+                      type="button"
+                      disabled={deletingId === post.id}
+                      onClick={() => handleDelete(post.id)}
+                      className="btn btn-outline-danger btn-sm"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 4,
+                        padding: '4px 10px',
+                        fontSize: 12,
+                        color: '#DC2626',
+                        borderColor: '#FCA5A5',
+                        background: '#FFF'
+                      }}
+                      title="Delete this announcement"
+                    >
+                      <Trash2 size={13} />
+                      {deletingId === post.id ? 'Deleting...' : 'Delete'}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>

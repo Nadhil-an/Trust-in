@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { mrmApi } from '../../../api'
-import { LoadingState, EmptyState, Modal, FilterBar, StatCard } from '../../../components/shared'
+import { LoadingState, EmptyState, Modal, ConfirmModal, FilterBar, StatCard } from '../../../components/shared'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 import {
@@ -40,6 +40,7 @@ export default function MRMTasksTab() {
 
   // Review Modal
   const [taskToReview, setTaskToReview] = useState(null)
+  const [taskToDelete, setTaskToDelete] = useState(null)
   const [reviewForm, setReviewForm] = useState({
     status: 'COMPLETED',
     achieved_value: 0,
@@ -143,11 +144,12 @@ export default function MRMTasksTab() {
     }
   }
 
-  const handleDeleteTask = async (id, taskNumber) => {
-    if (!window.confirm(`Are you sure you want to delete task #${taskNumber}?`)) return
+  const handleConfirmDeleteTask = async () => {
+    if (!taskToDelete) return
     try {
-      await mrmApi.tasks.delete(id)
+      await mrmApi.tasks.delete(taskToDelete.id)
       toast.success('Task deleted')
+      setTaskToDelete(null)
       fetchTasks()
     } catch (err) {
       console.error('Delete task error:', err)
@@ -389,7 +391,7 @@ export default function MRMTasksTab() {
                           )}
 
                           <button
-                            onClick={() => handleDeleteTask(t.id, t.task_number)}
+                            onClick={() => setTaskToDelete(t)}
                             className="btn btn-secondary btn-sm"
                             style={{ color: 'var(--danger)', borderColor: 'var(--danger-light)' }}
                             title="Delete Task"
@@ -627,6 +629,28 @@ export default function MRMTasksTab() {
           </form>
         </Modal>
       )}
+
+      {/* Delete Task Confirmation Dialog */}
+      <ConfirmModal
+        isOpen={Boolean(taskToDelete)}
+        onClose={() => setTaskToDelete(null)}
+        onConfirm={handleConfirmDeleteTask}
+        title="Delete Assigned Task"
+        message={
+          taskToDelete ? (
+            <div>
+              <span>Are you sure you want to delete task </span>
+              <strong style={{ color: 'var(--gray-900)' }}>#{taskToDelete.task_number} ("{taskToDelete.title}")</strong>?
+              <div style={{ marginTop: 8, fontSize: 13, color: 'var(--gray-500)', lineHeight: 1.4 }}>
+                This will remove the task and any submitted member progress.
+              </div>
+            </div>
+          ) : ''
+        }
+        confirmText="Delete Task"
+        cancelText="Cancel"
+        isDanger={true}
+      />
     </div>
   )
 }
