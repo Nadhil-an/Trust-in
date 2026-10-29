@@ -1858,9 +1858,30 @@ class PublicCooperationMessageViewSet(ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
-        status_param = self.request.query_params.get('status')
-        if status_param and status_param != 'ALL':
-            qs = qs.filter(status=status_param)
+        user_role = getattr(self.request.user, 'role', '')
+        is_staff_admin = user_role in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA']
+
+        if not is_staff_admin:
+            # Regular members & mobile users only see published and non-expired messages
+            from django.utils import timezone
+            qs = qs.filter(
+                status=POMStatus.PUBLISHED
+            ).filter(
+                models.Q(expires_at__isnull=True) | models.Q(expires_at__gt=timezone.now())
+            )
+        else:
+            status_param = self.request.query_params.get('status')
+            if status_param and status_param != 'ALL':
+                qs = qs.filter(status=status_param)
+            active_only = self.request.query_params.get('active_only')
+            if active_only in ['true', '1', True]:
+                from django.utils import timezone
+                qs = qs.filter(
+                    status=POMStatus.PUBLISHED
+                ).filter(
+                    models.Q(expires_at__isnull=True) | models.Q(expires_at__gt=timezone.now())
+                )
+
         category_param = self.request.query_params.get('category')
         if category_param and category_param != 'ALL':
             qs = qs.filter(category=category_param)
@@ -1880,6 +1901,20 @@ class PublicCooperationMessageViewSet(ModelViewSet):
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("Only Trust administrators can create Public Cooperation Messages.")
         serializer.save(created_by=self.request.user)
+
+    def perform_update(self, serializer):
+        user_role = getattr(self.request.user, 'role', '')
+        if user_role not in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA']:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Only Trust administrators can modify Public Cooperation Messages.")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        user_role = getattr(self.request.user, 'role', '')
+        if user_role not in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA']:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Only Trust administrators can delete Public Cooperation Messages.")
+        instance.delete()
 
     @action(detail=True, methods=['post'], url_path='increment-view')
     def increment_view(self, request, pk=None):
@@ -2017,13 +2052,20 @@ class SocialPollViewSet(ModelViewSet):
         with transaction.atomic():
             existing_vote = SocialPollVote.objects.select_for_update().filter(poll=poll, voter=request.user).first()
             if existing_vote:
-                return Response({'error': 'You have already cast your vote in this poll.'}, status=400)
-
-            SocialPollVote.objects.create(
-                poll=poll,
-                option=option,
-                voter=request.user
-            )
+                if str(existing_vote.option_id) == str(option.id):
+                    # Same option clicked again, keep vote
+                    pass
+                else:
+                    # Allow member to change their vote to another option
+                    existing_vote.option = option
+                    existing_vote.voted_at = timezone.now()
+                    existing_vote.save(update_fields=['option', 'voted_at'])
+            else:
+                SocialPollVote.objects.create(
+                    poll=poll,
+                    option=option,
+                    voter=request.user
+                )
 
             # Re-sync exact counts for all options in this poll
             for opt in poll.options.all():
