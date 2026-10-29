@@ -54,13 +54,14 @@ export default function MRMVolunteersTab() {
         status,
         rejection_reason: status === 'REJECTED' ? rejectionReason : undefined
       })
-      toast.success(`Volunteer status updated to ${status}`)
+      toast.success(status === 'ACTIVE' ? 'Volunteer approved and activated!' : `Volunteer status updated to ${status}`)
       setSelectedVolunteer(null)
       setRejectionReason('')
       loadData()
     } catch (err) {
       console.error('Update volunteer error:', err)
-      toast.error('Failed to update volunteer status')
+      const msg = err.response?.data?.detail || err.response?.data?.error || 'Failed to update volunteer status'
+      toast.error(msg)
     }
   }
 
@@ -267,9 +268,9 @@ export default function MRMVolunteersTab() {
 
                       <td style={{ textAlign: 'right' }}>
                         <div style={{ display: 'inline-flex', gap: 4, alignItems: 'center' }}>
-                          {v.status !== 'APPROVED' && (
+                          {v.status !== 'ACTIVE' && v.status !== 'APPROVED' && (
                             <button
-                              onClick={() => handleUpdateStatus(v.id, 'APPROVED')}
+                              onClick={() => handleUpdateStatus(v.id, 'ACTIVE')}
                               className="btn btn-success btn-sm"
                             >
                               <CheckCircle2 size={12} />

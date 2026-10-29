@@ -926,7 +926,19 @@ class MemberPostViewSet(ModelViewSet):
         qs = MemberPost.objects.filter(is_active=True).select_related('author', 'assessment_request').prefetch_related('images', 'likes', 'comments')
         user = self.request.user if (self.request and self.request.user.is_authenticated) else None
         user_role = getattr(user, 'role', '') if user else ''
-        is_moderator = user_role in ['SOCIAL_MEDIA', 'ADMIN', 'MANAGER']
+        is_staff_user = getattr(user, 'is_staff', False) or getattr(user, 'is_superuser', False)
+        is_moderator = user_role in ['SOCIAL_MEDIA', 'ADMIN', 'MANAGER'] or is_staff_user
+
+        # For single-object actions (retrieve, destroy, update, toggle-pin, etc.)
+        if getattr(self, 'detail', False) or (hasattr(self, 'action') and self.action in ['retrieve', 'destroy', 'update', 'partial_update', 'toggle_pin', 'approve', 'reject']):
+            if is_moderator:
+                return qs
+            if user:
+                return qs.filter(
+                    models.Q(author=user) |
+                    models.Q(status__in=[MemberPostStatus.APPROVED, MemberPostStatus.FORWARDED_TO_FAO, MemberPostStatus.OPEN])
+                )
+            return qs.filter(status__in=[MemberPostStatus.APPROVED, MemberPostStatus.FORWARDED_TO_FAO, MemberPostStatus.OPEN])
 
         my_posts = self.request.query_params.get('my_posts')
         if my_posts in ['true', '1', True]:
@@ -962,6 +974,13 @@ class MemberPostViewSet(ModelViewSet):
                 models.Q(author__full_name__icontains=search) |
                 models.Q(author__username__icontains=search)
             )
+
+        # Filter out expired announcements automatically unless include_expired=true
+        include_expired = self.request.query_params.get('include_expired') in ['true', '1', True]
+        if not include_expired and not (is_moderator and status_param == 'ALL'):
+            now = timezone.now()
+            qs = qs.filter(models.Q(expires_at__isnull=True) | models.Q(expires_at__gt=now))
+
         return qs
 
     def perform_create(self, serializer):
@@ -974,12 +993,14 @@ class MemberPostViewSet(ModelViewSet):
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("Only Trust administrators can publish official announcements.")
 
+        expires_at_val = self.request.data.get('expires_at') or None
         post = serializer.save(
             author=self.request.user,
             is_active=True,
             status=initial_status,
             post_category=post_cat,
             is_pinned=is_pin,
+            expires_at=expires_at_val,
             video=video_file
         )
         images = self.request.FILES.getlist('images') or self.request.FILES.getlist('photos')
@@ -1008,12 +1029,30 @@ class MemberPostViewSet(ModelViewSet):
 
     def check_object_permissions(self, request, obj):
         super().check_object_permissions(request, obj)
+        user_role = getattr(request.user, 'role', '')
+        is_staff_user = getattr(request.user, 'is_staff', False) or getattr(request.user, 'is_superuser', False)
+        is_moderator = user_role in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA', 'DATA_ENTRY', 'HR', 'STAFF'] or is_staff_user
+
         if self.action in ['update', 'partial_update']:
-            user_role = getattr(request.user, 'role', '')
-            is_staff_user = getattr(request.user, 'is_staff', False) or getattr(request.user, 'is_superuser', False)
-            if obj.author != request.user and user_role not in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA', 'DATA_ENTRY', 'HR', 'STAFF'] and not is_staff_user:
+            if obj.author != request.user and not is_moderator:
                 from rest_framework.exceptions import PermissionDenied
                 raise PermissionDenied("You can only edit your own posts.")
+
+        if self.action == 'destroy':
+            if obj.author != request.user and not is_moderator:
+                from rest_framework.exceptions import PermissionDenied
+                raise PermissionDenied("You can only delete your own posts.")
+
+    @action(detail=True, methods=['post'], url_path='toggle-pin')
+    def toggle_pin(self, request, pk=None):
+        user_role = getattr(request.user, 'role', '')
+        is_staff_user = getattr(request.user, 'is_staff', False) or getattr(request.user, 'is_superuser', False)
+        if user_role not in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA'] and not is_staff_user:
+            return Response({'error': 'Permission denied.'}, status=403)
+        post = self.get_object()
+        post.is_pinned = not getattr(post, 'is_pinned', False)
+        post.save(update_fields=['is_pinned', 'updated_at'])
+        return Response({'is_pinned': post.is_pinned, 'message': 'Post pinned' if post.is_pinned else 'Post unpinned'})
 
     @action(detail=True, methods=['post'], url_path='toggle-like')
     def toggle_like(self, request, pk=None):
@@ -1322,6 +1361,7 @@ class MemberProfileView(APIView):
                 'district': district,
                 'is_following': is_following,
                 'is_me': is_me,
+                'is_verified': target_user.is_verified,
                 'posts_count': posts_count,
                 'followers_count': followers_count,
                 'following_count': following_count,
@@ -1678,6 +1718,10 @@ class MemberVerificationViewSet(ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
+        user = self.request.user
+        user_role = getattr(user, 'role', '')
+        if user_role not in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA'] and not user.is_staff and not user.is_superuser:
+            return qs.filter(user=user)
         status_param = self.request.query_params.get('status')
         if status_param and status_param != 'ALL':
             qs = qs.filter(status=status_param)
@@ -1881,7 +1925,11 @@ class SocialPollViewSet(ModelViewSet):
     """Voting and poll management with integrity protection, one-vote enforcement, and live results calculation"""
     queryset = SocialPoll.objects.prefetch_related('options', 'votes').select_related('created_by').order_by('-created_at')
     serializer_class = SocialPollSerializer
-    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve', 'results']:
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -1967,8 +2015,8 @@ class SocialPollViewSet(ModelViewSet):
             return Response({'error': 'Selected option does not exist.'}, status=404)
 
         with transaction.atomic():
-            # Check for existing vote (prevent duplicates)
-            if SocialPollVote.objects.filter(poll=poll, voter=request.user).exists():
+            existing_vote = SocialPollVote.objects.select_for_update().filter(poll=poll, voter=request.user).first()
+            if existing_vote:
                 return Response({'error': 'You have already cast your vote in this poll.'}, status=400)
 
             SocialPollVote.objects.create(
@@ -1976,8 +2024,18 @@ class SocialPollViewSet(ModelViewSet):
                 option=option,
                 voter=request.user
             )
-            option.votes_count = models.F('votes_count') + 1
-            option.save(update_fields=['votes_count'])
+
+            # Re-sync exact counts for all options in this poll
+            for opt in poll.options.all():
+                opt.votes_count = opt.votes.count()
+                opt.save(update_fields=['votes_count'])
+
+        # Broadcast real-time refresh to all connected web dashboards and mobile clients
+        try:
+            from notify.service import push_dashboard_refresh
+            push_dashboard_refresh(['SOCIAL_MEDIA', 'MANAGER', 'ADMIN', 'MEMBER', 'STAFF'], module='SOCIAL_POLLS')
+        except Exception:
+            pass
 
         serializer = self.get_serializer(poll)
         return Response({

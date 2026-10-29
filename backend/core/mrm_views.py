@@ -272,7 +272,7 @@ class MRMTaskDetailView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
-        if request.user.role not in ['ADMIN', 'MANAGER']:
+        if request.user.role not in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA', 'HR']:
             return Response({'detail': 'Permission denied.'}, status=status.HTTP_403_FORBIDDEN)
         try:
             task = MemberTask.objects.get(pk=pk)
@@ -381,7 +381,7 @@ class MRMBadgeDefinitionsView(APIView):
         return Response(BadgeDefinitionSerializer(badges, many=True).data)
 
     def patch(self, request, badge_key):
-        if request.user.role not in ['ADMIN', 'MANAGER']:
+        if request.user.role not in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA', 'HR']:
             return Response({'detail': 'Permission denied.'}, status=status.HTTP_403_FORBIDDEN)
         try:
             badge = BadgeDefinition.objects.get(badge_key=badge_key)
@@ -424,7 +424,7 @@ class MRMBadgeManualAwardView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        if request.user.role not in ['ADMIN', 'MANAGER']:
+        if request.user.role not in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA', 'HR']:
             return Response({'detail': 'Permission denied.'}, status=status.HTTP_403_FORBIDDEN)
 
         member_id = request.data.get('member_id')
@@ -462,7 +462,7 @@ class MRMBadgeEvaluateView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        if request.user.role not in ['ADMIN', 'MANAGER']:
+        if request.user.role not in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA', 'HR']:
             return Response({'detail': 'Permission denied.'}, status=status.HTTP_403_FORBIDDEN)
 
         member_id = request.data.get('member_id')
@@ -505,7 +505,7 @@ class MRMAchievementsView(APIView):
         return Response(MemberAchievementSerializer(qs[:100], many=True).data)
 
     def post(self, request):
-        if request.user.role not in ['ADMIN', 'MANAGER']:
+        if request.user.role not in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA', 'HR']:
             return Response({'detail': 'Permission denied.'}, status=status.HTTP_403_FORBIDDEN)
 
         serializer = MemberAchievementSerializer(data=request.data)
@@ -555,7 +555,7 @@ class MRMVolunteersView(APIView):
         return Response(results)
 
     def patch(self, request, pk):
-        if request.user.role not in ['ADMIN', 'MANAGER']:
+        if request.user.role not in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA', 'HR']:
             return Response({'detail': 'Permission denied.'}, status=status.HTTP_403_FORBIDDEN)
 
         try:
@@ -566,15 +566,21 @@ class MRMVolunteersView(APIView):
         new_status = request.data.get('status')
         rejection_reason = request.data.get('rejection_reason', '')
 
-        if new_status in ['APPROVED', 'REJECTED', 'ACTIVE', 'INACTIVE']:
+        if new_status == 'APPROVED':
+            new_status = 'ACTIVE'
+
+        if new_status in ['ACTIVE', 'REJECTED', 'INACTIVE', 'SUSPENDED', 'PENDING']:
             vol.status = new_status
-            if new_status == 'APPROVED':
+            if new_status == 'ACTIVE':
                 vol.approved_by = request.user
                 vol.approved_at = timezone.now()
                 # Check Maroon Badge qualification
                 member_match = Member.objects.filter(Q(full_name__iexact=vol.full_name) | Q(phone=vol.phone)).first()
                 if member_match:
-                    BadgeEngine.evaluate_member(member_match)
+                    try:
+                        BadgeEngine.evaluate_member(member_match)
+                    except Exception as e:
+                        logger.warning(f"Badge evaluation failed: {e}")
             elif new_status == 'REJECTED':
                 vol.rejection_reason = rejection_reason
             vol.save()
@@ -605,7 +611,7 @@ class MRMVolunteerAllowancesView(APIView):
         return Response(VolunteerAllowanceRecordSerializer(qs[:100], many=True).data)
 
     def post(self, request):
-        if request.user.role not in ['ADMIN', 'MANAGER']:
+        if request.user.role not in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA', 'HR']:
             return Response({'detail': 'Permission denied.'}, status=status.HTTP_403_FORBIDDEN)
 
         volunteer_id = request.data.get('volunteer_id')
@@ -638,7 +644,7 @@ class MRMVolunteerAllowanceApproveView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, pk):
-        if request.user.role not in ['ADMIN', 'MANAGER']:
+        if request.user.role not in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA', 'HR']:
             return Response({'detail': 'Permission denied.'}, status=status.HTTP_403_FORBIDDEN)
 
         status_choice = request.data.get('status', 'APPROVED')
