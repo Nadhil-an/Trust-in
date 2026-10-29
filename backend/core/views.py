@@ -1468,12 +1468,17 @@ class MemberSearchView(APIView):
         query = (request.query_params.get('q') or '').strip()
         unfollowed_only = request.query_params.get('unfollowed') in ['true', '1', True]
         limit_param = request.query_params.get('limit')
+        role_param = request.query_params.get('role')
+        include_self = request.query_params.get('include_self') in ['true', '1', True]
         from django.db.models import Q
 
         users_qs = User.objects.filter(is_active=True).exclude(role='ADMIN')
 
-        # Exclude self
-        if request.user and request.user.is_authenticated:
+        if role_param:
+            users_qs = users_qs.filter(role__iexact=role_param)
+
+        # Exclude self unless explicitly allowed
+        if not include_self and request.user and request.user.is_authenticated:
             users_qs = users_qs.exclude(id=request.user.id)
 
         # Retrieve set of users currently followed
@@ -1511,6 +1516,8 @@ class MemberSearchView(APIView):
             followers_count = UserFollow.objects.filter(following=u).count()
             posts_count = MemberPost.objects.filter(author=u, is_active=True).count()
             member = get_user_member(u)
+            member_status = getattr(member, 'status', 'ACTIVE') if member else 'ACTIVE'
+            is_active_member = bool(u.is_active and str(member_status).upper() == 'ACTIVE')
             results.append({
                 'id': str(u.id),
                 'username': u.username,
@@ -1518,6 +1525,7 @@ class MemberSearchView(APIView):
                 'photo': photo_url,
                 'district': getattr(member, 'district', '') if member else '',
                 'role': u.role,
+                'status': 'ACTIVE' if is_active_member else 'INACTIVE',
                 'followers_count': followers_count,
                 'posts_count': posts_count,
                 'is_following': is_following,

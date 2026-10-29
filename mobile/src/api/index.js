@@ -391,6 +391,11 @@ export const memberPostsApi = {
     const p = typeof params === 'string' ? { q: params } : (params || {});
     return api.get('/core/members/search/', { params: p });
   },
+  getActiveMembers: (params) => {
+    return api.get('/core/members/search/', {
+      params: { role: 'MEMBER', include_self: true, limit: 100, ...(params || {}) }
+    });
+  },
   getComments: (id) => api.get(`/core/member-posts/${id}/comments/`),
   addComment: (id, text) => api.post(`/core/member-posts/${id}/comments/`, { text }),
   update: (id, data) => api.patch(`/core/member-posts/${id}/`, data),
