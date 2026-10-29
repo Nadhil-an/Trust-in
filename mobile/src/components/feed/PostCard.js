@@ -287,6 +287,156 @@ export default function PostCard({
   };
 
   const isLongDesc = (post.description || '').length > 95;
+  const hasMedia = Boolean(post.video || images.length > 0);
+
+  const renderHeader = (isOverlay = false) => (
+    <View style={isOverlay ? styles.overlayHeader : styles.postHeader}>
+      <TouchableOpacity
+        style={styles.authorRow}
+        onPress={isOfficialAnnouncement ? undefined : handleOpenAuthorProfile}
+        activeOpacity={isOfficialAnnouncement ? 1 : 0.8}
+      >
+        {authorPhotoUrl ? (
+          <Image
+            source={{ uri: authorPhotoUrl }}
+            style={isOverlay ? styles.overlayAvatarImg : styles.avatarImg}
+          />
+        ) : (
+          <View
+            style={[
+              isOverlay ? styles.overlayAvatarPlaceholder : styles.avatarPlaceholder,
+              isOfficialAnnouncement && { backgroundColor: '#0284c7' },
+            ]}
+          >
+            <Text
+              style={[
+                styles.avatarInitials,
+                isOverlay && styles.overlayAvatarInitials,
+                isOfficialAnnouncement && { color: '#FFFFFF', fontWeight: '800' },
+              ]}
+            >
+              {isOfficialAnnouncement ? 'A' : (authorName[0] || 'U').toUpperCase()}
+            </Text>
+          </View>
+        )}
+
+        <View style={styles.authorTextCol}>
+          <View style={styles.authorNameRow}>
+            <Text
+              style={isOverlay ? styles.overlayAuthorUsername : styles.authorUsername}
+              numberOfLines={1}
+            >
+              {authorName}
+            </Text>
+            {Boolean(post.author?.is_verified) && (
+              <Ionicons
+                name="checkmark-circle"
+                size={13}
+                color={isOverlay ? '#38BDF8' : '#0284c7'}
+                style={{ marginLeft: 3 }}
+              />
+            )}
+          </View>
+
+          {/* Subtitle with Location & Non-colliding Status Badge */}
+          <View style={styles.subtitleRow}>
+            {displaySubtitle ? (
+              <Text
+                style={[
+                  isOverlay ? styles.overlaySubtitleText : styles.subtitleText,
+                  isOfficialAnnouncement && (isOverlay ? styles.overlayAnnouncementSubtitle : styles.announcementSubtitleText),
+                ]}
+                numberOfLines={1}
+              >
+                {displaySubtitle}
+              </Text>
+            ) : null}
+            {showStatusBadge && post.status && post.status !== 'APPROVED' ? (
+              <View
+                style={[
+                  styles.statusBadgeSubtitle,
+                  {
+                    backgroundColor:
+                      (post.status === 'PENDING_APPROVAL' || post.status === 'OPEN')
+                        ? (isOverlay ? 'rgba(254, 243, 199, 0.92)' : '#FEF3C7')
+                        : post.status === 'REJECTED'
+                        ? (isOverlay ? 'rgba(254, 226, 226, 0.92)' : '#FEE2E2')
+                        : (isOverlay ? 'rgba(219, 234, 254, 0.92)' : '#DBEAFE'),
+                    borderColor:
+                      (post.status === 'PENDING_APPROVAL' || post.status === 'OPEN')
+                        ? '#FDE68A'
+                        : post.status === 'REJECTED'
+                        ? '#FCA5A5'
+                        : '#BFDBFE',
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.statusBadgeSubtitleText,
+                    {
+                      color:
+                        (post.status === 'PENDING_APPROVAL' || post.status === 'OPEN')
+                          ? '#B45309'
+                          : post.status === 'REJECTED'
+                          ? '#DC2626'
+                          : '#1E40AF',
+                    },
+                  ]}
+                >
+                  {(post.status === 'PENDING_APPROVAL' || post.status === 'OPEN')
+                    ? 'Under Review ⏳'
+                    : post.status === 'REJECTED'
+                    ? 'Rejected ⚠️'
+                    : 'With FAO 🚀'}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+        </View>
+      </TouchableOpacity>
+
+      {/* Right side: Follow Button + 3-dots options icon (hidden on announcements) */}
+      <View style={styles.headerRightActions}>
+        {!isOfficialAnnouncement && !isAuthor && post.author?.id && (
+          <TouchableOpacity
+            style={[
+              isOverlay ? styles.overlayFollowBtn : styles.headerFollowBtn,
+              isFollowing
+                ? (isOverlay ? styles.overlayFollowingBtn : styles.headerFollowingBtn)
+                : (isOverlay ? styles.overlayFollowBtnActive : styles.headerFollowBtnActive),
+            ]}
+            onPress={handleToggleFollow}
+            activeOpacity={0.75}
+          >
+            <Text
+              style={[
+                isOverlay ? styles.overlayFollowBtnText : styles.headerFollowBtnText,
+                isFollowing && (isOverlay ? styles.overlayFollowingBtnText : styles.headerFollowingBtnText),
+              ]}
+            >
+              {isFollowing ? 'Following' : 'Follow'}
+            </Text>
+          </TouchableOpacity>
+        )}
+
+        {!isOfficialAnnouncement && (
+          <TouchableOpacity
+            style={isOverlay ? styles.overlayMenuBtn : styles.headerMenuBtn}
+            onPress={() => setOptionsModalVisible(true)}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name="ellipsis-horizontal"
+              size={20}
+              color={isOverlay ? '#FFFFFF' : '#0F172A'}
+            />
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
+  );
 
   return (
     <View
@@ -304,123 +454,17 @@ export default function PostCard({
         </View>
       )}
 
-      {/* ── 1. Top Post Header (Profile Avatar, Name, Location, Follow Button, Options Menu) ── */}
-      <View style={styles.postHeader}>
-        <TouchableOpacity
-          style={styles.authorRow}
-          onPress={isOfficialAnnouncement ? undefined : handleOpenAuthorProfile}
-          activeOpacity={isOfficialAnnouncement ? 1 : 0.8}
-        >
-          {authorPhotoUrl ? (
-            <Image source={{ uri: authorPhotoUrl }} style={styles.avatarImg} />
-          ) : (
-            <View style={[
-              styles.avatarPlaceholder,
-              isOfficialAnnouncement && { backgroundColor: '#0284c7' }
-            ]}>
-              <Text style={[
-                styles.avatarInitials,
-                isOfficialAnnouncement && { color: '#FFFFFF', fontWeight: '800' }
-              ]}>
-                {isOfficialAnnouncement ? 'A' : (authorName[0] || 'U').toUpperCase()}
-              </Text>
-            </View>
-          )}
-
-          <View style={styles.authorTextCol}>
-            <View style={styles.authorNameRow}>
-              <Text style={styles.authorUsername} numberOfLines={1}>
-                {authorName}
-              </Text>
-              {Boolean(post.author?.is_verified) && (
-                <Ionicons name="checkmark-circle" size={13} color="#0284c7" style={{ marginLeft: 3 }} />
-              )}
-            </View>
-
-            {/* Subtitle with Location & Non-colliding Status Badge */}
-            <View style={styles.subtitleRow}>
-              {displaySubtitle ? (
-                <Text
-                  style={[
-                    styles.subtitleText,
-                    isOfficialAnnouncement && styles.announcementSubtitleText,
-                  ]}
-                  numberOfLines={1}
-                >
-                  {displaySubtitle}
-                </Text>
-              ) : null}
-              {showStatusBadge && post.status && post.status !== 'APPROVED' ? (
-                <View style={[
-                  styles.statusBadgeSubtitle,
-                  {
-                    backgroundColor:
-                      (post.status === 'PENDING_APPROVAL' || post.status === 'OPEN') ? '#FEF3C7' :
-                      post.status === 'REJECTED' ? '#FEE2E2' : '#DBEAFE',
-                    borderColor:
-                      (post.status === 'PENDING_APPROVAL' || post.status === 'OPEN') ? '#FDE68A' :
-                      post.status === 'REJECTED' ? '#FCA5A5' : '#BFDBFE',
-                  }
-                ]}>
-                  <Text style={[
-                    styles.statusBadgeSubtitleText,
-                    {
-                      color:
-                        (post.status === 'PENDING_APPROVAL' || post.status === 'OPEN') ? '#B45309' :
-                        post.status === 'REJECTED' ? '#DC2626' : '#1E40AF',
-                    }
-                  ]}>
-                    {(post.status === 'PENDING_APPROVAL' || post.status === 'OPEN') ? 'Under Review ⏳' :
-                     post.status === 'REJECTED' ? 'Rejected ⚠️' : 'With FAO 🚀'}
-                  </Text>
-                </View>
-              ) : null}
-            </View>
-          </View>
-        </TouchableOpacity>
-
-        {/* Right side: Fixed Alignment Follow Button + 3-dots options icon (hidden on announcements) */}
-        <View style={styles.headerRightActions}>
-          {!isOfficialAnnouncement && !isAuthor && post.author?.id && (
-            <TouchableOpacity
-              style={[
-                styles.headerFollowBtn,
-                isFollowing ? styles.headerFollowingBtn : styles.headerFollowBtnActive,
-              ]}
-              onPress={handleToggleFollow}
-              activeOpacity={0.75}
-            >
-              <Text
-                style={[
-                  styles.headerFollowBtnText,
-                  isFollowing && styles.headerFollowingBtnText,
-                ]}
-              >
-                {isFollowing ? 'Following' : 'Follow'}
-              </Text>
-            </TouchableOpacity>
-          )}
-
-          {!isOfficialAnnouncement && (
-            <TouchableOpacity
-              style={styles.headerMenuBtn}
-              onPress={() => setOptionsModalVisible(true)}
-              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="ellipsis-horizontal" size={20} color="#0F172A" />
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
+      {/* ── 1. Top Post Header fallback for text-only posts (no media) ── */}
+      {!hasMedia && renderHeader(false)}
 
       {/* ── 2. Post Media / Video or Image (Full Width with Double Tap to Like) ──────────── */}
       {post.video ? (
         <View style={styles.mediaContainer}>
+          {renderHeader(true)}
           <TouchableOpacity
             activeOpacity={0.95}
             onPress={togglePlayVideo}
-            style={{ width: '100%', height: 380, position: 'relative' }}
+            style={{ width: '100%', height: 400, position: 'relative' }}
           >
             <Video
               ref={videoRef}
@@ -466,6 +510,7 @@ export default function PostCard({
         </View>
       ) : images.length > 0 ? (
         <View style={styles.mediaContainer}>
+          {renderHeader(true)}
           <ScrollView
             horizontal
             pagingEnabled
@@ -514,7 +559,7 @@ export default function PostCard({
             </Animated.View>
           )}
 
-          {/* Top-Right Page Counter (e.g. 1/3) */}
+          {/* Bottom-Right Page Counter (e.g. 1/3) */}
           {images.length > 1 && (
             <View style={styles.imageCounterBadge}>
               <Text style={styles.imageCounterText}>
@@ -816,16 +861,106 @@ export default function PostCard({
 const styles = StyleSheet.create({
   instagramCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#F1F5F9',
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
-    marginBottom: 16,
+    marginBottom: 12,
+  },
+  // Overlay header styles (Inside Image / Video)
+  overlayHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    paddingTop: 12,
+    paddingBottom: 22,
+    backgroundColor: 'rgba(0, 0, 0, 0.40)',
+  },
+  overlayAvatarImg: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.85)',
+    backgroundColor: '#334155',
+  },
+  overlayAvatarPlaceholder: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.85)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  overlayAvatarInitials: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  overlayAuthorUsername: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: -0.2,
+    textShadowColor: 'rgba(0, 0, 0, 0.65)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  overlaySubtitleText: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: 'rgba(255, 255, 255, 0.88)',
+    maxWidth: 140,
+    textShadowColor: 'rgba(0, 0, 0, 0.65)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  overlayAnnouncementSubtitle: {
+    maxWidth: 240,
+    fontSize: 11.5,
+    fontWeight: '600',
+    color: '#E2E8F0',
+    textShadowColor: 'rgba(0, 0, 0, 0.65)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  overlayFollowBtn: {
+    height: 28,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  overlayFollowBtnActive: {
+    backgroundColor: '#FFFFFF',
+  },
+  overlayFollowBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  overlayFollowingBtn: {
+    backgroundColor: 'rgba(255, 255, 255, 0.22)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.55)',
+  },
+  overlayFollowingBtnText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  overlayMenuBtn: {
+    padding: 6,
+    borderRadius: 14,
+    backgroundColor: 'rgba(0, 0, 0, 0.22)',
   },
   appreciationBanner: {
     backgroundColor: '#FEF3C7',
@@ -962,10 +1097,11 @@ const styles = StyleSheet.create({
     width: '100%',
     position: 'relative',
     backgroundColor: '#0F172A',
+    overflow: 'hidden',
   },
   postVideo: {
     width: '100%',
-    height: 380,
+    height: 400,
     backgroundColor: '#000000',
   },
   videoPlayOverlay: {
@@ -1005,7 +1141,7 @@ const styles = StyleSheet.create({
   },
   postImage: {
     width: '100%',
-    aspectRatio: 1, // Standard Instagram 1:1 square
+    height: 400,
     backgroundColor: '#0F172A',
   },
   floatingHeartWrap: {
@@ -1026,12 +1162,13 @@ const styles = StyleSheet.create({
   },
   imageCounterBadge: {
     position: 'absolute',
-    top: 12,
+    bottom: 14,
     right: 12,
     backgroundColor: 'rgba(15, 23, 42, 0.75)',
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 12,
+    zIndex: 5,
   },
   imageCounterText: {
     color: '#FFFFFF',
@@ -1040,13 +1177,14 @@ const styles = StyleSheet.create({
   },
   dotsRow: {
     position: 'absolute',
-    bottom: 8,
+    bottom: 14,
     left: 0,
     right: 0,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     gap: 5,
+    zIndex: 4,
   },
   indicatorDot: {
     width: 6,
