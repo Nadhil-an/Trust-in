@@ -45,14 +45,26 @@ export function LoadingState() {
   )
 }
 
-export function EmptyState({ icon = null, title = 'No records found', message = '' }) {
+export function EmptyState({ icon = null, title = 'No records found', message = '', subtitle = '' }) {
+  const renderIcon = () => {
+    if (!icon) return <Inbox size={42} strokeWidth={1.5} color="var(--gray-400)" />
+    if (typeof icon === 'function') {
+      const IconComponent = icon
+      return <IconComponent size={42} strokeWidth={1.5} color="var(--gray-400)" />
+    }
+    if (React.isValidElement(icon)) return icon
+    return icon
+  }
+
+  const desc = message || subtitle
+
   return (
     <div className="empty-state">
       <div className="empty-state-icon">
-        {icon || <Inbox size={42} strokeWidth={1.5} color="var(--gray-400)" />}
+        {renderIcon()}
       </div>
       <h3>{title}</h3>
-      {message && <p>{message}</p>}
+      {desc && <p>{desc}</p>}
     </div>
   )
 }

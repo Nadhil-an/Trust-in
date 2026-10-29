@@ -2231,32 +2231,43 @@ class SocialPollViewSet(ModelViewSet):
         poll = self.get_object()
         options_data = []
         for opt in poll.options.all().order_by('order', 'id'):
-            votes = opt.votes.select_related('voter').prefetch_related('voter__member_set').order_by('-voted_at')
+            votes = opt.votes.select_related('voter').order_by('-voted_at')
             voters_list = []
             for v in votes:
-                if v.voter:
-                    member_record = v.voter.member_set.first()
-                    phone_val = getattr(v.voter, 'phone', '') or ''
-                    if not phone_val and member_record and member_record.phone:
-                        phone_val = member_record.phone
-                    if not phone_val and v.voter.username and v.voter.username.isdigit():
-                        phone_val = v.voter.username
+                try:
+                    if v.voter:
+                        member_record = None
+                        try:
+                            from core.serializers import get_user_member
+                            member_record = get_user_member(v.voter)
+                        except Exception:
+                            pass
 
-                    member_id_val = member_record.member_id if member_record else getattr(v.voter, 'staff_uid', '') or v.voter.username
-                    address_val = member_record.address if member_record else ''
+                        phone_val = getattr(v.voter, 'phone', '') or ''
+                        if not phone_val and member_record and getattr(member_record, 'phone', ''):
+                            phone_val = member_record.phone
+                        if not phone_val and v.voter.username and v.voter.username.isdigit():
+                            phone_val = v.voter.username
 
-                    voters_list.append({
-                        'vote_id': str(v.id),
-                        'user_id': str(v.voter.id),
-                        'full_name': v.voter.full_name or (member_record.full_name if member_record else v.voter.username),
-                        'username': v.voter.username,
-                        'phone': str(phone_val) if phone_val else '',
-                        'email': v.voter.email or '',
-                        'role': v.voter.role,
-                        'member_id': member_id_val,
-                        'address': address_val,
-                        'voted_at': v.voted_at.isoformat() if v.voted_at else None,
-                    })
+                        member_id_val = getattr(member_record, 'member_id', '') if member_record else getattr(v.voter, 'staff_uid', '') or v.voter.username
+                        address_val = getattr(member_record, 'address', '') if member_record else ''
+                        full_name_val = v.voter.full_name or (member_record.full_name if member_record and getattr(member_record, 'full_name', '') else v.voter.username)
+
+                        voters_list.append({
+                            'vote_id': str(v.id),
+                            'user_id': str(v.voter.id),
+                            'full_name': str(full_name_val or v.voter.username),
+                            'username': str(v.voter.username),
+                            'phone': str(phone_val) if phone_val else '',
+                            'email': str(v.voter.email or ''),
+                            'role': str(v.voter.role),
+                            'member_id': str(member_id_val) if member_id_val else '',
+                            'address': str(address_val) if address_val else '',
+                            'voted_at': v.voted_at.isoformat() if v.voted_at else None,
+                        })
+                except Exception as vote_err:
+                    logger.warning(f"Error serializing voter {getattr(v, 'id', 'unknown')}: {vote_err}")
+
             options_data.append({
                 'option_id': str(opt.id),
                 'option_text': opt.option_text,

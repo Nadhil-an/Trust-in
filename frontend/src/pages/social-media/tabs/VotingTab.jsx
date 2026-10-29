@@ -22,6 +22,17 @@ import {
   Search
 } from 'lucide-react'
 
+const safeFormatDate = (val) => {
+  if (!val) return ''
+  try {
+    const d = new Date(val)
+    if (isNaN(d.getTime())) return ''
+    return format(d, 'dd MMM yyyy, hh:mm a')
+  } catch {
+    return ''
+  }
+}
+
 export default function VotingTab() {
   const [polls, setPolls] = useState([])
   const [loading, setLoading] = useState(true)
@@ -239,12 +250,12 @@ export default function VotingTab() {
     if (!votersData?.options) return []
     let list = []
     votersData.options.forEach(opt => {
-      if (selectedOptionFilter === 'ALL' || selectedOptionFilter === opt.option_id) {
-        opt.voters?.forEach(v => {
+      if (selectedOptionFilter === 'ALL' || String(selectedOptionFilter) === String(opt.option_id)) {
+        (opt.voters || []).forEach(v => {
           list.push({
             ...v,
             parent_option_id: opt.option_id,
-            option_text: opt.option_text
+            option_text: opt.option_text || ''
           })
         })
       }
@@ -252,11 +263,11 @@ export default function VotingTab() {
     if (voterSearch.trim()) {
       const q = voterSearch.toLowerCase().trim()
       list = list.filter(v =>
-        (v.full_name && v.full_name.toLowerCase().includes(q)) ||
-        (v.phone && v.phone.includes(q)) ||
-        (v.username && v.username.toLowerCase().includes(q)) ||
-        (v.member_id && v.member_id.toLowerCase().includes(q)) ||
-        (v.address && v.address.toLowerCase().includes(q))
+        (v.full_name && String(v.full_name).toLowerCase().includes(q)) ||
+        (v.phone && String(v.phone).includes(q)) ||
+        (v.username && String(v.username).toLowerCase().includes(q)) ||
+        (v.member_id && String(v.member_id).toLowerCase().includes(q)) ||
+        (v.address && String(v.address).toLowerCase().includes(q))
       )
     }
     return list
@@ -312,7 +323,7 @@ export default function VotingTab() {
         <LoadingState message="Loading voting and polls directory..." />
       ) : polls.length === 0 ? (
         <EmptyState
-          icon={Vote}
+          icon={<Vote size={42} strokeWidth={1.5} color="var(--gray-400)" />}
           title="No Voting Campaigns Found"
           message={
             search || statusFilter !== 'ALL'
@@ -502,7 +513,7 @@ export default function VotingTab() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                     <Clock size={12} />
                     {poll.end_time ? (
-                      <span>Deadline: {format(new Date(poll.end_time), 'dd MMM yyyy, hh:mm a')}</span>
+                      <span>Deadline: {safeFormatDate(poll.end_time)}</span>
                     ) : (
                       <span>Open-ended campaign</span>
                     )}
@@ -646,19 +657,22 @@ export default function VotingTab() {
               <LoadingState message="Loading voter details and contact records..." />
             ) : filteredVoters.length === 0 ? (
               <EmptyState
-                icon={Users}
+                icon={<Users size={42} strokeWidth={1.5} color="var(--gray-400)" />}
                 title="No voters found"
                 message={voterSearch ? 'No voters match your search criteria.' : 'No votes recorded for this option yet.'}
               />
             ) : (
               <div style={{ maxHeight: 420, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 10, paddingRight: 4 }}>
-                {filteredVoters.map((voter) => {
-                  const rawPhone = voter.phone || ''
+                {filteredVoters.map((voter, vIdx) => {
+                  const rawPhone = String(voter?.phone || '')
                   const cleanPhone = rawPhone.replace(/\D/g, '').slice(-10)
+                  const displayName = String(voter?.full_name || voter?.username || 'Voter')
+                  const initial = displayName.charAt(0).toUpperCase()
+                  const formattedVotedAt = safeFormatDate(voter?.voted_at)
 
                   return (
                     <div
-                      key={voter.vote_id}
+                      key={voter?.vote_id || vIdx}
                       style={{
                         background: 'var(--white)',
                         border: '1px solid var(--gray-200)',
@@ -689,41 +703,41 @@ export default function VotingTab() {
                             flexShrink: 0
                           }}
                         >
-                          {(voter.full_name || voter.username || '?').charAt(0).toUpperCase()}
+                          {initial}
                         </div>
 
                         <div style={{ minWidth: 0, flex: 1 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                             <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--gray-900)' }}>
-                              {voter.full_name}
+                              {displayName}
                             </span>
-                            {voter.member_id && (
+                            {voter?.member_id && (
                               <span style={{ fontSize: 11, padding: '1px 6px', background: 'var(--gray-100)', color: 'var(--gray-700)', borderRadius: 4, fontWeight: 600 }}>
                                 ID: {voter.member_id}
                               </span>
                             )}
-                            <span style={{ fontSize: 10.5, padding: '1px 6px', background: voter.role === 'MEMBER' ? '#e0f2fe' : '#fef3c7', color: voter.role === 'MEMBER' ? '#0369a1' : '#b45309', borderRadius: 4, fontWeight: 600 }}>
-                              {voter.role}
+                            <span style={{ fontSize: 10.5, padding: '1px 6px', background: voter?.role === 'MEMBER' ? '#e0f2fe' : '#fef3c7', color: voter?.role === 'MEMBER' ? '#0369a1' : '#b45309', borderRadius: 4, fontWeight: 600 }}>
+                              {voter?.role || 'MEMBER'}
                             </span>
                           </div>
 
                           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4, flexWrap: 'wrap', fontSize: 12, color: 'var(--gray-600)' }}>
-                            {cleanPhone && (
+                            {cleanPhone ? (
                               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontWeight: 600, color: 'var(--gray-900)' }}>
                                 <Phone size={11} color="var(--gray-500)" />
                                 {cleanPhone}
                               </span>
-                            )}
-                            {voter.address && (
+                            ) : null}
+                            {voter?.address ? (
                               <span style={{ color: 'var(--gray-600)', fontSize: 11.5 }}>
                                 • {voter.address}
                               </span>
-                            )}
-                            {voter.voted_at && (
+                            ) : null}
+                            {formattedVotedAt ? (
                               <span style={{ color: 'var(--gray-400)', fontSize: 11 }}>
-                                • {format(new Date(voter.voted_at), 'dd MMM yyyy, hh:mm a')}
+                                • {formattedVotedAt}
                               </span>
-                            )}
+                            ) : null}
                           </div>
 
                           {/* Option badge */}
