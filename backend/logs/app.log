@@ -263262,3 +263262,366 @@ WebSocket CONNECT /ws/notify/ [10.162.176.130:49992]
 [mHTTP GET /api/core/pom-messages/?status=PUBLISHED 200 [0.03, 10.162.176.130:48746][0m
 [mHTTP GET /api/core/members/search/?role=MEMBER&include_self=true&limit=100 200 [0.04, 10.162.176.130:48726][0m
 [mHTTP GET /api/core/social-polls/?status=ACTIVE 200 [0.02, 10.162.176.130:48726][0m
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:48684]
+WebSocket REJECT /ws/notify/ [10.162.176.130:48684]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:48684]
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.04, 10.162.176.130:48682][0m
+Unauthorized: /api/core/member-posts/
+[31;1mHTTP GET /api/core/member-posts/ 401 [0.01, 10.162.176.130:48682][0m
+Unauthorized: /api/auth/profile/
+Unauthorized: /api/core/events/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.03, 10.162.176.130:48700][0m
+[31;1mHTTP GET /api/core/events/ 401 [0.03, 10.162.176.130:48698][0m
+Unauthorized: /api/core/social-polls/
+[31;1mHTTP GET /api/core/social-polls/?status=ACTIVE 401 [0.04, 10.162.176.130:48710][0m
+Unauthorized: /api/core/pom-messages/
+[31;1mHTTP GET /api/core/pom-messages/?status=PUBLISHED 401 [0.03, 10.162.176.130:48682][0m
+Unauthorized: /api/core/members/search/
+Unauthorized: /api/auth/profile/
+[31;1mHTTP GET /api/core/members/search/?role=MEMBER&include_self=true&limit=100 401 [0.03, 10.162.176.130:48712][0m
+[31;1mHTTP GET /api/auth/profile/ 401 [0.02, 10.162.176.130:48698][0m
+Unauthorized: /api/core/member-posts/
+[31;1mHTTP GET /api/core/member-posts/ 401 [0.02, 10.162.176.130:48700][0m
+Unauthorized: /api/core/social-polls/
+Unauthorized: /api/core/pom-messages/
+[31;1mHTTP GET /api/core/social-polls/?status=ACTIVE 401 [0.01, 10.162.176.130:48682][0m
+[31;1mHTTP GET /api/core/pom-messages/?status=PUBLISHED 401 [0.01, 10.162.176.130:48710][0m
+Unauthorized: /api/core/members/search/
+[31;1mHTTP GET /api/core/members/search/?role=MEMBER&include_self=true&limit=100 401 [0.01, 10.162.176.130:48700][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.03, 10.162.176.130:48700][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.03, 10.162.176.130:48682][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.02, 10.162.176.130:48698][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.01, 10.162.176.130:48710][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.01, 10.162.176.130:48712][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.02, 10.162.176.130:48682][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.02, 10.162.176.130:48700][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.01, 10.162.176.130:48698][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.01, 10.162.176.130:48710][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.02, 10.162.176.130:48682][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.02, 10.162.176.130:48700][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.03, 10.162.176.130:48698][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:48722]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:48722]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:48722]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:48724]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:48724]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:48724]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:48734]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:48734]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:48734]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:48750]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:48750]
+[mHTTP GET /api/core/social-polls/?status=ACTIVE 200 [0.07, 10.162.176.130:48698][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:48764]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:48780]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:48764]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:48780]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:48792]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:48792]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:48796]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:48796]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:48796]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:48806]
+[mHTTP GET /api/core/events/ 200 [0.12, 10.162.176.130:48766][0m
+[mHTTP GET /api/auth/profile/ 200 [0.38, 10.162.176.130:48682][0m
+WebSocket CONNECT /ws/notify/ [10.162.176.130:48806]
+[mHTTP GET /api/auth/profile/ 200 [0.26, 10.162.176.130:48710][0m
+[mHTTP GET /api/auth/profile/ 200 [0.10, 10.162.176.130:48698][0m
+[mHTTP GET /api/core/pom-messages/?status=PUBLISHED 200 [0.05, 10.162.176.130:48682][0m
+[mHTTP GET /api/auth/profile/ 200 [0.05, 10.162.176.130:48766][0m
+[mHTTP GET /api/core/members/search/?role=MEMBER&include_self=true&limit=100 200 [0.09, 10.162.176.130:48710][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.45, 10.162.176.130:48700][0m
+[mHTTP GET /api/core/pom-messages/?status=PUBLISHED 200 [0.05, 10.162.176.130:48766][0m
+[mHTTP GET /api/core/social-polls/?status=ACTIVE 200 [0.07, 10.162.176.130:48682][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:48806]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:48816]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:48816]
+[mHTTP GET /api/core/member-posts/ 200 [0.20, 10.162.176.130:48698][0m
+[mHTTP GET /api/core/social-polls/?status=ACTIVE 200 [0.06, 10.162.176.130:48682][0m
+[mHTTP GET /api/core/members/search/?role=MEMBER&include_self=true&limit=100 200 [0.11, 10.162.176.130:48700][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.14, 10.162.176.130:48710][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:48828]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:48828]
+[mHTTP GET /api/core/pom-messages/?status=PUBLISHED 200 [0.03, 10.162.176.130:48766][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.162.176.130:48682][0m
+[mHTTP GET /api/core/pom-messages/?status=PUBLISHED 200 [0.04, 10.162.176.130:48698][0m
+[mHTTP GET /api/core/social-polls/?status=ACTIVE 200 [0.05, 10.162.176.130:48700][0m
+[mHTTP GET /api/core/members/search/?role=MEMBER&include_self=true&limit=100 200 [0.05, 10.162.176.130:48766][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.09, 10.162.176.130:48710][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:48828]
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:48834]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:48834]
+[mHTTP GET /api/core/social-polls/?status=ACTIVE 200 [0.08, 10.162.176.130:48698][0m
+[mHTTP GET /api/core/pom-messages/?status=PUBLISHED 200 [0.09, 10.162.176.130:48766][0m
+[mHTTP GET /api/auth/profile/ 200 [0.10, 10.162.176.130:48700][0m
+[mHTTP GET /api/core/members/search/?role=MEMBER&include_self=true&limit=100 200 [0.12, 10.162.176.130:48682][0m
+[mHTTP GET /api/core/members/search/?role=MEMBER&include_self=true&limit=100 200 [0.05, 10.162.176.130:48698][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.16, 10.162.176.130:48710][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.162.176.130:48682][0m
+[mHTTP GET /api/core/social-polls/?status=ACTIVE 200 [0.08, 10.162.176.130:48700][0m
+[mHTTP GET /api/core/pom-messages/?status=PUBLISHED 200 [0.09, 10.162.176.130:48698][0m
+[mHTTP GET /api/core/members/search/?role=MEMBER&include_self=true&limit=100 200 [0.12, 10.162.176.130:48766][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.162.176.130:48682][0m
+[mHTTP GET /api/core/social-polls/?status=ACTIVE 200 [0.05, 10.162.176.130:48700][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.18, 10.162.176.130:48710][0m
+[mHTTP GET /api/core/pom-messages/?status=PUBLISHED 200 [0.01, 10.162.176.130:48698][0m
+[mHTTP GET /api/core/social-polls/?status=ACTIVE 200 [0.05, 10.162.176.130:48766][0m
+[mHTTP GET /api/auth/profile/ 200 [0.09, 10.162.176.130:48710][0m
+[mHTTP GET /api/core/pom-messages/?status=PUBLISHED 200 [0.08, 10.162.176.130:48698][0m
+[mHTTP GET /api/core/members/search/?role=MEMBER&include_self=true&limit=100 200 [0.11, 10.162.176.130:48682][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.16, 10.162.176.130:48700][0m
+[mHTTP GET /api/core/social-polls/?status=ACTIVE 200 [0.06, 10.162.176.130:48698][0m
+[mHTTP GET /api/auth/profile/ 200 [0.07, 10.162.176.130:48682][0m
+[mHTTP GET /api/core/members/search/?role=MEMBER&include_self=true&limit=100 200 [0.10, 10.162.176.130:48710][0m
+[mHTTP GET /api/core/pom-messages/?status=PUBLISHED 200 [0.04, 10.162.176.130:48700][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.15, 10.162.176.130:48766][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.05, 10.162.176.130:48682][0m
+[mHTTP GET /api/core/pom-messages/?status=PUBLISHED 200 [0.03, 10.162.176.130:48766][0m
+[mHTTP GET /api/core/social-polls/?status=ACTIVE 200 [0.05, 10.162.176.130:48710][0m
+[mHTTP GET /api/auth/profile/ 200 [0.06, 10.162.176.130:48698][0m
+[mHTTP GET /api/core/members/search/?role=MEMBER&include_self=true&limit=100 200 [0.09, 10.162.176.130:48700][0m
+[mHTTP GET /api/core/members/search/?role=MEMBER&include_self=true&limit=100 200 [0.05, 10.162.176.130:48766][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.09, 10.162.176.130:48682][0m
+[mHTTP POST /api/core/pom-messages/55074111-3394-4d79-8305-fb31af84092f/increment-view/ 200 [0.02, 10.162.176.130:48700][0m
+[mHTTP POST /api/core/pom-messages/bcb72996-6550-438d-b2ae-a7c74cfdc517/increment-view/ 200 [0.03, 10.162.176.130:48682][0m
+[mHTTP GET /api/core/pom-messages/?status=PUBLISHED 200 [0.04, 10.162.176.130:48710][0m
+[mHTTP GET /api/core/social-polls/?status=ACTIVE 200 [0.06, 10.162.176.130:48698][0m
+[mHTTP GET /api/auth/profile/ 200 [0.08, 10.162.176.130:48700][0m
+[mHTTP POST /api/core/update-push-token/ 200 [0.09, 10.162.176.130:48682][0m
+[mHTTP GET /api/core/members/search/?role=MEMBER&include_self=true&limit=100 200 [0.07, 10.162.176.130:48710][0m
+[mHTTP GET /api/core/social-polls/?status=ACTIVE 200 [0.04, 10.162.176.130:48700][0m
+[mHTTP GET /api/auth/profile/ 200 [0.07, 10.162.176.130:48698][0m
+[mHTTP GET /api/core/pom-messages/?status=PUBLISHED 200 [0.05, 10.162.176.130:48682][0m
+[mHTTP GET /api/core/members/search/?role=MEMBER&include_self=true&limit=100 200 [0.06, 10.162.176.130:48710][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.20, 10.162.176.130:48766][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.09, 10.162.176.130:48700][0m
+[mHTTP GET /api/core/pom-messages/?status=PUBLISHED 200 [0.04, 10.162.176.130:48698][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.162.176.130:48682][0m
+[mHTTP GET /api/core/social-polls/?status=ACTIVE 200 [0.06, 10.162.176.130:48700][0m
+[mHTTP GET /api/core/members/search/?role=MEMBER&include_self=true&limit=100 200 [0.07, 10.162.176.130:48766][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.09, 10.162.176.130:48710][0m
+Internal Server Error: /api/core/rewards/summary/
+[35;1mHTTP GET /api/core/rewards/summary/ 500 [0.04, 10.162.176.130:48698][0m
+[mHTTP GET /api/core/verifications/ 200 [0.05, 10.162.176.130:48700][0m
+[mHTTP GET /api/core/users/8f0949af-01a6-42de-ade1-df5d71c8bca5/member-profile/ 200 [0.06, 10.162.176.130:48682][0m
+[mHTTP GET /api/core/events/ 200 [0.01, 10.162.176.130:48682][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:48834]
+Bad Request: /api/auth/signup/
+[31;1mHTTP POST /api/auth/signup/ 400 [0.01, 10.162.176.130:48682][0m
+[mHTTP POST /api/auth/signup/ 201 [0.12, 10.162.176.130:48682][0m
+WebSocket HANDSHAKING /ws/notify/ [10.162.176.130:59838]
+WebSocket CONNECT /ws/notify/ [10.162.176.130:59838]
+[mHTTP GET /api/core/users/36bac727-97bc-4698-98c0-9bdd2ac61e7e/member-profile/ 200 [0.03, 10.162.176.130:48682][0m
+[mHTTP GET /api/core/events/ 200 [0.05, 10.162.176.130:59884][0m
+Internal Server Error: /api/core/rewards/summary/
+[mHTTP GET /api/core/verifications/ 200 [0.06, 10.162.176.130:59854][0m
+[35;1mHTTP GET /api/core/rewards/summary/ 500 [0.05, 10.162.176.130:59872][0m
+[mHTTP POST /api/core/update-push-token/ 200 [0.07, 10.162.176.130:59868][0m
+[mHTTP GET /api/core/pom-messages/?status=PUBLISHED 200 [0.06, 10.162.176.130:59884][0m
+[mHTTP GET /api/core/social-polls/?status=ACTIVE 200 [0.08, 10.162.176.130:59872][0m
+[mHTTP GET /api/auth/profile/ 200 [0.09, 10.162.176.130:59854][0m
+[mHTTP GET /api/core/members/search/?role=MEMBER&include_self=true&limit=100 200 [0.11, 10.162.176.130:59868][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 10.162.176.130:59872][0m
+[mHTTP GET /api/core/social-polls/?status=ACTIVE 200 [0.05, 10.162.176.130:59854][0m
+[mHTTP GET /api/core/pom-messages/?status=PUBLISHED 200 [0.02, 10.162.176.130:59868][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.21, 10.162.176.130:48682][0m
+[mHTTP GET /api/core/member-posts/ 200 [0.16, 10.162.176.130:59884][0m
+[mHTTP GET /api/core/members/search/?role=MEMBER&include_self=true&limit=100 200 [0.05, 10.162.176.130:59872][0m
+[mHTTP POST /api/core/pom-messages/bcb72996-6550-438d-b2ae-a7c74cfdc517/increment-view/ 200 [0.03, 10.162.176.130:48682][0m
+[mHTTP POST /api/core/pom-messages/55074111-3394-4d79-8305-fb31af84092f/increment-view/ 200 [0.04, 10.162.176.130:59854][0m
+Internal Server Error: /api/core/rewards/summary/
+[mHTTP GET /api/core/verifications/ 200 [0.05, 10.162.176.130:59868][0m
+[35;1mHTTP GET /api/core/rewards/summary/ 500 [0.05, 10.162.176.130:59854][0m
+[mHTTP GET /api/core/users/36bac727-97bc-4698-98c0-9bdd2ac61e7e/member-profile/ 200 [0.05, 10.162.176.130:48682][0m
+[mHTTP GET /api/auth/profile/ 200 [0.01, 10.162.176.130:48682][0m
+[mHTTP GET /api/auth/profile/ 200 [0.01, 10.162.176.130:48682][0m
+[mHTTP POST /api/core/verifications/ 201 [2.39, 10.162.176.130:48682][0m
+[mHTTP GET /api/core/verifications/ 200 [0.04, 10.162.176.130:48682][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:20901]
+WebSocket REJECT /ws/notify/ [127.0.0.1:20901]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:20901]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:57074]
+WebSocket REJECT /ws/notify/ [127.0.0.1:57074]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:57074]
+[mHTTP GET /api/core/member-posts/ 200 [0.10, 127.0.0.1:6650][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:44059]
+WebSocket REJECT /ws/notify/ [127.0.0.1:44059]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:44059]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:28866]
+WebSocket REJECT /ws/notify/ [127.0.0.1:28866]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:28866]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:57078]
+WebSocket REJECT /ws/notify/ [127.0.0.1:57078]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:57078]
+Unauthorized: /api/core/verifications/
+[31;1mHTTP GET /api/core/verifications/ 401 [0.01, 127.0.0.1:25824][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.02, 127.0.0.1:22356][0m
+[mHTTP GET /api/core/verifications/ 200 [0.03, 127.0.0.1:51961][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:17935]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:17935]
+[Expo Push] Sent batch of 1 push tickets, status=200
+Internal Server Error: /api/core/verifications/10dfe6ad-16cc-4f7e-87fe-228b04d54914/approve/
+Traceback (most recent call last):
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+sqlite3.OperationalError: no such table: core_member_reward_cycles
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\views.py", line 1865, in approve
+    get_or_create_active_cycle(req.user)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\reward_service.py", line 78, in get_or_create_active_cycle
+    ).order_by('-start_date').first()
+                              ~~~~~^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 1104, in first
+    for obj in queryset[:1]:
+               ~~~~~~~~^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 384, in __iter__
+    self._fetch_all()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 1949, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+        chunked_fetch=self.chunked_fetch, chunk_size=self.chunk_size
+    )
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\models\sql\compiler.py", line 1623, in execute_sql
+    cursor.execute(sql, params)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        sql, params, many=False, executor=self._execute
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\db\backends\sqlite3\base.py", line 360, in execute
+    return super().execute(query, params)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+django.db.utils.OperationalError: no such table: core_member_reward_cycles
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 552, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 552, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 502, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python314\Lib\concurrent\futures\thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "C:\Python314\Lib\concurrent\futures\thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\asgiref\sync.py", line 556, in thread_handler
+    return func(*args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\viewsets.py", line 125, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 515, in dispatch
+    response = self.handle_exception(exc)
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 475, in handle_exception
+    self.raise_uncaught_exception(exc)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 486, in raise_uncaught_exception
+    raise exc
+  File "C:\Users\NADIL\AppData\Roaming\Python\Python314\site-packages\rest_framework\views.py", line 512, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\views.py", line 1868, in approve
+    logging.getLogger(__name__).error(f"Error initializing rewards on verification approval: {e}")
+    ^^^^^^^
+NameError: name 'logging' is not defined. Did you forget to import 'logging'?
+[35;1mHTTP POST /api/core/verifications/10dfe6ad-16cc-4f7e-87fe-228b04d54914/approve/ 500 [1.89, 127.0.0.1:32221][0m
+Internal Server Error: /api/core/rewards/summary/
+[35;1mHTTP GET /api/core/rewards/summary/ 500 [0.03, 10.162.176.130:59868][0m
+[mHTTP GET /api/core/verifications/ 200 [0.06, 10.162.176.130:59854][0m
+[mHTTP GET /api/core/users/36bac727-97bc-4698-98c0-9bdd2ac61e7e/member-profile/ 200 [0.07, 10.162.176.130:48682][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:17935]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:42047]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:42047]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:42047]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:33024]
+[mHTTP GET /api/core/features/ 200 [0.05, 127.0.0.1:42049][0m
+WebSocket CONNECT /ws/notify/ [127.0.0.1:33024]
+[mHTTP GET /api/auth/profile/ 200 [0.07, 127.0.0.1:42048][0m
+[mHTTP GET /api/core/features/ 200 [0.03, 127.0.0.1:33025][0m
+[mHTTP GET /api/auth/profile/ 200 [0.04, 127.0.0.1:33026][0m
+[mHTTP GET /api/core/verifications/ 200 [0.05, 127.0.0.1:33027][0m
+Internal Server Error: /api/core/rewards/summary/
+[35;1mHTTP GET /api/core/rewards/summary/ 500 [0.02, 10.162.176.130:48682][0m
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:48816]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:48764]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:48792]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:48780]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:59838]
+WebSocket DISCONNECT /ws/notify/ [10.162.176.130:48750]
+[mHTTP GET /api/core/social-polls/ 200 [0.02, 127.0.0.1:25890][0m
+[mHTTP GET /api/core/social-polls/cae20b20-e0e4-4e44-b392-70e5062ace80/voters/ 200 [0.05, 127.0.0.1:21210][0m
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:33024]
+C:\Users\NADIL\OneDrive\Desktop\sree Trust\backend\core\views.py changed, reloading.
+Watching for file changes with StatReloader
+HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+Configuring endpoint tcp:port=8000:interface=0.0.0.0
+Listening on TCP address 0.0.0.0:8000
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:36278]
+WebSocket REJECT /ws/notify/ [127.0.0.1:36278]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:36278]
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:7727]
+WebSocket REJECT /ws/notify/ [127.0.0.1:7727]
+WebSocket DISCONNECT /ws/notify/ [127.0.0.1:7727]
+Unauthorized: /api/auth/profile/
+Unauthorized: /api/core/features/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.05, 127.0.0.1:7725][0m
+[31;1mHTTP GET /api/core/features/ 401 [0.04, 127.0.0.1:7726][0m
+Unauthorized: /api/auth/profile/
+Unauthorized: /api/core/features/
+[31;1mHTTP GET /api/auth/profile/ 401 [0.03, 127.0.0.1:7728][0m
+[31;1mHTTP GET /api/core/features/ 401 [0.03, 127.0.0.1:7729][0m
+[mHTTP POST /api/auth/refresh/ 200 [0.08, 127.0.0.1:7730][0m
+[mHTTP GET /api/core/features/ 200 [0.04, 127.0.0.1:6630][0m
+[mHTTP GET /api/auth/profile/ 200 [0.12, 127.0.0.1:6629][0m
+[mHTTP GET /api/core/features/ 200 [0.10, 127.0.0.1:41838][0m
+[mHTTP GET /api/core/social-polls/ 200 [0.11, 127.0.0.1:59600][0m
+[mHTTP GET /api/auth/profile/ 200 [0.07, 127.0.0.1:58874][0m
+[mHTTP GET /api/core/social-polls/cae20b20-e0e4-4e44-b392-70e5062ace80/voters/ 200 [0.05, 127.0.0.1:23465][0m
+WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:12566]
+WebSocket CONNECT /ws/notify/ [127.0.0.1:12566]
+[mHTTP GET /api/core/social-polls/cae20b20-e0e4-4e44-b392-70e5062ace80/voters/ 200 [0.05, 127.0.0.1:13475][0m
