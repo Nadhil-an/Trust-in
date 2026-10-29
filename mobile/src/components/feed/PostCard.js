@@ -37,7 +37,7 @@ export default function PostCard({
   const [commentsCount, setCommentsCount] = useState(post.comments_count || 0);
   const [isSaved, setIsSaved] = useState(false);
   const [currentPhotoIdx, setCurrentPhotoIdx] = useState(0);
-  const [cardWidth, setCardWidth] = useState(SCREEN_WIDTH - 24);
+  const [cardWidth, setCardWidth] = useState(SCREEN_WIDTH);
   const [expanded, setExpanded] = useState(false);
   const [optionsModalVisible, setOptionsModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
@@ -861,11 +861,15 @@ export default function PostCard({
 const styles = StyleSheet.create({
   instagramCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
+    marginHorizontal: -16,
+    borderRadius: 0,
+    borderTopWidth: 0.5,
+    borderBottomWidth: 1,
+    borderLeftWidth: 0,
+    borderRightWidth: 0,
+    borderColor: '#E2E8F0',
     overflow: 'hidden',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   // Overlay header styles (Inside Image / Video)
   overlayHeader: {
@@ -877,7 +881,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     paddingTop: 12,
     paddingBottom: 22,
     backgroundColor: 'rgba(0, 0, 0, 0.40)',
@@ -981,7 +985,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     paddingVertical: 10,
     backgroundColor: '#FFFFFF',
   },
@@ -1204,7 +1208,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     paddingTop: 10,
     paddingBottom: 6,
     backgroundColor: '#FFFFFF',
@@ -1232,7 +1236,7 @@ const styles = StyleSheet.create({
 
   // 4. Caption & Description Styles (Under Action Buttons)
   captionSection: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     paddingBottom: 12,
     backgroundColor: '#FFFFFF',
   },
