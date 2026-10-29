@@ -1722,6 +1722,13 @@ class MemberVerificationViewSet(ModelViewSet):
         user_role = getattr(user, 'role', '')
         if user_role not in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA'] and not user.is_staff and not user.is_superuser:
             return qs.filter(user=user)
+
+        # Enforce distinct entries per applicant (always keep only the latest request per user)
+        latest_subquery = MemberVerificationRequest.objects.filter(
+            user_id=models.OuterRef('user_id')
+        ).order_by('-submitted_at')
+        qs = qs.filter(id=models.Subquery(latest_subquery.values('id')[:1]))
+
         status_param = self.request.query_params.get('status')
         if status_param and status_param != 'ALL':
             qs = qs.filter(status=status_param)
@@ -1736,6 +1743,46 @@ class MemberVerificationViewSet(ModelViewSet):
             )
         return qs
 
+    def create(self, request, *args, **kwargs):
+        user = request.user
+        if getattr(user, 'is_verified', False):
+            return Response({'error': 'Your account is already verified with a Blue Badge.'}, status=400)
+
+        existing = MemberVerificationRequest.objects.filter(user=user).order_by('-submitted_at').first()
+        if existing:
+            if existing.status == VerificationStatus.APPROVED:
+                user.is_verified = True
+                user.save(update_fields=['is_verified'])
+                return Response({'error': 'Your account is already verified.'}, status=400)
+
+            # Prevent duplicate entries: Update existing pending or rejected application in-place
+            from core.serializers import get_user_member
+            existing.full_name = request.data.get('full_name') or user.full_name
+            existing.phone = request.data.get('phone') or str(getattr(user, 'phone', ''))
+            existing.member = get_user_member(user)
+            if request.data.get('id_proof_type'):
+                existing.id_proof_type = request.data.get('id_proof_type')
+            if request.data.get('id_proof_number'):
+                existing.id_proof_number = request.data.get('id_proof_number').strip()
+            if 'id_proof_document' in request.FILES:
+                existing.id_proof_document = request.FILES['id_proof_document']
+            if 'address_proof_document' in request.FILES:
+                existing.address_proof_document = request.FILES['address_proof_document']
+            if request.data.get('additional_notes'):
+                existing.additional_notes = request.data.get('additional_notes').strip()
+
+            existing.status = VerificationStatus.PENDING
+            existing.rejection_reason = ''
+            existing.reviewed_by = None
+            existing.reviewed_at = None
+            existing.submitted_at = timezone.now()
+            existing.save()
+
+            serializer = self.get_serializer(existing)
+            return Response(serializer.data, status=200)
+
+        return super().create(request, *args, **kwargs)
+
     def perform_create(self, serializer):
         from core.serializers import get_user_member
         member = get_user_member(self.request.user)
@@ -1745,6 +1792,12 @@ class MemberVerificationViewSet(ModelViewSet):
             full_name=self.request.data.get('full_name') or self.request.user.full_name,
             phone=self.request.data.get('phone') or str(getattr(self.request.user, 'phone', ''))
         )
+
+    def destroy(self, request, *args, **kwargs):
+        user_role = getattr(request.user, 'role', '')
+        if user_role not in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA'] and not request.user.is_staff and not request.user.is_superuser:
+            return Response({'error': 'Permission denied.'}, status=403)
+        return super().destroy(request, *args, **kwargs)
 
     @action(detail=True, methods=['post'], url_path='approve')
     def approve(self, request, pk=None):

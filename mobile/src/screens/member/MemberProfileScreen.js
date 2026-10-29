@@ -15,6 +15,9 @@ import {
   Modal,
   TextInput,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -630,25 +633,9 @@ export default function MemberProfileScreen() {
       </View>
 
       {/* ── Verification Badge / Application Button ── */}
-      {isMe && (
+      {isMe && !(profileData?.is_verified || currentUser?.is_verified) && (
         <View style={{ marginTop: 12, width: '100%' }}>
-          {(profileData?.is_verified || currentUser?.is_verified) ? (
-            <View style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              backgroundColor: '#EFF6FF',
-              borderWidth: 1,
-              borderColor: '#BFDBFE',
-              borderRadius: 10,
-              paddingVertical: 10,
-              paddingHorizontal: 14,
-            }}>
-              <Ionicons name="shield-checkmark" size={18} color="#0284c7" />
-              <Text style={{ marginLeft: 8, fontSize: 13, fontWeight: '600', color: '#0369A1' }}>
-                Account Verified • Blue Badge Active ✓
-              </Text>
-            </View>
-          ) : myVerificationRequest?.status === 'PENDING' ? (
+          {myVerificationRequest?.status === 'PENDING' ? (
             <View style={{
               flexDirection: 'row',
               alignItems: 'center',

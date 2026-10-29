@@ -3,7 +3,7 @@ import { coreApi } from '../../../api'
 import { LoadingState, EmptyState, Modal, FilterBar, StatusBadge } from '../../../components/shared'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
-import { BadgeCheck, CheckCircle2, XCircle, Eye, FileText, RefreshCw } from 'lucide-react'
+import { BadgeCheck, CheckCircle2, XCircle, Eye, FileText, RefreshCw, Trash2 } from 'lucide-react'
 
 export default function VerificationTab() {
   const [requests, setRequests] = useState([])
@@ -25,7 +25,12 @@ export default function VerificationTab() {
       if (search.trim()) params.search = search.trim()
 
       const res = await coreApi.verifications.list(params)
-      const list = Array.isArray(res.data) ? res.data : (res.data?.results || [])
+      const raw = Array.isArray(res.data) ? res.data : (res.data?.results || [])
+      // Deduplicate by user to ensure each member only appears once
+      const list = raw.filter((item, idx, self) => {
+        const myKey = String(item.user_details?.id || item.user || item.phone || item.id_proof_number)
+        return idx === self.findIndex((r) => String(r.user_details?.id || r.user || r.phone || r.id_proof_number) === myKey)
+      })
       setRequests(list)
     } catch (err) {
       console.error('Failed to load verifications:', err)
@@ -82,6 +87,24 @@ export default function VerificationTab() {
     } catch (err) {
       console.error('Reject verification error:', err)
       toast.error(err.response?.data?.error || 'Failed to reject verification')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleDelete = async (item) => {
+    if (!window.confirm(`Are you sure you want to remove the verification record for ${item.full_name || item.user_details?.username}?`)) {
+      return
+    }
+    setIsProcessing(true)
+    try {
+      await coreApi.verifications.delete(item.id)
+      toast.success('Verification record removed successfully')
+      setRequests(prev => prev.filter(r => r.id !== item.id))
+      if (selectedReq?.id === item.id) setSelectedReq(null)
+    } catch (err) {
+      console.error('Delete verification error:', err)
+      toast.error(err.response?.data?.error || 'Failed to remove verification record')
     } finally {
       setIsProcessing(false)
     }
@@ -240,6 +263,16 @@ export default function VerificationTab() {
                           >
                             <Eye size={12} />
                             Details
+                          </button>
+                          <button
+                            type="button"
+                            disabled={isProcessing}
+                            onClick={() => handleDelete(item)}
+                            className="btn btn-ghost btn-sm"
+                            style={{ color: 'var(--danger-600)', padding: '4px 6px' }}
+                            title="Remove Application"
+                          >
+                            <Trash2 size={13} />
                           </button>
                           {isPending && (
                             <>

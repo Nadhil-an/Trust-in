@@ -408,6 +408,7 @@ export const coreApi = {
     get: (id) => api.get(`/core/verifications/${id}/`),
     approve: (id) => api.post(`/core/verifications/${id}/approve/`),
     reject: (id, data) => api.post(`/core/verifications/${id}/reject/`, data),
+    delete: (id) => api.delete(`/core/verifications/${id}/`),
   },
   pomMessages: {
     list: (params) => api.get('/core/pom-messages/', { params }),
