@@ -81,24 +81,48 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            set -e
             echo "1. Connected to EC2 successfully!"
             
-            echo "2. Going into project folder..."
-            cd Trust-in
+            # Determine active project directory
+            if [ -d "$HOME/Trust-in" ]; then
+              cd "$HOME/Trust-in"
+            elif [ -d "/opt/sree-trust" ]; then
+              cd /opt/sree-trust
+            else
+              cd Trust-in
+            fi
             
-            echo "3. Pulling latest code from GitHub..."
-            git pull origin main
+            echo "2. Active directory: $(pwd)"
+            
+            echo "3. Fetching and resetting repository to origin/main..."
+            git fetch origin main
+            git reset --hard origin/main
+            git clean -fd
             
             echo "4. Logging into GitHub Container Registry..."
             echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
             
-            echo "5. Pulling pre-built images..."
-            docker compose pull || true
+            echo "5. Pulling latest pre-built container images..."
+            docker compose pull backend whatsapp-gateway || true
             
-            echo "6. Restarting the server with docker (force-recreate & build)..."
-            docker compose up -d --build --force-recreate
+            echo "6. Recreating containers with latest image..."
+            docker compose up -d --force-recreate
             
             echo "7. Running database migrations on EC2..."
             docker compose exec -T backend python manage.py migrate --noinput
             
-            echo "8. Deployment Complete!"
+            echo "8. Collecting static files..."
+            docker compose exec -T backend python manage.py collectstatic --noinput || true
+            
+            echo "9. Restarting host services if present..."
+            if command -v systemctl &>/dev/null; then
+              sudo systemctl restart daphne 2>/dev/null || true
+              sudo systemctl restart gunicorn 2>/dev/null || true
+              sudo nginx -t 2>/dev/null && sudo systemctl reload nginx 2>/dev/null || true
+            fi
+            
+            echo "10. Container status:"
+            docker compose ps
+            
+            echo "Deployment Complete!"
