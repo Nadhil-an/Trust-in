@@ -196,23 +196,15 @@ export default function AppLayout() {
 
   // Build nav items dynamically
   const navItems = React.useMemo(() => {
-    const isSocialRoute = location.pathname.startsWith('/slt/social')
+    // ADMIN has dedicated system management navigation only
+    if (user?.role === 'ADMIN') return ADMIN_NAV_CONFIG
 
-    // Inside Social Media Dashboard (or for SOCIAL_MEDIA role)
-    if (user?.role === 'SOCIAL_MEDIA' || (user?.role === 'ADMIN' && isSocialRoute)) {
-      if (user?.role === 'ADMIN') {
-        return [
-          { label: '← Back to Admin Portal', icon: '⬅️', path: '/slt/sys/user-control' },
-          ...SOCIAL_MEDIA_NAV_CONFIG
-        ]
-      }
-      // Strictly validate each item against permitted features for SOCIAL_MEDIA role
+    // SOCIAL_MEDIA role has strictly validated social media features
+    if (user?.role === 'SOCIAL_MEDIA') {
       return SOCIAL_MEDIA_NAV_CONFIG.filter(item => !item.key || hasFeature(item.key))
     }
 
-    if (user?.role === 'ADMIN') return ADMIN_NAV_CONFIG
-    
-    // For non-admin, filter master config by features
+    // For other roles (MANAGER, HR, etc.), filter master config by features
     return MASTER_NAV_CONFIG.filter(item => {
       // If the item specifies a hardcoded role (like the main dashboards), enforce it
       if (item.roles && !item.roles.includes(user?.role)) return false
@@ -226,7 +218,7 @@ export default function AppLayout() {
       // Strictly check feature access
       return hasFeature(item.key)
     })
-  }, [user, hasFeature, myFeatures, location.pathname])
+  }, [user, hasFeature, myFeatures])
 
   const handleLogout = async () => {
     await logout()
@@ -284,12 +276,7 @@ export default function AppLayout() {
         </div>
 
         <div className="sidebar-nav">
-          {user?.role !== 'SOCIAL_MEDIA' && !location.pathname.startsWith('/slt/social') && (
-            <div className="nav-section-label">{user?.role} MODULE</div>
-          )}
-          {location.pathname.startsWith('/slt/social') && (
-            <div className="nav-section-label">SOCIAL MEDIA MODULE</div>
-          )}
+          <div className="nav-section-label">{user?.role} MODULE</div>
           {(() => {
             if (loading && myFeatures.length === 0 && user?.role !== 'ADMIN') {
               return (
@@ -304,8 +291,8 @@ export default function AppLayout() {
               )
             }
 
-            // Group by category if non-admin OR inside social route
-            if (user?.role !== 'ADMIN' || location.pathname.startsWith('/slt/social')) {
+            // Group by category if non-admin
+            if (user?.role !== 'ADMIN') {
               const grouped = {}
               navItems.forEach(item => {
                 const cat = item.category || 'OTHER'
