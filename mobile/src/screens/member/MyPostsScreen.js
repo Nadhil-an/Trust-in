@@ -267,6 +267,7 @@ export default function MyPostsScreen({ navigation }) {
                 Toast.show({ type: 'success', text1: 'Post Deleted', text2: 'Your post was successfully deleted.' });
               }}
               onEditPost={handleOpenEdit}
+              showStatusBadge={true}
             />
           ))
         )}

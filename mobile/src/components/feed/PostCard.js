@@ -30,6 +30,7 @@ export default function PostCard({
   onOpenComments,
   onPostDeleted,
   onEditPost,
+  showStatusBadge = false,
 }) {
   const [isLiked, setIsLiked] = useState(Boolean(post.is_liked_by_me));
   const [likesCount, setLikesCount] = useState(post.likes_count || 0);
@@ -349,7 +350,7 @@ export default function PostCard({
                   {displaySubtitle}
                 </Text>
               ) : null}
-              {post.status && post.status !== 'APPROVED' ? (
+              {showStatusBadge && post.status && post.status !== 'APPROVED' ? (
                 <View style={[
                   styles.statusBadgeSubtitle,
                   {
