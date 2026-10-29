@@ -372,7 +372,7 @@ const MemberHomeScreen = ({ navigation }) => {
         onPress={() => navigation.navigate('MemberProfile', { userId: item.id, user: item })}
       >
         <LinearGradient
-          colors={['#CA1D7E', '#E052A0', '#F15C3C', '#FC8F44', '#FCC862']}
+          colors={['#0284c7', '#38bdf8', '#0ea5e9', '#0284c7']}
           start={{ x: 0, y: 1 }}
           end={{ x: 1, y: 0 }}
           style={styles.storyRingGradient}
