@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { coreApi } from '../api'
+import { useAuthStore } from './authStore'
 
 export const useFeatureStore = create((set, get) => ({
   myFeatures: [],
@@ -19,6 +20,10 @@ export const useFeatureStore = create((set, get) => ({
     // If no featureKey is required, allow access
     if (!featureKey) return true
     
+    // Admin always has full access to every feature
+    const userRole = useAuthStore.getState().user?.role
+    if (userRole === 'ADMIN') return true
+
     // Check if user has the feature enabled
     return get().myFeatures.includes(featureKey)
   }

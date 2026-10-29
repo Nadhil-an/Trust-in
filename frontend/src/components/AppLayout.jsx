@@ -29,10 +29,15 @@ import {
   FileSearch,
   LineChart,
   X,
-  Menu
+  Menu,
+  ArrowLeft,
+  Share2
 } from 'lucide-react'
 
 const resolveNavIcon = (item) => {
+  if (item.label?.includes('Back to Admin')) return <ArrowLeft size={17} strokeWidth={2} />
+  if (item.label === 'Social Platform Admin') return <Share2 size={17} strokeWidth={2} />
+  if (item.label === 'Public Issues') return <Megaphone size={17} strokeWidth={2} />
   if (item.key === 'social_analytics' || item.path?.includes('tab=analytics')) return <BarChart3 size={17} strokeWidth={2} />
   if (item.key === 'social_mrm_members' || item.path?.includes('tab=mrm_members')) return <Users size={17} strokeWidth={2} />
   if (item.key === 'social_mrm_tasks' || item.path?.includes('tab=mrm_tasks')) return <Target size={17} strokeWidth={2} />
@@ -191,8 +196,21 @@ export default function AppLayout() {
 
   // Build nav items dynamically
   const navItems = React.useMemo(() => {
+    const isSocialRoute = location.pathname.startsWith('/slt/social')
+
+    // Inside Social Media Dashboard (or for SOCIAL_MEDIA role)
+    if (user?.role === 'SOCIAL_MEDIA' || (user?.role === 'ADMIN' && isSocialRoute)) {
+      if (user?.role === 'ADMIN') {
+        return [
+          { label: '← Back to Admin Portal', icon: '⬅️', path: '/slt/sys/user-control' },
+          ...SOCIAL_MEDIA_NAV_CONFIG
+        ]
+      }
+      // Strictly validate each item against permitted features for SOCIAL_MEDIA role
+      return SOCIAL_MEDIA_NAV_CONFIG.filter(item => !item.key || hasFeature(item.key))
+    }
+
     if (user?.role === 'ADMIN') return ADMIN_NAV_CONFIG
-    if (user?.role === 'SOCIAL_MEDIA') return SOCIAL_MEDIA_NAV_CONFIG
     
     // For non-admin, filter master config by features
     return MASTER_NAV_CONFIG.filter(item => {
@@ -205,13 +223,10 @@ export default function AppLayout() {
       // Manager always has access to hr_members (Members Directory)
       if (user?.role === 'MANAGER' && item.key === 'hr_members') return true
 
-      // MANAGER and ADMIN have default access to all Social and MRM items
-      if (item.key && item.key.startsWith('social_') && ['MANAGER', 'ADMIN'].includes(user?.role)) return true
-      
-      // Check feature access
+      // Strictly check feature access
       return hasFeature(item.key)
     })
-  }, [user, hasFeature, myFeatures])
+  }, [user, hasFeature, myFeatures, location.pathname])
 
   const handleLogout = async () => {
     await logout()
@@ -269,8 +284,11 @@ export default function AppLayout() {
         </div>
 
         <div className="sidebar-nav">
-          {user?.role !== 'SOCIAL_MEDIA' && (
+          {user?.role !== 'SOCIAL_MEDIA' && !location.pathname.startsWith('/slt/social') && (
             <div className="nav-section-label">{user?.role} MODULE</div>
+          )}
+          {location.pathname.startsWith('/slt/social') && (
+            <div className="nav-section-label">SOCIAL MEDIA MODULE</div>
           )}
           {(() => {
             if (loading && myFeatures.length === 0 && user?.role !== 'ADMIN') {
@@ -286,8 +304,8 @@ export default function AppLayout() {
               )
             }
 
-            // Group by category if non-admin
-            if (user?.role !== 'ADMIN') {
+            // Group by category if non-admin OR inside social route
+            if (user?.role !== 'ADMIN' || location.pathname.startsWith('/slt/social')) {
               const grouped = {}
               navItems.forEach(item => {
                 const cat = item.category || 'OTHER'
@@ -297,7 +315,9 @@ export default function AppLayout() {
               
               return Object.entries(grouped).map(([category, items]) => (
                 <React.Fragment key={category}>
-                  <div className="nav-section-label" style={{ marginTop: 8, opacity: category === 'OTHER' ? 0 : 1 }}>{category}</div>
+                  {category !== 'OTHER' && (
+                    <div className="nav-section-label" style={{ marginTop: 8 }}>{category}</div>
+                  )}
                   {items.map(item => {
                     const isActive = checkIsActive(item.path);
                     return (

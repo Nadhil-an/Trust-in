@@ -23,23 +23,23 @@ export const MASTER_NAV_CONFIG = [
   { key: 'promoters_registry', label: 'Promoters Registry', icon: '🧾', path: '/slt/entry/promoters-registry', category: 'FINANCE & DONATIONS' },
 
   // ── SOCIAL MEDIA MODULE (Only these 4 sections and 11 elements)
-  { key: 'social_analytics', label: 'Platform Analytics', icon: '📊', path: '/slt/social/overview?tab=analytics', category: 'PLATFORM INSIGHTS', roles: ['SOCIAL_MEDIA', 'MANAGER', 'ADMIN'] },
+  { key: 'social_analytics', label: 'Platform Analytics', icon: '📊', path: '/slt/social/overview?tab=analytics', category: 'PLATFORM INSIGHTS' },
 
   // ── MEMBER MANAGEMENT (MRM)
-  { key: 'social_mrm_members', label: 'Member Directory', icon: '👥', path: '/slt/social/overview?tab=mrm_members', category: 'MEMBER MANAGEMENT (MRM)', roles: ['SOCIAL_MEDIA', 'MANAGER', 'ADMIN'] },
-  { key: 'social_mrm_tasks', label: 'Tasks & Targets', icon: '🎯', path: '/slt/social/overview?tab=mrm_tasks', category: 'MEMBER MANAGEMENT (MRM)', roles: ['SOCIAL_MEDIA', 'MANAGER', 'ADMIN'] },
-  { key: 'social_mrm_badges', label: 'Badges & Recognition', icon: '🎖️', path: '/slt/social/overview?tab=mrm_badges', category: 'MEMBER MANAGEMENT (MRM)', roles: ['SOCIAL_MEDIA', 'MANAGER', 'ADMIN'] },
-  { key: 'social_mrm_volunteers', label: 'Volunteers & Desk', icon: '🤝', path: '/slt/social/overview?tab=mrm_volunteers', category: 'MEMBER MANAGEMENT (MRM)', roles: ['SOCIAL_MEDIA', 'MANAGER', 'ADMIN'] },
-  { key: 'social_mrm_appreciation', label: 'Appreciation Studio', icon: '🏆', path: '/slt/social/overview?tab=mrm_appreciation', category: 'MEMBER MANAGEMENT (MRM)', roles: ['SOCIAL_MEDIA', 'MANAGER', 'ADMIN'] },
+  { key: 'social_mrm_members', label: 'Member Directory', icon: '👥', path: '/slt/social/overview?tab=mrm_members', category: 'MEMBER MANAGEMENT (MRM)' },
+  { key: 'social_mrm_tasks', label: 'Tasks & Targets', icon: '🎯', path: '/slt/social/overview?tab=mrm_tasks', category: 'MEMBER MANAGEMENT (MRM)' },
+  { key: 'social_mrm_badges', label: 'Badges & Recognition', icon: '🎖️', path: '/slt/social/overview?tab=mrm_badges', category: 'MEMBER MANAGEMENT (MRM)' },
+  { key: 'social_mrm_volunteers', label: 'Volunteers & Desk', icon: '🤝', path: '/slt/social/overview?tab=mrm_volunteers', category: 'MEMBER MANAGEMENT (MRM)' },
+  { key: 'social_mrm_appreciation', label: 'Appreciation Studio', icon: '🏆', path: '/slt/social/overview?tab=mrm_appreciation', category: 'MEMBER MANAGEMENT (MRM)' },
 
   // ── MODERATION & GOVERNANCE
-  { key: 'social_posts', label: 'Post Moderation', icon: '🛡️', path: '/slt/social/overview?tab=posts', category: 'MODERATION & GOVERNANCE', roles: ['SOCIAL_MEDIA', 'MANAGER', 'ADMIN'] },
-  { key: 'social_verifications', label: 'Account Verification', icon: '🪪', path: '/slt/social/overview?tab=verifications', category: 'MODERATION & GOVERNANCE', roles: ['SOCIAL_MEDIA', 'MANAGER', 'ADMIN'] },
+  { key: 'social_posts', label: 'Post Moderation', icon: '🛡️', path: '/slt/social/overview?tab=posts', category: 'MODERATION & GOVERNANCE' },
+  { key: 'social_verifications', label: 'Account Verification', icon: '🪪', path: '/slt/social/overview?tab=verifications', category: 'MODERATION & GOVERNANCE' },
 
   // ── BROADCASTS & PARTICIPATION
-  { key: 'social_official', label: 'Official Trust Publishing', icon: '📢', path: '/slt/social/overview?tab=official', category: 'BROADCASTS & PARTICIPATION', roles: ['SOCIAL_MEDIA', 'MANAGER', 'ADMIN'] },
-  { key: 'social_pom', label: 'Public Cooperation (POM)', icon: '🤝', path: '/slt/social/overview?tab=pom', category: 'BROADCASTS & PARTICIPATION', roles: ['SOCIAL_MEDIA', 'MANAGER', 'ADMIN'] },
-  { key: 'social_voting', label: 'Voting & Polls', icon: '🗳️', path: '/slt/social/overview?tab=voting', category: 'BROADCASTS & PARTICIPATION', roles: ['SOCIAL_MEDIA', 'MANAGER', 'ADMIN'] },
+  { key: 'social_official', label: 'Official Trust Publishing', icon: '📢', path: '/slt/social/overview?tab=official', category: 'BROADCASTS & PARTICIPATION' },
+  { key: 'social_pom', label: 'Public Cooperation (POM)', icon: '🤝', path: '/slt/social/overview?tab=pom', category: 'BROADCASTS & PARTICIPATION' },
+  { key: 'social_voting', label: 'Voting & Polls', icon: '🗳️', path: '/slt/social/overview?tab=voting', category: 'BROADCASTS & PARTICIPATION' },
   { key: 'membership_entry', label: 'Membership Entry', icon: '🪪', path: '/slt/entry/membership', category: 'PEOPLE & RELATIONS' },
   { label: 'Assessment Entry', icon: '📋', path: '/slt/entry/assessment', category: 'PEOPLE & RELATIONS', roles: ['DATA_ENTRY', 'MANAGER', 'ADMIN'] },
   { key: 'partners_entry', label: 'Partners Entry', icon: '🤝', path: '/slt/entry/partners', category: 'PEOPLE & RELATIONS' },
@@ -93,20 +93,11 @@ export const MASTER_NAV_CONFIG = [
 ]
 
 export const ADMIN_NAV_CONFIG = [
-  { label: 'Platform Analytics', icon: '📊', path: '/slt/social/overview?tab=analytics' },
-  { label: 'Member Directory', icon: '👥', path: '/slt/social/overview?tab=mrm_members' },
-  { label: 'Tasks & Targets', icon: '🎯', path: '/slt/social/overview?tab=mrm_tasks' },
-  { label: 'Badges & Recognition', icon: '🎖️', path: '/slt/social/overview?tab=mrm_badges' },
-  { label: 'Volunteers & Desk', icon: '🤝', path: '/slt/social/overview?tab=mrm_volunteers' },
-  { label: 'Appreciation Studio', icon: '🏆', path: '/slt/social/overview?tab=mrm_appreciation' },
-  { label: 'Post Moderation', icon: '🛡️', path: '/slt/social/overview?tab=posts' },
-  { label: 'Account Verification', icon: '🪪', path: '/slt/social/overview?tab=verifications' },
-  { label: 'Official Trust Publishing', icon: '📢', path: '/slt/social/overview?tab=official' },
-  { label: 'Public Cooperation (POM)', icon: '🤝', path: '/slt/social/overview?tab=pom' },
-  { label: 'Voting & Polls', icon: '🗳️', path: '/slt/social/overview?tab=voting' },
+  { label: 'Social Platform Admin', icon: '📱', path: '/slt/social/overview' },
   { label: 'User Management', icon: '👤', path: '/slt/sys/user-control' },
   { label: 'Feature Access', icon: '🔐', path: '/slt/sys/feature-access' },
   { label: 'Mobile Access', icon: '📱', path: '/slt/sys/mobile-access' },
+  { label: 'Public Issues', icon: '📢', path: '/slt/social/public-issues' },
   { label: 'Audit Log', icon: '🔍', path: '/slt/sys/audit-trail' },
   { label: 'Reports', icon: '📈', path: '/slt/shared/analytics' },
 ]

@@ -848,6 +848,16 @@ class RoleFeaturePermissionView(APIView):
             return Response(mappings)
             
         perms = list(RoleFeaturePermission.objects.filter(role=request.user.role).values_list('feature_key', flat=True))
+        if request.user.role == Role.ADMIN:
+            all_keys = list(RoleFeaturePermission.objects.values_list('feature_key', flat=True).distinct())
+            extra_keys = [
+                'social_analytics', 'social_mrm_members', 'social_mrm_tasks',
+                'social_mrm_badges', 'social_mrm_volunteers', 'social_mrm_appreciation',
+                'social_posts', 'social_verifications', 'social_official',
+                'social_pom', 'social_voting', 'public_issues'
+            ]
+            return Response(list(set(perms + all_keys + extra_keys)))
+
         if request.user.role == Role.MANAGER and 'hr_members' not in perms:
             perms.append('hr_members')
         if ('inward_entry' in perms or request.user.role in [Role.DATA_ENTRY, Role.MANAGER, Role.ADMIN]) and 'assets_in_stock' not in perms:

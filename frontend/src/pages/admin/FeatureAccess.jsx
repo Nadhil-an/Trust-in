@@ -51,8 +51,8 @@ export default function FeatureAccess() {
   // Group features by category for display
   const groupedFeatures = {}
   MASTER_NAV_CONFIG.forEach(item => {
-    // Skip items that are strictly role-bound dashboards
-    if (item.roles) return
+    // Skip items that are strictly role-bound dashboards without a feature key
+    if (!item.key) return
 
     // Search filter
     const matchesSearch = !searchQuery || 
