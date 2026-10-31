@@ -277,42 +277,34 @@ class MemberPostImageSerializer(serializers.ModelSerializer):
 
 class MemberPostCommentSerializer(serializers.ModelSerializer):
     author = serializers.SerializerMethodField()
+    user = serializers.SerializerMethodField()
 
     class Meta:
         model = MemberPostComment
-        fields = ['id', 'post', 'author', 'text', 'created_at']
-        read_only_fields = ['id', 'post', 'author', 'created_at']
+        fields = ['id', 'post', 'author', 'user', 'text', 'created_at']
+        read_only_fields = ['id', 'post', 'author', 'user', 'created_at']
 
     def get_author(self, obj):
-        if getattr(obj, 'post_category', None) == MemberPostCategory.OFFICIAL_TRUST:
-            return {
-                'id': str(obj.author.id),
-                'username': 'Announcement',
-                'full_name': 'Announcement',
-                'photo': None,
-                'role': 'OFFICIAL_TRUST',
-                'phone': getattr(obj.author, 'phone', ''),
-                'member_id': 'ANNOUNCEMENT',
-                'followers_count': 0,
-                'following_count': 0,
-                'posts_count': 0,
-                'is_following': False,
-                'is_verified': True,
-            }
         request = self.context.get('request')
         photo_url = None
-        if obj.user.photo:
-            photo_url = request.build_absolute_uri(obj.user.photo.url) if request else obj.user.photo.url
-        member = get_user_member(obj.user)
-        member_id = member.member_id if (member and member.member_id) else (obj.user.username or '')
+        if obj.user and getattr(obj.user, 'photo', None):
+            try:
+                photo_url = request.build_absolute_uri(obj.user.photo.url) if request else obj.user.photo.url
+            except Exception:
+                photo_url = None
+        member = get_user_member(obj.user) if obj.user else None
+        member_id = member.member_id if (member and getattr(member, 'member_id', None)) else (getattr(obj.user, 'username', '') if obj.user else '')
         return {
-            'id': str(obj.user.id),
-            'username': obj.user.username,
-            'full_name': obj.user.full_name or obj.user.username,
+            'id': str(obj.user.id) if obj.user else '',
+            'username': getattr(obj.user, 'username', 'Anonymous'),
+            'full_name': (getattr(obj.user, 'full_name', '') or getattr(obj.user, 'username', 'Anonymous')),
             'photo': photo_url,
-            'role': obj.user.role,
+            'role': getattr(obj.user, 'role', 'MEMBER') if obj.user else 'MEMBER',
             'member_id': member_id,
         }
+
+    def get_user(self, obj):
+        return self.get_author(obj)
 
 
 class MemberPostSerializer(serializers.ModelSerializer):

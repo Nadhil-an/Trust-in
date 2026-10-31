@@ -763,6 +763,15 @@ const MemberHomeScreen = ({ navigation }) => {
           setSelectedPostId(null);
         }}
         onCommentAdded={() => {
+          if (selectedPostId) {
+            setPosts((prev) =>
+              prev.map((p) =>
+                String(p.id) === String(selectedPostId)
+                  ? { ...p, comments_count: (p.comments_count || 0) + 1 }
+                  : p
+              )
+            );
+          }
           fetchPosts();
         }}
       />

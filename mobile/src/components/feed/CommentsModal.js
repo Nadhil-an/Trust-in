@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -26,6 +26,7 @@ export default function CommentsModal({ visible, postId, onClose, onCommentAdded
   const [loading, setLoading] = useState(true);
   const [text, setText] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const flatListRef = useRef(null);
 
   useEffect(() => {
     if (visible && postId) {
@@ -54,15 +55,24 @@ export default function CommentsModal({ visible, postId, onClose, onCommentAdded
       navigation.navigate('Auth');
       return;
     }
-    if (!text.trim()) return;
+    const cleanText = text.trim();
+    if (!cleanText || submitting) return;
     setSubmitting(true);
     try {
-      const res = await memberPostsApi.addComment(postId, text.trim());
-      setComments((prev) => [...prev, res.data]);
+      const res = await memberPostsApi.addComment(postId, cleanText);
+      const newComment = res.data;
+      setComments((prev) => [...prev, newComment]);
       setText('');
-      if (onCommentAdded) onCommentAdded();
-    } catch (_) {
-      Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to post comment' });
+      setTimeout(() => {
+        try {
+          flatListRef.current?.scrollToEnd({ animated: true });
+        } catch (_) {}
+      }, 100);
+      if (onCommentAdded) onCommentAdded(newComment);
+    } catch (err) {
+      console.log('Error adding comment:', err);
+      const errMsg = err?.response?.data?.error || err?.response?.data?.detail || 'Failed to post comment';
+      Toast.show({ type: 'error', text1: 'Error', text2: errMsg });
     } finally {
       setSubmitting(false);
     }
@@ -119,26 +129,30 @@ export default function CommentsModal({ visible, postId, onClose, onCommentAdded
             <FlatList
               data={comments}
               keyExtractor={(item) => String(item.id)}
-              renderItem={({ item }) => (
-                <View style={styles.commentRow}>
-                  {item.author?.photo ? (
-                    <Image source={{ uri: item.author.photo }} style={styles.commentAvatar} />
-                  ) : (
-                    <View style={styles.commentAvatarPlaceholder}>
-                      <Text style={styles.commentAvatarText}>
-                        {(item.author?.full_name || item.author?.username || 'U')[0].toUpperCase()}
-                      </Text>
+              ref={flatListRef}
+              renderItem={({ item }) => {
+                const author = item.author || item.user;
+                const authorName = author?.full_name || author?.username || 'Member';
+                const initial = (authorName || 'U')[0].toUpperCase();
+                return (
+                  <View style={styles.commentRow}>
+                    {author?.photo ? (
+                      <Image source={{ uri: author.photo }} style={styles.commentAvatar} />
+                    ) : (
+                      <View style={styles.commentAvatarPlaceholder}>
+                        <Text style={styles.commentAvatarText}>{initial}</Text>
+                      </View>
+                    )}
+                    <View style={styles.commentBubble}>
+                      <View style={styles.commentMeta}>
+                        <Text style={styles.commentAuthor}>{authorName}</Text>
+                        <Text style={styles.commentTime}>{formatTime(item.created_at)}</Text>
+                      </View>
+                      <Text style={styles.commentBody}>{item.text}</Text>
                     </View>
-                  )}
-                  <View style={styles.commentBubble}>
-                    <View style={styles.commentMeta}>
-                      <Text style={styles.commentAuthor}>{item.author?.full_name || item.author?.username}</Text>
-                      <Text style={styles.commentTime}>{formatTime(item.created_at)}</Text>
-                    </View>
-                    <Text style={styles.commentBody}>{item.text}</Text>
                   </View>
-                </View>
-              )}
+                );
+              }}
               contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 16 }}
             />
           )}

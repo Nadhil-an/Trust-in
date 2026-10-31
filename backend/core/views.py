@@ -933,7 +933,7 @@ class MemberPostViewSet(ModelViewSet):
         is_moderator = user_role in ['SOCIAL_MEDIA', 'ADMIN', 'MANAGER'] or is_staff_user
 
         # For single-object actions (retrieve, destroy, update, toggle-pin, etc.)
-        if getattr(self, 'detail', False) or (hasattr(self, 'action') and self.action in ['retrieve', 'destroy', 'update', 'partial_update', 'toggle_pin', 'approve', 'reject']):
+        if getattr(self, 'detail', False) or (hasattr(self, 'action') and self.action in ['retrieve', 'destroy', 'update', 'partial_update', 'toggle_pin', 'approve', 'reject', 'comments', 'toggle_like', 'forward_to_fao']):
             if is_moderator:
                 return qs
             if user:
