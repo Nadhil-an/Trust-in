@@ -62,6 +62,8 @@ services:
                python manage.py collectstatic --noinput &&
                daphne -b 0.0.0.0 -p 8000 sreelakshmi_trust.asgi:application"
     volumes:
+      # Code mount ensures repository updates apply immediately
+      - ./backend:/app
       # Shared media — same bind mount as whatsapp-gateway
       - ./backend/media:/app/media
       - ./backend/staticfiles:/app/staticfiles

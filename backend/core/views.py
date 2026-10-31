@@ -1110,22 +1110,37 @@ class MemberPostViewSet(ModelViewSet):
 
     @action(detail=True, methods=['get', 'post'], url_path='comments')
     def comments(self, request, pk=None):
-        post = self.get_object()
+        import logging
+        logger = logging.getLogger(__name__)
+        try:
+            post = self.get_object()
+        except Exception as e:
+            logger.error(f"Error finding post for comments: {e}")
+            return Response({'error': 'Post not found'}, status=404)
+
         if request.method == 'GET':
-            comments = post.comments.select_related('user').order_by('created_at')
-            serializer = MemberPostCommentSerializer(comments, many=True, context={'request': request})
-            return Response(serializer.data)
+            try:
+                comments = post.comments.select_related('user').order_by('created_at')
+                serializer = MemberPostCommentSerializer(comments, many=True, context={'request': request})
+                return Response(serializer.data)
+            except Exception as e:
+                logger.error(f"Error retrieving comments for post {post.id}: {e}", exc_info=True)
+                return Response({'error': 'Failed to retrieve comments'}, status=500)
         elif request.method == 'POST':
             text = (request.data.get('text') or '').strip()
             if not text:
                 return Response({'error': 'Comment text cannot be empty'}, status=400)
-            comment = MemberPostComment.objects.create(post=post, user=request.user, text=text)
+            try:
+                comment = MemberPostComment.objects.create(post=post, user=request.user, text=text)
+            except Exception as e:
+                logger.error(f"Error saving comment for post {post.id}: {e}", exc_info=True)
+                return Response({'error': f"Failed to save comment: {e}"}, status=500)
 
             # Send real-time push notification outside app to author
             if post.author and post.author != request.user:
                 try:
                     from notify.service import push_notification
-                    commenter_name = request.user.full_name or request.user.username
+                    commenter_name = getattr(request.user, 'full_name', '') or getattr(request.user, 'username', 'Member')
                     snippet = text[:50] + ('...' if len(text) > 50 else '')
                     push_notification(
                         recipient=post.author,
@@ -1137,11 +1152,27 @@ class MemberPostViewSet(ModelViewSet):
                         priority='NORMAL'
                     )
                 except Exception as e:
-                    import logging
-                    logging.getLogger(__name__).error(f"Error notifying post comment: {e}")
+                    logger.error(f"Error notifying post comment: {e}")
 
-            serializer = MemberPostCommentSerializer(comment, context={'request': request})
-            return Response(serializer.data, status=201)
+            try:
+                serializer = MemberPostCommentSerializer(comment, context={'request': request})
+                return Response(serializer.data, status=201)
+            except Exception as e:
+                logger.error(f"Error serializing new comment: {e}", exc_info=True)
+                return Response({
+                    'id': str(comment.id),
+                    'post': str(post.id),
+                    'text': comment.text,
+                    'created_at': comment.created_at.isoformat(),
+                    'author': {
+                        'id': str(request.user.id),
+                        'username': getattr(request.user, 'username', 'Member'),
+                        'full_name': getattr(request.user, 'full_name', '') or getattr(request.user, 'username', 'Member'),
+                        'photo': None,
+                        'role': getattr(request.user, 'role', 'MEMBER'),
+                        'member_id': getattr(request.user, 'username', ''),
+                    }
+                }, status=201)
 
     @action(detail=True, methods=['post'], url_path='forward-to-fao')
     def forward_to_fao(self, request, pk=None):

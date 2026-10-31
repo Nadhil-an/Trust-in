@@ -41,7 +41,8 @@ export default function CommentsModal({ visible, postId, onClose, onCommentAdded
     setLoading(true);
     try {
       const res = await memberPostsApi.getComments(postId);
-      setComments(res.data || []);
+      const items = Array.isArray(res.data) ? res.data : (res.data?.results || []);
+      setComments(items);
     } catch (_) {
       Toast.show({ type: 'error', text1: 'Error', text2: 'Failed to load comments' });
     } finally {

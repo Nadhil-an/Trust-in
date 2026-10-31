@@ -285,21 +285,48 @@ class MemberPostCommentSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'post', 'author', 'user', 'created_at']
 
     def get_author(self, obj):
+        try:
+            user = getattr(obj, 'user', None)
+        except Exception:
+            user = None
+
         request = self.context.get('request')
         photo_url = None
-        if obj.user and getattr(obj.user, 'photo', None):
+        if user and getattr(user, 'photo', None):
             try:
-                photo_url = request.build_absolute_uri(obj.user.photo.url) if request else obj.user.photo.url
+                photo_url = request.build_absolute_uri(user.photo.url) if request else user.photo.url
             except Exception:
                 photo_url = None
-        member = get_user_member(obj.user) if obj.user else None
-        member_id = member.member_id if (member and getattr(member, 'member_id', None)) else (getattr(obj.user, 'username', '') if obj.user else '')
+
+        member_id = ''
+        if user:
+            try:
+                member = get_user_member(user)
+                if member and getattr(member, 'member_id', None):
+                    member_id = str(member.member_id)
+                else:
+                    member_id = getattr(user, 'username', '') or ''
+            except Exception:
+                member_id = getattr(user, 'username', '') or ''
+
+        user_id = ''
+        if user:
+            try:
+                user_id = str(user.id)
+            except Exception:
+                user_id = ''
+
+        username = getattr(user, 'username', 'Member') if user else 'Member'
+        full_name = getattr(user, 'full_name', '') if user else ''
+        display_name = full_name or username or 'Member'
+        role = getattr(user, 'role', 'MEMBER') if user else 'MEMBER'
+
         return {
-            'id': str(obj.user.id) if obj.user else '',
-            'username': getattr(obj.user, 'username', 'Anonymous'),
-            'full_name': (getattr(obj.user, 'full_name', '') or getattr(obj.user, 'username', 'Anonymous')),
+            'id': user_id,
+            'username': username,
+            'full_name': display_name,
             'photo': photo_url,
-            'role': getattr(obj.user, 'role', 'MEMBER') if obj.user else 'MEMBER',
+            'role': role,
             'member_id': member_id,
         }
 
