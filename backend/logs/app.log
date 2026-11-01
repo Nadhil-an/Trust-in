@@ -263625,3 +263625,9 @@ Unauthorized: /api/core/features/
 WebSocket HANDSHAKING /ws/notify/ [127.0.0.1:12566]
 WebSocket CONNECT /ws/notify/ [127.0.0.1:12566]
 [mHTTP GET /api/core/social-polls/cae20b20-e0e4-4e44-b392-70e5062ace80/voters/ 200 [0.05, 127.0.0.1:13475][0m
+Forbidden: /api/core/users/3b4f206c-61fd-4764-8872-df3a2d276539/
+Forbidden: /api/hr/leave/4fec36d6-305a-4bfd-9390-7dfebdb9ff49/action/
+Forbidden: /api/hr/leave/efee0d36-a5aa-4cf9-9130-4446c78bc9d6/notes/
+Forbidden: /api/core/users/d90744f1-565a-4370-a6c8-447784d34a1f/
+Forbidden: /api/hr/leave/c84c3a34-ff09-4f88-9ca1-2607f097fea8/action/
+Forbidden: /api/hr/leave/6925e872-aaa7-486b-9576-3f1b7ec4d50a/notes/
