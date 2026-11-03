@@ -441,6 +441,7 @@ class PromoterRegistrySerializer(serializers.ModelSerializer):
             'id', 'date', 'promoter', 'promoter_name',
             'entry_code', 'starting_reading', 'ending_reading',
             'cash_collected', 'online_collected', 'cash_submitted',
+            'online_verified', 'excess_less',
             'total_collected', 'has_discrepancy',
             'is_closed', 'closed_at',
             'verification_status',

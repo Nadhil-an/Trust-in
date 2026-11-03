@@ -720,6 +720,14 @@ class PromoterRegistryEntry(models.Model):
     cash_submitted = models.DecimalField(max_digits=12, decimal_places=2, default=0.00,
         help_text='Physical cash submitted by the promoter at the office.')
 
+    # Online amount verified by office against bank statement/UPI
+    online_verified = models.DecimalField(max_digits=12, decimal_places=2, default=0.00,
+        help_text='Online amount verified by office against bank statement.')
+
+    # Calculated excess or less amount (+ for excess, - for shortage/less)
+    excess_less = models.DecimalField(max_digits=12, decimal_places=2, default=0.00,
+        help_text='Calculated excess (+) or shortage/less (-) amount.')
+
     # Day closing
     is_closed = models.BooleanField(default=False,
         help_text='When True, the promoter cannot make new collections for this date.')

@@ -38,7 +38,8 @@ export default function VerificationDashboard() {
           entry_code: item.book_number ? String(item.book_number) : (entry?.entry_code || ''),
           starting_reading: item.auto_starting_reading || entry?.starting_reading || '',
           ending_reading: item.auto_ending_reading || entry?.ending_reading || '',
-          cash_submitted: entry?.cash_submitted || '',
+          cash_submitted: entry?.cash_submitted !== undefined && entry?.cash_submitted !== null && entry?.cash_submitted !== '' ? entry.cash_submitted : '',
+          online_verified: entry?.online_verified !== undefined && entry?.online_verified !== null && entry?.online_verified !== '' ? entry.online_verified : '',
           is_closed: entry?.is_closed || false,
           has_discrepancy: entry?.has_discrepancy || false,
           hasChanges: false,
@@ -81,6 +82,9 @@ export default function VerificationDashboard() {
         cash_collected: parseFloat(row.cash_collected) || 0,
         online_collected: parseFloat(row.online_collected) || 0,
         cash_submitted: parseFloat(row.cash_submitted) || 0,
+        online_verified: parseFloat(row.online_verified) || 0,
+        excess_less: ((row.cash_submitted !== '' ? ((parseFloat(row.cash_submitted) || 0) - (parseFloat(row.cash_collected) || 0)) : 0) +
+                     ((row.online_verified !== '' && row.online_verified !== undefined) ? ((parseFloat(row.online_verified) || 0) - (parseFloat(row.online_collected) || 0)) : 0)),
       }
 
       if (row.entry_id) {
@@ -150,11 +154,21 @@ export default function VerificationDashboard() {
     return totalB - totalA;
   });
 
-  const totals = filteredRows.reduce((acc, r) => ({
-    cash_collected: acc.cash_collected + parseFloat(r.cash_collected || 0),
-    online_collected: acc.online_collected + parseFloat(r.online_collected || 0),
-    cash_submitted: acc.cash_submitted + parseFloat(r.cash_submitted || 0),
-  }), { cash_collected: 0, online_collected: 0, cash_submitted: 0 })
+  const totals = filteredRows.reduce((acc, r) => {
+    const cashColl = parseFloat(r.cash_collected || 0)
+    const onlineColl = parseFloat(r.online_collected || 0)
+    const cashSub = parseFloat(r.cash_submitted || 0)
+    const onlineVer = (r.online_verified !== '' && r.online_verified !== undefined) ? parseFloat(r.online_verified || 0) : 0
+    const diff = (r.cash_submitted !== '' ? (cashSub - cashColl) : 0) +
+                 ((r.online_verified !== '' && r.online_verified !== undefined) ? (onlineVer - onlineColl) : 0)
+    return {
+      cash_collected: acc.cash_collected + cashColl,
+      online_collected: acc.online_collected + onlineColl,
+      cash_submitted: acc.cash_submitted + cashSub,
+      online_verified: acc.online_verified + onlineVer,
+      excess_less: acc.excess_less + diff,
+    }
+  }, { cash_collected: 0, online_collected: 0, cash_submitted: 0, online_verified: 0, excess_less: 0 })
 
   return (
     <div>
@@ -255,6 +269,8 @@ export default function VerificationDashboard() {
                   <th colSpan={2} style={thStyle('center', '#4338CA', '#EEF2FF')}>Voucher Reading</th>
                   <th colSpan={2} style={thStyle('center', '#0369A1', '#E0F2FE')}>Voucher Reading <br /><span style={{ fontSize: 10, fontWeight: 400 }}>(Auto from Mobile)</span></th>
                   <th rowSpan={2} style={thStyle('center', '#7C3AED', '#F5F3FF')}>Cash Submitted<br /><span style={{ fontSize: 10, fontWeight: 400 }}>at Office</span></th>
+                  <th rowSpan={2} style={thStyle('center', '#2563EB', '#EFF6FF')}>Online Verification<br /><span style={{ fontSize: 10, fontWeight: 400 }}>(Office Verified)</span></th>
+                  <th rowSpan={2} style={thStyle('center', '#D97706', '#FFFBEB')}>Excess / Less<br /><span style={{ fontSize: 10, fontWeight: 400 }}>(Auto Calculated)</span></th>
                   <th rowSpan={2} style={thStyle('center', '#059669', '#ECFDF5')}>Total<br />Collected</th>
                   <th rowSpan={2} style={thStyle('center')}>Action</th>
                 </tr>
@@ -270,8 +286,44 @@ export default function VerificationDashboard() {
                   const cashFloat = parseFloat(row.cash_collected) || 0
                   const onlineFloat = parseFloat(row.online_collected) || 0
                   const totalCollected = cashFloat + onlineFloat
-                  const cashSubmittedFloat = parseFloat(row.cash_submitted) || 0
-                  const hasMismatch = row.cash_submitted !== '' && Math.abs(cashSubmittedFloat - cashFloat) > 0.01
+                  const cashSubmittedFloat = row.cash_submitted !== '' ? (parseFloat(row.cash_submitted) || 0) : null
+                  const onlineVerifiedFloat = (row.online_verified !== '' && row.online_verified !== undefined) ? (parseFloat(row.online_verified) || 0) : null
+                  const hasMismatch = cashSubmittedFloat !== null && Math.abs(cashSubmittedFloat - cashFloat) > 0.01
+
+                  let diff = 0
+                  let hasEntered = false
+                  if (cashSubmittedFloat !== null) {
+                    diff += (cashSubmittedFloat - cashFloat)
+                    hasEntered = true
+                  }
+                  if (onlineVerifiedFloat !== null) {
+                    diff += (onlineVerifiedFloat - onlineFloat)
+                    hasEntered = true
+                  }
+
+                  let diffText = '—'
+                  let diffBg = '#F9FAFB'
+                  let diffBorder = '#E5E7EB'
+                  let diffColor = '#6B7280'
+                  if (hasEntered) {
+                    const roundedDiff = Math.round(diff * 100) / 100
+                    if (roundedDiff > 0.009) {
+                      diffText = `+ ₹${roundedDiff.toFixed(2)} (Excess)`
+                      diffBg = '#F0FDF4'
+                      diffBorder = '#86EFAC'
+                      diffColor = '#16A34A'
+                    } else if (roundedDiff < -0.009) {
+                      diffText = `- ₹${Math.abs(roundedDiff).toFixed(2)} (Less)`
+                      diffBg = '#FEF2F2'
+                      diffBorder = '#FCA5A5'
+                      diffColor = '#DC2626'
+                    } else {
+                      diffText = '₹0.00 (Match)'
+                      diffBg = '#F9FAFB'
+                      diffBorder = '#D1D5DB'
+                      diffColor = '#059669'
+                    }
+                  }
 
                   return (
                     <tr key={row.staff_id} style={{
@@ -351,6 +403,55 @@ export default function VerificationDashboard() {
                         </div>
                       </td>
 
+                      {/* Online Verification */}
+                      <td style={{ padding: '6px 8px', borderRight: '2px solid #BFDBFE' }}>
+                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                          <input type="number" className="form-control"
+                            style={{
+                              minWidth: 100, textAlign: 'center',
+                              background: row.is_closed ? '#F0F9FF' : (onlineVerifiedFloat !== null && Math.abs(onlineVerifiedFloat - onlineFloat) > 0.01) ? '#FEF2F2' : '#F0F9FF',
+                              borderColor: (onlineVerifiedFloat !== null && Math.abs(onlineVerifiedFloat - onlineFloat) > 0.01) ? '#FCA5A5' : undefined,
+                            }}
+                            value={row.online_verified}
+                            disabled={row.is_closed}
+                            placeholder={onlineFloat > 0 ? onlineFloat.toFixed(2) : "0.00"}
+                            onChange={e => updateField(row.staff_id, 'online_verified', e.target.value)}
+                          />
+                          {onlineFloat > 0 && !row.is_closed && (row.online_verified === '' || row.online_verified === undefined) && (
+                            <button
+                              type="button"
+                              title="Click to auto-fill matching online amount"
+                              onClick={() => updateField(row.staff_id, 'online_verified', onlineFloat.toFixed(2))}
+                              style={{
+                                position: 'absolute', right: 4, background: '#DBEAFE', color: '#1D4ED8',
+                                border: 'none', borderRadius: 4, padding: '2px 5px', fontSize: 10, cursor: 'pointer', fontWeight: 700
+                              }}
+                            >
+                              ✓
+                            </button>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* Excess / Less (Auto Calculated) */}
+                      <td style={{ padding: '6px 8px', borderRight: '2px solid #FDE68A' }}>
+                        <input
+                          type="text"
+                          readOnly
+                          className="form-control"
+                          value={diffText}
+                          style={{
+                            minWidth: 120,
+                            textAlign: 'center',
+                            background: diffBg,
+                            borderColor: diffBorder,
+                            color: diffColor,
+                            fontWeight: 700,
+                            cursor: 'default',
+                          }}
+                        />
+                      </td>
+
                       <td style={{ padding: '10px 14px', textAlign: 'center', fontWeight: 700, color: '#059669', whiteSpace: 'nowrap' }}>
                         ₹{totalCollected.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                       </td>
@@ -382,6 +483,12 @@ export default function VerificationDashboard() {
                   </td>
                   <td style={{ padding: '10px 14px', textAlign: 'center', color: '#7C3AED' }}>
                     ₹{totals.cash_submitted.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  </td>
+                  <td style={{ padding: '10px 14px', textAlign: 'center', color: '#2563EB' }}>
+                    ₹{totals.online_verified.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                  </td>
+                  <td style={{ padding: '10px 14px', textAlign: 'center', color: totals.excess_less > 0.009 ? '#16A34A' : totals.excess_less < -0.009 ? '#DC2626' : '#059669' }}>
+                    {totals.excess_less > 0.009 ? `+ ₹${totals.excess_less.toFixed(2)}` : totals.excess_less < -0.009 ? `- ₹${Math.abs(totals.excess_less).toFixed(2)}` : '₹0.00'}
                   </td>
                   <td style={{ padding: '10px 14px', textAlign: 'center', color: '#059669' }}>
                     ₹{(totals.cash_collected + totals.online_collected).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
