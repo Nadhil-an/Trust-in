@@ -1,1 +1,8 @@
-/* /index.html 200
+# Proxy API requests to EC2 Django backend
+/api/*  https://api.sreelakshmicharity.org/api/:splat  200
+
+# Proxy media file requests to EC2 backend
+/media/*  https://api.sreelakshmicharity.org/media/:splat  200
+
+# SPA fallback — must be LAST
+/*  /index.html  200
