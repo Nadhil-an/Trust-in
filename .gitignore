@@ -49,9 +49,13 @@ docker-data/
 *.sw?
 Thumbs.db
 
-# ── Logs ──────────────────────────────────────────────────────────────
+# ── Logs & Debug Dumps ───────────────────────────────────────────────
 *.log
 logs/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+*_logs.txt
+*.dump
+bundle_*.js
+
