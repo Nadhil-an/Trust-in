@@ -5,6 +5,27 @@ import { format } from "date-fns"
 import toast from "react-hot-toast"
 
 
+
+// ── Amount & Input Formatting Helpers ─────────────────────────────────────
+const formatAmount = (val) => {
+  if (val === null || val === undefined || val === '') return '0';
+  const num = typeof val === 'number' ? val : parseFloat(val);
+  if (isNaN(num)) return '0';
+  return num.toLocaleString('en-IN', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+};
+
+const cleanInputValue = (val) => {
+  if (val === null || val === undefined || val === '') return '0';
+  const str = String(val).trim();
+  if (str === '' || str === '0' || str === '0.00' || str === '0.0') return '0';
+  const num = parseFloat(str);
+  if (isNaN(num)) return str;
+  return num % 1 === 0 ? String(Math.round(num)) : str;
+};
+
 export default function VerificationDashboard() {
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
@@ -38,8 +59,8 @@ export default function VerificationDashboard() {
           entry_code: item.book_number ? String(item.book_number) : (entry?.entry_code || ''),
           starting_reading: item.auto_starting_reading || entry?.starting_reading || '',
           ending_reading: item.auto_ending_reading || entry?.ending_reading || '',
-          cash_submitted: entry?.cash_submitted !== undefined && entry?.cash_submitted !== null && entry?.cash_submitted !== '' ? entry.cash_submitted : '',
-          online_verified: entry?.online_verified !== undefined && entry?.online_verified !== null && entry?.online_verified !== '' ? entry.online_verified : '',
+          cash_submitted: cleanInputValue(entry?.cash_submitted),
+          online_verified: cleanInputValue(entry?.online_verified),
           is_closed: entry?.is_closed || false,
           has_discrepancy: entry?.has_discrepancy || false,
           hasChanges: false,
@@ -307,18 +328,19 @@ export default function VerificationDashboard() {
                   let diffColor = '#6B7280'
                   if (hasEntered) {
                     const roundedDiff = Math.round(diff * 100) / 100
+                    const formattedAbs = formatAmount(Math.abs(roundedDiff))
                     if (roundedDiff > 0.009) {
-                      diffText = `+ ₹${roundedDiff.toFixed(2)} (Excess)`
+                      diffText = `+ ₹${formattedAbs} (Excess)`
                       diffBg = '#F0FDF4'
                       diffBorder = '#86EFAC'
                       diffColor = '#16A34A'
                     } else if (roundedDiff < -0.009) {
-                      diffText = `- ₹${Math.abs(roundedDiff).toFixed(2)} (Less)`
+                      diffText = `- ₹${formattedAbs} (Less)`
                       diffBg = '#FEF2F2'
                       diffBorder = '#FCA5A5'
                       diffColor = '#DC2626'
                     } else {
-                      diffText = '₹0.00 (Match)'
+                      diffText = '₹0 (Match)'
                       diffBg = '#F9FAFB'
                       diffBorder = '#D1D5DB'
                       diffColor = '#059669'
@@ -369,7 +391,7 @@ export default function VerificationDashboard() {
                           onClick={() => openTransactionsModal(row, 'CASH')}
                           title="Click to view full details"
                         >
-                          {row.cash_collected} <span style={{ fontSize: 11, opacity: 0.6 }}>↗</span>
+                          {formatAmount(row.cash_collected)} <span style={{ fontSize: 11, opacity: 0.6 }}>↗</span>
                         </div>
                       </td>
 
@@ -379,7 +401,7 @@ export default function VerificationDashboard() {
                           onClick={() => openTransactionsModal(row, 'UPI')}
                           title="Click to view full details"
                         >
-                          {row.online_collected} <span style={{ fontSize: 11, opacity: 0.6 }}>↗</span>
+                          {formatAmount(row.online_collected)} <span style={{ fontSize: 11, opacity: 0.6 }}>↗</span>
                         </div>
                       </td>
 
@@ -391,13 +413,25 @@ export default function VerificationDashboard() {
                               background: row.is_closed ? '#F5F3FF' : hasMismatch ? '#FEF2F2' : '#FAF5FF',
                               borderColor: hasMismatch ? '#FCA5A5' : undefined,
                             }}
-                            value={row.cash_submitted}
+                            value={cleanInputValue(row.cash_submitted)}
                             disabled={row.is_closed}
-                            placeholder="0.00"
-                            onChange={e => updateField(row.staff_id, 'cash_submitted', e.target.value)}
+                            placeholder="0"
+                            onFocus={e => { if (e.target.value === '0' || e.target.value === '0.00') e.target.select(); }}
+                            onChange={e => {
+                              let val = e.target.value;
+                              if (val.length > 1 && val.startsWith('0') && val[1] !== '.') {
+                                val = val.replace(/^0+/, '');
+                              }
+                              updateField(row.staff_id, 'cash_submitted', val);
+                            }}
+                            onBlur={e => {
+                              if (e.target.value === '' || isNaN(e.target.value)) {
+                                updateField(row.staff_id, 'cash_submitted', '0');
+                              }
+                            }}
                           />
                           {hasMismatch && (
-                            <span title={`Expected ₹${cashFloat.toFixed(2)}`}
+                            <span title={`Expected ₹${formatAmount(cashFloat)}`}
                               style={{ position: 'absolute', top: -2, right: -2, fontSize: 14, cursor: 'help' }}>⚠️</span>
                           )}
                         </div>
@@ -412,16 +446,28 @@ export default function VerificationDashboard() {
                               background: row.is_closed ? '#F0F9FF' : (onlineVerifiedFloat !== null && Math.abs(onlineVerifiedFloat - onlineFloat) > 0.01) ? '#FEF2F2' : '#F0F9FF',
                               borderColor: (onlineVerifiedFloat !== null && Math.abs(onlineVerifiedFloat - onlineFloat) > 0.01) ? '#FCA5A5' : undefined,
                             }}
-                            value={row.online_verified}
+                            value={cleanInputValue(row.online_verified)}
                             disabled={row.is_closed}
-                            placeholder={onlineFloat > 0 ? onlineFloat.toFixed(2) : "0.00"}
-                            onChange={e => updateField(row.staff_id, 'online_verified', e.target.value)}
+                            placeholder="0"
+                            onFocus={e => { if (e.target.value === '0' || e.target.value === '0.00') e.target.select(); }}
+                            onChange={e => {
+                              let val = e.target.value;
+                              if (val.length > 1 && val.startsWith('0') && val[1] !== '.') {
+                                val = val.replace(/^0+/, '');
+                              }
+                              updateField(row.staff_id, 'online_verified', val);
+                            }}
+                            onBlur={e => {
+                              if (e.target.value === '' || isNaN(e.target.value)) {
+                                updateField(row.staff_id, 'online_verified', '0');
+                              }
+                            }}
                           />
-                          {onlineFloat > 0 && !row.is_closed && (row.online_verified === '' || row.online_verified === undefined) && (
+                          {onlineFloat > 0 && !row.is_closed && (cleanInputValue(row.online_verified) === '0' || row.online_verified === '') && (
                             <button
                               type="button"
                               title="Click to auto-fill matching online amount"
-                              onClick={() => updateField(row.staff_id, 'online_verified', onlineFloat.toFixed(2))}
+                              onClick={() => updateField(row.staff_id, 'online_verified', cleanInputValue(onlineFloat))}
                               style={{
                                 position: 'absolute', right: 4, background: '#DBEAFE', color: '#1D4ED8',
                                 border: 'none', borderRadius: 4, padding: '2px 5px', fontSize: 10, cursor: 'pointer', fontWeight: 700
@@ -453,7 +499,7 @@ export default function VerificationDashboard() {
                       </td>
 
                       <td style={{ padding: '10px 14px', textAlign: 'center', fontWeight: 700, color: '#059669', whiteSpace: 'nowrap' }}>
-                        ₹{totalCollected.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                        ₹{formatAmount(totalCollected)}
                       </td>
 
                       <td className="hide-print" style={{ padding: '6px 10px', textAlign: 'center' }}>
@@ -476,22 +522,22 @@ export default function VerificationDashboard() {
                 <tr style={{ background: '#F8FAFC', fontWeight: 700, borderTop: '2px solid #E5E7EB' }}>
                   <td colSpan={4} style={{ padding: '10px 14px', color: '#374151' }}>Day Totals</td>
                   <td style={{ padding: '10px 14px', textAlign: 'center', color: '#0369A1' }}>
-                    ₹{totals.cash_collected.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    ₹{formatAmount(totals.cash_collected)}
                   </td>
                   <td style={{ padding: '10px 14px', textAlign: 'center', color: '#0369A1' }}>
-                    ₹{totals.online_collected.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    ₹{formatAmount(totals.online_collected)}
                   </td>
                   <td style={{ padding: '10px 14px', textAlign: 'center', color: '#7C3AED' }}>
-                    ₹{totals.cash_submitted.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    ₹{formatAmount(totals.cash_submitted)}
                   </td>
                   <td style={{ padding: '10px 14px', textAlign: 'center', color: '#2563EB' }}>
-                    ₹{totals.online_verified.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    ₹{formatAmount(totals.online_verified)}
                   </td>
                   <td style={{ padding: '10px 14px', textAlign: 'center', color: totals.excess_less > 0.009 ? '#16A34A' : totals.excess_less < -0.009 ? '#DC2626' : '#059669' }}>
-                    {totals.excess_less > 0.009 ? `+ ₹${totals.excess_less.toFixed(2)}` : totals.excess_less < -0.009 ? `- ₹${Math.abs(totals.excess_less).toFixed(2)}` : '₹0.00'}
+                    {totals.excess_less > 0.009 ? `+ ₹${formatAmount(totals.excess_less)}` : totals.excess_less < -0.009 ? `- ₹${formatAmount(Math.abs(totals.excess_less))}` : '₹0'}
                   </td>
                   <td style={{ padding: '10px 14px', textAlign: 'center', color: '#059669' }}>
-                    ₹{(totals.cash_collected + totals.online_collected).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    ₹{formatAmount(totals.cash_collected + totals.online_collected)}
                   </td>
                   <td className="hide-print"></td>
                 </tr>
