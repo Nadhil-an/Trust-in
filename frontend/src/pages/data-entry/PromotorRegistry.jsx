@@ -30,6 +30,7 @@ export default function PromotorRegistry() {
   const [loading, setLoading] = useState(true)
   const [savingId, setSavingId] = useState(null)
   const [dateFilter, setDateFilter] = useState(format(new Date(), 'yyyy-MM-dd'))
+  const [searchTerm, setSearchTerm] = useState('')
   const [mismatchModalData, setMismatchModalData] = useState(null)
   const [confirmState, setConfirmState] = useState({ isOpen: false, row: null, type: '' })
 
@@ -190,7 +191,12 @@ export default function PromotorRegistry() {
   }
 
   // ── Print Styles ─────────────────────────────────────────────────
-  const totals = rows.reduce((acc, r) => {
+  const filteredRows = rows.filter(r =>
+    r.staff_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    r.entry_code?.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  const totals = filteredRows.reduce((acc, r) => {
     const cashColl = parseFloat(r.cash_collected || 0)
     const onlineColl = parseFloat(r.online_collected || 0)
     const cashSub = parseFloat(r.cash_submitted || 0)
@@ -289,24 +295,24 @@ export default function PromotorRegistry() {
         </div>
 
         <div className="hide-print">
-          <FilterBar>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <span style={{ fontWeight: 600, color: '#374151' }}>Date:</span>
+          <FilterBar search={searchTerm} onSearch={setSearchTerm} placeholder="Search staff...">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontWeight: 600, color: '#374151', fontSize: 12 }}>Date:</span>
               <input
                 type="date"
                 className="filter-select"
-                style={{ width: '200px' }}
+                style={{ width: '140px', height: 32, fontSize: 12 }}
                 value={dateFilter}
                 onChange={e => setDateFilter(e.target.value)}
               />
             </div>
-            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 16, fontSize: 13, color: '#6B7280' }}>
+            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }}>
               <button 
                 className="btn" 
-                style={{ background: '#4F46E5', color: 'white', border: 'none', padding: '6px 14px', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600 }}
+                style={{ background: '#4F46E5', color: 'white', border: 'none', padding: '5px 12px', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600, fontSize: 12 }}
                 onClick={() => window.print()}
               >
-                🖨️ Print / PDF
+                🖨️ Print
               </button>
             </div>
           </FilterBar>
@@ -338,7 +344,7 @@ export default function PromotorRegistry() {
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.map(row => {
+                  {filteredRows.map(row => {
                     const isSaving = savingId === row.staff_id
                     const cashFloat = parseFloat(row.cash_collected) || 0
                     const onlineFloat = parseFloat(row.online_collected) || 0
@@ -390,39 +396,40 @@ export default function PromotorRegistry() {
                         borderBottom: '1px solid #F3F4F6'
                       }}>
                         {/* Name */}
-                        <td style={{ padding: '10px 14px', fontWeight: 700, color: '#111827', whiteSpace: 'nowrap' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                        <td style={{ padding: '4px 6px', fontWeight: 700, color: '#111827', whiteSpace: 'nowrap', fontSize: 12 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                             <span>{row.staff_name}</span>
                             {row.is_closed && (
-                              <span style={{ fontSize: 10, background: '#BBF7D0', color: '#166534', borderRadius: 6, padding: '1px 6px' }}>
-                                ✓ Closed
+                              <span style={{ fontSize: 9, background: '#BBF7D0', color: '#166534', borderRadius: 4, padding: '1px 4px' }}>
+                                ✓
                               </span>
                             )}
                           </div>
                         </td>
 
                         {/* Voucher No */}
-                        <td style={{ padding: '6px 8px' }}>
-                          <input type="text" className="form-control" style={{ minWidth: 110 }}
+                        <td style={{ padding: '4px 2px', textAlign: 'center' }}>
+                          <input type="text" className="form-control" style={{ width: 44, textAlign: 'center', padding: '3px 2px', fontSize: 11 }}
                             value={row.entry_code}
                             disabled={row.is_closed}
-                            placeholder="VR..."
+                            placeholder="VR"
                             onChange={e => updateField(row.staff_id, 'entry_code', e.target.value)}
                           />
                           {row.voucher_book && row.voucher_book.next_book_number && (row.voucher_book.voucher_end - row.voucher_book.current_voucher <= 2) && (
                             <button 
                               type="button"
                               onClick={() => setConfirmState({ isOpen: true, row: row.staff_id, type: 'ACTIVATE_NEXT' })}
-                              style={{ marginTop: 4, width: '100%', padding: '4px 8px', fontSize: 10, background: '#F59E0B', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}
+                              style={{ marginTop: 2, width: '100%', padding: '2px', fontSize: 9, background: '#F59E0B', color: 'white', border: 'none', borderRadius: 3, cursor: 'pointer', fontWeight: 600 }}
+                              title="Activate Next Voucher Book"
                             >
-                              <span>⚡ Activate Next Book</span>
+                              ⚡ Next
                             </button>
                           )}
                         </td>
 
                         {/* Starting Reading */}
-                        <td style={{ padding: '6px 8px' }}>
-                          <input type="number" className="form-control" style={{ minWidth: 70, textAlign: 'center' }}
+                        <td style={{ padding: '4px 2px', textAlign: 'center' }}>
+                          <input type="number" className="form-control" style={{ width: 48, textAlign: 'center', padding: '3px 2px', fontSize: 11 }}
                             value={row.starting_reading}
                             disabled={row.is_closed}
                             onChange={e => updateField(row.staff_id, 'starting_reading', e.target.value)}
@@ -430,155 +437,129 @@ export default function PromotorRegistry() {
                         </td>
 
                         {/* Ending Reading */}
-                        <td style={{ padding: '6px 8px', borderRight: '2px solid #E0E7FF' }}>
-                          <input type="number" className="form-control" style={{ minWidth: 70, textAlign: 'center' }}
+                        <td style={{ padding: '4px 2px', borderRight: '2px solid #E0E7FF', textAlign: 'center' }}>
+                          <input type="number" className="form-control" style={{ width: 48, textAlign: 'center', padding: '3px 2px', fontSize: 11 }}
                             value={row.ending_reading}
                             disabled={row.is_closed}
                             onChange={e => updateField(row.staff_id, 'ending_reading', e.target.value)}
                           />
                         </td>
 
-                        {/* Cash Collected — auto from mobile, editable override */}
-                        <td style={{ padding: '6px 8px' }}>
-                          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                            <input type="number" className="form-control" style={{ minWidth: 90, textAlign: 'center', background: '#F0F9FF', paddingRight: '20px' }}
+                        {/* Cash Collected — auto from mobile */}
+                        <td style={{ padding: '4px 2px', textAlign: 'center' }}>
+                          <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+                            <input type="number" className="form-control" style={{ width: 52, textAlign: 'center', background: '#F0F9FF', padding: '3px 14px 3px 2px', fontSize: 11 }}
                               value={cleanInputValue(row.cash_collected)}
                               disabled={row.is_closed}
                               onChange={e => updateField(row.staff_id, 'cash_collected', e.target.value)}
                             />
                             <span 
-                              style={{ position: 'absolute', right: '6px', cursor: 'pointer', fontSize: 11, color: '#0369A1', opacity: 0.7 }}
+                              style={{ position: 'absolute', right: '3px', cursor: 'pointer', fontSize: 9, color: '#0369A1', opacity: 0.7 }}
                               onClick={() => openTransactionsModal(row, 'CASH')}
                               title="Click to view full details"
                             >↗</span>
                           </div>
                         </td>
 
-                        {/* Online Collected — auto from mobile, editable override */}
-                        <td style={{ padding: '6px 8px', borderRight: '2px solid #BAE6FD' }}>
-                          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                            <input type="number" className="form-control" style={{ minWidth: 90, textAlign: 'center', background: '#F0F9FF', paddingRight: '20px' }}
+                        {/* Online Collected — auto from mobile */}
+                        <td style={{ padding: '4px 2px', borderRight: '2px solid #BAE6FD', textAlign: 'center' }}>
+                          <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+                            <input type="number" className="form-control" style={{ width: 52, textAlign: 'center', background: '#F0F9FF', padding: '3px 14px 3px 2px', fontSize: 11 }}
                               value={cleanInputValue(row.online_collected)}
                               disabled={row.is_closed}
                               onChange={e => updateField(row.staff_id, 'online_collected', e.target.value)}
                             />
                             <span 
-                              style={{ position: 'absolute', right: '6px', cursor: 'pointer', fontSize: 11, color: '#0369A1', opacity: 0.7 }}
+                              style={{ position: 'absolute', right: '3px', cursor: 'pointer', fontSize: 9, color: '#0369A1', opacity: 0.7 }}
                               onClick={() => openTransactionsModal(row, 'UPI')}
                               title="Click to view full details"
                             >↗</span>
                           </div>
                         </td>
 
-                        {/* Cash Submitted at Office */}
-                        <td style={{ padding: '6px 8px', borderRight: '2px solid #DDD6FE' }}>
-                          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <input type="number" className="form-control"
-                              style={{
-                                minWidth: 100, textAlign: 'center',
-                                paddingRight: hasMismatch ? 28 : 8,
-                                background: row.is_closed ? '#F5F3FF' : hasMismatch ? '#FEF2F2' : '#FAF5FF',
-                                borderColor: hasMismatch ? '#EF4444' : undefined,
-                                color: hasMismatch ? '#991B1B' : undefined,
-                                fontWeight: hasMismatch ? 700 : 'normal'
-                              }}
-                              value={cleanInputValue(row.cash_submitted)}
-                              disabled={row.is_closed}
-                              placeholder="0"
-                              onFocus={e => { if (e.target.value === '0' || e.target.value === '0.00') e.target.select(); }}
-                              onChange={e => {
-                                let val = e.target.value;
-                                if (val.length > 1 && val.startsWith('0') && val[1] !== '.') {
-                                  val = val.replace(/^0+/, '');
-                                }
-                                updateField(row.staff_id, 'cash_submitted', val);
-                              }}
-                              onBlur={e => {
-                                if (e.target.value === '' || isNaN(e.target.value)) {
-                                  updateField(row.staff_id, 'cash_submitted', '0');
-                                }
-                              }}
-                            />
+                        {/* Cash Submitted at Office (IMMUTABLE IN REGISTRY) */}
+                        <td style={{ padding: '4px 3px', borderRight: '2px solid #DDD6FE', textAlign: 'center' }}>
+                          <div
+                            style={{
+                              width: 62,
+                              margin: '0 auto',
+                              padding: '3px 2px',
+                              borderRadius: 4,
+                              fontWeight: 700,
+                              fontSize: 11,
+                              background: hasMismatch ? '#FEF2F2' : '#F5F3FF',
+                              color: hasMismatch ? '#991B1B' : '#6D28D9',
+                              border: `1px solid ${hasMismatch ? '#FCA5A5' : '#DDD6FE'}`,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: 2,
+                            }}
+                            title={`Cash submitted: ₹${formatAmount(cashSubmittedFloat || 0)} (Verified)`}
+                          >
+                            <span>{formatAmount(cashSubmittedFloat || 0)}</span>
                             {hasMismatch && (
-                              <span title={`Cash Mismatch! Expected ₹${formatAmount(cashFloat)}, Submitted ₹${formatAmount(cashSubmittedFloat || 0)}`}
-                                style={{ position: 'absolute', right: 8, fontSize: 13, cursor: 'help', lineHeight: 1, userSelect: 'none' }}>⚠️</span>
+                              <span title={`Expected ₹${formatAmount(cashFloat)}`} style={{ cursor: 'help', fontSize: 10 }}>⚠️</span>
                             )}
                           </div>
                         </td>
 
-                        {/* Online Verification */}
-                        <td style={{ padding: '6px 8px', borderRight: '2px solid #BFDBFE' }}>
-                          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                            <input type="number" className="form-control"
-                              style={{
-                                minWidth: 100, textAlign: 'center',
-                                background: row.is_closed ? '#F0F9FF' : (onlineVerifiedFloat !== null && Math.abs(onlineVerifiedFloat - onlineFloat) > 0.01) ? '#FEF2F2' : '#F0F9FF',
-                                borderColor: (onlineVerifiedFloat !== null && Math.abs(onlineVerifiedFloat - onlineFloat) > 0.01) ? '#FCA5A5' : undefined,
-                              }}
-                              value={cleanInputValue(row.online_verified)}
-                              disabled={row.is_closed}
-                              placeholder="0"
-                              onFocus={e => { if (e.target.value === '0' || e.target.value === '0.00') e.target.select(); }}
-                              onChange={e => {
-                                let val = e.target.value;
-                                if (val.length > 1 && val.startsWith('0') && val[1] !== '.') {
-                                  val = val.replace(/^0+/, '');
-                                }
-                                updateField(row.staff_id, 'online_verified', val);
-                              }}
-                              onBlur={e => {
-                                if (e.target.value === '' || isNaN(e.target.value)) {
-                                  updateField(row.staff_id, 'online_verified', '0');
-                                }
-                              }}
-                            />
-                            {onlineFloat > 0 && !row.is_closed && (cleanInputValue(row.online_verified) === '0' || row.online_verified === '') && (
-                              <button
-                                type="button"
-                                title="Click to auto-fill matching online amount"
-                                onClick={() => updateField(row.staff_id, 'online_verified', cleanInputValue(onlineFloat))}
-                                style={{
-                                  position: 'absolute', right: 4, background: '#DBEAFE', color: '#1D4ED8',
-                                  border: 'none', borderRadius: 4, padding: '2px 5px', fontSize: 10, cursor: 'pointer', fontWeight: 700
-                                }}
-                              >
-                                ✓
-                              </button>
-                            )}
+                        {/* Online Verification (IMMUTABLE IN REGISTRY) */}
+                        <td style={{ padding: '4px 3px', borderRight: '2px solid #BFDBFE', textAlign: 'center' }}>
+                          <div
+                            style={{
+                              width: 58,
+                              margin: '0 auto',
+                              padding: '3px 2px',
+                              borderRadius: 4,
+                              fontWeight: 600,
+                              fontSize: 11,
+                              background: '#F0F9FF',
+                              color: '#0369A1',
+                              border: '1px solid #BAE6FD',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                            title={`Online verified: ₹${formatAmount(onlineVerifiedFloat || 0)}`}
+                          >
+                            {formatAmount(onlineVerifiedFloat || 0)}
                           </div>
                         </td>
 
                         {/* Excess / Less (Auto Calculated) */}
-                        <td style={{ padding: '6px 8px', borderRight: '2px solid #FDE68A' }}>
-                          <input
-                            type="text"
-                            readOnly
-                            className="form-control"
-                            value={diffText}
+                        <td style={{ padding: '4px 3px', borderRight: '2px solid #FDE68A', textAlign: 'center' }}>
+                          <div
                             style={{
-                              minWidth: 120,
-                              textAlign: 'center',
-                              background: diffBg,
-                              borderColor: diffBorder,
-                              color: diffColor,
+                              width: 82,
+                              margin: '0 auto',
+                              padding: '3px 1px',
+                              borderRadius: 4,
                               fontWeight: 700,
-                              cursor: 'default',
+                              fontSize: 10,
+                              background: diffBg,
+                              border: `1px solid ${diffBorder}`,
+                              color: diffColor,
+                              textAlign: 'center',
+                              whiteSpace: 'nowrap',
                             }}
-                          />
+                          >
+                            {diffText}
+                          </div>
                         </td>
 
                         {/* Total Collected */}
-                        <td style={{ padding: '10px 14px', textAlign: 'center', whiteSpace: 'nowrap' }}>
-                          <div style={{ fontWeight: 700, color: '#059669', fontSize: 13 }}>
+                        <td style={{ padding: '4px 4px', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                          <div style={{ fontWeight: 700, color: '#059669', fontSize: 11 }}>
                             ₹{formatAmount(totalCollected)}
                           </div>
-                          <div style={{ fontSize: 10, fontWeight: 500, color: '#6B7280', marginTop: 2 }}>
-                            ({(row.cash_count || 0) + (row.online_count || 0)} Entries)
+                          <div style={{ fontSize: 9, fontWeight: 500, color: '#6B7280' }}>
+                            ({(row.cash_count || 0) + (row.online_count || 0)} Ent)
                           </div>
                         </td>
 
                         {/* Action */}
-                        <td className="hide-print" style={{ padding: '6px 10px', textAlign: 'center' }}>
+                        <td className="hide-print" style={{ padding: '4px 4px', textAlign: 'center', whiteSpace: 'nowrap' }}>
                           {row.is_closed ? (
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                               <span style={{ color: '#16A34A', fontWeight: 700, fontSize: 13 }}>🔒 Done</span>
@@ -631,23 +612,23 @@ export default function PromotorRegistry() {
                 {/* Totals Footer */}
                 <tfoot>
                   <tr style={{ background: '#F8FAFC', fontWeight: 700, borderTop: '2px solid #E5E7EB' }}>
-                    <td colSpan={4} style={{ padding: '10px 14px', color: '#374151' }}>Day Totals</td>
-                    <td style={{ padding: '10px 14px', textAlign: 'center', color: '#0369A1' }}>
+                    <td colSpan={4} style={{ padding: '6px 6px', color: '#374151', fontSize: 11 }}>Day Totals</td>
+                    <td style={{ padding: '6px 3px', textAlign: 'center', color: '#0369A1', fontSize: 11 }}>
                       ₹{formatAmount(totals.cash_collected)}
                     </td>
-                    <td style={{ padding: '10px 14px', textAlign: 'center', color: '#0369A1' }}>
+                    <td style={{ padding: '6px 3px', textAlign: 'center', color: '#0369A1', fontSize: 11 }}>
                       ₹{formatAmount(totals.online_collected)}
                     </td>
-                    <td style={{ padding: '10px 14px', textAlign: 'center', color: '#7C3AED' }}>
+                    <td style={{ padding: '6px 3px', textAlign: 'center', color: '#7C3AED', fontSize: 11 }}>
                       ₹{formatAmount(totals.cash_submitted)}
                     </td>
-                    <td style={{ padding: '10px 14px', textAlign: 'center', color: '#2563EB' }}>
+                    <td style={{ padding: '6px 3px', textAlign: 'center', color: '#2563EB', fontSize: 11 }}>
                       ₹{formatAmount(totals.online_verified)}
                     </td>
-                    <td style={{ padding: '10px 14px', textAlign: 'center', color: totals.excess_less > 0.009 ? '#16A34A' : totals.excess_less < -0.009 ? '#DC2626' : '#059669' }}>
+                    <td style={{ padding: '6px 3px', textAlign: 'center', color: totals.excess_less > 0.009 ? '#16A34A' : totals.excess_less < -0.009 ? '#DC2626' : '#059669', fontSize: 10 }}>
                       {totals.excess_less > 0.009 ? `+ ₹${formatAmount(totals.excess_less)}` : totals.excess_less < -0.009 ? `- ₹${formatAmount(Math.abs(totals.excess_less))}` : '₹0'}
                     </td>
-                    <td style={{ padding: '10px 14px', textAlign: 'center', color: '#059669' }}>
+                    <td style={{ padding: '6px 3px', textAlign: 'center', color: '#059669', fontSize: 11 }}>
                       ₹{formatAmount(totals.cash_collected + totals.online_collected)}
                     </td>
                     <td className="hide-print" />
@@ -781,24 +762,25 @@ export default function PromotorRegistry() {
 // ── Style helpers ─────────────────────────────────────────────────
 function thStyle(align = 'left', color = '#374151', bg = '#F8FAFC') {
   return {
-    padding: '10px 14px',
+    padding: '5px 3px',
     textAlign: align,
     color,
     background: bg,
     fontWeight: 700,
-    fontSize: 12,
+    fontSize: 11,
     borderBottom: '2px solid #E5E7EB',
     whiteSpace: 'nowrap',
+    letterSpacing: '0.01em',
   }
 }
 
 function subThStyle(color = '#374151') {
   return {
-    padding: '6px 14px',
+    padding: '3px 2px',
     textAlign: 'center',
     color,
     fontWeight: 600,
-    fontSize: 11,
+    fontSize: 10,
     borderBottom: '2px solid #E5E7EB',
   }
 }

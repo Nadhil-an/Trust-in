@@ -246,7 +246,7 @@ export default function VerificationDashboard() {
 
         <div className="hide-print">
           <FilterBar>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, border: '1px solid #E5E7EB', borderRadius: 8, padding: '6px 12px', background: 'white' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, width: '180px', border: '1px solid #E5E7EB', borderRadius: 6, padding: '4px 8px', background: 'white' }}>
               <span style={{ fontSize: 16, color: '#6B7280' }}>🔍</span>
               <input
                 type="text"
@@ -360,56 +360,56 @@ export default function VerificationDashboard() {
                         </div>
                       </td>
 
-                      <td style={{ padding: '6px 8px' }}>
-                        <input type="text" className="form-control" style={{ minWidth: 110 }}
+                      <td style={{ padding: '4px 2px', textAlign: 'center' }}>
+                        <input type="text" className="form-control" style={{ width: 44, textAlign: 'center', padding: '3px 2px', fontSize: 11 }}
                           value={row.entry_code}
                           disabled={row.is_closed}
-                          placeholder="VR..."
+                          placeholder="VR"
                           onChange={e => updateField(row.staff_id, 'entry_code', e.target.value)}
                         />
                       </td>
 
-                      <td style={{ padding: '6px 8px' }}>
-                        <input type="number" className="form-control" style={{ minWidth: 70, textAlign: 'center' }}
+                      <td style={{ padding: '4px 2px', textAlign: 'center' }}>
+                        <input type="number" className="form-control" style={{ width: 48, textAlign: 'center', padding: '3px 2px', fontSize: 11 }}
                           value={row.starting_reading}
                           disabled={row.is_closed}
                           onChange={e => updateField(row.staff_id, 'starting_reading', e.target.value)}
                         />
                       </td>
 
-                      <td style={{ padding: '6px 8px', borderRight: '2px solid #E0E7FF' }}>
-                        <input type="number" className="form-control" style={{ minWidth: 70, textAlign: 'center' }}
+                      <td style={{ padding: '4px 2px', borderRight: '2px solid #E0E7FF', textAlign: 'center' }}>
+                        <input type="number" className="form-control" style={{ width: 48, textAlign: 'center', padding: '3px 2px', fontSize: 11 }}
                           value={row.ending_reading}
                           disabled={row.is_closed}
                           onChange={e => updateField(row.staff_id, 'ending_reading', e.target.value)}
                         />
                       </td>
 
-                      <td style={{ padding: '6px 8px' }}>
+                      <td style={{ padding: '4px 2px', textAlign: 'center' }}>
                         <div
-                          style={{ minWidth: 90, textAlign: 'center', background: '#F0F9FF', padding: '6px', borderRadius: 4, cursor: 'pointer', color: '#0369A1', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
+                          style={{ width: 52, margin: '0 auto', textAlign: 'center', background: '#F0F9FF', padding: '3px 2px', borderRadius: 4, cursor: 'pointer', color: '#0369A1', fontWeight: 600, fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2px' }}
                           onClick={() => openTransactionsModal(row, 'CASH')}
                           title="Click to view full details"
                         >
-                          {formatAmount(row.cash_collected)} <span style={{ fontSize: 11, opacity: 0.6 }}>↗</span>
+                          {formatAmount(row.cash_collected)} <span style={{ fontSize: 9, opacity: 0.6 }}>↗</span>
                         </div>
                       </td>
 
-                      <td style={{ padding: '6px 8px', borderRight: '2px solid #BAE6FD' }}>
+                      <td style={{ padding: '4px 2px', borderRight: '2px solid #BAE6FD', textAlign: 'center' }}>
                         <div
-                          style={{ minWidth: 90, textAlign: 'center', background: '#F0F9FF', padding: '6px', borderRadius: 4, cursor: 'pointer', color: '#0369A1', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
+                          style={{ width: 52, margin: '0 auto', textAlign: 'center', background: '#F0F9FF', padding: '3px 2px', borderRadius: 4, cursor: 'pointer', color: '#0369A1', fontWeight: 600, fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2px' }}
                           onClick={() => openTransactionsModal(row, 'UPI')}
                           title="Click to view full details"
                         >
-                          {formatAmount(row.online_collected)} <span style={{ fontSize: 11, opacity: 0.6 }}>↗</span>
+                          {formatAmount(row.online_collected)} <span style={{ fontSize: 9, opacity: 0.6 }}>↗</span>
                         </div>
                       </td>
 
-                      <td style={{ padding: '6px 8px', borderRight: '2px solid #DDD6FE' }}>
-                        <div style={{ position: 'relative' }}>
+                      <td style={{ padding: '4px 2px', borderRight: '2px solid #DDD6FE', textAlign: 'center' }}>
+                        <div style={{ position: 'relative', display: 'inline-block' }}>
                           <input type="number" className="form-control"
                             style={{
-                              minWidth: 100, textAlign: 'center',
+                              width: 58, textAlign: 'center', padding: '3px 2px', fontSize: 11,
                               background: row.is_closed ? '#F5F3FF' : hasMismatch ? '#FEF2F2' : '#FAF5FF',
                               borderColor: hasMismatch ? '#FCA5A5' : undefined,
                             }}
@@ -432,17 +432,17 @@ export default function VerificationDashboard() {
                           />
                           {hasMismatch && (
                             <span title={`Expected ₹${formatAmount(cashFloat)}`}
-                              style={{ position: 'absolute', top: -2, right: -2, fontSize: 14, cursor: 'help' }}>⚠️</span>
+                              style={{ position: 'absolute', top: -2, right: -2, fontSize: 10, cursor: 'help' }}>⚠️</span>
                           )}
                         </div>
                       </td>
 
                       {/* Online Verification */}
-                      <td style={{ padding: '6px 8px', borderRight: '2px solid #BFDBFE' }}>
-                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                      <td style={{ padding: '4px 2px', borderRight: '2px solid #BFDBFE', textAlign: 'center' }}>
+                        <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
                           <input type="number" className="form-control"
                             style={{
-                              minWidth: 100, textAlign: 'center',
+                              width: 56, textAlign: 'center', padding: '3px 12px 3px 2px', fontSize: 11,
                               background: row.is_closed ? '#F0F9FF' : (onlineVerifiedFloat !== null && Math.abs(onlineVerifiedFloat - onlineFloat) > 0.01) ? '#FEF2F2' : '#F0F9FF',
                               borderColor: (onlineVerifiedFloat !== null && Math.abs(onlineVerifiedFloat - onlineFloat) > 0.01) ? '#FCA5A5' : undefined,
                             }}
@@ -469,8 +469,8 @@ export default function VerificationDashboard() {
                               title="Click to auto-fill matching online amount"
                               onClick={() => updateField(row.staff_id, 'online_verified', cleanInputValue(onlineFloat))}
                               style={{
-                                position: 'absolute', right: 4, background: '#DBEAFE', color: '#1D4ED8',
-                                border: 'none', borderRadius: 4, padding: '2px 5px', fontSize: 10, cursor: 'pointer', fontWeight: 700
+                                position: 'absolute', right: 2, background: '#DBEAFE', color: '#1D4ED8',
+                                border: 'none', borderRadius: 3, padding: '1px 3px', fontSize: 9, cursor: 'pointer', fontWeight: 700
                               }}
                             >
                               ✓
@@ -480,36 +480,38 @@ export default function VerificationDashboard() {
                       </td>
 
                       {/* Excess / Less (Auto Calculated) */}
-                      <td style={{ padding: '6px 8px', borderRight: '2px solid #FDE68A' }}>
-                        <input
-                          type="text"
-                          readOnly
-                          className="form-control"
-                          value={diffText}
+                      <td style={{ padding: '4px 2px', borderRight: '2px solid #FDE68A', textAlign: 'center' }}>
+                        <div
                           style={{
-                            minWidth: 120,
-                            textAlign: 'center',
-                            background: diffBg,
-                            borderColor: diffBorder,
-                            color: diffColor,
+                            width: 82,
+                            margin: '0 auto',
+                            padding: '3px 1px',
+                            borderRadius: 4,
                             fontWeight: 700,
-                            cursor: 'default',
+                            fontSize: 10,
+                            background: diffBg,
+                            border: `1px solid ${diffBorder}`,
+                            color: diffColor,
+                            textAlign: 'center',
+                            whiteSpace: 'nowrap',
                           }}
-                        />
+                        >
+                          {diffText}
+                        </div>
                       </td>
 
-                      <td style={{ padding: '10px 14px', textAlign: 'center', fontWeight: 700, color: '#059669', whiteSpace: 'nowrap' }}>
+                      <td style={{ padding: '4px 4px', textAlign: 'center', fontWeight: 700, color: '#059669', whiteSpace: 'nowrap', fontSize: 11 }}>
                         ₹{formatAmount(totalCollected)}
                       </td>
 
-                      <td className="hide-print" style={{ padding: '6px 10px', textAlign: 'center' }}>
+                      <td className="hide-print" style={{ padding: '4px 4px', textAlign: 'center' }}>
                         <button
                           className="btn"
-                          style={{ background: '#10B981', color: 'white', padding: '6px 16px', borderRadius: 6, border: 'none', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}
+                          style={{ background: '#10B981', color: 'white', padding: '4px 8px', borderRadius: 4, border: 'none', fontWeight: 600, fontSize: 11, display: 'inline-flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}
                           onClick={() => setConfirmState({ isOpen: true, row: row, type: 'VERIFY' })}
                           disabled={savingId === row.staff_id}
                         >
-                          <span style={{ fontSize: 16 }}>✔️</span> {savingId === row.staff_id ? '...' : 'Verify'}
+                          <span>✔️</span> {savingId === row.staff_id ? '..' : 'Verify'}
                         </button>
                       </td>
                     </tr>
@@ -520,23 +522,23 @@ export default function VerificationDashboard() {
               {/* Totals Footer */}
               <tfoot>
                 <tr style={{ background: '#F8FAFC', fontWeight: 700, borderTop: '2px solid #E5E7EB' }}>
-                  <td colSpan={4} style={{ padding: '10px 14px', color: '#374151' }}>Day Totals</td>
-                  <td style={{ padding: '10px 14px', textAlign: 'center', color: '#0369A1' }}>
+                  <td colSpan={4} style={{ padding: '6px 6px', color: '#374151', fontSize: 11 }}>Day Totals</td>
+                  <td style={{ padding: '6px 3px', textAlign: 'center', color: '#0369A1', fontSize: 11 }}>
                     ₹{formatAmount(totals.cash_collected)}
                   </td>
-                  <td style={{ padding: '10px 14px', textAlign: 'center', color: '#0369A1' }}>
+                  <td style={{ padding: '6px 3px', textAlign: 'center', color: '#0369A1', fontSize: 11 }}>
                     ₹{formatAmount(totals.online_collected)}
                   </td>
-                  <td style={{ padding: '10px 14px', textAlign: 'center', color: '#7C3AED' }}>
+                  <td style={{ padding: '6px 3px', textAlign: 'center', color: '#7C3AED', fontSize: 11 }}>
                     ₹{formatAmount(totals.cash_submitted)}
                   </td>
-                  <td style={{ padding: '10px 14px', textAlign: 'center', color: '#2563EB' }}>
+                  <td style={{ padding: '6px 3px', textAlign: 'center', color: '#2563EB', fontSize: 11 }}>
                     ₹{formatAmount(totals.online_verified)}
                   </td>
-                  <td style={{ padding: '10px 14px', textAlign: 'center', color: totals.excess_less > 0.009 ? '#16A34A' : totals.excess_less < -0.009 ? '#DC2626' : '#059669' }}>
+                  <td style={{ padding: '6px 3px', textAlign: 'center', color: totals.excess_less > 0.009 ? '#16A34A' : totals.excess_less < -0.009 ? '#DC2626' : '#059669', fontSize: 10 }}>
                     {totals.excess_less > 0.009 ? `+ ₹${formatAmount(totals.excess_less)}` : totals.excess_less < -0.009 ? `- ₹${formatAmount(Math.abs(totals.excess_less))}` : '₹0'}
                   </td>
-                  <td style={{ padding: '10px 14px', textAlign: 'center', color: '#059669' }}>
+                  <td style={{ padding: '6px 3px', textAlign: 'center', color: '#059669', fontSize: 11 }}>
                     ₹{formatAmount(totals.cash_collected + totals.online_collected)}
                   </td>
                   <td className="hide-print"></td>
@@ -614,8 +616,8 @@ export default function VerificationDashboard() {
 }
 
 function thStyle(align = 'left', color = '#4B5563', bg = '#F8FAFC') {
-  return { padding: '12px 16px', textAlign: align, borderBottom: `2px solid ${color}`, color, background: bg, fontSize: 13, textTransform: 'uppercase', letterSpacing: 0.5 }
+  return { padding: '5px 3px', textAlign: align, borderBottom: `2px solid ${color}`, color, background: bg, fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.3 }
 }
 function subThStyle(color = '#4B5563') {
-  return { padding: '8px 16px', textAlign: 'center', borderBottom: '1px solid #E5E7EB', color, fontSize: 12, background: 'white' }
+  return { padding: '3px 2px', textAlign: 'center', borderBottom: '1px solid #E5E7EB', color, fontSize: 10, background: 'white' }
 }
