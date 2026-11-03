@@ -237,6 +237,9 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ── Logging ───────────────────────────────────────────────────────
+LOGS_DIR = BASE_DIR / 'logs'
+LOGS_DIR.mkdir(parents=True, exist_ok=True)
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -244,7 +247,7 @@ LOGGING = {
         'console': {'class': 'logging.StreamHandler'},
         'file': {
             'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'logs' / 'app.log',
+            'filename': LOGS_DIR / 'app.log',
         },
     },
     'root': {'handlers': ['console', 'file'], 'level': 'INFO'},
