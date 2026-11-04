@@ -7,11 +7,35 @@ import { isValidPhone, isValidEmail, isPositiveNumber } from "../../utils/valida
 
 const init = { full_name:"", date_of_birth:"", gender:"MALE", phone:"", email:"", address:"", occupation:"", membership_type:"GENERAL", joining_date:format(new Date(),"yyyy-MM-dd"), monthly_fee:"100", status:"ACTIVE", blood_group:"", notes:"", password:"", username:"" }
 
+const getInitials = (name) => {
+  if (!name) return "M";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+};
+
+const getAvatarColor = (name) => {
+  const colors = [
+    { bg: '#EFF6FF', text: '#1D4ED8' },
+    { bg: '#F5F3FF', text: '#6D28D9' },
+    { bg: '#ECFDF5', text: '#047857' },
+    { bg: '#FFF7ED', text: '#C2410C' },
+    { bg: '#FDF2F8', text: '#BE185D' },
+    { bg: '#ECFEFF', text: '#0E7490' },
+  ];
+  let hash = 0;
+  for (let i = 0; i < (name || '').length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return colors[Math.abs(hash) % colors.length];
+};
+
 export default function Members() {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("")
+  const [sourceFilter, setSourceFilter] = useState("ALL") // "ALL" | "MOBILE" | "OFFICE"
   const [showModal, setShowModal] = useState(false)
   const [selected, setSelected] = useState(null)
   const [showViewModal, setShowViewModal] = useState(false)
@@ -39,6 +63,18 @@ export default function Members() {
   }, [search, statusFilter])
 
   useEffect(() => { load() }, [load])
+
+  // Computed counts and filtered members
+  const totalCount = items.length;
+  const mobileCount = items.filter(m => m.is_phone_signup).length;
+  const officeCount = totalCount - mobileCount;
+  const activeCount = items.filter(m => m.status === 'ACTIVE').length;
+
+  const filteredItems = items.filter(m => {
+    if (sourceFilter === "MOBILE" && !m.is_phone_signup) return false;
+    if (sourceFilter === "OFFICE" && m.is_phone_signup) return false;
+    return true;
+  });
 
   // Real-time synchronization
   useEffect(() => {
@@ -196,6 +232,103 @@ export default function Members() {
       <PageHeader title="Members" subtitle="Trust member management">
         <button className="btn btn-primary" onClick={()=>{setSelected(null);setForm(init);setShowPassword(false);setShowModal(true)}}>+ Add Member</button>
       </PageHeader>
+      {/* Summary Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 14, marginBottom: 18 }}>
+        <div
+          onClick={() => setSourceFilter('ALL')}
+          style={{
+            backgroundColor: '#ffffff',
+            border: `2px solid ${sourceFilter === 'ALL' ? '#2563eb' : '#e2e8f0'}`,
+            borderRadius: 12,
+            padding: '14px 18px',
+            cursor: 'pointer',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+            transition: 'all 0.15s ease',
+          }}
+        >
+          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            Total Members
+          </div>
+          <div style={{ fontSize: '1.65rem', fontWeight: 800, color: '#0f172a', marginTop: 4 }}>
+            {totalCount}
+          </div>
+          <div style={{ fontSize: '0.75rem', color: '#2563eb', marginTop: 2, fontWeight: 600 }}>
+            {sourceFilter === 'ALL' ? '● Currently viewing all' : 'Click to view all'}
+          </div>
+        </div>
+
+        <div
+          onClick={() => setSourceFilter('MOBILE')}
+          style={{
+            backgroundColor: sourceFilter === 'MOBILE' ? '#faf5ff' : '#ffffff',
+            border: `2px solid ${sourceFilter === 'MOBILE' ? '#7c3aed' : '#e2e8f0'}`,
+            borderRadius: 12,
+            padding: '14px 18px',
+            cursor: 'pointer',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+            transition: 'all 0.15s ease',
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#7c3aed', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              📱 Mobile App Signups
+            </div>
+            <span style={{ fontSize: '0.7rem', backgroundColor: '#ede9fe', color: '#6d28d9', padding: '2px 7px', borderRadius: 10, fontWeight: 700 }}>
+              {totalCount > 0 ? `${Math.round((mobileCount / totalCount) * 100)}%` : '0%'}
+            </span>
+          </div>
+          <div style={{ fontSize: '1.65rem', fontWeight: 800, color: '#6d28d9', marginTop: 4 }}>
+            {mobileCount}
+          </div>
+          <div style={{ fontSize: '0.75rem', color: '#7c3aed', marginTop: 2, fontWeight: 600 }}>
+            {sourceFilter === 'MOBILE' ? '● Filtering Mobile App Signups' : 'Click to view mobile joiners'}
+          </div>
+        </div>
+
+        <div
+          onClick={() => setSourceFilter('OFFICE')}
+          style={{
+            backgroundColor: sourceFilter === 'OFFICE' ? '#f8fafc' : '#ffffff',
+            border: `2px solid ${sourceFilter === 'OFFICE' ? '#475569' : '#e2e8f0'}`,
+            borderRadius: 12,
+            padding: '14px 18px',
+            cursor: 'pointer',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+            transition: 'all 0.15s ease',
+          }}
+        >
+          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            🏢 Office / Direct Entry
+          </div>
+          <div style={{ fontSize: '1.65rem', fontWeight: 800, color: '#334155', marginTop: 4 }}>
+            {officeCount}
+          </div>
+          <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: 2, fontWeight: 600 }}>
+            {sourceFilter === 'OFFICE' ? '● Filtering Office Entries' : 'Click to view direct entries'}
+          </div>
+        </div>
+
+        <div
+          style={{
+            backgroundColor: '#ffffff',
+            border: '2px solid #e2e8f0',
+            borderRadius: 12,
+            padding: '14px 18px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+          }}
+        >
+          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            Active Status
+          </div>
+          <div style={{ fontSize: '1.65rem', fontWeight: 800, color: '#16a34a', marginTop: 4 }}>
+            {activeCount}
+          </div>
+          <div style={{ fontSize: '0.75rem', color: '#16a34a', marginTop: 2, fontWeight: 600 }}>
+            Valid member accounts
+          </div>
+        </div>
+      </div>
+
       <div className="data-card">
         {/* Secret Permanent Deletion Alert Banner */}
         {secretDeleteMode && (
@@ -250,23 +383,82 @@ export default function Members() {
           </div>
         )}
 
+        {/* Source Navigation Tabs */}
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '14px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <button
+            type="button"
+            className={`btn btn-sm ${sourceFilter === 'ALL' ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => setSourceFilter('ALL')}
+            style={{ borderRadius: '20px', padding: '6px 14px', fontSize: '0.82rem', fontWeight: 600 }}
+          >
+            All Members ({totalCount})
+          </button>
+          <button
+            type="button"
+            className="btn btn-sm"
+            onClick={() => setSourceFilter('MOBILE')}
+            style={{
+              borderRadius: '20px',
+              padding: '6px 14px',
+              fontSize: '0.82rem',
+              fontWeight: 700,
+              backgroundColor: sourceFilter === 'MOBILE' ? '#7c3aed' : '#f5f3ff',
+              borderColor: sourceFilter === 'MOBILE' ? '#7c3aed' : '#ddd6fe',
+              color: sourceFilter === 'MOBILE' ? '#ffffff' : '#6d28d9',
+              boxShadow: sourceFilter === 'MOBILE' ? '0 2px 6px rgba(124, 58, 237, 0.3)' : 'none',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+            }}
+          >
+            <span>📱</span>
+            <span>Joined via Mobile App ({mobileCount})</span>
+          </button>
+          <button
+            type="button"
+            className={`btn btn-sm ${sourceFilter === 'OFFICE' ? 'btn-primary' : 'btn-secondary'}`}
+            onClick={() => setSourceFilter('OFFICE')}
+            style={{ borderRadius: '20px', padding: '6px 14px', fontSize: '0.82rem', fontWeight: 600 }}
+          >
+            🏢 Office Entry ({officeCount})
+          </button>
+        </div>
+
         <FilterBar search={search} onSearch={setSearch}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: 'auto' }}>
-            <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#4b5563', whiteSpace: 'nowrap' }}>
-              Status:
-            </label>
-            <select
-              className="form-control"
-              style={{ width: '150px', padding: '0.4rem 0.6rem', fontSize: '0.875rem' }}
-              value={statusFilter}
-              onChange={e => setStatusFilter(e.target.value)}
-            >
-              <option value="">All Statuses</option>
-              <option value="ACTIVE">Active</option>
-              <option value="EXPIRED">Expired</option>
-              <option value="INACTIVE">Inactive</option>
-              <option value="SUSPENDED">Suspended</option>
-            </select>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginLeft: 'auto', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#4b5563', whiteSpace: 'nowrap' }}>
+                Joined Via:
+              </label>
+              <select
+                className="form-control"
+                style={{ width: '160px', padding: '0.4rem 0.6rem', fontSize: '0.875rem' }}
+                value={sourceFilter}
+                onChange={e => setSourceFilter(e.target.value)}
+              >
+                <option value="ALL">All Sources ({totalCount})</option>
+                <option value="MOBILE">📱 Mobile App ({mobileCount})</option>
+                <option value="OFFICE">🏢 Office Entry ({officeCount})</option>
+              </select>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#4b5563', whiteSpace: 'nowrap' }}>
+                Status:
+              </label>
+              <select
+                className="form-control"
+                style={{ width: '140px', padding: '0.4rem 0.6rem', fontSize: '0.875rem' }}
+                value={statusFilter}
+                onChange={e => setStatusFilter(e.target.value)}
+              >
+                <option value="">All Statuses</option>
+                <option value="ACTIVE">Active</option>
+                <option value="EXPIRED">Expired</option>
+                <option value="INACTIVE">Inactive</option>
+                <option value="SUSPENDED">Suspended</option>
+              </select>
+            </div>
           </div>
         </FilterBar>
         {loading ? <LoadingState /> : (
@@ -278,31 +470,41 @@ export default function Members() {
                     <th style={{ width: 44, textAlign: 'center' }}>
                       <input
                         type="checkbox"
-                        checked={selectedRowIds.length === items.length && items.length > 0}
+                        checked={selectedRowIds.length === filteredItems.length && filteredItems.length > 0}
                         onChange={toggleSelectAll}
                         style={{ width: 16, height: 16, cursor: 'pointer' }}
                         title="Select All"
                       />
                     </th>
                   )}
-                  <th>Member ID</th>
-                  <th>Name</th>
-                  <th>Phone</th>
-                  <th>Role</th>
-                  <th>Type</th>
-                  <th>Joining Date</th>
-                  <th>Status</th>
-                  <th>Actions</th>
+                  <th style={{ width: 95 }}>Member ID</th>
+                  <th>Member Name</th>
+                  <th style={{ width: 145 }}>Joined Via</th>
+                  <th style={{ width: 135 }}>Phone</th>
+                  <th style={{ width: 110 }}>Type</th>
+                  <th style={{ width: 125 }}>Joining Date</th>
+                  <th style={{ width: 145 }}>Status & Validity</th>
+                  <th style={{ width: 110, textAlign: 'center' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {items.length===0 ? <tr><td colSpan={secretDeleteMode ? 9 : 8}><EmptyState icon="👥" title="No members" /></td></tr>
-                  : items.map(m=>{
+                {filteredItems.length === 0 ? (
+                  <tr>
+                    <td colSpan={secretDeleteMode ? 9 : 8}>
+                      <EmptyState
+                        icon={sourceFilter === 'MOBILE' ? "📱" : "👥"}
+                        title={sourceFilter === 'MOBILE' ? "No mobile app members found" : "No members found"}
+                      />
+                    </td>
+                  </tr>
+                ) : (
+                  filteredItems.map(m => {
                     const isRowSelected = selectedRowIds.includes(m.id);
+                    const avatar = getAvatarColor(m.full_name);
                     return (
                       <tr
                         key={m.id}
-                        onClick={()=>{
+                        onClick={() => {
                           if (secretDeleteMode) {
                             toggleSelectRow(m.id);
                           } else {
@@ -326,21 +528,97 @@ export default function Members() {
                             />
                           </td>
                         )}
-                        <td className="td-mono">{m.member_id}</td>
-                        <td style={{ fontWeight: isRowSelected ? 700 : 600 }}>
-                          {m.full_name}
-                          {m.is_phone_signup && (
-                            <span className="badge badge-purple" style={{ fontSize: 9, marginLeft: 6, padding: '2px 5px' }}>📱 Mobile</span>
+                        <td className="td-mono" style={{ fontWeight: 600, color: '#1d4ed8' }}>
+                          {m.member_id}
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <div
+                              style={{
+                                width: 34,
+                                height: 34,
+                                borderRadius: '50%',
+                                backgroundColor: avatar.bg,
+                                color: avatar.text,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontWeight: 700,
+                                fontSize: '0.8rem',
+                                flexShrink: 0,
+                                border: `1px solid ${avatar.text}25`,
+                              }}
+                            >
+                              {getInitials(m.full_name)}
+                            </div>
+                            <div>
+                              <div style={{ fontWeight: 700, color: '#0f172a', fontSize: '0.88rem' }}>
+                                {m.full_name}
+                              </div>
+                              <div style={{ fontSize: '0.73rem', color: '#64748b', fontWeight: 500 }}>
+                                {m.username ? `@${m.username}` : `ID: ${m.member_id}`}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          {m.is_phone_signup ? (
+                            <span
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 6,
+                                backgroundColor: '#f3e8ff',
+                                color: '#6b21a8',
+                                border: '1px solid #d8b4fe',
+                                padding: '4px 10px',
+                                borderRadius: 14,
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              <span>📱</span>
+                              <span>Mobile App</span>
+                            </span>
+                          ) : (
+                            <span
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 6,
+                                backgroundColor: '#f1f5f9',
+                                color: '#475569',
+                                border: '1px solid #cbd5e1',
+                                padding: '4px 10px',
+                                borderRadius: 14,
+                                fontSize: '0.75rem',
+                                fontWeight: 600,
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              <span>🏢</span>
+                              <span>Office Entry</span>
+                            </span>
                           )}
                         </td>
-                        <td>{m.phone || '-'}</td>
+                        <td style={{ color: '#1e293b', fontWeight: 500 }}>
+                          {m.phone ? (
+                            <span style={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
+                              {m.phone}
+                            </span>
+                          ) : (
+                            <span style={{ color: '#94a3b8' }}>-</span>
+                          )}
+                        </td>
                         <td>
-                          <span className="badge badge-indigo" style={{ fontWeight: 700, fontSize: 10 }}>
-                            {m.role || 'MEMBER'}
+                          <span className="badge badge-blue" style={{ fontWeight: 600, fontSize: '0.72rem' }}>
+                            {m.membership_type || 'GENERAL'}
                           </span>
                         </td>
-                        <td><span className="badge badge-blue">{m.membership_type || 'GENERAL'}</span></td>
-                        <td>{m.joining_date ? format(new Date(m.joining_date),"dd MMM yyyy") : "-"}</td>
+                        <td style={{ color: '#334155', fontSize: '0.85rem' }}>
+                          {m.joining_date ? format(new Date(m.joining_date), "dd MMM yyyy") : "-"}
+                        </td>
                         <td>
                           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                             <span className={`badge ${m.status==="ACTIVE"?"badge-green":m.status==="EXPIRED"?"badge-red":"badge-gray"}`}>
@@ -350,7 +628,7 @@ export default function Members() {
                               <span style={{
                                 fontSize: '0.72rem',
                                 fontWeight: 500,
-                                color: m.status === 'EXPIRED' ? '#dc2626' : '#6b7280',
+                                color: m.status === 'EXPIRED' ? '#dc2626' : '#64748b',
                                 marginTop: '3px',
                                 whiteSpace: 'nowrap'
                               }}>
@@ -363,11 +641,11 @@ export default function Members() {
                             )}
                           </div>
                         </td>
-                        <td>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <td style={{ textAlign: 'center' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                             <button
                               className="btn btn-sm btn-secondary"
-                              onClick={(e)=>{
+                              onClick={(e) => {
                                 e.stopPropagation();
                                 setSelected(m);
                                 setForm({...m, username: m.username || m.phone || m.member_id || "", password:""});
@@ -403,7 +681,8 @@ export default function Members() {
                         </td>
                       </tr>
                     );
-                  })}
+                  })
+                )}
               </tbody>
             </table>
           </div>
@@ -530,6 +809,20 @@ export default function Members() {
           <div className="details-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div><strong style={{display:'block', fontSize:'0.75rem', color:'#6b7280', textTransform:'uppercase'}}>Member / Login ID</strong><div className="td-mono">{viewItem.member_id || viewItem.phone || '-'}</div></div>
             <div><strong style={{display:'block', fontSize:'0.75rem', color:'#6b7280', textTransform:'uppercase'}}>Full Name</strong><div>{viewItem.full_name || '-'}</div></div>
+            <div>
+              <strong style={{display:'block', fontSize:'0.75rem', color:'#6b7280', textTransform:'uppercase'}}>Joined Via / Source</strong>
+              <div style={{ marginTop: '3px' }}>
+                {viewItem.is_phone_signup ? (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, backgroundColor: '#f3e8ff', color: '#6b21a8', border: '1px solid #d8b4fe', padding: '3px 10px', borderRadius: 12, fontSize: '0.75rem', fontWeight: 700 }}>
+                    📱 Mobile Application Signup
+                  </span>
+                ) : (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, backgroundColor: '#f1f5f9', color: '#475569', border: '1px solid #cbd5e1', padding: '3px 10px', borderRadius: 12, fontSize: '0.75rem', fontWeight: 600 }}>
+                    🏢 Office / Direct Entry
+                  </span>
+                )}
+              </div>
+            </div>
             <div><strong style={{display:'block', fontSize:'0.75rem', color:'#6b7280', textTransform:'uppercase'}}>Phone</strong><div>{viewItem.phone || '-'}</div></div>
             <div><strong style={{display:'block', fontSize:'0.75rem', color:'#6b7280', textTransform:'uppercase'}}>Email</strong><div>{viewItem.email || '-'}</div></div>
             <div><strong style={{display:'block', fontSize:'0.75rem', color:'#6b7280', textTransform:'uppercase'}}>Date of Birth</strong><div>{viewItem.date_of_birth ? format(new Date(viewItem.date_of_birth), "dd MMM yyyy") : '-'}</div></div>
