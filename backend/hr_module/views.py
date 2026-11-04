@@ -1400,6 +1400,49 @@ class OfficerPayrollDataView(APIView):
         ).exclude(status='CANCELLED')
         
         advance_taken = sum(float(exp.amount) for exp in advances)
+
+        # Get Daily Collection Discrepancies (Excess / Shortage) from Promoter Registry
+        from django.contrib.auth import get_user_model
+        from decimal import Decimal
+        from hr_module.models import PromoterRegistryEntry
+        User = get_user_model()
+        user = User.objects.filter(
+            Q(email__iexact=employee.email) | Q(full_name__iexact=employee.full_name)
+        ).first()
+
+        total_excess = Decimal('0.00')
+        total_shortage = Decimal('0.00')
+        collection_history = []
+
+        if user:
+            entries = PromoterRegistryEntry.objects.filter(
+                promoter=user,
+                date__year=year,
+                date__month=month
+            ).order_by('date')
+            for e in entries:
+                diff = e.excess_less or Decimal('0.00')
+                if diff > 0:
+                    total_excess += diff
+                elif diff < 0:
+                    total_shortage += abs(diff)
+
+                collection_history.append({
+                    'id': str(e.id),
+                    'date': e.date.strftime('%Y-%m-%d'),
+                    'entry_code': e.entry_code or f"VR-{e.date.strftime('%y%m%d')}",
+                    'starting_reading': e.starting_reading,
+                    'ending_reading': e.ending_reading,
+                    'voucher_range': f"{e.starting_reading} - {e.ending_reading}" if (e.starting_reading or e.ending_reading) else "-",
+                    'cash_collected': float(e.cash_collected),
+                    'online_collected': float(e.online_collected),
+                    'total_expected': float(e.cash_collected + e.online_collected),
+                    'cash_submitted': float(e.cash_submitted),
+                    'online_verified': float(e.online_verified),
+                    'total_submitted': float(e.cash_submitted + e.online_verified),
+                    'excess_less': float(diff),
+                    'status': 'EXCESS' if diff > 0 else ('SHORTAGE' if diff < 0 else 'MATCHED'),
+                })
         
         return Response({
             'employee_name': employee.full_name,
@@ -1411,7 +1454,11 @@ class OfficerPayrollDataView(APIView):
                 'leave': att_counts.get('LEAVE', 0),
                 'late': att_counts.get('LATE', 0),
             },
-            'salary_advance_taken': advance_taken
+            'salary_advance_taken': advance_taken,
+            'collection_excess': float(total_excess),
+            'collection_shortage': float(total_shortage),
+            'net_collection_adjustment': float(total_excess - total_shortage),
+            'collection_history': collection_history
         })
 
 
@@ -2218,13 +2265,20 @@ class SalaryBalanceView(APIView):
             net_salary = 0
             basic_salary = 0
 
-        # Calculate current month's approved advances to determine balance
+        # Calculate current or requested month's approved advances to determine balance
         from django.utils import timezone
         now = timezone.localtime(timezone.now())
+        try:
+            month = int(request.query_params.get('month', now.month))
+            year = int(request.query_params.get('year', now.year))
+        except (ValueError, TypeError):
+            month = now.month
+            year = now.year
+
         advances = PaymentAdvanceRequest.objects.filter(
             employee=officer,
-            created_at__year=now.year,
-            created_at__month=now.month,
+            created_at__year=year,
+            created_at__month=month,
             status__in=['APPROVED', 'DISBURSED', 'PENDING']
         )
         total_advances = sum(float(a.amount) for a in advances)
@@ -2238,14 +2292,58 @@ class SalaryBalanceView(APIView):
 
         balance = allowed_amount - total_advances
 
+        # Calculate Collection Discrepancies (Excess / Shortage) for this staff member
+        from hr_module.models import PromoterRegistryEntry
+        entries = PromoterRegistryEntry.objects.filter(
+            promoter=request.user,
+            date__year=year,
+            date__month=month
+        ).order_by('-date')
+
+        total_excess = sum(float(e.excess_less) for e in entries if e.excess_less > 0)
+        total_shortage = sum(abs(float(e.excess_less)) for e in entries if e.excess_less < 0)
+        net_collection_adjustment = total_excess - total_shortage
+
+        collection_history = [
+            {
+                'id': str(e.id),
+                'date': e.date.strftime('%Y-%m-%d'),
+                'entry_code': e.entry_code or f"VR-{e.date.strftime('%y%m%d')}",
+                'starting_reading': e.starting_reading,
+                'ending_reading': e.ending_reading,
+                'voucher_range': f"{e.starting_reading} - {e.ending_reading}" if (e.starting_reading or e.ending_reading) else "-",
+                'cash_collected': float(e.cash_collected),
+                'online_collected': float(e.online_collected),
+                'total_expected': float(e.cash_collected + e.online_collected),
+                'cash_submitted': float(e.cash_submitted),
+                'online_verified': float(e.online_verified),
+                'total_submitted': float(e.cash_submitted + e.online_verified),
+                'excess_less': float(e.excess_less),
+                'type': 'EXCESS' if e.excess_less > 0 else ('SHORTAGE' if e.excess_less < 0 else 'MATCHED'),
+                'is_verified': e.verification_status == 'VERIFIED'
+            }
+            for e in entries
+        ]
+
+        # Estimated final salary payout reflecting discrepancies and advances
+        estimated_payout = max(0, net_salary + net_collection_adjustment - total_advances)
+
         return Response({
-            'salary': net_salary, # Keep net_salary for backward compatibility if needed
+            'salary': net_salary, # Base net salary from structure
             'basic_salary': basic_salary,
             'balance': balance if balance > 0 else 0,
             'total_advances': total_advances,
             'requests_this_month': requests_this_month,
             'allowed_amount': allowed_amount,
-            'current_day': current_day
+            'current_day': current_day,
+            'month': month,
+            'year': year,
+            'total_excess': total_excess,
+            'total_shortage': total_shortage,
+            'net_collection_adjustment': net_collection_adjustment,
+            'adjusted_salary': float(net_salary + net_collection_adjustment),
+            'estimated_payout': estimated_payout,
+            'collection_history': collection_history
         })
 
 # ── Payment Advance Requests ──────────────────────────────────────

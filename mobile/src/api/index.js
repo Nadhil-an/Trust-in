@@ -290,7 +290,7 @@ export const staffReportsApi = {
 // ── Payment Advances ─────────────────────────────────────────────────────────
 export const paymentAdvanceApi = {
   list:    (params) => api.get('/hr/payment-advances/', { params }),
-  balance: ()       => api.get('/hr/salary-balance/'),
+  balance: (params) => api.get('/hr/salary-balance/', { params }),
   create:  (data)   => api.post('/hr/payment-advances/', data),
 };
 

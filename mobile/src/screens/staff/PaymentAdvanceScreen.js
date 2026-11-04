@@ -29,6 +29,7 @@ export default function PaymentAdvanceScreen({ navigation, route }) {
   const [refreshing, setRefreshing] = useState(false);
   const [filterMonth, setFilterMonth] = useState(new Date().getMonth() + 1);
   const [filterYear, setFilterYear] = useState(new Date().getFullYear());
+  const [activeTab, setActiveTab] = useState('advances'); // 'advances' | 'discrepancies'
   const insets = useSafeAreaInsets();
 
   const handleGoBack = () => {
@@ -65,7 +66,7 @@ export default function PaymentAdvanceScreen({ navigation, route }) {
     try {
       const [advRes, balRes] = await Promise.all([
         paymentAdvanceApi.list(),
-        paymentAdvanceApi.balance()
+        paymentAdvanceApi.balance({ month: filterMonth, year: filterYear })
       ]);
       setAdvances(advRes.data.results || advRes.data);
       setSalaryData(balRes.data);
@@ -75,7 +76,7 @@ export default function PaymentAdvanceScreen({ navigation, route }) {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [filterMonth, filterYear]);
 
   useEffect(() => {
     loadData();
@@ -212,6 +213,83 @@ export default function PaymentAdvanceScreen({ navigation, route }) {
     );
   };
 
+  const renderDiscrepancyItem = ({ item }) => {
+    const diff = Number(item.excess_less || 0);
+    const isExcess = diff > 0;
+    const isShort = diff < 0;
+
+    return (
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <View>
+            <Text style={styles.reqId}>{item.entry_code || 'Daily Collection'}</Text>
+            <Text style={{ fontSize: 11, color: '#64748b', marginTop: 2 }}>
+              Voucher: {item.voucher_range || '-'}
+            </Text>
+          </View>
+          <View
+            style={[
+              styles.badge,
+              {
+                backgroundColor: isExcess ? '#dcfce7' : isShort ? '#fee2e2' : '#f1f5f9',
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.badgeText,
+                {
+                  color: isExcess ? '#15803d' : isShort ? '#b91c1c' : '#475569',
+                },
+              ]}
+            >
+              {isExcess ? `+₹${Math.round(diff)} Excess` : isShort ? `-₹${Math.round(Math.abs(diff))} Shortage` : 'Matched'}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.dateGrid}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
+            <Text style={styles.dateLabel}>DATE</Text>
+            <Text style={styles.dateVal}>📅 {item.date}</Text>
+          </View>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
+            <Text style={styles.dateLabel}>SYSTEM EXPECTED (CASH + UPI)</Text>
+            <Text style={[styles.dateVal, { fontWeight: '700' }]}>₹{Math.round(item.total_expected || 0).toLocaleString('en-IN')}</Text>
+          </View>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
+            <Text style={styles.dateLabel}>OFFICE SUBMITTED (CASH + VERIFIED)</Text>
+            <Text style={[styles.dateVal, { fontWeight: '700' }]}>₹{Math.round(item.total_submitted || 0).toLocaleString('en-IN')}</Text>
+          </View>
+        </View>
+
+        <View
+          style={{
+            backgroundColor: isExcess ? '#f0fdf4' : isShort ? '#fef2f2' : '#f8fafc',
+            padding: 10,
+            borderRadius: 8,
+            borderLeftWidth: 3,
+            borderLeftColor: isExcess ? '#16a34a' : isShort ? '#dc2626' : '#94a3b8',
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 12,
+              fontWeight: '700',
+              color: isExcess ? '#15803d' : isShort ? '#b91c1c' : '#475569',
+            }}
+          >
+            {isExcess
+              ? `Salary Impact: +₹${Math.round(diff)} added to month salary`
+              : isShort
+              ? `Salary Impact: -₹${Math.round(Math.abs(diff))} deducted from month salary`
+              : 'Salary Impact: Nil (Exact collection submitted)'}
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
   return (
     <View style={styles.container}>
       {/* Header Bar */}
@@ -243,17 +321,50 @@ export default function PaymentAdvanceScreen({ navigation, route }) {
       {!loading && (
         <View style={styles.salaryOverviewCard}>
           <View style={styles.salaryColumn}>
-            <Text style={styles.salaryOverviewLabel}>Actual Net Salary / Month</Text>
+            <Text style={styles.salaryOverviewLabel}>Base Salary</Text>
             <Text style={styles.salaryOverviewVal}>₹{Math.round(salaryData.salary).toLocaleString('en-IN')}</Text>
+            {(salaryData.total_excess > 0 || salaryData.total_shortage > 0) && (
+              <Text style={{ fontSize: 10, fontWeight: '700', marginTop: 4, color: salaryData.net_collection_adjustment >= 0 ? '#16a34a' : '#dc2626' }}>
+                Diff: {salaryData.net_collection_adjustment >= 0 ? `+₹${Math.round(salaryData.net_collection_adjustment)}` : `-₹${Math.round(Math.abs(salaryData.net_collection_adjustment))}`}
+              </Text>
+            )}
           </View>
           <View style={styles.salaryDivider} />
           <View style={styles.salaryColumn}>
-            <Text style={styles.salaryOverviewLabel}>Available Balance</Text>
+            <Text style={styles.salaryOverviewLabel}>Available Advance</Text>
             <Text style={[styles.salaryOverviewVal, { color: Colors.primary }]}>₹{Math.round(salaryData.balance).toLocaleString('en-IN')}</Text>
             <Text style={{ fontSize: 10, color: '#64748b', marginTop: 4 }}>Allowed: ₹{Math.round(salaryData.allowed_amount || 0).toLocaleString('en-IN')}</Text>
           </View>
+          <View style={styles.salaryDivider} />
+          <View style={styles.salaryColumn}>
+            <Text style={styles.salaryOverviewLabel}>Est. Payout</Text>
+            <Text style={[styles.salaryOverviewVal, { color: '#059669' }]}>
+              ₹{Math.round(salaryData.estimated_payout !== undefined ? salaryData.estimated_payout : salaryData.salary).toLocaleString('en-IN')}
+            </Text>
+            <Text style={{ fontSize: 10, color: '#64748b', marginTop: 4 }}>After diffs & adv</Text>
+          </View>
         </View>
       )}
+
+      {/* Tab Switcher: Advances vs Collection Discrepancy Ledger */}
+      <View style={styles.tabContainer}>
+        <TouchableOpacity
+          style={[styles.tabBtn, activeTab === 'advances' && styles.tabBtnActive]}
+          onPress={() => setActiveTab('advances')}
+        >
+          <Text style={[styles.tabBtnText, activeTab === 'advances' && styles.tabBtnTextActive]}>
+            Advances ({filteredAdvances.length})
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tabBtn, activeTab === 'discrepancies' && styles.tabBtnActive]}
+          onPress={() => setActiveTab('discrepancies')}
+        >
+          <Text style={[styles.tabBtnText, activeTab === 'discrepancies' && styles.tabBtnTextActive]}>
+            Collection Discrepancies ({(salaryData.collection_history || []).length})
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       {/* Month Filter */}
       <View style={styles.monthFilterContainer}>
@@ -273,7 +384,7 @@ export default function PaymentAdvanceScreen({ navigation, route }) {
         <View style={styles.center}>
           <ActivityIndicator size="large" color={Colors.primary} />
         </View>
-      ) : (
+      ) : activeTab === 'advances' ? (
         <FlatList
           data={filteredAdvances}
           keyExtractor={(item) => item.id}
@@ -285,6 +396,23 @@ export default function PaymentAdvanceScreen({ navigation, route }) {
               <Ionicons name="cash-outline" size={60} color={Colors.gray400} />
               <Text style={styles.emptyTitle}>No Salary Advance Requests</Text>
               <Text style={styles.emptySub}>Need salary advance? Tap '+' button above to request amount & set date needed.</Text>
+            </View>
+          }
+        />
+      ) : (
+        <FlatList
+          data={salaryData.collection_history || []}
+          keyExtractor={(item) => item.id || item.date}
+          renderItem={renderDiscrepancyItem}
+          contentContainerStyle={styles.listContainer}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={loadData} />}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Ionicons name="shield-checkmark-outline" size={60} color="#16a34a" />
+              <Text style={styles.emptyTitle}>No Discrepancies Recorded</Text>
+              <Text style={styles.emptySub}>
+                All daily collection amounts matched office submissions exactly for this month.
+              </Text>
             </View>
           }
         />
@@ -633,15 +761,45 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
   },
+  tabContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#e2e8f0',
+    marginHorizontal: 16,
+    marginTop: 14,
+    borderRadius: 10,
+    padding: 3,
+  },
+  tabBtn: {
+    flex: 1,
+    paddingVertical: 8,
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  tabBtnActive: {
+    backgroundColor: '#ffffff',
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  tabBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#64748b',
+  },
+  tabBtnTextActive: {
+    color: Colors.primary,
+  },
   monthFilterContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: '#ffffff',
     marginHorizontal: 16,
-    marginTop: 16,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
+    marginTop: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: '#e2e8f0',

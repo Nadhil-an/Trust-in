@@ -30,6 +30,8 @@ const DEFAULT_GEN_FORM = {
   other_allowances: 0,
   pf_deduction: 0,
   other_deductions: 0,
+  collection_excess: 0,
+  collection_shortage: 0,
   payment_method: "BANK",
   remarks: "",
 }
@@ -232,6 +234,8 @@ export default function PayrollPage() {
           other_allowances: Number(structure.other_allowances),
           pf_deduction: Number(structure.pf_deduction),
           other_deductions: data.salary_advance_taken || 0,
+          collection_excess: Number(data.collection_excess || 0),
+          collection_shortage: Number(data.collection_shortage || 0),
         }))
       } catch (err) {
         if (!cancelled)
@@ -253,10 +257,15 @@ export default function PayrollPage() {
     Number(genForm.ta) +
     Number(genForm.other_allowances)
 
+  const totalDeductions =
+    Number(genForm.pf_deduction) +
+    Number(genForm.other_deductions) +
+    Number(genForm.collection_shortage || 0)
+
   const netSalary =
-    grossSalary -
-    Number(genForm.pf_deduction) -
-    Number(genForm.other_deductions)
+    grossSalary +
+    Number(genForm.collection_excess || 0) -
+    totalDeductions
 
   const handleGenerate = async (e) => {
     e.preventDefault()
@@ -282,6 +291,8 @@ export default function PayrollPage() {
         gross_salary: grossSalary,
         pf_deduction: Number(genForm.pf_deduction),
         other_deductions: Number(genForm.other_deductions),
+        collection_excess: Number(genForm.collection_excess || 0),
+        collection_shortage: Number(genForm.collection_shortage || 0),
         net_salary: netSalary,
         payment_method: genForm.payment_method,
         remarks: genForm.remarks,
@@ -525,6 +536,9 @@ export default function PayrollPage() {
                   ["HRA", selectedSlip.hra],
                   ["TA", selectedSlip.ta],
                   ["Other Allowances", selectedSlip.other_allowances],
+                  ...(Number(selectedSlip.collection_excess || 0) > 0
+                    ? [["Collection Excess (Credit)", selectedSlip.collection_excess]]
+                    : []),
                 ].map(([label, val]) => (
                   <div
                     key={label}
@@ -591,6 +605,19 @@ export default function PayrollPage() {
                   <span>Salary Advance</span>
                   <span>{formatINR(selectedSlip.other_deductions)}</span>
                 </div>
+                {Number(selectedSlip.collection_shortage || 0) > 0 && (
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      marginBottom: "8px",
+                      color: "#dc2626",
+                    }}
+                  >
+                    <span>Collection Shortage (Debit)</span>
+                    <span>{formatINR(selectedSlip.collection_shortage)}</span>
+                  </div>
+                )}
                 <div
                   style={{
                     display: "flex",
@@ -604,13 +631,101 @@ export default function PayrollPage() {
                   <span>Total Deductions</span>
                   <span>
                     {formatINR(
-                      Number(selectedSlip.pf_deduction) +
-                        Number(selectedSlip.other_deductions)
+                      Number(selectedSlip.pf_deduction || 0) +
+                        Number(selectedSlip.other_deductions || 0) +
+                        Number(selectedSlip.collection_shortage || 0)
                     )}
                   </span>
                 </div>
               </div>
             </div>
+
+            {/* Daily Collection Reconciliation History */}
+            {selectedSlip.collection_history && selectedSlip.collection_history.length > 0 && (
+              <div
+                style={{
+                  marginTop: "20px",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: "8px",
+                  padding: "15px",
+                  background: "#ffffff",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: "10px",
+                  }}
+                >
+                  <h4 style={{ margin: 0, fontSize: "14px", color: "#1e293b", fontWeight: "700" }}>
+                    Daily Collection Reconciliation Ledger
+                  </h4>
+                  <span style={{ fontSize: "12px", color: "#64748b" }}>
+                    {selectedSlip.collection_history.length} records in {format(new Date(selectedSlip.year, selectedSlip.month - 1, 1), "MMM yyyy")}
+                  </span>
+                </div>
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px" }}>
+                    <thead>
+                      <tr style={{ background: "#f8fafc", borderBottom: "1.5px solid #cbd5e1", textAlign: "left" }}>
+                        <th style={{ padding: "6px 8px" }}>Date</th>
+                        <th style={{ padding: "6px 8px" }}>Voucher No</th>
+                        <th style={{ padding: "6px 8px", textAlign: "right" }}>System Expected</th>
+                        <th style={{ padding: "6px 8px", textAlign: "right" }}>Office Submitted</th>
+                        <th style={{ padding: "6px 8px", textAlign: "right" }}>Adjustment</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedSlip.collection_history.map((row) => {
+                        const diff = Number(row.excess_less || 0);
+                        const isExcess = diff > 0;
+                        const isShort = diff < 0;
+                        return (
+                          <tr key={row.id || row.date} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                            <td style={{ padding: "6px 8px", fontWeight: "500" }}>{row.date}</td>
+                            <td style={{ padding: "6px 8px", color: "#64748b" }}>{row.voucher_range || row.entry_code}</td>
+                            <td style={{ padding: "6px 8px", textAlign: "right" }}>{formatINR(row.total_expected)}</td>
+                            <td style={{ padding: "6px 8px", textAlign: "right" }}>{formatINR(row.total_submitted)}</td>
+                            <td
+                              style={{
+                                padding: "6px 8px",
+                                textAlign: "right",
+                                fontWeight: "700",
+                                color: isExcess ? "#16a34a" : isShort ? "#dc2626" : "#64748b",
+                              }}
+                            >
+                              {isExcess ? `+${formatINR(diff)} (Excess)` : isShort ? `-${formatINR(Math.abs(diff))} (Shortage)` : "₹0 (Matched)"}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                    <tfoot>
+                      <tr style={{ borderTop: "2px solid #cbd5e1", fontWeight: "700", background: "#f8fafc" }}>
+                        <td colSpan={2} style={{ padding: "8px" }}>Monthly Discrepancy Total</td>
+                        <td colSpan={2} style={{ padding: "8px", textAlign: "right", color: "#64748b" }}>
+                          Credit: +{formatINR(selectedSlip.collection_excess || 0)} | Debit: -{formatINR(selectedSlip.collection_shortage || 0)}
+                        </td>
+                        <td
+                          style={{
+                            padding: "8px",
+                            textAlign: "right",
+                            fontSize: "13px",
+                            color: (Number(selectedSlip.collection_excess || 0) - Number(selectedSlip.collection_shortage || 0)) >= 0 ? "#16a34a" : "#dc2626",
+                          }}
+                        >
+                          {(Number(selectedSlip.collection_excess || 0) - Number(selectedSlip.collection_shortage || 0)) >= 0
+                            ? `+${formatINR(Number(selectedSlip.collection_excess || 0) - Number(selectedSlip.collection_shortage || 0))}`
+                            : `-${formatINR(Math.abs(Number(selectedSlip.collection_excess || 0) - Number(selectedSlip.collection_shortage || 0)))}`}
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+            )}
 
             {/* Net Payable */}
             <div
@@ -973,6 +1088,61 @@ export default function PayrollPage() {
                   </div>
                 </div>
 
+                {/* Collection Reconciliation Discrepancy Adjustments */}
+                <div
+                  style={{
+                    borderTop: "1px solid var(--gray-200)",
+                    paddingTop: "1rem",
+                    marginTop: "0.5rem",
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                    <h4
+                      style={{
+                        fontSize: "14px",
+                        margin: 0,
+                        color: "var(--gray-700)",
+                        fontWeight: "600",
+                      }}
+                    >
+                      Collection Reconciliation Adjustments (Promoter Registry)
+                    </h4>
+                    <span style={{ fontSize: "11px", color: "var(--gray-500)" }}>
+                      Auto-computed from daily submissions
+                    </span>
+                  </div>
+                  <div className="form-grid-2">
+                    <div className="form-group">
+                      <label className="form-label" style={{ color: "#16a34a", fontWeight: "600" }}>
+                        Collection Excess (+ Added to Salary)
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        className="form-control"
+                        value={genForm.collection_excess}
+                        onChange={(e) =>
+                          handleGenChange("collection_excess", e.target.value)
+                        }
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label" style={{ color: "#ef4444", fontWeight: "600" }}>
+                        Collection Shortage (- Deducted from Salary)
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        className="form-control"
+                        value={genForm.collection_shortage}
+                        onChange={(e) =>
+                          handleGenChange("collection_shortage", e.target.value)
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 {/* Summary Bar */}
                 <div
                   style={{
@@ -1023,7 +1193,7 @@ export default function PayrollPage() {
                         letterSpacing: "0.5px",
                       }}
                     >
-                      Salary Advance
+                      Deductions & Shortage
                     </div>
                     <div
                       style={{
@@ -1032,9 +1202,33 @@ export default function PayrollPage() {
                         color: "var(--danger-color)",
                       }}
                     >
-                      - {formatINR(genForm.other_deductions)}
+                      - {formatINR(totalDeductions)}
                     </div>
                   </div>
+                  {(Number(genForm.collection_excess || 0) > 0) && (
+                    <div style={{ textAlign: "center" }}>
+                      <div
+                        style={{
+                          fontSize: "11px",
+                          color: "#16a34a",
+                          textTransform: "uppercase",
+                          fontWeight: 700,
+                          letterSpacing: "0.5px",
+                        }}
+                      >
+                        Excess Credit
+                      </div>
+                      <div
+                        style={{
+                          fontSize: "18px",
+                          fontWeight: "bold",
+                          color: "#16a34a",
+                        }}
+                      >
+                        + {formatINR(genForm.collection_excess)}
+                      </div>
+                    </div>
+                  )}
                   <div style={{ textAlign: "right" }}>
                     <div
                       style={{

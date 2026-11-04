@@ -342,6 +342,8 @@ class LeaveRequestSerializer(serializers.ModelSerializer):
 
 class MonthlyPayrollSerializer(serializers.ModelSerializer):
     employee_name = serializers.SerializerMethodField()
+    employee_id_code = serializers.SerializerMethodField()
+    collection_history = serializers.SerializerMethodField()
 
     class Meta:
         model = MonthlyPayroll
@@ -350,6 +352,46 @@ class MonthlyPayrollSerializer(serializers.ModelSerializer):
 
     def get_employee_name(self, obj):
         return obj.employee.full_name if obj.employee else ''
+
+    def get_employee_id_code(self, obj):
+        return obj.employee.employee_id if obj.employee else ''
+
+    def get_collection_history(self, obj):
+        if not obj.employee:
+            return []
+        from django.contrib.auth import get_user_model
+        from django.db.models import Q
+        from hr_module.models import PromoterRegistryEntry
+        User = get_user_model()
+        user = User.objects.filter(
+            Q(email__iexact=obj.employee.email) | Q(full_name__iexact=obj.employee.full_name)
+        ).first()
+        if not user:
+            return []
+        entries = PromoterRegistryEntry.objects.filter(
+            promoter=user,
+            date__year=obj.year,
+            date__month=obj.month
+        ).order_by('date')
+        return [
+            {
+                'id': str(e.id),
+                'date': e.date.strftime('%Y-%m-%d'),
+                'entry_code': e.entry_code or f"VR-{e.date.strftime('%y%m%d')}",
+                'starting_reading': e.starting_reading,
+                'ending_reading': e.ending_reading,
+                'voucher_range': f"{e.starting_reading} - {e.ending_reading}" if (e.starting_reading or e.ending_reading) else "-",
+                'cash_collected': float(e.cash_collected),
+                'online_collected': float(e.online_collected),
+                'total_expected': float(e.cash_collected + e.online_collected),
+                'cash_submitted': float(e.cash_submitted),
+                'online_verified': float(e.online_verified),
+                'total_submitted': float(e.cash_submitted + e.online_verified),
+                'excess_less': float(e.excess_less),
+                'status': 'EXCESS' if e.excess_less > 0 else ('SHORTAGE' if e.excess_less < 0 else 'MATCHED'),
+            }
+            for e in entries
+        ]
 
 
 class EmployeeDocumentSerializer(serializers.ModelSerializer):

@@ -459,6 +459,8 @@ class MonthlyPayroll(models.Model):
     gross_salary = models.DecimalField(max_digits=10, decimal_places=2)
     pf_deduction = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     other_deductions = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    collection_excess = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Total collection excess credited to salary")
+    collection_shortage = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Total collection shortage debited from salary")
     net_salary = models.DecimalField(max_digits=10, decimal_places=2)
     # Status
     status = models.CharField(max_length=20, choices=PayrollStatus.choices, default=PayrollStatus.DRAFT)
