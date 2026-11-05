@@ -3491,41 +3491,133 @@ class StaffBonusSummaryView(APIView):
 
 class StaffBonusAllView(APIView):
     """
-    GET /hr/staff-bonus/all/ — HR/Manager view all staff bonus balances
+    GET /hr/staff-bonus/all/?month=YYYY-MM&detailed=true — HR/Manager view all staff bonus balances and monthly performance
     """
     permission_classes = [IsManagerOrHR]
 
     def get(self, request):
-        from core.models import Role, User
-        from django.db.models import Sum
+        from core.models import Role, User, Member
+        from django.db.models import Sum, Q
+        from datetime import date
+        from django.utils import timezone
+        from hr_module.models import ExecutiveOfficer, MonthlyPayroll, StaffBonusAccount, StaffBonusTransaction
+
+        now = timezone.now()
+        month_param = request.query_params.get('month')
+        if month_param:
+            try:
+                parts = month_param.split('-')
+                target_year = int(parts[0])
+                target_month = int(parts[1])
+                month_str = f"{target_year:04d}-{target_month:02d}"
+            except Exception:
+                target_year = now.year
+                target_month = now.month
+                month_str = now.strftime('%Y-%m')
+        else:
+            target_year = now.year
+            target_month = now.month
+            month_str = now.strftime('%Y-%m')
+
+        try:
+            month_label = date(target_year, target_month, 1).strftime('%B %Y')
+        except Exception:
+            month_label = month_str
 
         staff_users = User.objects.filter(
             role__in=[Role.STAFF, Role.FIELD_ASSESSMENT_OFFICER,
                       Role.ASSESSMENT_CALCULATION_OFFICER, Role.GENERAL_ENQUIRY_OFFICER],
             is_active=True
-        )
+        ).order_by('full_name')
 
         result = []
+        tot_base = 0.0
+        tot_month_donation = 0.0
+        tot_month_member = 0.0
+        tot_month_bonus = 0.0
+        tot_month_earnings = 0.0
+
         for u in staff_users:
-            try:
-                acc = StaffBonusAccount.objects.get(staff=u)
-                donation_b = float(acc.donation_bonus_balance)
-                membership_b = float(acc.membership_bonus_balance)
-                total_b = donation_b + membership_b
-                paid_out = float(acc.total_paid_out)
-                available = total_b - paid_out
-            except StaffBonusAccount.DoesNotExist:
-                donation_b = membership_b = total_b = paid_out = available = 0.0
+            acc, _ = StaffBonusAccount.objects.get_or_create(staff=u)
+            donation_b = float(acc.donation_bonus_balance)
+            membership_b = float(acc.membership_bonus_balance)
+            total_b = donation_b + membership_b
+            paid_out = float(acc.total_paid_out)
+            available = total_b - paid_out
+
+            # Base salary lookup
+            base_salary = 15000.0
+            officer = get_officer_for_user(u)
+            if officer:
+                payroll = MonthlyPayroll.objects.filter(employee=officer, year=target_year, month=target_month).first()
+                if payroll:
+                    base_salary = float(payroll.basic_salary or payroll.gross_salary or 15000.0)
+                else:
+                    struct = officer.salary_structures.order_by('-effective_from').first()
+                    if struct:
+                        base_salary = float(struct.basic_salary or struct.gross_salary or 15000.0)
+
+            # Referral code lookup
+            referral_code = f"slt-{u.username.lower()}"
+            if u.phone:
+                mem = Member.objects.filter(phone=u.phone).first()
+                if mem and mem.referral_code:
+                    referral_code = mem.referral_code
+
+            # Monthly transactions for target year and month
+            month_txns = StaffBonusTransaction.objects.filter(
+                bonus_account=acc,
+                direction='CREDIT',
+                created_at__year=target_year,
+                created_at__month=target_month
+            )
+            m_donation = float(month_txns.filter(bonus_type='DONATION').aggregate(s=Sum('amount'))['s'] or 0.0)
+            m_member = float(month_txns.filter(bonus_type='MEMBERSHIP').aggregate(s=Sum('amount'))['s'] or 0.0)
+            m_total_bonus = m_donation + m_member
+            m_earnings = base_salary + m_total_bonus
+            donations_cnt = month_txns.filter(bonus_type='DONATION').count()
+            members_cnt = month_txns.filter(bonus_type='MEMBERSHIP').count()
+
+            tot_base += base_salary
+            tot_month_donation += m_donation
+            tot_month_member += m_member
+            tot_month_bonus += m_total_bonus
+            tot_month_earnings += m_earnings
 
             result.append({
                 'staff_uid': u.staff_uid,
                 'name': u.full_name,
                 'role': u.role,
-                'donation_bonus': donation_b,
-                'membership_bonus': membership_b,
-                'total_bonus': total_b,
-                'total_paid_out': paid_out,
-                'available_balance': available,
+                'phone': u.phone or '',
+                'email': u.email or '',
+                'referral_code': referral_code,
+                'base_salary': round(base_salary, 2),
+                'month_donation_bonus': round(m_donation, 2),
+                'month_membership_bonus': round(m_member, 2),
+                'month_total_bonus': round(m_total_bonus, 2),
+                'month_total_earnings': round(m_earnings, 2),
+                'month_donations_count': donations_cnt,
+                'month_members_count': members_cnt,
+                'donation_bonus': round(donation_b, 2),
+                'membership_bonus': round(membership_b, 2),
+                'total_bonus': round(total_b, 2),
+                'total_paid_out': round(paid_out, 2),
+                'available_balance': round(available, 2),
+            })
+
+        if request.query_params.get('detailed') == 'true':
+            return Response({
+                'month': month_str,
+                'month_label': month_label,
+                'summary': {
+                    'total_staff': len(result),
+                    'total_base_salary': round(tot_base, 2),
+                    'total_month_donation_bonus': round(tot_month_donation, 2),
+                    'total_month_membership_bonus': round(tot_month_member, 2),
+                    'total_month_bonus': round(tot_month_bonus, 2),
+                    'total_month_earnings': round(tot_month_earnings, 2),
+                },
+                'results': result
             })
 
         return Response(result)
@@ -3533,12 +3625,16 @@ class StaffBonusAllView(APIView):
 
 class StaffBonusTransactionsView(APIView):
     """
-    GET /hr/staff-bonus/transactions/  — Full transaction history for logged-in staff
+    GET /hr/staff-bonus/transactions/?staff_id=...&month=YYYY-MM
     """
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        from core.models import Role, User
+        from core.models import Role, User, Member
+        from django.db.models import Sum, Q
+        from datetime import date
+        from django.utils import timezone
+        from hr_module.models import ExecutiveOfficer, MonthlyPayroll, StaffBonusAccount, StaffBonusTransaction
 
         staff_id = request.query_params.get('staff_id')
         if staff_id and request.user.role in [Role.HR, Role.MANAGER, Role.ADMIN]:
@@ -3552,15 +3648,96 @@ class StaffBonusTransactionsView(APIView):
         try:
             account = StaffBonusAccount.objects.get(staff=target_user)
         except StaffBonusAccount.DoesNotExist:
-            return Response({'transactions': [], 'summary': {'donation_bonus': 0, 'membership_bonus': 0, 'total_bonus': 0}})
+            account, _ = StaffBonusAccount.objects.get_or_create(staff=target_user)
 
-        txns = StaffBonusTransaction.objects.filter(bonus_account=account).order_by('-created_at')
+        txns_qs = StaffBonusTransaction.objects.filter(bonus_account=account).order_by('-created_at')
 
-        # Optional pagination
-        page_size = int(request.query_params.get('page_size', 50))
-        txns = txns[:page_size]
+        # Month filtering
+        month_param = request.query_params.get('month')
+        now = timezone.now()
+        if month_param and month_param != 'all':
+            try:
+                parts = month_param.split('-')
+                t_year = int(parts[0])
+                t_month = int(parts[1])
+                txns_qs = txns_qs.filter(created_at__year=t_year, created_at__month=t_month)
+                month_str = f"{t_year:04d}-{t_month:02d}"
+                month_label = date(t_year, t_month, 1).strftime('%B %Y')
+            except Exception:
+                t_year = now.year
+                t_month = now.month
+                month_str = month_param
+                month_label = month_param
+        else:
+            t_year = now.year
+            t_month = now.month
+            month_str = now.strftime('%Y-%m')
+            month_label = now.strftime('%B %Y')
+
+        # Compute month stats
+        month_credits = StaffBonusTransaction.objects.filter(
+            bonus_account=account,
+            direction='CREDIT',
+            created_at__year=t_year,
+            created_at__month=t_month
+        )
+        m_donation = float(month_credits.filter(bonus_type='DONATION').aggregate(s=Sum('amount'))['s'] or 0.0)
+        m_member = float(month_credits.filter(bonus_type='MEMBERSHIP').aggregate(s=Sum('amount'))['s'] or 0.0)
+        m_total_bonus = m_donation + m_member
+
+        # Base salary
+        base_salary = 15000.0
+        officer = get_officer_for_user(target_user)
+        if officer:
+            payroll = MonthlyPayroll.objects.filter(employee=officer, year=t_year, month=t_month).first()
+            if payroll:
+                base_salary = float(payroll.basic_salary or payroll.gross_salary or 15000.0)
+            else:
+                struct = officer.salary_structures.order_by('-effective_from').first()
+                if struct:
+                    base_salary = float(struct.basic_salary or struct.gross_salary or 15000.0)
+
+        m_earnings = base_salary + m_total_bonus
+
+        # Referral code
+        referral_code = f"slt-{target_user.username.lower()}"
+        if target_user.phone:
+            mem = Member.objects.filter(phone=target_user.phone).first()
+            if mem and mem.referral_code:
+                referral_code = mem.referral_code
+
+        # Pagination / limit
+        page_size = int(request.query_params.get('page_size', 100))
+        txns = txns_qs[:page_size]
 
         return Response({
+            'staff': {
+                'staff_uid': target_user.staff_uid,
+                'name': target_user.full_name,
+                'role': target_user.role,
+                'phone': target_user.phone or '',
+                'email': target_user.email or '',
+                'referral_code': referral_code,
+                'base_salary': round(base_salary, 2),
+            },
+            'month': month_str,
+            'month_label': month_label,
+            'month_summary': {
+                'base_salary': round(base_salary, 2),
+                'donation_bonus': round(m_donation, 2),
+                'membership_bonus': round(m_member, 2),
+                'total_bonus': round(m_total_bonus, 2),
+                'total_earnings': round(m_earnings, 2),
+                'donations_count': month_credits.filter(bonus_type='DONATION').count(),
+                'members_count': month_credits.filter(bonus_type='MEMBERSHIP').count(),
+            },
+            'all_time_summary': {
+                'donation_bonus': float(account.donation_bonus_balance),
+                'membership_bonus': float(account.membership_bonus_balance),
+                'total_bonus': float(account.donation_bonus_balance) + float(account.membership_bonus_balance),
+                'total_paid_out': float(account.total_paid_out),
+                'available_balance': account.available_balance,
+            },
             'summary': {
                 'donation_bonus': float(account.donation_bonus_balance),
                 'membership_bonus': float(account.membership_bonus_balance),

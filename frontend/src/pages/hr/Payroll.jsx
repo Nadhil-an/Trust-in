@@ -56,29 +56,6 @@ export default function PayrollPage() {
   const [staffBonusList, setStaffBonusList] = useState([])
   const [loadingBonus, setLoadingBonus] = useState(false)
 
-  const {
-    secretDeleteMode,
-    selectedRowIds,
-    deleteConfirmModal,
-    setDeleteConfirmModal,
-    deleting,
-    toggleSelectRow,
-    toggleSelectAll,
-    confirmDeleteSelected,
-    confirmDeleteOne,
-    handlePermanentDelete,
-  } = useSecretDelete({
-    items: unifiedItems,
-    itemName: 'payroll record',
-    onDelete: async (itemsToDelete) => {
-      for (const it of itemsToDelete) {
-        if (it.id && it.status !== 'NOT_GENERATED') {
-          await hrApi.payroll.delete(it.id);
-        }
-      }
-    },
-    reload: () => load(),
-  });
 
   // Generate Payroll modal
   const [genModal, setGenModal] = useState(false)
@@ -215,6 +192,30 @@ export default function PayrollPage() {
         return true
       })
   }, [employees, items, recentAdvances, monthFilter, yearFilter, search, statusFilter])
+
+  const {
+    secretDeleteMode,
+    selectedRowIds,
+    deleteConfirmModal,
+    setDeleteConfirmModal,
+    deleting,
+    toggleSelectRow,
+    toggleSelectAll,
+    confirmDeleteSelected,
+    confirmDeleteOne,
+    handlePermanentDelete,
+  } = useSecretDelete({
+    items: unifiedItems,
+    itemName: 'payroll record',
+    onDelete: async (itemsToDelete) => {
+      for (const it of itemsToDelete) {
+        if (it.id && it.status !== 'NOT_GENERATED') {
+          await hrApi.payroll.delete(it.id);
+        }
+      }
+    },
+    reload: () => load(),
+  });
 
   // ── Generate Payroll Logic ─────────────────────────────────────────
   const openGenerateModal = () => {

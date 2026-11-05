@@ -689,7 +689,7 @@ class MoneyRequestListView(APIView):
     permission_classes = [IsAccountant]
 
     def get(self, request):
-        from manager_module.models import AssessmentRequest
+        from manager_module.models import AssessmentRequest, RequestStatus
         from manager_module.serializers import AssessmentRequestListSerializer
         requests = AssessmentRequest.objects.filter(
             status__in=['SUBMITTED', 'UNDER_REVIEW', 'ON_HOLD', RequestStatus.PENDING_DISBURSEMENT, RequestStatus.APPROVED]

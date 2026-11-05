@@ -285,7 +285,7 @@ export const hrApi = {
     delete: (id) => api.delete(`/hr/payroll/${id}/`),
   },
   staffBonus: {
-    all: () => api.get('/hr/staff-bonus/all/'),
+    all: (params) => api.get('/hr/staff-bonus/all/', { params }),
     summary: (params) => api.get('/hr/staff-bonus/', { params }),
     transactions: (params) => api.get('/hr/staff-bonus/transactions/', { params }),
   },
@@ -504,3 +504,4 @@ export const rewardsAdminApi = {
     action: (id, data) => api.post(`/core/rewards/admin/redemptions/${id}/fulfill/`, data),
   },
 };
+
