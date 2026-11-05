@@ -69,6 +69,7 @@ export const MASTER_NAV_CONFIG = [
   { key: 'hr_attendance', label: 'Attendance', icon: '✅', path: '/slt/hr/attendance', category: 'TIME & PAYROLL' },
   { key: 'hr_leave', label: 'Leave Management', icon: '📅', path: '/slt/hr/leave', category: 'TIME & PAYROLL' },
   { key: 'hr_payroll', label: 'Salary & Payroll', icon: '💰', path: '/slt/hr/payroll', category: 'TIME & PAYROLL' },
+  { key: 'hr_bonus_ledger', label: 'Bonus & Commission', icon: '🎁', path: '/slt/hr/bonus-ledger', category: 'TIME & PAYROLL', roles: ['HR', 'MANAGER', 'ADMIN'] },
   { key: 'hr_payment_advances', label: 'Payment Advances', icon: '💵', path: '/slt/hr/payment-advances', category: 'TIME & PAYROLL' },
 
   // ── HR: DIRECTORY

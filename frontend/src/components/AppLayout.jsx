@@ -224,6 +224,9 @@ export default function AppLayout() {
       // Manager always has access to hr_members (Members Directory)
       if (user?.role === 'MANAGER' && item.key === 'hr_members') return true
 
+      // HR, Manager, and Admin always have access to hr_bonus_ledger
+      if (['HR', 'MANAGER', 'ADMIN'].includes(user?.role) && item.key === 'hr_bonus_ledger') return true
+
       // Strictly check feature access for togglable items
       return hasFeature(item.key)
     })

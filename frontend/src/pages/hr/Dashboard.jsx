@@ -327,7 +327,7 @@ export default function HRDashboard() {
               🎯 Scheduled Payouts
             </button>
           )}
-          <button className="btn btn-secondary" onClick={() => { setShowBonusModal(true); loadStaffBonuses(); }} style={{ background: '#FAF5FF', color: '#9333EA', fontWeight: 700, border: '1px solid #E9D5FF' }}>
+          <button className="btn btn-secondary" onClick={() => navigate('/slt/hr/bonus-ledger')} style={{ background: '#FAF5FF', color: '#9333EA', fontWeight: 700, border: '1px solid #E9D5FF' }}>
             🎁 Staff Bonus
           </button>
           <button className="btn btn-secondary" onClick={() => setShowStaffFilterReport(true)} style={{ background: '#F0FDF4', color: '#16A34A', fontWeight: 700, border: '1px solid #BBF7D0' }}>
@@ -374,10 +374,10 @@ export default function HRDashboard() {
           onClick={() => toggle('leave')}
         />
         <SummaryCard
-          icon="🎁" label="Staff Bonus & Commission" color={C.purple} active={showBonusModal}
+          icon="🎁" label="Staff Bonus & Commission" color={C.purple} active={false}
           value={formatINR(staffBonusList.reduce((acc, sb) => acc + (Number(sb.total_bonus) || 0), 0))}
           sub="10% Donation · 30% Member"
-          onClick={() => { setShowBonusModal(true); loadStaffBonuses(); }}
+          onClick={() => navigate('/slt/hr/bonus-ledger')}
         />
       </div>
 

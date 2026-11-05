@@ -38,6 +38,7 @@ import Officers from './pages/hr/Officers'
 import AttendancePage from './pages/hr/Attendance'
 import LeavePage from './pages/hr/Leave'
 import PayrollPage from './pages/hr/Payroll'
+import StaffBonusLedgerPage from './pages/hr/StaffBonusLedgerPage'
 import Complaints from './pages/hr/Complaints'
 import StaffReports from './pages/hr/StaffReports'
 import PaymentAdvances from './pages/hr/PaymentAdvances'
@@ -222,6 +223,7 @@ export default function App() {
           <Route path="slt/hr/attendance"            element={<ProtectedRoute featureKey="hr_attendance"><AttendancePage /></ProtectedRoute>} />
           <Route path="slt/hr/leave"                 element={<ProtectedRoute featureKey="hr_leave"><LeavePage /></ProtectedRoute>} />
           <Route path="slt/hr/payroll"               element={<ProtectedRoute featureKey="hr_payroll"><PayrollPage /></ProtectedRoute>} />
+          <Route path="slt/hr/bonus-ledger"          element={<ProtectedRoute featureKey="hr_bonus_ledger" roles={['HR', 'MANAGER', 'ADMIN']}><StaffBonusLedgerPage /></ProtectedRoute>} />
           <Route path="slt/hr/complaints"            element={<ProtectedRoute featureKey="hr_complaints"><Complaints /></ProtectedRoute>} />
           <Route path="slt/hr/staff-reports"         element={<ProtectedRoute featureKey="hr_staff_reports"><StaffReports /></ProtectedRoute>} />
           <Route path="slt/hr/payment-advances"      element={<ProtectedRoute featureKey="hr_payment_advances"><PaymentAdvances /></ProtectedRoute>} />
