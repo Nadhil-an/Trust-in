@@ -75,9 +75,7 @@ function ProtectedRoute({ children, roles = [], featureKey = null }) {
   if (!isAuthenticated) return <Navigate to="/slt/portal/auth" replace />
   
   if (user?.role === 'ADMIN') return children
-  
-  if (roles.length > 0 && !roles.includes(user?.role)) return <Navigate to="/" replace />
-  
+
   if (featureKey) {
     // Manager always has access to hr_members
     if (user?.role === 'MANAGER' && featureKey === 'hr_members') {
@@ -96,7 +94,15 @@ function ProtectedRoute({ children, roles = [], featureKey = null }) {
         </div>
       )
     }
-    if (!hasFeature(featureKey)) return <Navigate to="/" replace />
+    if (hasFeature(featureKey)) {
+      return children
+    }
+
+    if (roles.length === 0 || !roles.includes(user?.role)) {
+      return <Navigate to="/" replace />
+    }
+  } else if (roles.length > 0 && !roles.includes(user?.role)) {
+    return <Navigate to="/" replace />
   }
   
   return children
@@ -185,7 +191,7 @@ export default function App() {
           <Route path="slt/mgr/minutes"          element={<ProtectedRoute featureKey="minutes_registry"><Minutes /></ProtectedRoute>} />
           <Route path="slt/mgr/partners"         element={<ProtectedRoute featureKey="partners_entry"><Partners /></ProtectedRoute>} />
           <Route path="slt/mgr/inventory"        element={<ProtectedRoute featureKey="charity_inventory"><Inventory /></ProtectedRoute>} />
-          <Route path="slt/mgr/volunteers"       element={<ProtectedRoute roles={['MANAGER', 'ADMIN', 'HR']}><Volunteers /></ProtectedRoute>} />
+          <Route path="slt/mgr/volunteers"       element={<ProtectedRoute featureKey="volunteers" roles={['MANAGER', 'ADMIN', 'HR']}><Volunteers /></ProtectedRoute>} />
 
           {/* Accounts */}
           <Route path="slt/finance/overview"         element={<ProtectedRoute roles={['ACCOUNTANT']}><AccountsDashboard /></ProtectedRoute>} />
@@ -251,7 +257,7 @@ export default function App() {
           <Route path="slt/entry/events"             element={<ProtectedRoute featureKey="events_entry"><EventEntry /></ProtectedRoute>} />
           
           {/* Social Media & Community Moderation */}
-          <Route path="slt/social/overview"          element={<ProtectedRoute roles={['SOCIAL_MEDIA', 'MANAGER', 'ADMIN']}><SocialMediaDashboard /></ProtectedRoute>} />
+          <Route path="slt/social/overview"          element={<ProtectedRoute ><SocialMediaDashboard /></ProtectedRoute>} />
           <Route path="slt/social/public-issues"     element={<ProtectedRoute featureKey="public_issues"><PublicIssuesPage /></ProtectedRoute>} />
           
           {/* Legacy redirect for old public-issues URL */}

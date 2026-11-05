@@ -206,18 +206,25 @@ export default function AppLayout() {
       return SOCIAL_MEDIA_NAV_CONFIG.filter(item => !item.key || hasFeature(item.key))
     }
 
+    // SOCIAL_MEDIA role has strictly validated social media features + any extra features enabled for them
+    if (user?.role === 'SOCIAL_MEDIA') {
+      const socialItems = SOCIAL_MEDIA_NAV_CONFIG.filter(item => !item.key || hasFeature(item.key))
+      const extraItems = MASTER_NAV_CONFIG.filter(item => item.key && !item.key.startsWith('social_') && hasFeature(item.key))
+      return [...socialItems, ...extraItems]
+    }
+
     // For other roles (MANAGER, HR, etc.), filter master config by features
     return MASTER_NAV_CONFIG.filter(item => {
-      // If the item specifies a hardcoded role (like the main dashboards), enforce it
-      if (item.roles && !item.roles.includes(user?.role)) return false
-
       // Non-togglable dashboard or role-fixed pages without a feature key
-      if (!item.key && item.roles && item.roles.includes(user?.role)) return true
+      if (!item.key) {
+        if (item.roles && !item.roles.includes(user?.role)) return false
+        return true
+      }
 
       // Manager always has access to hr_members (Members Directory)
       if (user?.role === 'MANAGER' && item.key === 'hr_members') return true
 
-      // Strictly check feature access
+      // Strictly check feature access for togglable items
       return hasFeature(item.key)
     })
   }, [user, hasFeature, myFeatures])
