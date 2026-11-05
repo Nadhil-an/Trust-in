@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react"
 import { hrApi } from "../../api"
-import { LoadingState, EmptyState, PageHeader, FilterBar, Modal } from "../../components/shared"
+import { LoadingState, EmptyState, PageHeader, FilterBar, Modal, ConfirmModal, useSecretDelete, SecretDeleteBanner } from "../../components/shared"
 import { format } from "date-fns"
 import toast from "react-hot-toast"
 
@@ -15,6 +15,29 @@ export default function PaymentAdvances() {
   const [hrRemarks, setHrRemarks] = useState("")
   const [actionType, setActionType] = useState("approve")
   const [submitting, setSubmitting] = useState(false)
+
+  const {
+    secretDeleteMode,
+    selectedRowIds,
+    deleteConfirmModal,
+    setDeleteConfirmModal,
+    deleting,
+    toggleSelectRow,
+    toggleSelectAll,
+    confirmDeleteSelected,
+    confirmDeleteOne,
+    handlePermanentDelete,
+  } = useSecretDelete({
+    items,
+    itemName: 'advance request',
+    onDelete: async (itemsToDelete) => {
+      for (const it of itemsToDelete) {
+        await hrApi.paymentAdvances.delete(it.id);
+      }
+    },
+    reload: load,
+  });
+
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -149,14 +172,26 @@ export default function PaymentAdvances() {
                     </td>
                     <td><span className={`badge ${getStatusBadge(req.status)}`}>{req.status}</span></td>
                     <td>
-                      <button className="btn btn-sm btn-secondary" onClick={() => {
-                        setSelected(req)
-                        setPayoutDate(req.payout_date || req.needed_by_date || "")
-                        setHrRemarks(req.hr_remarks || "")
-                        setShowModal(true)
-                      }}>
-                        Manage Request
-                      </button>
+                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                        <button className="btn btn-sm btn-secondary" onClick={() => {
+                          setSelected(req)
+                          setPayoutDate(req.payout_date || req.needed_by_date || "")
+                          setHrRemarks(req.hr_remarks || "")
+                          setShowModal(true)
+                        }}>
+                          Manage Request
+                        </button>
+                        {secretDeleteMode && (
+                          <button
+                            className="btn btn-sm"
+                            style={{ background: '#DC2626', color: '#FFF', fontWeight: 600, padding: '4px 8px' }}
+                            onClick={(ev) => confirmDeleteOne(req, ev)}
+                            title="Permanently Delete"
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -235,6 +270,15 @@ export default function PaymentAdvances() {
           </div>
         </Modal>
       )}
+      <ConfirmModal
+        isOpen={deleteConfirmModal.open}
+        onClose={() => !deleting && setDeleteConfirmModal({ open: false, items: [] })}
+        onConfirm={handlePermanentDelete}
+        title="⚠️ Confirm Permanent Database Deletion"
+        message={`Are you sure you want to permanently delete ${deleteConfirmModal.items?.length || 0} payment advance request(s) from the database? This action cannot be undone.`}
+        confirmText={deleting ? "Deleting..." : "Permanently Delete"}
+        isDanger={true}
+      />
     </div>
   )
 }

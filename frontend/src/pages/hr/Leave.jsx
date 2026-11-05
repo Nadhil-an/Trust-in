@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { hrApi } from "../../api";
-import { LoadingState, EmptyState, PageHeader, Modal } from "../../components/shared";
+import { LoadingState, EmptyState, PageHeader, Modal, ConfirmModal, useSecretDelete, SecretDeleteBanner } from "../../components/shared";
 import { useAuthStore } from "../../store/authStore";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
@@ -56,6 +56,29 @@ export default function LeavePage() {
   const [actionModal, setActionModal] = useState(null); // { leave, action: 'approve' | 'reject' }
   const [rejectionReason, setRejectionReason] = useState("");
   const [acting, setActing] = useState(false);
+
+  const {
+    secretDeleteMode,
+    selectedRowIds,
+    deleteConfirmModal,
+    setDeleteConfirmModal,
+    deleting,
+    toggleSelectRow,
+    toggleSelectAll,
+    confirmDeleteSelected,
+    confirmDeleteOne,
+    handlePermanentDelete,
+  } = useSecretDelete({
+    items,
+    itemName: 'leave application',
+    onDelete: async (itemsToDelete) => {
+      for (const it of itemsToDelete) {
+        await hrApi.leave.delete(it.id);
+      }
+    },
+    reload: loadData,
+  });
+
 
   // Notes & Communication tab in details modal
   const [detailTab, setDetailTab] = useState("details"); // 'details' | 'notes' | 'communication' | 'audit'
@@ -444,6 +467,13 @@ export default function LeavePage() {
           )}
         </div>
 
+                <SecretDeleteBanner
+          secretDeleteMode={secretDeleteMode}
+          selectedRowIds={selectedRowIds}
+          onDeleteSelected={() => confirmDeleteSelected(items)}
+          itemName="leave applications"
+        />
+
         {/* Table Content */}
         {loading ? (
           <LoadingState />
@@ -456,8 +486,8 @@ export default function LeavePage() {
                     <th style={{ width: 44, textAlign: 'center' }}>
                       <input
                         type="checkbox"
-                        checked={selectedRowIds.length === filtered.length && filtered.length > 0}
-                        onChange={() => toggleSelectAll(filtered)}
+                        checked={selectedRowIds.length === items.length && items.length > 0}
+                        onChange={() => toggleSelectAll(items)}
                         style={{ width: 16, height: 16, cursor: 'pointer' }}
                       />
                     </th>
@@ -493,7 +523,17 @@ export default function LeavePage() {
                         : "badge-gray";
 
                     return (
-                      <tr key={l.id}>
+                      <tr key={l.id} style={{ background: selectedRowIds.includes(l.id) ? '#FEF2F2' : undefined }}>
+                        {secretDeleteMode && (
+                          <td style={{ textAlign: 'center' }} onClick={ev => ev.stopPropagation()}>
+                            <input
+                              type="checkbox"
+                              checked={selectedRowIds.includes(l.id)}
+                              onChange={(ev) => toggleSelectRow(l.id, ev)}
+                              style={{ width: 16, height: 16, cursor: 'pointer' }}
+                            />
+                          </td>
+                        )}
                         <td>
                           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                             <div
@@ -615,6 +655,16 @@ export default function LeavePage() {
                             >
                               Details & Notes
                             </button>
+                            {secretDeleteMode && (
+                              <button
+                                className="btn btn-sm"
+                                style={{ background: '#DC2626', color: '#FFF', fontWeight: 600, padding: '4px 8px' }}
+                                onClick={(ev) => confirmDeleteOne(l, ev)}
+                                title="Permanently Delete"
+                              >
+                                Delete
+                              </button>
+                            )}
 
                             {/* Manager/Admin Direct Action Buttons */}
                             {isManagerOrAdmin && l.status === "PENDING" && (
@@ -1139,6 +1189,15 @@ export default function LeavePage() {
           )}
         </Modal>
       )}
+      <ConfirmModal
+        isOpen={deleteConfirmModal.open}
+        onClose={() => !deleting && setDeleteConfirmModal({ open: false, items: [] })}
+        onConfirm={handlePermanentDelete}
+        title="⚠️ Confirm Permanent Database Deletion"
+        message={`Are you sure you want to permanently delete ${deleteConfirmModal.items?.length || 0} leave application(s) from the database? This action cannot be undone.`}
+        confirmText={deleting ? "Deleting..." : "Permanently Delete"}
+        isDanger={true}
+      />
     </div>
   );
 }
