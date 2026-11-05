@@ -286,6 +286,9 @@ class MemberSignupView(APIView):
             'HONORARY': 0.00,
             'PATRON': 10000.00,
         }
+        # Referral code (optional)
+        referral_code_input = (data.get('referral_code') or '').strip().lower()
+
         monthly_fee_val = data.get('monthly_fee')
         if monthly_fee_val is not None and str(monthly_fee_val).strip() != '':
             try:
@@ -395,6 +398,16 @@ class MemberSignupView(APIView):
                 chosen_type = membership_type if membership_type in valid_types else 'MEMBER'
 
                 # Create corresponding Member record linked via created_by
+                # Resolve referral code
+                referring_member = None
+                if referral_code_input:
+                    try:
+                        referring_member = Member.objects.get(
+                            referral_code__iexact=referral_code_input
+                        )
+                    except Member.DoesNotExist:
+                        pass  # Invalid code — silently ignore
+
                 member = Member.objects.create(
                     full_name=full_name,
                     phone=phone,
@@ -405,6 +418,7 @@ class MemberSignupView(APIView):
                     status='ACTIVE',
                     membership_type=chosen_type,
                     monthly_fee=monthly_fee,
+                    referred_by=referring_member,
                 )
         except IntegrityError as e:
             err_str = str(e).lower()

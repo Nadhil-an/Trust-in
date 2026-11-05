@@ -19,7 +19,8 @@ from hr_module.member_image_generator import generate_member_receipt_image_bytes
 from hr_module.models import (Member, MemberDocument, Volunteer, ExecutiveMember,
                                ExecutiveOfficer, SalaryStructure, Attendance,
                                LeaveRequest, MonthlyPayroll, EmployeeDocument,
-                               Complaint, StaffReport, PaymentAdvanceRequest, PerformancePoint)
+                               Complaint, StaffReport, PaymentAdvanceRequest, PerformancePoint,
+                               StaffBonusAccount, StaffBonusTransaction)
 from hr_module.serializers import (MemberSerializer, MemberDocumentSerializer,
                                     VolunteerSerializer, ExecutiveMemberSerializer,
                                     ExecutiveOfficerSerializer, SalaryStructureSerializer,
@@ -291,6 +292,10 @@ class StaffDashboardView(APIView):
             present_days = month_records.filter(status='PRESENT').count()
             attendance_percentage = min(100, round((present_days / days_elapsed) * 100))
 
+        # Bonus summary for today
+        from hr_module.bonus_service import get_staff_bonus_summary
+        bonus_summary = get_staff_bonus_summary(user)
+
         return Response({
             'members': members_today,
             'donations': float(donations_today),
@@ -299,6 +304,10 @@ class StaffDashboardView(APIView):
             'membership_amount': float(membership_amount),
             'assessments': assessments_today,
             'attendancePercentage': attendance_percentage,
+            'donation_bonus': bonus_summary['donation_bonus'],
+            'membership_bonus': bonus_summary['membership_bonus'],
+            'total_bonus': bonus_summary['total_bonus'],
+            'available_bonus': bonus_summary['available_balance'],
         })
 
 # ── Member Expiry & Validity Synchronization ────────────────────────
@@ -1444,6 +1453,43 @@ class OfficerPayrollDataView(APIView):
                     'status': 'EXCESS' if diff > 0 else ('SHORTAGE' if diff < 0 else 'MATCHED'),
                 })
         
+        # Staff Bonus Calculation for the payroll period
+        donation_bonus = 0.0
+        membership_bonus = 0.0
+        total_bonus = 0.0
+        bonus_history = []
+        if user:
+            from hr_module.models import StaffBonusAccount, StaffBonusTransaction
+            try:
+                acc = StaffBonusAccount.objects.get(staff=user)
+                # Bonuses earned in this specific month/year
+                month_txns = StaffBonusTransaction.objects.filter(
+                    bonus_account=acc,
+                    created_at__year=year,
+                    created_at__month=month,
+                    direction='CREDIT'
+                )
+                for bt in month_txns:
+                    amt = float(bt.amount)
+                    if bt.bonus_type == 'DONATION_BONUS':
+                        donation_bonus += amt
+                    elif bt.bonus_type in ['MEMBERSHIP_BONUS', 'REFERRAL_BONUS']:
+                        membership_bonus += amt
+                    total_bonus += amt
+                    bonus_history.append({
+                        'id': str(bt.id),
+                        'bonus_type': bt.bonus_type,
+                        'bonus_type_display': bt.get_bonus_type_display(),
+                        'amount': amt,
+                        'description': bt.description,
+                        'income_id': bt.income_id,
+                        'member_id': bt.member_id,
+                        'member_name': bt.member_name,
+                        'created_at': bt.created_at.strftime('%Y-%m-%d %H:%M'),
+                    })
+            except StaffBonusAccount.DoesNotExist:
+                pass
+
         return Response({
             'employee_name': employee.full_name,
             'employment_type': employee.employment_type,
@@ -1458,7 +1504,11 @@ class OfficerPayrollDataView(APIView):
             'collection_excess': float(total_excess),
             'collection_shortage': float(total_shortage),
             'net_collection_adjustment': float(total_excess - total_shortage),
-            'collection_history': collection_history
+            'collection_history': collection_history,
+            'donation_bonus': float(round(donation_bonus, 2)),
+            'membership_bonus': float(round(membership_bonus, 2)),
+            'total_bonus': float(round(total_bonus, 2)),
+            'bonus_history': bonus_history,
         })
 
 
@@ -2325,8 +2375,44 @@ class SalaryBalanceView(APIView):
             for e in entries
         ]
 
-        # Estimated final salary payout reflecting discrepancies and advances
-        estimated_payout = max(0, net_salary + net_collection_adjustment - total_advances)
+        # Staff Bonus Calculation (Donation 10%, Membership 30%)
+        donation_bonus = 0.0
+        membership_bonus = 0.0
+        total_bonus = 0.0
+        bonus_history = []
+        try:
+            from hr_module.models import StaffBonusAccount, StaffBonusTransaction
+            acc = StaffBonusAccount.objects.get(staff=request.user)
+            month_txns = StaffBonusTransaction.objects.filter(
+                bonus_account=acc,
+                created_at__year=year,
+                created_at__month=month,
+                direction='CREDIT'
+            ).order_by('-created_at')
+            for bt in month_txns:
+                amt = float(bt.amount)
+                if bt.bonus_type == 'DONATION_BONUS':
+                    donation_bonus += amt
+                elif bt.bonus_type in ['MEMBERSHIP_BONUS', 'REFERRAL_BONUS']:
+                    membership_bonus += amt
+                total_bonus += amt
+                bonus_history.append({
+                    'id': str(bt.id),
+                    'bonus_type': bt.bonus_type,
+                    'bonus_type_display': bt.get_bonus_type_display(),
+                    'amount': amt,
+                    'description': bt.description,
+                    'income_id': bt.income_id,
+                    'member_id': bt.member_id,
+                    'member_name': bt.member_name,
+                    'created_at': bt.created_at.strftime('%Y-%m-%d %H:%M'),
+                })
+        except Exception:
+            pass
+
+        # Estimated final salary payout reflecting discrepancies, bonuses, and advances
+        adjusted_salary = float(net_salary + net_collection_adjustment + total_bonus)
+        estimated_payout = max(0, adjusted_salary - total_advances)
 
         return Response({
             'salary': net_salary, # Base net salary from structure
@@ -2341,9 +2427,13 @@ class SalaryBalanceView(APIView):
             'total_excess': total_excess,
             'total_shortage': total_shortage,
             'net_collection_adjustment': net_collection_adjustment,
-            'adjusted_salary': float(net_salary + net_collection_adjustment),
+            'donation_bonus': round(donation_bonus, 2),
+            'membership_bonus': round(membership_bonus, 2),
+            'total_bonus': round(total_bonus, 2),
+            'adjusted_salary': adjusted_salary,
             'estimated_payout': estimated_payout,
-            'collection_history': collection_history
+            'collection_history': collection_history,
+            'bonus_history': bonus_history,
         })
 
 # ── Payment Advance Requests ──────────────────────────────────────
@@ -3368,3 +3458,129 @@ class MemberMarkPaidOfficeView(APIView):
             'amount': float(income.amount),
             'date': str(income.date)
         }, status=status.HTTP_201_CREATED)
+
+
+# ══════════════════════════════════════════════════════════════════
+# Staff Bonus & Commission Views
+# ══════════════════════════════════════════════════════════════════
+
+class StaffBonusSummaryView(APIView):
+    """
+    GET /hr/staff-bonus/           — Staff's own bonus summary
+    GET /hr/staff-bonus/?staff_id= — HR/Manager view a specific staff's summary
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from hr_module.bonus_service import get_staff_bonus_summary
+        from core.models import Role
+
+        staff_id = request.query_params.get('staff_id')
+        if staff_id and request.user.role in [Role.HR, Role.MANAGER, Role.ADMIN]:
+            from core.models import User
+            try:
+                target_user = User.objects.get(staff_uid=staff_id)
+            except User.DoesNotExist:
+                return Response({'error': 'Staff not found.'}, status=404)
+        else:
+            target_user = request.user
+
+        summary = get_staff_bonus_summary(target_user)
+        return Response(summary)
+
+
+class StaffBonusAllView(APIView):
+    """
+    GET /hr/staff-bonus/all/ — HR/Manager view all staff bonus balances
+    """
+    permission_classes = [IsManagerOrHR]
+
+    def get(self, request):
+        from core.models import Role, User
+        from django.db.models import Sum
+
+        staff_users = User.objects.filter(
+            role__in=[Role.STAFF, Role.FIELD_ASSESSMENT_OFFICER,
+                      Role.ASSESSMENT_CALCULATION_OFFICER, Role.GENERAL_ENQUIRY_OFFICER],
+            is_active=True
+        )
+
+        result = []
+        for u in staff_users:
+            try:
+                acc = StaffBonusAccount.objects.get(staff=u)
+                donation_b = float(acc.donation_bonus_balance)
+                membership_b = float(acc.membership_bonus_balance)
+                total_b = donation_b + membership_b
+                paid_out = float(acc.total_paid_out)
+                available = total_b - paid_out
+            except StaffBonusAccount.DoesNotExist:
+                donation_b = membership_b = total_b = paid_out = available = 0.0
+
+            result.append({
+                'staff_uid': u.staff_uid,
+                'name': u.full_name,
+                'role': u.role,
+                'donation_bonus': donation_b,
+                'membership_bonus': membership_b,
+                'total_bonus': total_b,
+                'total_paid_out': paid_out,
+                'available_balance': available,
+            })
+
+        return Response(result)
+
+
+class StaffBonusTransactionsView(APIView):
+    """
+    GET /hr/staff-bonus/transactions/  — Full transaction history for logged-in staff
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from core.models import Role, User
+
+        staff_id = request.query_params.get('staff_id')
+        if staff_id and request.user.role in [Role.HR, Role.MANAGER, Role.ADMIN]:
+            try:
+                target_user = User.objects.get(staff_uid=staff_id)
+            except User.DoesNotExist:
+                return Response({'error': 'Staff not found.'}, status=404)
+        else:
+            target_user = request.user
+
+        try:
+            account = StaffBonusAccount.objects.get(staff=target_user)
+        except StaffBonusAccount.DoesNotExist:
+            return Response({'transactions': [], 'summary': {'donation_bonus': 0, 'membership_bonus': 0, 'total_bonus': 0}})
+
+        txns = StaffBonusTransaction.objects.filter(bonus_account=account).order_by('-created_at')
+
+        # Optional pagination
+        page_size = int(request.query_params.get('page_size', 50))
+        txns = txns[:page_size]
+
+        return Response({
+            'summary': {
+                'donation_bonus': float(account.donation_bonus_balance),
+                'membership_bonus': float(account.membership_bonus_balance),
+                'total_bonus': float(account.donation_bonus_balance) + float(account.membership_bonus_balance),
+                'total_paid_out': float(account.total_paid_out),
+                'available_balance': account.available_balance,
+            },
+            'transactions': [
+                {
+                    'id': str(t.id),
+                    'bonus_type': t.bonus_type,
+                    'bonus_type_display': t.get_bonus_type_display(),
+                    'direction': t.direction,
+                    'amount': float(t.amount),
+                    'description': t.description,
+                    'income_id': t.income_id,
+                    'member_id': t.member_id,
+                    'member_name': t.member_name,
+                    'created_at': t.created_at.isoformat(),
+                }
+                for t in txns
+            ],
+        })

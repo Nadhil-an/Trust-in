@@ -62,12 +62,32 @@ class Member(models.Model):
     emergency_contact_phone = EncryptedCharField(max_length=20, blank=True)  # Encrypted PII
     remarks = models.TextField(blank=True)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    # Referral System
+    referral_code = models.CharField(
+        max_length=100, blank=True, db_index=True,
+        help_text='Unique referral code for this member (e.g. slt-johnmathew)'
+    )
+    referred_by = models.ForeignKey(
+        'self', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='referrals',
+        help_text='The member whose referral code was used during signup'
+    )
+
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'hr_members'
         ordering = ['full_name']
+
+    def _generate_referral_code(self):
+        """Generate a unique referral code like slt-johnmathew"""
+        import re as _re
+        base = _re.sub(r'[^a-z0-9]', '', self.full_name.lower().replace(' ', ''))
+        code = f"slt-{base}" if base else f"slt-{self.member_id}"
+        if Member.objects.filter(referral_code=code).exclude(pk=self.pk).exists():
+            code = f"slt-{base}{self.member_id}"
+        return code
 
     def save(self, *args, **kwargs):
         if not self.member_id:
@@ -77,6 +97,8 @@ class Member(models.Model):
                 count += 1
                 candidate = f"{count:04d}"
             self.member_id = candidate
+        if not self.referral_code and self.full_name:
+            self.referral_code = self._generate_referral_code()
         super().save(*args, **kwargs)
 
 
@@ -461,6 +483,9 @@ class MonthlyPayroll(models.Model):
     other_deductions = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     collection_excess = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Total collection excess credited to salary")
     collection_shortage = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Total collection shortage debited from salary")
+    donation_bonus = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Donation-based bonus (10 percent) credited to salary")
+    membership_bonus = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Membership-based bonus (30 percent) credited to salary")
+    total_bonus = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="Total bonus credited to salary")
     net_salary = models.DecimalField(max_digits=10, decimal_places=2)
     # Status
     status = models.CharField(max_length=20, choices=PayrollStatus.choices, default=PayrollStatus.DRAFT)
@@ -765,3 +790,88 @@ class PromoterRegistryEntry(models.Model):
         """True if cash submitted doesn't match cash collected from mobile."""
         return abs(float(self.cash_submitted or 0) - float(self.cash_collected or 0)) > 0.01
 
+
+
+# ── Staff Bonus System ────────────────────────────────────────────────────────
+
+class StaffBonusAccount(models.Model):
+    """
+    Per-staff bonus balance tracker.
+    Donation-based and membership-based bonuses are tracked separately.
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    staff = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name='bonus_account',
+        limit_choices_to={'role__in': ['STAFF', 'FIELD_ASSESSMENT_OFFICER',
+                                        'ASSESSMENT_CALCULATION_OFFICER', 'GENERAL_ENQUIRY_OFFICER']}
+    )
+    # Donation-based: 10% per Rs1000 donation
+    donation_bonus_balance = models.DecimalField(
+        max_digits=12, decimal_places=2, default=0.00,
+        help_text='Accumulated donation-based bonus (10% per Rs1000 collected)'
+    )
+    # Membership-based: 30% of membership fee per new member
+    membership_bonus_balance = models.DecimalField(
+        max_digits=12, decimal_places=2, default=0.00,
+        help_text='Accumulated membership-based bonus (30% of membership fee per new member)'
+    )
+    # Total paid out so far
+    total_paid_out = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'hr_staff_bonus_accounts'
+        verbose_name = 'Staff Bonus Account'
+
+    def __str__(self):
+        return f"{self.staff.full_name} - Bonus Account"
+
+    @property
+    def total_bonus_balance(self):
+        return float(self.donation_bonus_balance) + float(self.membership_bonus_balance)
+
+    @property
+    def available_balance(self):
+        return self.total_bonus_balance - float(self.total_paid_out)
+
+
+class StaffBonusTransaction(models.Model):
+    """
+    Individual bonus credit/debit transaction for a staff member.
+    """
+    class BonusType(models.TextChoices):
+        DONATION_BONUS = 'DONATION_BONUS', 'Donation Bonus (10%)'
+        MEMBERSHIP_BONUS = 'MEMBERSHIP_BONUS', 'Membership Bonus (30%)'
+        REFERRAL_BONUS = 'REFERRAL_BONUS', 'Referral Membership Bonus (30%)'
+        PAYOUT = 'PAYOUT', 'Paid Out via Salary'
+
+    class TxnDirection(models.TextChoices):
+        CREDIT = 'CREDIT', 'Credit'
+        DEBIT = 'DEBIT', 'Debit'
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    bonus_account = models.ForeignKey(
+        StaffBonusAccount, on_delete=models.CASCADE, related_name='transactions'
+    )
+    bonus_type = models.CharField(max_length=30, choices=BonusType.choices)
+    direction = models.CharField(max_length=10, choices=TxnDirection.choices, default=TxnDirection.CREDIT)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    # Context references
+    description = models.TextField(blank=True)
+    # Linked donation (optional)
+    income_id = models.CharField(max_length=50, blank=True, help_text='Reference Income receipt number')
+    # Linked member (optional — for membership / referral bonuses)
+    member_id = models.CharField(max_length=50, blank=True, help_text='Reference Member ID')
+    member_name = models.CharField(max_length=255, blank=True)
+    # Payroll reference (for payouts)
+    payroll_ref = models.CharField(max_length=50, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = 'hr_staff_bonus_transactions'
+        ordering = ['-created_at']
+        verbose_name = 'Staff Bonus Transaction'
+
+    def __str__(self):
+        return f"{self.bonus_account.staff.full_name} | {self.bonus_type} | Rs{self.amount} ({self.direction})"

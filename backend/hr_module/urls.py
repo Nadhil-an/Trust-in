@@ -85,5 +85,8 @@ urlpatterns = [
     path('promoter-registry/is-closed/', views.PromoterRegistryCheckClosedView.as_view()),
     path('promoter-registry/transactions/', views.DailyTransactionHistoryView.as_view()),
     path('promoter-registry/<uuid:pk>/', views.PromoterRegistryDetailView.as_view()),
+    # Staff Bonus & Commission
+    path('staff-bonus/', views.StaffBonusSummaryView.as_view()),
+    path('staff-bonus/all/', views.StaffBonusAllView.as_view()),
+    path('staff-bonus/transactions/', views.StaffBonusTransactionsView.as_view()),
 ]
-

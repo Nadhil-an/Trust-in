@@ -28,6 +28,7 @@ import { memberPostsApi, authApi, verificationsApi, rewardsApi } from '../../api
 import * as ImagePicker from 'expo-image-picker';
 import { Video, ResizeMode } from 'expo-av';
 import { resolveImageUrl } from '../../utils/imageUrl';
+import * as Clipboard from 'expo-clipboard';
 import Toast from 'react-native-toast-message';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -51,6 +52,14 @@ export default function MemberProfileScreen() {
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [followingLoading, setFollowingLoading] = useState(false);
+
+  const cleanNameForCode = (
+    profileData?.full_name || currentUser?.full_name || profileData?.username || currentUser?.username || 'member'
+  ).toLowerCase().replace(/[^a-z0-9]/g, '');
+  const referralCode =
+    profileData?.referral_code ||
+    currentUser?.referral_code ||
+    `slt-${cleanNameForCode}`;
 
   const isMe = Boolean(
     currentUser && targetUserId && String(currentUser.id) === String(targetUserId)
@@ -1674,6 +1683,104 @@ const styles = StyleSheet.create({
   listContent: {
     paddingBottom: 40,
     backgroundColor: '#F4F6F8',
+  },
+  referralCard: {
+    backgroundColor: '#F0F9FF',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#BAE6FD',
+    padding: 12,
+    marginHorizontal: 16,
+    marginBottom: 14,
+  },
+  referralHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  referralIconCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#E0F2FE',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  referralTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0369A1',
+  },
+  referralSubtitle: {
+    fontSize: 10.5,
+    color: '#0284C7',
+    lineHeight: 14,
+  },
+  referralCodeBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#BAE6FD',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  referralCodeText: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#0284C7',
+    letterSpacing: 0.5,
+  },
+  copyReferralBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#E0F2FE',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  copyReferralBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0284C7',
+  },
+  referralReadOnlyWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0F9FF',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#BAE6FD',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 8,
+  },
+  referralReadOnlyText: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0284C7',
+    letterSpacing: 0.3,
+  },
+  referralFixedBadge: {
+    backgroundColor: '#E0F2FE',
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  referralFixedBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#0284C7',
+  },
+  referralHelpText: {
+    fontSize: 11,
+    color: '#64748B',
+    marginTop: 4,
   },
   headerSection: {
     backgroundColor: '#FFFFFF',

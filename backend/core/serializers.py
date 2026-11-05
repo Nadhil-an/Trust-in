@@ -44,6 +44,7 @@ class UserSerializer(serializers.ModelSerializer):
     subscription_status = serializers.SerializerMethodField()
     days_left_to_expire = serializers.SerializerMethodField()
     monthly_fee = serializers.SerializerMethodField()
+    referral_code = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -52,7 +53,7 @@ class UserSerializer(serializers.ModelSerializer):
             'is_active', 'is_verified', 'date_joined',
             'member_id', 'member_name', 'member_since', 'valid_upto',
             'is_subscription_expired', 'has_active_subscription', 'is_paid_member',
-            'subscription_status', 'days_left_to_expire', 'monthly_fee'
+            'subscription_status', 'days_left_to_expire', 'monthly_fee', 'referral_code'
         ]
         read_only_fields = ['id', 'date_joined']
 
@@ -171,6 +172,16 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_days_left_to_expire(self, obj):
         return self._get_subscription_info(obj)['days_left_to_expire']
+
+    def get_referral_code(self, obj):
+        member = self._get_member(obj)
+        if member and getattr(member, 'referral_code', None):
+            return member.referral_code
+        # Auto-compute standard format slt-membername
+        import re
+        name = obj.full_name or obj.username or ''
+        clean_name = re.sub(r'[^a-z0-9]', '', name.lower().replace(' ', ''))
+        return f"slt-{clean_name}" if clean_name else f"slt-{obj.username}"
 
     def get_monthly_fee(self, obj):
         member = self._get_member(obj)

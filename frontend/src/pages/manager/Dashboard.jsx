@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { managerApi, accountsApi } from '../../api'
-import { AmountDisplay, LoadingState, PageHeader, formatINR, Modal } from '../../components/shared'
+import { managerApi, accountsApi, hrApi } from '../../api'
+import { AmountDisplay, LoadingState, PageHeader, formatINR, Modal, EmptyState } from '../../components/shared'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 import {
@@ -43,6 +43,57 @@ const ChartTip = ({ active, payload, label }) => {
           <strong>{p.value}</strong>
         </div>
       ))}
+      {/* ── Manager Staff Bonus & Commission Ledger Modal ── */}
+      <Modal
+        open={showBonusModal}
+        onClose={() => setShowBonusModal(false)}
+        title="Staff Bonus & Commission Ledger (10% Donation + 30% Member)"
+        width={850}
+      >
+        <div style={{ marginBottom: 16, background: '#FAF5FF', border: '1px solid #E9D5FF', borderRadius: 8, padding: '12px 16px' }}>
+          <h4 style={{ margin: '0 0 6px 0', color: '#7E22CE', fontSize: 14 }}>Staff Incentive & Commission Policy</h4>
+          <p style={{ margin: 0, fontSize: 12, color: '#6B21A8', lineHeight: 1.5 }}>
+            • <strong>Donation Bonus:</strong> 10% (₹100 per ₹1,000) credited to staff bonus account for eligible donations.<br />
+            • <strong>Membership Bonus:</strong> 30% (₹30 per ₹100) credited to respective staff bonus account upon new member registration.<br />
+            • Both bonuses are tracked separately and automatically paid out as part of monthly salary processing.
+          </p>
+        </div>
+
+        {loadingBonus ? (
+          <LoadingState />
+        ) : staffBonusList.length === 0 ? (
+          <EmptyState icon="🎁" title="No staff bonus accounts found" />
+        ) : (
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Staff ID</th>
+                  <th>Staff Name</th>
+                  <th>Donation Bonus (10%)</th>
+                  <th>Member Bonus (30%)</th>
+                  <th>Total Accumulated</th>
+                  <th>Paid via Salary</th>
+                  <th>Available Balance</th>
+                </tr>
+              </thead>
+              <tbody>
+                {staffBonusList.map((sb) => (
+                  <tr key={sb.staff_uid}>
+                    <td className="td-mono">{sb.staff_uid || "-"}</td>
+                    <td style={{ fontWeight: 600 }}>{sb.name}</td>
+                    <td style={{ color: '#16a34a', fontWeight: 600 }}>+{formatINR(sb.donation_bonus)}</td>
+                    <td style={{ color: '#7c3aed', fontWeight: 600 }}>+{formatINR(sb.membership_bonus)}</td>
+                    <td style={{ fontWeight: 700, color: '#9333ea' }}>{formatINR(sb.total_bonus)}</td>
+                    <td style={{ color: '#64748b' }}>{formatINR(sb.total_paid_out)}</td>
+                    <td style={{ fontWeight: 800, color: '#15803d' }}>{formatINR(sb.available_balance)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }
@@ -160,6 +211,21 @@ export default function ManagerDashboard() {
   const [loading, setLoading] = useState(true)
   const [active, setActive] = useState(null) // 'requests' | 'finance' | 'attendance' | 'donations'
   const [showReport, setShowReport] = useState(false)
+  const [showBonusModal, setShowBonusModal] = useState(false)
+  const [staffBonusList, setStaffBonusList] = useState([])
+  const [loadingBonus, setLoadingBonus] = useState(false)
+
+  const loadStaffBonuses = async () => {
+    setLoadingBonus(true)
+    try {
+      const res = await hrApi.staffBonus.all()
+      setStaffBonusList(res.data || [])
+    } catch (err) {
+      toast.error('Failed to load staff bonus balances')
+    } finally {
+      setLoadingBonus(false)
+    }
+  }
   const [showStaffFilterReport, setShowStaffFilterReport] = useState(false)
   const navigate = useNavigate()
 
@@ -368,6 +434,9 @@ export default function ManagerDashboard() {
         subtitle={`Good ${new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 17 ? 'Afternoon' : 'Evening'} — ${format(new Date(), 'EEEE, dd MMMM yyyy')}`}
       >
         <div style={{ display: 'flex', gap: 10 }}>
+          <button className="btn btn-secondary" onClick={() => { setShowBonusModal(true); loadStaffBonuses(); }} style={{ background: '#FAF5FF', color: '#9333EA', fontWeight: 700, border: '1px solid #E9D5FF' }}>
+            🎁 Staff Bonus
+          </button>
           <button className="btn btn-secondary" onClick={() => setShowStaffFilterReport(true)} style={{ background: '#F0FDF4', color: '#16A34A', fontWeight: 700, border: '1px solid #BBF7D0' }}>
             📈 Staff Performance
           </button>

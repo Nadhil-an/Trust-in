@@ -25,6 +25,7 @@ import AttendanceScreen from '../screens/staff/AttendanceScreen';
 import PaymentAdvanceScreen from '../screens/staff/PaymentAdvanceScreen';
 import AchievedPointsScreen from '../screens/staff/AchievedPointsScreen';
 import StaffLeaderboardScreen from '../screens/staff/StaffLeaderboardScreen';
+import StaffEarningsScreen from '../screens/staff/StaffEarningsScreen';
 import StockInventoryScreen from '../screens/staff/StockInventoryScreen';
 import StaffLeaveScreen from '../screens/staff/StaffLeaveScreen';
 
@@ -207,6 +208,7 @@ const MainStack = () => {
       <Stack.Screen name="StaffDonationsList" component={StaffDonationsListScreen} />
       <Stack.Screen name="StaffAssessmentsList" component={StaffAssessmentsListScreen} />
       <Stack.Screen name="StaffLeaderboard" component={StaffLeaderboardScreen} />
+      <Stack.Screen name="StaffEarnings" component={StaffEarningsScreen} />
 
       {/* Staff Drawer Features */}
       <Stack.Screen name="StaffComplaints" component={ComplaintsScreen} />

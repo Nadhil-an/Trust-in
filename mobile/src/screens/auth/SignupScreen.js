@@ -52,6 +52,7 @@ const SignupScreen = ({ navigation }) => {
     // Section 2: Address & Password
     address: '',
     pincode: '',
+    referral_code: '',
     state: 'Kerala',
     district: 'Kozhikode',
     password: '',
@@ -205,6 +206,7 @@ const SignupScreen = ({ navigation }) => {
         district: form.district.trim(),
         state: form.state.trim(),
         pincode: form.pincode.replace(/\D/g, ''),
+        referral_code: form.referral_code ? form.referral_code.trim() : undefined,
         password: form.password,
       };
 
@@ -470,6 +472,17 @@ const SignupScreen = ({ navigation }) => {
                   leftIcon={<Ionicons name="map-outline" size={19} color="#64748b" />}
                   error={errors.pincode}
                   maxLength={6}
+                />
+
+                {/* Referral Code (Optional) */}
+                <Input
+                  label="Referral Code (Optional)"
+                  value={form.referral_code}
+                  onChangeText={(v) => setField('referral_code', v.toLowerCase().trim())}
+                  placeholder="e.g. slt-membername"
+                  leftIcon={<Ionicons name="gift-outline" size={19} color="#0284c7" />}
+                  autoCapitalize="none"
+                  error={errors.referral_code}
                 />
 
                 {/* State & District Dropdown Selectors */}

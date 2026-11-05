@@ -32,6 +32,9 @@ const DEFAULT_GEN_FORM = {
   other_deductions: 0,
   collection_excess: 0,
   collection_shortage: 0,
+  donation_bonus: 0,
+  membership_bonus: 0,
+  total_bonus: 0,
   payment_method: "BANK",
   remarks: "",
 }
@@ -49,6 +52,9 @@ export default function PayrollPage() {
 
   // View Slip
   const [selectedSlip, setSelectedSlip] = useState(null)
+  const [bonusModalOpen, setBonusModalOpen] = useState(false)
+  const [staffBonusList, setStaffBonusList] = useState([])
+  const [loadingBonus, setLoadingBonus] = useState(false)
 
   const {
     secretDeleteMode,
@@ -260,6 +266,9 @@ export default function PayrollPage() {
           other_deductions: data.salary_advance_taken || 0,
           collection_excess: Number(data.collection_excess || 0),
           collection_shortage: Number(data.collection_shortage || 0),
+          donation_bonus: Number(data.donation_bonus || 0),
+          membership_bonus: Number(data.membership_bonus || 0),
+          total_bonus: Number(data.total_bonus || (Number(data.donation_bonus || 0) + Number(data.membership_bonus || 0))),
         }))
       } catch (err) {
         if (!cancelled)
@@ -281,6 +290,10 @@ export default function PayrollPage() {
     Number(genForm.ta) +
     Number(genForm.other_allowances)
 
+  const totalBonus =
+    Number(genForm.donation_bonus || 0) +
+    Number(genForm.membership_bonus || 0)
+
   const totalDeductions =
     Number(genForm.pf_deduction) +
     Number(genForm.other_deductions) +
@@ -288,7 +301,8 @@ export default function PayrollPage() {
 
   const netSalary =
     grossSalary +
-    Number(genForm.collection_excess || 0) -
+    Number(genForm.collection_excess || 0) +
+    totalBonus -
     totalDeductions
 
   const handleGenerate = async (e) => {
@@ -317,6 +331,9 @@ export default function PayrollPage() {
         other_deductions: Number(genForm.other_deductions),
         collection_excess: Number(genForm.collection_excess || 0),
         collection_shortage: Number(genForm.collection_shortage || 0),
+        donation_bonus: Number(genForm.donation_bonus || 0),
+        membership_bonus: Number(genForm.membership_bonus || 0),
+        total_bonus: totalBonus,
         net_salary: netSalary,
         payment_method: genForm.payment_method,
         remarks: genForm.remarks,
@@ -426,6 +443,7 @@ export default function PayrollPage() {
                   <th>Employee</th>
                   <th>Month/Year</th>
                   <th>Basic Salary</th>
+                  <th>Bonus (10%+30%)</th>
                   <th>Advance Salary</th>
                   <th>Balance Salary</th>
                   <th>Status</th>
@@ -459,6 +477,9 @@ export default function PayrollPage() {
                       </td>
                       <td>
                         <AmountDisplay amount={p.basic_salary} />
+                      </td>
+                      <td style={{ color: '#9333EA', fontWeight: 600 }}>
+                        +{formatINR(p.original?.total_bonus || (Number(p.original?.donation_bonus || 0) + Number(p.original?.membership_bonus || 0)))}
                       </td>
                       <td
                         style={{
@@ -589,6 +610,12 @@ export default function PayrollPage() {
                   ["Other Allowances", selectedSlip.other_allowances],
                   ...(Number(selectedSlip.collection_excess || 0) > 0
                     ? [["Collection Excess (Credit)", selectedSlip.collection_excess]]
+                    : []),
+                  ...(Number(selectedSlip.donation_bonus || 0) > 0
+                    ? [["Donation Bonus (10%)", selectedSlip.donation_bonus]]
+                    : []),
+                  ...(Number(selectedSlip.membership_bonus || 0) > 0
+                    ? [["Membership Bonus (30%)", selectedSlip.membership_bonus]]
                     : []),
                 ].map(([label, val]) => (
                   <div
@@ -1320,6 +1347,57 @@ export default function PayrollPage() {
           </form>
         </Modal>
       )}
+      {/* ── Staff Bonus & Commission Management Modal ── */}
+      <Modal
+        open={bonusModalOpen}
+        onClose={() => setBonusModalOpen(false)}
+        title="Staff Bonus & Commission Ledger (10% Donation + 30% Member)"
+        width={850}
+      >
+        <div style={{ marginBottom: 16, background: '#FAF5FF', border: '1px solid #E9D5FF', borderRadius: 8, padding: '12px 16px' }}>
+          <h4 style={{ margin: '0 0 6px 0', color: '#7E22CE', fontSize: 14 }}>Salary Bonus & Commission Policy</h4>
+          <p style={{ margin: 0, fontSize: 12, color: '#6B21A8', lineHeight: 1.5 }}>
+            • <strong>Donation Bonus:</strong> 10% (₹100 per ₹1,000) allocated to staff bonus account for eligible donations.<br />
+            • <strong>Membership Bonus:</strong> 30% (₹30 per ₹100) credited to respective staff bonus account upon new member registration.<br />
+            • Both bonuses are tracked separately and automatically added during monthly salary processing.
+          </p>
+        </div>
+
+        {loadingBonus ? (
+          <LoadingState />
+        ) : staffBonusList.length === 0 ? (
+          <EmptyState icon="🎁" title="No staff bonus accounts found" />
+        ) : (
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Staff ID</th>
+                  <th>Staff Name</th>
+                  <th>Donation Bonus (10%)</th>
+                  <th>Member Bonus (30%)</th>
+                  <th>Total Accumulated</th>
+                  <th>Paid via Salary</th>
+                  <th>Available Balance</th>
+                </tr>
+              </thead>
+              <tbody>
+                {staffBonusList.map((sb) => (
+                  <tr key={sb.staff_uid}>
+                    <td className="td-mono">{sb.staff_uid || "-"}</td>
+                    <td style={{ fontWeight: 600 }}>{sb.name}</td>
+                    <td style={{ color: '#16a34a', fontWeight: 600 }}>+{formatINR(sb.donation_bonus)}</td>
+                    <td style={{ color: '#7c3aed', fontWeight: 600 }}>+{formatINR(sb.membership_bonus)}</td>
+                    <td style={{ fontWeight: 700, color: '#9333ea' }}>{formatINR(sb.total_bonus)}</td>
+                    <td style={{ color: '#64748b' }}>{formatINR(sb.total_paid_out)}</td>
+                    <td style={{ fontWeight: 800, color: '#15803d' }}>{formatINR(sb.available_balance)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }

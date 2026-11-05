@@ -107,7 +107,7 @@ const StaffHomeScreen = ({ navigation, route }) => {
       
       // When we reach slide 15 (which is the start of the 6th set, meaning it's the 'greeting' card),
       // we silently reset to 0 (the first 'greeting' card) and animate to 1 immediately.
-      if (currentSlide >= 15) {
+      if (currentSlide >= 20) {
         sliderRef.current?.scrollTo({ x: 0, animated: false });
         currentSlide = 1;
         setTimeout(() => {
@@ -327,7 +327,7 @@ const StaffHomeScreen = ({ navigation, route }) => {
             showsHorizontalScrollIndicator={false}
             scrollEventThrottle={16}
           >
-            {Array(10).fill(['greeting', 'collection', 'leaderboard']).flat().map((type, index) => {
+            {Array(10).fill(['greeting', 'collection', 'earnings', 'leaderboard']).flat().map((type, index) => {
               if (type === 'greeting') {
                 return (
                   <View key={index} style={{ width: width - 36 }}>
@@ -403,8 +403,87 @@ const StaffHomeScreen = ({ navigation, route }) => {
                           <Text style={styles.collThirdLabel}>{t('staff.members', 'Members')}</Text>
                           <Text style={styles.collThirdVal}>₹{(stats?.membership_amount || 0).toLocaleString()}</Text>
                         </View>
+
+                        <TouchableOpacity 
+                          style={[styles.collThirdBox, { borderColor: '#E9D5FF', backgroundColor: '#FAF5FF' }]}
+                          activeOpacity={0.8}
+                          onPress={() => navigation.navigate('StaffEarnings')}
+                        >
+                          <View style={[styles.collThirdIcon, { backgroundColor: '#F3E8FF' }]}>
+                            <Ionicons name="gift-outline" size={14} color="#9333EA" />
+                          </View>
+                          <Text style={[styles.collThirdLabel, { color: '#7E22CE' }]}>Earnings</Text>
+                          <Text style={[styles.collThirdVal, { color: '#9333EA', fontWeight: '800' }]}>
+                            ₹{Number(stats?.total_bonus || 0).toLocaleString()}
+                          </Text>
+                        </TouchableOpacity>
                       </View>
                     </View>
+                  </TouchableOpacity>
+                );
+              } else if (type === 'earnings') {
+                return (
+                  <TouchableOpacity 
+                    key={index}
+                    activeOpacity={0.9} 
+                    style={{ width: width - 36 }}
+                    onPress={() => navigation.navigate('StaffEarnings')}
+                  >
+                    <LinearGradient
+                      colors={['#7E22CE', '#9333EA', '#A855F7']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={styles.earningsSlideCard}
+                    >
+                      <View style={styles.earningsSlideHeader}>
+                        <View>
+                          <View style={styles.earningsPill}>
+                            <Ionicons name="sparkles" size={11} color="#FFFFFF" />
+                            <Text style={styles.earningsPillText}>BONUS & COMMISSION</Text>
+                          </View>
+                          <Text style={styles.earningsSlideTitle}>My Earnings</Text>
+                          <Text style={styles.earningsSlideSubtitle}>Track 10% donation & 30% member bonus</Text>
+                        </View>
+                        <View style={styles.earningsSlideIconWrap}>
+                          <Ionicons name="wallet" size={24} color="#9333EA" />
+                        </View>
+                      </View>
+
+                      <View style={styles.earningsTotalRow}>
+                        <Text style={styles.earningsTotalLabel}>Total Earned Bonus</Text>
+                        <Text style={styles.earningsTotalVal}>
+                          ₹ {Number(stats?.total_bonus || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </Text>
+                      </View>
+
+                      <View style={styles.earningsSubRow}>
+                        <View style={styles.earningsSubBox}>
+                          <Text style={styles.earningsSubLabel}>Donation (10%)</Text>
+                          <Text style={styles.earningsSubVal}>
+                            ₹ {Number(stats?.donation_bonus || 0).toLocaleString()}
+                          </Text>
+                        </View>
+                        <View style={styles.earningsSubDivider} />
+                        <View style={styles.earningsSubBox}>
+                          <Text style={styles.earningsSubLabel}>Member (30%)</Text>
+                          <Text style={styles.earningsSubVal}>
+                            ₹ {Number(stats?.membership_bonus || 0).toLocaleString()}
+                          </Text>
+                        </View>
+                        <View style={styles.earningsSubDivider} />
+                        <View style={styles.earningsSubBox}>
+                          <Text style={styles.earningsSubLabel}>Available</Text>
+                          <Text style={styles.earningsSubVal}>
+                            ₹ {Number(stats?.available_bonus || 0).toLocaleString()}
+                          </Text>
+                        </View>
+                      </View>
+
+                      <View style={styles.earningsViewAllRow}>
+                        <Text style={styles.earningsViewAllText}>View Detailed Statement</Text>
+                        <Ionicons name="arrow-forward" size={13} color="#FFFFFF" />
+                      </View>
+                    </LinearGradient>
                   </TouchableOpacity>
                 );
               } else {
@@ -864,6 +943,122 @@ const styles = StyleSheet.create({
   collThirdVal: { fontSize: 12, fontWeight: '800', color: '#0F172A', marginTop: 2 },
 
   /* Leaderboard Card UI */
+  earningsSlideCard: {
+    borderRadius: 20,
+    padding: 16,
+    shadowColor: '#7E22CE',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  earningsSlideHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  earningsPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.22)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+    alignSelf: 'flex-start',
+    marginBottom: 4,
+  },
+  earningsPillText: {
+    fontSize: 9.5,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+  },
+  earningsSlideTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: -0.3,
+  },
+  earningsSlideSubtitle: {
+    fontSize: 11,
+    color: 'rgba(255, 255, 255, 0.85)',
+    fontWeight: '500',
+  },
+  earningsSlideIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  earningsTotalRow: {
+    backgroundColor: 'rgba(255, 255, 255, 0.16)',
+    borderRadius: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginVertical: 8,
+  },
+  earningsTotalLabel: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontWeight: '600',
+  },
+  earningsTotalVal: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#FFFFFF',
+  },
+  earningsSubRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderRadius: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+  },
+  earningsSubBox: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  earningsSubLabel: {
+    fontSize: 9.5,
+    color: 'rgba(255, 255, 255, 0.78)',
+    fontWeight: '500',
+    marginBottom: 2,
+  },
+  earningsSubVal: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  earningsSubDivider: {
+    width: 1,
+    height: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.22)',
+  },
+  earningsViewAllRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: 4,
+    marginTop: 8,
+  },
+  earningsViewAllText: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
   lbCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 18,

@@ -81,6 +81,10 @@ export const staffApi = {
     increment: (staffId) => api.post(`/hr/staff-vouchers/${staffId}/increment/`),
   },
   checkDayClosed: (staffId, date) => api.get('/hr/promoter-registry/is-closed/', { params: { staff_id: staffId, date } }),
+  // Bonus & Commission
+  bonusSummary:       () => api.get('/hr/staff-bonus/'),
+  bonusTransactions:  (params) => api.get('/hr/staff-bonus/transactions/', { params }),
+  allStaffBonus:      () => api.get('/hr/staff-bonus/all/'),
 };
 
 // ── Auth  (api/auth/) ────────────────────────────────────────────────────────

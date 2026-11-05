@@ -16,7 +16,7 @@ class MemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = Member
         fields = '__all__'
-        read_only_fields = ['id', 'member_id', 'created_by', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'member_id', 'referral_code', 'created_by', 'created_at', 'updated_at']
 
     def to_internal_value(self, data):
         if hasattr(data, 'copy'):
@@ -344,6 +344,7 @@ class MonthlyPayrollSerializer(serializers.ModelSerializer):
     employee_name = serializers.SerializerMethodField()
     employee_id_code = serializers.SerializerMethodField()
     collection_history = serializers.SerializerMethodField()
+    bonus_history = serializers.SerializerMethodField()
 
     class Meta:
         model = MonthlyPayroll
@@ -355,6 +356,43 @@ class MonthlyPayrollSerializer(serializers.ModelSerializer):
 
     def get_employee_id_code(self, obj):
         return obj.employee.employee_id if obj.employee else ''
+
+    def get_bonus_history(self, obj):
+        if not obj.employee:
+            return []
+        from django.contrib.auth import get_user_model
+        from django.db.models import Q
+        from hr_module.models import StaffBonusAccount, StaffBonusTransaction
+        User = get_user_model()
+        user = User.objects.filter(
+            Q(email__iexact=obj.employee.email) | Q(full_name__iexact=obj.employee.full_name)
+        ).first()
+        if not user:
+            return []
+        try:
+            account = StaffBonusAccount.objects.get(staff=user)
+            txns = StaffBonusTransaction.objects.filter(
+                bonus_account=account,
+                created_at__year=obj.year,
+                created_at__month=obj.month
+            ).order_by('-created_at')
+            return [
+                {
+                    'id': str(t.id),
+                    'bonus_type': t.bonus_type,
+                    'bonus_type_display': t.get_bonus_type_display(),
+                    'direction': t.direction,
+                    'amount': float(t.amount),
+                    'description': t.description,
+                    'income_id': t.income_id,
+                    'member_id': t.member_id,
+                    'member_name': t.member_name,
+                    'created_at': t.created_at.isoformat(),
+                }
+                for t in txns
+            ]
+        except StaffBonusAccount.DoesNotExist:
+            return []
 
     def get_collection_history(self, obj):
         if not obj.employee:

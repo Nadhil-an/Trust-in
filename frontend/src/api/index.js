@@ -284,6 +284,11 @@ export const hrApi = {
     update: (id, data) => api.patch(`/hr/payroll/${id}/`, data),
     delete: (id) => api.delete(`/hr/payroll/${id}/`),
   },
+  staffBonus: {
+    all: () => api.get('/hr/staff-bonus/all/'),
+    summary: (params) => api.get('/hr/staff-bonus/', { params }),
+    transactions: (params) => api.get('/hr/staff-bonus/transactions/', { params }),
+  },
   salaryStructures: {
     list: (params) => api.get('/hr/salary-structures/', { params }),
     create: (data) => api.post('/hr/salary-structures/', data),
