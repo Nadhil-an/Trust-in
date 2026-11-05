@@ -189,6 +189,169 @@ def credit_referral_bonus_for_referrer(new_member):
     return credit_membership_bonus(new_member, staff_user=user_to_credit, is_referral=True)
 
 
+def sync_staff_bonus_account(user):
+    """
+    Synchronize staff bonus account against actual existing Income and Member records.
+    Purges orphan transactions (e.g. from deleted donations/members) and recalculates balances.
+    """
+    if not user:
+        return None
+    from hr_module.models import StaffBonusAccount, StaffBonusTransaction, Member
+    from accounts_module.models import Income
+    from django.db.models import Sum, Q
+    import uuid
+
+    account = _get_or_create_bonus_account(user)
+
+    # 1. Purge orphan bonus transactions
+    txns = StaffBonusTransaction.objects.filter(bonus_account=account)
+    for txn in list(txns):
+        # Donation bonus link check
+        if txn.income_id:
+            is_valid_uuid = False
+            try:
+                val_uuid = uuid.UUID(str(txn.income_id))
+                is_valid_uuid = True
+            except (ValueError, AttributeError):
+                is_valid_uuid = False
+
+            if is_valid_uuid:
+                exists = Income.objects.filter(Q(id=val_uuid) | Q(receipt_number=txn.income_id)).exists()
+            else:
+                exists = Income.objects.filter(receipt_number=txn.income_id).exists()
+
+            if not exists:
+                txn.delete()
+                continue
+
+        # Member bonus link check
+        if txn.member_id:
+            is_valid_uuid = False
+            try:
+                val_uuid = uuid.UUID(str(txn.member_id))
+                is_valid_uuid = True
+            except (ValueError, AttributeError):
+                is_valid_uuid = False
+
+            if is_valid_uuid:
+                exists = Member.objects.filter(Q(id=val_uuid) | Q(member_id=txn.member_id)).exists()
+            else:
+                exists = Member.objects.filter(member_id=txn.member_id).exists()
+
+            if not exists:
+                txn.delete()
+                continue
+
+    # 2. Recalculate balances from remaining valid transactions
+    remaining = StaffBonusTransaction.objects.filter(bonus_account=account)
+
+    don_credits = remaining.filter(
+        direction=StaffBonusTransaction.TxnDirection.CREDIT,
+        bonus_type__in=[
+            StaffBonusTransaction.BonusType.DONATION_BONUS,
+            'DONATION'
+        ]
+    ).aggregate(s=Sum('amount'))['s'] or Decimal('0.00')
+
+    mem_credits = remaining.filter(
+        direction=StaffBonusTransaction.TxnDirection.CREDIT,
+        bonus_type__in=[
+            StaffBonusTransaction.BonusType.MEMBERSHIP_BONUS,
+            StaffBonusTransaction.BonusType.REFERRAL_BONUS,
+            'MEMBERSHIP',
+            'REFERRAL'
+        ]
+    ).aggregate(s=Sum('amount'))['s'] or Decimal('0.00')
+
+    payout_debits = remaining.filter(
+        direction=StaffBonusTransaction.TxnDirection.DEBIT
+    ).aggregate(s=Sum('amount'))['s'] or Decimal('0.00')
+
+    account.donation_bonus_balance = Decimal(str(don_credits))
+    account.membership_bonus_balance = Decimal(str(mem_credits))
+    account.total_paid_out = Decimal(str(payout_debits))
+    account.save(update_fields=['donation_bonus_balance', 'membership_bonus_balance', 'total_paid_out', 'updated_at'])
+    return account
+
+
+def sync_all_bonus_accounts():
+    """Sync all existing StaffBonusAccounts."""
+    from hr_module.models import StaffBonusAccount
+    for acc in StaffBonusAccount.objects.select_related('staff').all():
+        try:
+            sync_staff_bonus_account(acc.staff)
+        except Exception as e:
+            logger.warning(f"Failed to sync bonus account for user {acc.staff_id}: {e}")
+
+
+def handle_income_deleted(income):
+    """
+    Called when an Income record is deleted.
+    Removes linked StaffBonusTransactions and re-syncs affected staff bonus accounts.
+    """
+    from hr_module.models import StaffBonusTransaction
+    from django.db.models import Q
+
+    receipt_no = getattr(income, 'receipt_number', None)
+    income_id = getattr(income, 'id', None)
+
+    q = Q()
+    if receipt_no:
+        q |= Q(income_id=str(receipt_no))
+    if income_id:
+        q |= Q(income_id=str(income_id))
+
+    txns = StaffBonusTransaction.objects.filter(q)
+    affected_users = set()
+    for t in txns:
+        if t.bonus_account and t.bonus_account.staff:
+            affected_users.add(t.bonus_account.staff)
+    txns.delete()
+
+    if getattr(income, 'created_by', None):
+        affected_users.add(income.created_by)
+
+    for u in affected_users:
+        try:
+            sync_staff_bonus_account(u)
+        except Exception as e:
+            logger.warning(f"Error syncing user {u.id} on income deletion: {e}")
+
+
+def handle_member_deleted(member):
+    """
+    Called when a Member record is deleted.
+    Removes linked StaffBonusTransactions and re-syncs affected staff bonus accounts.
+    """
+    from hr_module.models import StaffBonusTransaction
+    from django.db.models import Q
+
+    mem_id = getattr(member, 'member_id', None)
+    mem_uuid = getattr(member, 'id', None)
+
+    q = Q()
+    if mem_id:
+        q |= Q(member_id=str(mem_id))
+    if mem_uuid:
+        q |= Q(member_id=str(mem_uuid))
+
+    txns = StaffBonusTransaction.objects.filter(q)
+    affected_users = set()
+    for t in txns:
+        if t.bonus_account and t.bonus_account.staff:
+            affected_users.add(t.bonus_account.staff)
+    txns.delete()
+
+    if getattr(member, 'created_by', None):
+        affected_users.add(member.created_by)
+
+    for u in affected_users:
+        try:
+            sync_staff_bonus_account(u)
+        except Exception as e:
+            logger.warning(f"Error syncing user {u.id} on member deletion: {e}")
+
+
 def get_staff_bonus_summary(user):
     """
     Get a full summary of a staff member's or referring user's bonus account.
@@ -196,17 +359,19 @@ def get_staff_bonus_summary(user):
     """
     from hr_module.models import StaffBonusAccount, StaffBonusTransaction
 
-    try:
-        account = StaffBonusAccount.objects.get(staff=user)
-    except StaffBonusAccount.DoesNotExist:
-        return {
-            'donation_bonus': 0.0,
-            'membership_bonus': 0.0,
-            'total_bonus': 0.0,
-            'total_paid_out': 0.0,
-            'available_balance': 0.0,
-            'transactions': [],
-        }
+    account = sync_staff_bonus_account(user)
+    if not account:
+        try:
+            account = StaffBonusAccount.objects.get(staff=user)
+        except StaffBonusAccount.DoesNotExist:
+            return {
+                'donation_bonus': 0.0,
+                'membership_bonus': 0.0,
+                'total_bonus': 0.0,
+                'total_paid_out': 0.0,
+                'available_balance': 0.0,
+                'transactions': [],
+            }
 
     transactions = StaffBonusTransaction.objects.filter(
         bonus_account=account

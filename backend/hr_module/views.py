@@ -292,9 +292,18 @@ class StaffDashboardView(APIView):
             present_days = month_records.filter(status='PRESENT').count()
             attendance_percentage = min(100, round((present_days / days_elapsed) * 100))
 
-        # Bonus summary for today
-        from hr_module.bonus_service import get_staff_bonus_summary
+        # Bonus summary & auto-sync
+        from hr_module.bonus_service import get_staff_bonus_summary, sync_staff_bonus_account
+        sync_staff_bonus_account(user)
         bonus_summary = get_staff_bonus_summary(user)
+
+        # Bonus earned specifically today
+        from hr_module.models import StaffBonusTransaction
+        today_bonus = StaffBonusTransaction.objects.filter(
+            bonus_account__staff=user,
+            direction='CREDIT',
+            created_at__date=today
+        ).aggregate(s=Sum('amount'))['s'] or 0.0
 
         return Response({
             'members': members_today,
@@ -304,6 +313,8 @@ class StaffDashboardView(APIView):
             'membership_amount': float(membership_amount),
             'assessments': assessments_today,
             'attendancePercentage': attendance_percentage,
+            'today_bonus': float(round(today_bonus, 2)),
+            'today_earnings': float(round(today_bonus, 2)),
             'donation_bonus': bonus_summary['donation_bonus'],
             'membership_bonus': bonus_summary['membership_bonus'],
             'total_bonus': bonus_summary['total_bonus'],
@@ -3530,6 +3541,9 @@ class StaffBonusAllView(APIView):
             is_active=True
         ).order_by('full_name')
 
+        from hr_module.bonus_service import sync_all_bonus_accounts
+        sync_all_bonus_accounts()
+
         result = []
         tot_base = 0.0
         tot_month_donation = 0.0
@@ -3571,12 +3585,12 @@ class StaffBonusAllView(APIView):
                 created_at__year=target_year,
                 created_at__month=target_month
             )
-            m_donation = float(month_txns.filter(bonus_type='DONATION').aggregate(s=Sum('amount'))['s'] or 0.0)
-            m_member = float(month_txns.filter(bonus_type='MEMBERSHIP').aggregate(s=Sum('amount'))['s'] or 0.0)
+            m_donation = float(month_txns.filter(bonus_type__in=['DONATION_BONUS', 'DONATION']).aggregate(s=Sum('amount'))['s'] or 0.0)
+            m_member = float(month_txns.filter(bonus_type__in=['MEMBERSHIP_BONUS', 'MEMBERSHIP', 'REFERRAL_BONUS', 'REFERRAL']).aggregate(s=Sum('amount'))['s'] or 0.0)
             m_total_bonus = m_donation + m_member
             m_earnings = base_salary + m_total_bonus
-            donations_cnt = month_txns.filter(bonus_type='DONATION').count()
-            members_cnt = month_txns.filter(bonus_type='MEMBERSHIP').count()
+            donations_cnt = month_txns.filter(bonus_type__in=['DONATION_BONUS', 'DONATION']).count()
+            members_cnt = month_txns.filter(bonus_type__in=['MEMBERSHIP_BONUS', 'MEMBERSHIP', 'REFERRAL_BONUS', 'REFERRAL']).count()
 
             tot_base += base_salary
             tot_month_donation += m_donation
@@ -3645,6 +3659,8 @@ class StaffBonusTransactionsView(APIView):
         else:
             target_user = request.user
 
+        from hr_module.bonus_service import sync_staff_bonus_account
+        sync_staff_bonus_account(target_user)
         try:
             account = StaffBonusAccount.objects.get(staff=target_user)
         except StaffBonusAccount.DoesNotExist:
@@ -3681,8 +3697,8 @@ class StaffBonusTransactionsView(APIView):
             created_at__year=t_year,
             created_at__month=t_month
         )
-        m_donation = float(month_credits.filter(bonus_type='DONATION').aggregate(s=Sum('amount'))['s'] or 0.0)
-        m_member = float(month_credits.filter(bonus_type='MEMBERSHIP').aggregate(s=Sum('amount'))['s'] or 0.0)
+        m_donation = float(month_credits.filter(bonus_type__in=['DONATION_BONUS', 'DONATION']).aggregate(s=Sum('amount'))['s'] or 0.0)
+        m_member = float(month_credits.filter(bonus_type__in=['MEMBERSHIP_BONUS', 'MEMBERSHIP', 'REFERRAL_BONUS', 'REFERRAL']).aggregate(s=Sum('amount'))['s'] or 0.0)
         m_total_bonus = m_donation + m_member
 
         # Base salary
@@ -3728,8 +3744,8 @@ class StaffBonusTransactionsView(APIView):
                 'membership_bonus': round(m_member, 2),
                 'total_bonus': round(m_total_bonus, 2),
                 'total_earnings': round(m_earnings, 2),
-                'donations_count': month_credits.filter(bonus_type='DONATION').count(),
-                'members_count': month_credits.filter(bonus_type='MEMBERSHIP').count(),
+                'donations_count': month_credits.filter(bonus_type__in=['DONATION_BONUS', 'DONATION']).count(),
+                'members_count': month_credits.filter(bonus_type__in=['MEMBERSHIP_BONUS', 'MEMBERSHIP', 'REFERRAL_BONUS', 'REFERRAL']).count(),
             },
             'all_time_summary': {
                 'donation_bonus': float(account.donation_bonus_balance),

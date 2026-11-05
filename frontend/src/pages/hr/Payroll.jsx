@@ -8,6 +8,9 @@ import {
   Modal,
   AmountDisplay,
   formatINR,
+  ConfirmModal,
+  useSecretDelete,
+  SecretDeleteBanner,
 } from "../../components/shared"
 import { format } from "date-fns"
 import toast from "react-hot-toast"
@@ -1399,6 +1402,15 @@ export default function PayrollPage() {
           </div>
         )}
       </Modal>
+      <ConfirmModal
+        isOpen={deleteConfirmModal.open}
+        onClose={() => !deleting && setDeleteConfirmModal({ open: false, items: [] })}
+        onConfirm={handlePermanentDelete}
+        title="⚠️ Confirm Permanent Database Deletion"
+        message={`Are you sure you want to permanently delete ${deleteConfirmModal.items.length} payroll record(s) from the database? This action cannot be undone.`}
+        confirmText={deleting ? "Deleting..." : "Permanently Delete"}
+        isDanger={true}
+      />
     </div>
   )
 }

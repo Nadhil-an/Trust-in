@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react"
 import { hrApi, accountsApi } from "../../api"
-import { LoadingState, EmptyState, PageHeader, FilterBar, ConfirmModal } from "../../components/shared"
+import { LoadingState, EmptyState, PageHeader, FilterBar, ConfirmModal, Modal, useSecretDelete, SecretDeleteBanner } from "../../components/shared"
 import { format } from "date-fns"
 import toast from "react-hot-toast"
 
@@ -654,6 +654,15 @@ export default function VerificationDashboard() {
           </div>
         </div>
       )}
+      <ConfirmModal
+        isOpen={deleteConfirmModal.open}
+        onClose={() => !deleting && setDeleteConfirmModal({ open: false, items: [] })}
+        onConfirm={handlePermanentDelete}
+        title="⚠️ Confirm Permanent Database Deletion"
+        message={`Are you sure you want to permanently delete ${deleteConfirmModal.items.length} verification entry(ies) from the database? This action cannot be undone.`}
+        confirmText={deleting ? "Deleting..." : "Permanently Delete"}
+        isDanger={true}
+      />
     </div>
   )
 }

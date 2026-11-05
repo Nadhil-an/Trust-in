@@ -415,7 +415,7 @@ const StaffHomeScreen = ({ navigation, route }) => {
                           </View>
                           <Text style={[styles.collThirdLabel, { color: '#0369A1' }]}>Earnings</Text>
                           <Text style={[styles.collThirdVal, { color: '#0284C7', fontWeight: '800' }]}>
-                            ₹{Number(stats?.total_bonus || 0).toLocaleString()}
+                            ₹{Number(stats?.today_bonus ?? (stats?.today_earnings ?? 0)).toLocaleString()}
                           </Text>
                         </TouchableOpacity>
                       </View>

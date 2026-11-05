@@ -6,7 +6,7 @@ Django signals that auto-credit staff bonuses when:
   2. A new Member is created by a STAFF user → Membership bonus (30%)
   3. A new Member is created with a referral code → Referral bonus (30%) to referrer's staff
 """
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 
 
@@ -22,6 +22,19 @@ def on_income_created(sender, instance, created, **kwargs):
         import logging
         logging.getLogger(__name__).warning(
             f"Could not credit donation bonus for Income {instance.id}: {e}"
+        )
+
+
+@receiver(post_delete, sender='accounts_module.Income')
+def on_income_deleted(sender, instance, **kwargs):
+    """Remove bonus transaction and re-sync balance when an Income record is deleted."""
+    try:
+        from hr_module.bonus_service import handle_income_deleted
+        handle_income_deleted(instance)
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(
+            f"Could not process bonus deletion for Income {instance.id}: {e}"
         )
 
 
@@ -45,5 +58,18 @@ def on_member_created(sender, instance, created, **kwargs):
         import logging
         logging.getLogger(__name__).warning(
             f"Could not credit membership/referral bonus for Member {instance.id}: {e}"
+        )
+
+
+@receiver(post_delete, sender='hr_module.Member')
+def on_member_deleted(sender, instance, **kwargs):
+    """Remove bonus transaction and re-sync balance when a Member record is deleted."""
+    try:
+        from hr_module.bonus_service import handle_member_deleted
+        handle_member_deleted(instance)
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(
+            f"Could not process bonus deletion for Member {instance.id}: {e}"
         )
 
