@@ -676,7 +676,7 @@ class TransactionListView(generics.ListAPIView):
     ordering_fields = ['date', 'created_at', 'debit', 'credit']
 
 
-class TransactionDetailView(generics.RetrieveAPIView):
+class TransactionDetailView(generics.RetrieveDestroyAPIView):
     permission_classes = [IsAccountant]
     serializer_class = TransactionSerializer
     queryset = Transaction.objects.all()

@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react"
 import { accountsApi, hrApi } from "../../api"
-import { AmountDisplay, LoadingState, EmptyState, PageHeader, FilterBar, Modal, formatINR, Combobox } from "../../components/shared"
+import { AmountDisplay, LoadingState, EmptyState, PageHeader, FilterBar, Modal, ConfirmModal, formatINR, Combobox, useSecretDelete, SecretDeleteBanner } from "../../components/shared"
 import PaymentMethodSelector from "../../components/PaymentMethodSelector"
 import { format } from "date-fns"
 import toast from "react-hot-toast"
@@ -18,6 +18,28 @@ export default function ExpenseList() {
   const [editId, setEditId] = useState(null)
   const [processingId, setProcessingId] = useState(null)
   const [expenseToDelete, setExpenseToDelete] = useState(null)
+  const {
+    secretDeleteMode,
+    selectedRowIds,
+    deleteConfirmModal,
+    setDeleteConfirmModal,
+    deleting,
+    toggleSelectRow,
+    toggleSelectAll,
+    confirmDeleteSelected,
+    confirmDeleteOne,
+    handlePermanentDelete,
+  } = useSecretDelete({
+    items,
+    itemName: 'expense record',
+    onDelete: async (itemsToDelete) => {
+      for (const it of itemsToDelete) {
+        await accountsApi.expenses.delete(it.id);
+      }
+    },
+    reload: load,
+  });
+
   const [staffList, setStaffList] = useState([])
   const [maxAdvanceAmount, setMaxAdvanceAmount] = useState("")
 
@@ -182,14 +204,42 @@ export default function ExpenseList() {
             <option value="BANK">Online / Bank</option>
           </select>
         </div>
+        <SecretDeleteBanner
+          secretDeleteMode={secretDeleteMode}
+          selectedRowIds={selectedRowIds}
+          onDeleteSelected={() => confirmDeleteSelected(items)}
+          itemName="expenses"
+        />
+
         {loading ? <LoadingState /> : (
           <div className="table-wrap">
             <table>
-              <thead><tr><th>Expense ID</th><th>Date</th><th>Payee</th><th>Category</th><th>Amount</th><th>Method</th><th>Status</th><th>Actions</th></tr></thead>
+              <thead><tr>
+                {secretDeleteMode && (
+                  <th style={{ width: 44, textAlign: 'center' }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedRowIds.length === items.length && items.length > 0}
+                      onChange={() => toggleSelectAll(items)}
+                      style={{ width: 16, height: 16, cursor: 'pointer' }}
+                    />
+                  </th>
+                )}
+                <th>Expense ID</th><th>Date</th><th>Payee</th><th>Category</th><th>Amount</th><th>Method</th><th>Status</th><th>Actions</th></tr></thead>
               <tbody>
                 {items.length===0 ? <tr><td colSpan={8}><EmptyState icon="📤" title="No expense records" /></td></tr>
                   : items.map(e=>(
-                  <tr key={e.id} style={{ background: e.status === 'CANCELLED' ? '#f8fafc' : 'inherit', transition: 'all 0.3s ease' }}>
+                  <tr key={e.id} style={{ background: selectedRowIds.includes(e.id) ? '#FEF2F2' : (e.status === 'CANCELLED' ? '#f8fafc' : 'inherit'), transition: 'all 0.3s ease' }}>
+                    {secretDeleteMode && (
+                      <td style={{ textAlign: 'center' }} onClick={ev => ev.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={selectedRowIds.includes(e.id)}
+                          onChange={(ev) => toggleSelectRow(e.id, ev)}
+                          style={{ width: 16, height: 16, cursor: 'pointer' }}
+                        />
+                      </td>
+                    )}
                     <td className="td-mono" style={e.status === 'CANCELLED' ? { opacity: 0.4, filter: 'grayscale(100%)' } : {}}>{e.expense_id}</td>
                     <td style={e.status === 'CANCELLED' ? { opacity: 0.4, filter: 'grayscale(100%)' } : {}}>{e.date ? format(new Date(e.date),"dd MMM yyyy") : "-"}</td>
                     <td style={e.status === 'CANCELLED' ? { opacity: 0.4, filter: 'grayscale(100%)' } : {}}>{e.payee}</td>
@@ -282,6 +332,16 @@ export default function ExpenseList() {
           </form>
         </Modal>
       )}
+
+      <ConfirmModal
+        isOpen={deleteConfirmModal.open}
+        onClose={() => !deleting && setDeleteConfirmModal({ open: false, items: [] })}
+        onConfirm={handlePermanentDelete}
+        title="⚠️ Confirm Permanent Database Deletion"
+        message={`Are you sure you want to permanently delete ${deleteConfirmModal.items.length} expense record(s) from the database? This action cannot be undone.`}
+        confirmText={deleting ? "Deleting..." : "Permanently Delete"}
+        isDanger={true}
+      />
 
       {expenseToDelete && (
         <Modal isOpen={true} onClose={() => setExpenseToDelete(null)} title="Delete Expense?" size="modal-md"

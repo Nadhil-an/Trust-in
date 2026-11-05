@@ -192,6 +192,7 @@ export const accountsApi = {
   transactions: {
     list: (params) => api.get('/accounts/transactions/', { params }),
     get: (id) => api.get(`/accounts/transactions/${id}/`),
+    delete: (id) => api.delete(`/accounts/transactions/${id}/`),
   },
   moneyRequests: () => api.get('/accounts/money-requests/'),
   daySheet: (params) => api.get('/accounts/day-sheet/', { params }),
@@ -207,6 +208,7 @@ export const cashierApi = {
   pending: () => api.get('/cashier/pending/'),
   disburse: (id, data) => api.post(`/cashier/disburse/${id}/`, data),
   disbursements: (params) => api.get('/cashier/disbursements/', { params }),
+  deleteDisbursement: (id) => api.delete(`/accounts/expenses/${id}/`),
   cashClosing: {
     list: () => api.get('/cashier/cash-closing/'),
     create: (data) => api.post('/cashier/cash-closing/', data),
@@ -273,12 +275,14 @@ export const hrApi = {
     addNote: (id, data) => api.post(`/hr/leave/${id}/notes/`, data),
     getCommunications: (id) => api.get(`/hr/leave/${id}/communicate/`),
     sendCommunication: (id, data) => api.post(`/hr/leave/${id}/communicate/`, data),
+    delete: (id) => api.delete(`/hr/leave/${id}/`),
   },
   payroll: {
     list: (params) => api.get('/hr/payroll/', { params }),
     create: (data) => api.post('/hr/payroll/', data),
     get: (id) => api.get(`/hr/payroll/${id}/`),
     update: (id, data) => api.patch(`/hr/payroll/${id}/`, data),
+    delete: (id) => api.delete(`/hr/payroll/${id}/`),
   },
   salaryStructures: {
     list: (params) => api.get('/hr/salary-structures/', { params }),
@@ -302,6 +306,7 @@ export const hrApi = {
     get: (id) => api.get(`/hr/payment-advances/${id}/`),
     update: (id, data) => api.patch(`/hr/payment-advances/${id}/`, data),
     action: (id, data) => api.post(`/hr/payment-advances/${id}/action/`, data),
+    delete: (id) => api.delete(`/hr/payment-advances/${id}/`),
   },
   performancePoints: {
     list: (params) => api.get('/hr/performance-points/', { params }),

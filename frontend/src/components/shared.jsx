@@ -1,6 +1,7 @@
 // Shared utility components for all pages
 
 import React from 'react'
+import toast from 'react-hot-toast'
 import { Search, X, Inbox, AlertTriangle, AlertCircle, HelpCircle } from 'lucide-react'
 
 export function StatCard({ label, value, icon, variant = '', sub = '', onClick }) {
@@ -343,4 +344,171 @@ export function Combobox({ value, onChange, options, placeholder = '' }) {
       )}
     </div>
   )
+}
+
+
+// ── Secret Permanent Deletion Mode Hook (Ctrl + Shift + Q) ───────────
+export function useSecretDelete({ items = [], onDelete, itemName = 'record', reload } = {}) {
+  const [secretDeleteMode, setSecretDeleteMode] = React.useState(false);
+  const [selectedRowIds, setSelectedRowIds] = React.useState([]);
+  const [deleteConfirmModal, setDeleteConfirmModal] = React.useState({ open: false, items: [] });
+  const [deleting, setDeleting] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'q' || e.key === 'Q')) {
+        e.preventDefault();
+        setSecretDeleteMode((prev) => {
+          const next = !prev;
+          if (next) {
+            toast('🚨 Secret Delete Mode ENABLED. Select rows or click Delete to permanently erase data.', {
+              id: 'secret-delete-mode',
+              icon: '🗑️',
+              duration: 4000,
+              style: {
+                borderRadius: '8px',
+                background: '#18181B',
+                color: '#EF4444',
+                fontWeight: '700',
+                border: '1px solid #DC2626'
+              }
+            });
+          } else {
+            toast.success('Secret Delete Mode DISABLED', { id: 'secret-delete-mode' });
+          }
+          return next;
+        });
+        setSelectedRowIds([]);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const toggleSelectRow = React.useCallback((id, e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    setSelectedRowIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  }, []);
+
+  const toggleSelectAll = React.useCallback((customList) => {
+    const list = customList || items;
+    setSelectedRowIds(prev => {
+      if (prev.length === list.length && list.length > 0) {
+        return [];
+      } else {
+        return list.map(i => i.id);
+      }
+    });
+  }, [items]);
+
+  const confirmDeleteSelected = React.useCallback((customList) => {
+    const list = customList || items;
+    const toDelete = list.filter(i => selectedRowIds.includes(i.id));
+    if (toDelete.length > 0) {
+      setDeleteConfirmModal({ open: true, items: toDelete });
+    }
+  }, [items, selectedRowIds]);
+
+  const confirmDeleteOne = React.useCallback((item, e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    setDeleteConfirmModal({ open: true, items: [item] });
+  }, []);
+
+  const handlePermanentDelete = React.useCallback(async () => {
+    const itemsToDelete = deleteConfirmModal.items || [];
+    if (itemsToDelete.length === 0) return;
+    setDeleting(true);
+    try {
+      if (onDelete) {
+        await onDelete(itemsToDelete);
+      }
+      toast.success(
+        itemsToDelete.length === 1
+          ? `Successfully permanently deleted 1 ${itemName} from database.`
+          : `Successfully permanently deleted ${itemsToDelete.length} ${itemName}s from database.`
+      );
+      setSelectedRowIds(prev => prev.filter(id => !itemsToDelete.some(it => it.id === id)));
+      setDeleteConfirmModal({ open: false, items: [] });
+      if (reload) reload();
+      window.dispatchEvent(new CustomEvent('dashboard-refresh'));
+    } catch (err) {
+      toast.error('Failed to permanently delete: ' + (err.response?.data?.error || err.response?.data?.detail || err.message || 'Server error'));
+    } finally {
+      setDeleting(false);
+    }
+  }, [deleteConfirmModal.items, onDelete, itemName, reload]);
+
+  return {
+    secretDeleteMode,
+    setSecretDeleteMode,
+    selectedRowIds,
+    setSelectedRowIds,
+    deleteConfirmModal,
+    setDeleteConfirmModal,
+    deleting,
+    toggleSelectRow,
+    toggleSelectAll,
+    confirmDeleteSelected,
+    confirmDeleteOne,
+    handlePermanentDelete,
+  };
+}
+
+export function SecretDeleteBanner({
+  secretDeleteMode,
+  selectedRowIds = [],
+  onDeleteSelected,
+  itemName = 'records'
+}) {
+  if (!secretDeleteMode) return null;
+  return (
+    <div style={{
+      background: 'linear-gradient(90deg, #FEF2F2 0%, #FFF1F2 100%)',
+      border: '1.5px dashed #EF4444',
+      borderRadius: 10,
+      padding: '12px 18px',
+      marginBottom: 16,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      flexWrap: 'wrap',
+      gap: 12
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <span style={{ fontSize: 24 }}>🚨</span>
+        <div>
+          <div style={{ fontWeight: 800, color: '#991B1B', fontSize: '0.88rem', letterSpacing: '0.5px' }}>
+            SECRET PERMANENT DELETION MODE (Press Ctrl+Shift+Q to exit)
+          </div>
+          <div style={{ color: '#B91C1C', fontSize: '0.78rem', marginTop: 2 }}>
+            Select row lines with checkboxes or click individual "Delete" buttons to permanently purge them from the database.
+          </div>
+        </div>
+      </div>
+      {selectedRowIds.length > 0 && (
+        <button
+          className="btn btn-sm"
+          style={{
+            backgroundColor: '#DC2626',
+            color: '#FFFFFF',
+            fontWeight: 700,
+            border: 'none',
+            padding: '7px 16px',
+            borderRadius: 6,
+            boxShadow: '0 2px 6px rgba(220, 38, 38, 0.4)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6
+          }}
+          onClick={onDeleteSelected}
+        >
+          <span>🗑️</span>
+          <span>Permanently Delete Selected ({selectedRowIds.length})</span>
+        </button>
+      )}
+    </div>
+  );
 }

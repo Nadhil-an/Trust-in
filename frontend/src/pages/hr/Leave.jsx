@@ -452,6 +452,16 @@ export default function LeavePage() {
             <table>
               <thead>
                 <tr>
+                  {secretDeleteMode && (
+                    <th style={{ width: 44, textAlign: 'center' }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedRowIds.length === filtered.length && filtered.length > 0}
+                        onChange={() => toggleSelectAll(filtered)}
+                        style={{ width: 16, height: 16, cursor: 'pointer' }}
+                      />
+                    </th>
+                  )}
                   <th>Staff Member</th>
                   <th>Leave Type</th>
                   <th>Dates</th>

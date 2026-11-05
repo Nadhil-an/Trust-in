@@ -1,7 +1,7 @@
 // pages/data-entry/PurchaseEntry.jsx — Purchase/procurement
 import React, { useState, useCallback, useEffect } from 'react'
 import { accountsApi } from '../../api'
-import { PageHeader, FilterBar, LoadingState, EmptyState, Modal, formatINR } from '../../components/shared'
+import { PageHeader, FilterBar, LoadingState, EmptyState, Modal, ConfirmModal, formatINR, useSecretDelete, SecretDeleteBanner } from '../../components/shared'
 import PaymentMethodSelector from '../../components/PaymentMethodSelector'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
@@ -30,6 +30,28 @@ export default function PurchaseEntry() {
   const [totalOnline, setTotalOnline] = useState(0)
   const [showModal, setShowModal] = useState(false)
   const [form, setForm]       = useState(EMPTY_FORM)
+
+  const {
+    secretDeleteMode,
+    selectedRowIds,
+    deleteConfirmModal,
+    setDeleteConfirmModal,
+    deleting,
+    toggleSelectRow,
+    toggleSelectAll,
+    confirmDeleteSelected,
+    confirmDeleteOne,
+    handlePermanentDelete,
+  } = useSecretDelete({
+    items,
+    itemName: 'purchase record',
+    onDelete: async (itemsToDelete) => {
+      for (const it of itemsToDelete) {
+        await accountsApi.expenses.delete(it.id);
+      }
+    },
+    reload: load,
+  });
   const [saving, setSaving]   = useState(false)
 
   const load = useCallback(async () => {
@@ -113,10 +135,27 @@ export default function PurchaseEntry() {
         <div style={{ padding: '16px 20px', borderBottom: '1px solid #e2e8f0', background: 'white' }}>
           <FilterBar search={search} onSearch={setSearch} />
         </div>
+        <SecretDeleteBanner
+          secretDeleteMode={secretDeleteMode}
+          selectedRowIds={selectedRowIds}
+          onDeleteSelected={() => confirmDeleteSelected(items)}
+          itemName="purchase records"
+        />
+
         {loading ? <LoadingState /> : (
           <div className="table-wrap" style={{ margin: 0, border: 'none', borderRadius: 0 }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}><tr>
+                {secretDeleteMode && (
+                  <th style={{ width: 44, textAlign: 'center', background: '#f8fafc' }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedRowIds.length === items.length && items.length > 0}
+                      onChange={() => toggleSelectAll(items)}
+                      style={{ width: 16, height: 16, cursor: 'pointer' }}
+                    />
+                  </th>
+                )}
                 <th style={{ background: '#f8fafc' }}>Date</th>
                 <th style={{ background: '#f8fafc' }}>Vendor / Supplier</th>
                 <th style={{ background: '#f8fafc' }}>Item / Description</th>

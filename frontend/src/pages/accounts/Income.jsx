@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react"
 import { accountsApi, cashierApi } from "../../api"
-import { AmountDisplay, LoadingState, EmptyState, PageHeader, FilterBar, Modal, ConfirmModal, formatINR } from "../../components/shared"
+import { AmountDisplay, LoadingState, EmptyState, PageHeader, FilterBar, Modal, ConfirmModal, formatINR, useSecretDelete, SecretDeleteBanner } from "../../components/shared"
 import PaymentMethodSelector from "../../components/PaymentMethodSelector"
 import { format } from "date-fns"
 import toast from "react-hot-toast"
@@ -19,6 +19,28 @@ export default function IncomeList() {
   const [saving, setSaving] = useState(false)
   const [processingId, setProcessingId] = useState(null)
   const [incomeToDelete, setIncomeToDelete] = useState(null)
+
+  const {
+    secretDeleteMode,
+    selectedRowIds,
+    deleteConfirmModal,
+    setDeleteConfirmModal,
+    deleting,
+    toggleSelectRow,
+    toggleSelectAll,
+    confirmDeleteSelected,
+    confirmDeleteOne,
+    handlePermanentDelete,
+  } = useSecretDelete({
+    items,
+    itemName: 'income record',
+    onDelete: async (itemsToDelete) => {
+      for (const it of itemsToDelete) {
+        await accountsApi.income.delete(it.id);
+      }
+    },
+    reload: load,
+  });
 
   const confirmDelete = async () => {
     if (!incomeToDelete) return
@@ -111,11 +133,28 @@ export default function IncomeList() {
           </select>
         </div>
 
+        <SecretDeleteBanner
+          secretDeleteMode={secretDeleteMode}
+          selectedRowIds={selectedRowIds}
+          onDeleteSelected={() => confirmDeleteSelected(items)}
+          itemName="income records"
+        />
+
         {loading ? <LoadingState /> : (
           <div className="table-wrap">
             <table>
               <thead>
                 <tr>
+                  {secretDeleteMode && (
+                    <th style={{ width: 44, textAlign: 'center' }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedRowIds.length === items.length && items.length > 0}
+                        onChange={() => toggleSelectAll(items)}
+                        style={{ width: 16, height: 16, cursor: 'pointer' }}
+                      />
+                    </th>
+                  )}
                   <th>Date</th>
                   <th>Source</th>
                   <th>Breakdown</th>
@@ -132,6 +171,7 @@ export default function IncomeList() {
                     {/* ONE summary row for all donations */}
                     {(cashTotal > 0 || onlineTotal > 0) && (
                       <tr style={{ background: '#f0fdf4', borderLeft: '4px solid #16a34a' }}>
+                        {secretDeleteMode && <td></td>}
                         <td style={{ fontWeight: 600, fontSize: 13 }}>
                           {dateFilter ? format(new Date(dateFilter), 'dd MMM yyyy') : '—'}
                         </td>
@@ -161,7 +201,17 @@ export default function IncomeList() {
 
                     {/* Non-donation income rows shown individually */}
                     {nonDonationItems.map(i => (
-                      <tr key={i.id}>
+                      <tr key={i.id} style={{ background: selectedRowIds.includes(i.id) ? '#FEF2F2' : undefined }}>
+                        {secretDeleteMode && (
+                          <td style={{ textAlign: 'center' }} onClick={ev => ev.stopPropagation()}>
+                            <input
+                              type="checkbox"
+                              checked={selectedRowIds.includes(i.id)}
+                              onChange={(ev) => toggleSelectRow(i.id, ev)}
+                              style={{ width: 16, height: 16, cursor: 'pointer' }}
+                            />
+                          </td>
+                        )}
                         <td style={{ fontWeight: 500 }}>{i.date ? format(new Date(i.date), "dd MMM yyyy") : "—"}</td>
                         <td style={{ fontWeight: 600 }}>{i.donor_name || i.source}</td>
                         <td><span className="badge badge-blue" style={{ fontSize: 11 }}>{i.source}</span></td>
@@ -169,6 +219,15 @@ export default function IncomeList() {
                         <td><span className="badge badge-gray" style={{ fontSize: 11 }}>{i.payment_method}</span></td>
                         <td>
                           <button className="btn btn-sm" style={{ background: '#fef2f2', color: '#ef4444', padding: '4px 8px', border: '1px solid #ef4444' }} onClick={() => setIncomeToDelete(i)} disabled={processingId === i.id} title="Delete Permanently">❌</button>
+                          {secretDeleteMode && (
+                            <button
+                              className="btn btn-sm"
+                              style={{ backgroundColor: '#DC2626', color: '#FFFFFF', border: 'none', fontWeight: 700, fontSize: 11, padding: '3px 8px', borderRadius: 4, cursor: 'pointer', marginLeft: 4 }}
+                              onClick={(ev) => confirmDeleteOne(i, ev)}
+                            >
+                              Delete
+                            </button>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -225,6 +284,16 @@ export default function IncomeList() {
           </form>
         </Modal>
       )}
+
+      <ConfirmModal
+        isOpen={deleteConfirmModal.open}
+        onClose={() => !deleting && setDeleteConfirmModal({ open: false, items: [] })}
+        onConfirm={handlePermanentDelete}
+        title="⚠️ Confirm Permanent Database Deletion"
+        message={`Are you sure you want to permanently delete ${deleteConfirmModal.items.length} income record(s) from the database? This action cannot be undone.`}
+        confirmText={deleting ? "Deleting..." : "Permanently Delete"}
+        isDanger={true}
+      />
 
       {incomeToDelete && (
         <ConfirmModal

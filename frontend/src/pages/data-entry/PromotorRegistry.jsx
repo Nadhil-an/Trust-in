@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react"
 import { hrApi } from "../../api"
-import { LoadingState, EmptyState, PageHeader, FilterBar, Modal, ConfirmModal } from "../../components/shared"
+import { LoadingState, EmptyState, PageHeader, FilterBar, Modal, ConfirmModal, useSecretDelete, SecretDeleteBanner } from "../../components/shared"
 import { format } from "date-fns"
 import toast from "react-hot-toast"
 
@@ -33,6 +33,30 @@ export default function PromotorRegistry() {
   const [searchTerm, setSearchTerm] = useState('')
   const [mismatchModalData, setMismatchModalData] = useState(null)
   const [confirmState, setConfirmState] = useState({ isOpen: false, row: null, type: '' })
+
+  const {
+    secretDeleteMode,
+    selectedRowIds,
+    deleteConfirmModal,
+    setDeleteConfirmModal,
+    deleting,
+    toggleSelectRow,
+    toggleSelectAll,
+    confirmDeleteSelected,
+    confirmDeleteOne,
+    handlePermanentDelete,
+  } = useSecretDelete({
+    items: rows,
+    itemName: 'promoter registry record',
+    onDelete: async (itemsToDelete) => {
+      for (const it of itemsToDelete) {
+        if (it.id) {
+          await hrApi.promoterRegistry.delete(it.id);
+        }
+      }
+    },
+    reload: load,
+  });
 
   const [modalOpen, setModalOpen] = useState(false)
   const [modalType, setModalType] = useState('') // 'CASH' or 'UPI'
@@ -318,6 +342,13 @@ export default function PromotorRegistry() {
           </FilterBar>
         </div>
 
+        <SecretDeleteBanner
+          secretDeleteMode={secretDeleteMode}
+          selectedRowIds={selectedRowIds}
+          onDeleteSelected={() => confirmDeleteSelected(filteredRows)}
+          itemName="promoter records"
+        />
+
         {loading ? <LoadingState /> : rows.length === 0 ? (
           <EmptyState icon="📝" title={`No staff have collected on ${format(new Date(dateFilter + 'T00:00:00'), 'dd-MM-yyyy')} yet`} />
         ) : (
@@ -326,6 +357,17 @@ export default function PromotorRegistry() {
               <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 13 }}>
                 <thead>
                   <tr style={{ background: '#F8FAFC' }}>
+                    {secretDeleteMode && (
+                      <th rowSpan={2} style={{ width: 44, textAlign: 'center', background: '#F8FAFC', padding: '6px' }}>
+                        <input
+                          type="checkbox"
+                          checked={selectedRowIds.length === filteredRows.length && filteredRows.length > 0}
+                          onChange={() => toggleSelectAll(filteredRows)}
+                          style={{ width: 16, height: 16, cursor: 'pointer' }}
+                          title="Select All"
+                        />
+                      </th>
+                    )}
                     <th rowSpan={2} style={thStyle()}>Name</th>
                     <th rowSpan={2} style={thStyle()}>Voucher No</th>
                     <th colSpan={2} style={thStyle('center', '#4338CA', '#EEF2FF')}>Voucher Reading</th>
@@ -391,10 +433,20 @@ export default function PromotorRegistry() {
 
                     return (
                       <tr key={row.staff_id} style={{
-                        background: row.is_closed ? '#F0FDF4' : 'white',
+                        background: selectedRowIds.includes(row.id || row.staff_id) ? '#FEF2F2' : (row.is_closed ? '#F0FDF4' : 'white'),
                         opacity: row.is_closed ? 0.85 : 1,
                         borderBottom: '1px solid #F3F4F6'
                       }}>
+                        {secretDeleteMode && (
+                          <td style={{ textAlign: 'center', padding: '6px' }} onClick={e => e.stopPropagation()}>
+                            <input
+                              type="checkbox"
+                              checked={selectedRowIds.includes(row.id || row.staff_id)}
+                              onChange={(e) => toggleSelectRow(row.id || row.staff_id, e)}
+                              style={{ width: 16, height: 16, cursor: 'pointer' }}
+                            />
+                          </td>
+                        )}
                         {/* Name */}
                         <td style={{ padding: '4px 6px', fontWeight: 700, color: '#111827', whiteSpace: 'nowrap', fontSize: 12 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -563,6 +615,15 @@ export default function PromotorRegistry() {
                           {row.is_closed ? (
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                               <span style={{ color: '#16A34A', fontWeight: 700, fontSize: 13 }}>🔒 Done</span>
+                              {secretDeleteMode && (
+                                <button
+                                  className="btn btn-sm"
+                                  style={{ backgroundColor: '#DC2626', color: '#FFFFFF', border: 'none', fontWeight: 700, fontSize: 11, padding: '3px 8px', borderRadius: 4, cursor: 'pointer' }}
+                                  onClick={(e) => confirmDeleteOne({ ...row, id: row.id || row.staff_id }, e)}
+                                >
+                                  Delete
+                                </button>
+                              )}
                               <button className="btn btn-sm"
                                 style={{ background: '#EAB308', color: 'white', border: 'none', padding: '3px 8px', borderRadius: 4, cursor: 'pointer', fontSize: 11 }}
                                 disabled={savingId === row.staff_id}
@@ -573,7 +634,16 @@ export default function PromotorRegistry() {
                               </button>
                             </div>
                           ) : (
-                            <div style={{ display: 'flex', gap: 6 }}>
+                            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                              {secretDeleteMode && (
+                                <button
+                                  className="btn btn-sm"
+                                  style={{ backgroundColor: '#DC2626', color: '#FFFFFF', border: 'none', fontWeight: 700, fontSize: 11, padding: '3px 8px', borderRadius: 4, cursor: 'pointer' }}
+                                  onClick={(e) => confirmDeleteOne({ ...row, id: row.id || row.staff_id }, e)}
+                                >
+                                  Delete
+                                </button>
+                              )}
                               <button className="btn btn-sm"
                                 style={{ background: '#4F46E5', color: 'white', border: 'none', padding: '5px 12px', borderRadius: 6, cursor: 'pointer', fontSize: 12 }}
                                 disabled={!row.hasChanges || savingId === row.staff_id}

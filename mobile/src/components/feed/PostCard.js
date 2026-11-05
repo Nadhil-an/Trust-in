@@ -891,13 +891,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     marginHorizontal: -16,
     borderRadius: 0,
-    borderTopWidth: 0.5,
+    borderTopWidth: 0,
     borderBottomWidth: 1,
     borderLeftWidth: 0,
     borderRightWidth: 0,
     borderColor: '#E2E8F0',
     overflow: 'hidden',
-    marginBottom: 8,
+    marginBottom: 0,
   },
   // Overlay header styles (Inside Image / Video)
   overlayHeader: {

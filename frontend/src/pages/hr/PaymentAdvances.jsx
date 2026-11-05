@@ -90,11 +90,28 @@ export default function PaymentAdvances() {
       
       <div className="data-card">
         <FilterBar search={search} onSearch={setSearch} placeholder="Search advance requests by ID or staff name..." />
+        <SecretDeleteBanner
+          secretDeleteMode={secretDeleteMode}
+          selectedRowIds={selectedRowIds}
+          onDeleteSelected={() => confirmDeleteSelected(items)}
+          itemName="advance requests"
+        />
+
         {loading ? <LoadingState /> : (
           <div className="table-wrap">
             <table>
               <thead>
                 <tr>
+                  {secretDeleteMode && (
+                    <th style={{ width: 44, textAlign: 'center' }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedRowIds.length === items.length && items.length > 0}
+                        onChange={() => toggleSelectAll(items)}
+                        style={{ width: 16, height: 16, cursor: 'pointer' }}
+                      />
+                    </th>
+                  )}
                   <th>Request ID</th>
                   <th>Staff Member</th>
                   <th>Amount</th>
@@ -108,7 +125,17 @@ export default function PaymentAdvances() {
                 {items.length === 0 ? (
                   <tr><td colSpan={7}><EmptyState icon="💵" title="No advance requests found" /></td></tr>
                 ) : items.map(req => (
-                  <tr key={req.id}>
+                  <tr key={req.id} style={{ background: selectedRowIds.includes(req.id) ? '#FEF2F2' : undefined }}>
+                    {secretDeleteMode && (
+                      <td style={{ textAlign: 'center' }} onClick={ev => ev.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={selectedRowIds.includes(req.id)}
+                          onChange={(ev) => toggleSelectRow(req.id, ev)}
+                          style={{ width: 16, height: 16, cursor: 'pointer' }}
+                        />
+                      </td>
+                    )}
                     <td className="td-mono">{req.request_id}</td>
                     <td><strong>{req.employee_name || req.requested_by_name}</strong></td>
                     <td style={{ color: '#16a34a', fontWeight: 700 }}>₹{parseFloat(req.amount).toLocaleString('en-IN')}</td>

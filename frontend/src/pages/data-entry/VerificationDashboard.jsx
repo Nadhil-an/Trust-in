@@ -34,6 +34,30 @@ export default function VerificationDashboard() {
   const [searchTerm, setSearchTerm] = useState('')
   const [confirmState, setConfirmState] = useState({ isOpen: false, row: null, type: '' })
 
+  const {
+    secretDeleteMode,
+    selectedRowIds,
+    deleteConfirmModal,
+    setDeleteConfirmModal,
+    deleting,
+    toggleSelectRow,
+    toggleSelectAll,
+    confirmDeleteSelected,
+    confirmDeleteOne,
+    handlePermanentDelete,
+  } = useSecretDelete({
+    items: rows,
+    itemName: 'verification entry',
+    onDelete: async (itemsToDelete) => {
+      for (const it of itemsToDelete) {
+        if (it.id) {
+          await hrApi.promoterRegistry.delete(it.id);
+        }
+      }
+    },
+    reload: load,
+  });
+
   const [modalOpen, setModalOpen] = useState(false)
   const [modalType, setModalType] = useState('') // 'CASH' or 'UPI'
   const [modalStaff, setModalStaff] = useState(null)
@@ -278,6 +302,13 @@ export default function VerificationDashboard() {
           </FilterBar>
         </div>
 
+        <SecretDeleteBanner
+          secretDeleteMode={secretDeleteMode}
+          selectedRowIds={selectedRowIds}
+          onDeleteSelected={() => confirmDeleteSelected(filteredRows)}
+          itemName="verification records"
+        />
+
         {loading ? <LoadingState /> : filteredRows.length === 0 ? (
           <EmptyState icon="✅" title="All clear!" subtitle={`No unverified collections for ${format(new Date(dateFilter + 'T00:00:00'), 'dd-MM-yyyy')}`} />
         ) : (
@@ -285,6 +316,17 @@ export default function VerificationDashboard() {
             <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 13 }}>
               <thead>
                 <tr style={{ background: '#F8FAFC' }}>
+                  {secretDeleteMode && (
+                    <th rowSpan={2} style={{ width: 44, textAlign: 'center', background: '#F8FAFC', padding: '6px' }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedRowIds.length === filteredRows.length && filteredRows.length > 0}
+                        onChange={() => toggleSelectAll(filteredRows)}
+                        style={{ width: 16, height: 16, cursor: 'pointer' }}
+                        title="Select All"
+                      />
+                    </th>
+                  )}
                   <th rowSpan={2} style={thStyle()}>Name</th>
                   <th rowSpan={2} style={thStyle()}>Voucher No</th>
                   <th colSpan={2} style={thStyle('center', '#4338CA', '#EEF2FF')}>Voucher Reading</th>
@@ -349,6 +391,7 @@ export default function VerificationDashboard() {
 
                   return (
                     <tr key={row.staff_id} style={{
+                      background: selectedRowIds.includes(row.id || row.staff_id) ? '#FEF2F2' : (row.is_verified ? '#F0FDF4' : 'white'),
                       background: row.is_closed ? '#F0FDF4' : 'white',
                       opacity: row.is_closed ? 0.85 : 1,
                       borderBottom: '1px solid #F3F4F6'

@@ -705,6 +705,7 @@ const MemberHomeScreen = ({ navigation }) => {
             return (
               <View
                 key={`post-${item.id}`}
+                style={styles.feedPostWrapper}
                 onLayout={(e) => {
                   const { y, height } = e.nativeEvent.layout;
                   postLayoutsRef.current[String(item.id)] = {
@@ -795,7 +796,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: '#fcd34d',
     padding: 12,
-    marginBottom: 8,
+    marginBottom: 12,
     shadowColor: '#d97706',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.12,
@@ -808,7 +809,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: '#fdba74',
     padding: 12,
-    marginBottom: 8,
+    marginBottom: 12,
     shadowColor: '#ea580c',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.12,
@@ -821,7 +822,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: '#fca5a5',
     padding: 12,
-    marginBottom: 8,
+    marginBottom: 12,
     shadowColor: '#dc2626',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.12,
@@ -1024,9 +1025,10 @@ const styles = StyleSheet.create({
     borderColor: '#0284c7',
   },
 
-  scroll: { padding: 16, gap: 16 },
+  scroll: { padding: 16 },
 
   greetingCard: {
+    marginBottom: 14,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: Colors.white,
@@ -1292,6 +1294,7 @@ const styles = StyleSheet.create({
   },
   storiesContainerWrap: {
     position: 'relative',
+    marginBottom: 8,
   },
   storiesOverlayNotification: {
     position: 'absolute',
@@ -1414,6 +1417,10 @@ const styles = StyleSheet.create({
     color: '#0284c7',
     fontSize: 22,
     fontWeight: '700',
+  },
+  feedPostWrapper: {
+    margin: 0,
+    padding: 0,
   },
   loadingFeedCard: {
     paddingVertical: 24,

@@ -50,6 +50,30 @@ export default function PayrollPage() {
   // View Slip
   const [selectedSlip, setSelectedSlip] = useState(null)
 
+  const {
+    secretDeleteMode,
+    selectedRowIds,
+    deleteConfirmModal,
+    setDeleteConfirmModal,
+    deleting,
+    toggleSelectRow,
+    toggleSelectAll,
+    confirmDeleteSelected,
+    confirmDeleteOne,
+    handlePermanentDelete,
+  } = useSecretDelete({
+    items: unifiedItems,
+    itemName: 'payroll record',
+    onDelete: async (itemsToDelete) => {
+      for (const it of itemsToDelete) {
+        if (it.id && it.status !== 'NOT_GENERATED') {
+          await hrApi.payroll.delete(it.id);
+        }
+      }
+    },
+    reload: load,
+  });
+
   // Generate Payroll modal
   const [genModal, setGenModal] = useState(false)
   const [genForm, setGenForm] = useState(DEFAULT_GEN_FORM)
@@ -374,6 +398,13 @@ export default function PayrollPage() {
           />
         </FilterBar>
 
+        <SecretDeleteBanner
+          secretDeleteMode={secretDeleteMode}
+          selectedRowIds={selectedRowIds}
+          onDeleteSelected={() => confirmDeleteSelected(unifiedItems)}
+          itemName="payroll records"
+        />
+
         {loading ? (
           <LoadingState />
         ) : (
@@ -381,6 +412,16 @@ export default function PayrollPage() {
             <table>
               <thead>
                 <tr>
+                  {secretDeleteMode && (
+                    <th style={{ width: 44, textAlign: 'center' }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedRowIds.length === unifiedItems.length && unifiedItems.length > 0}
+                        onChange={() => toggleSelectAll(unifiedItems)}
+                        style={{ width: 16, height: 16, cursor: 'pointer' }}
+                      />
+                    </th>
+                  )}
                   <th>Payroll ID</th>
                   <th>Employee</th>
                   <th>Month/Year</th>
@@ -400,7 +441,17 @@ export default function PayrollPage() {
                   </tr>
                 ) : (
                   unifiedItems.map((p) => (
-                    <tr key={p.id}>
+                    <tr key={p.id} style={{ background: selectedRowIds.includes(p.id) ? '#FEF2F2' : undefined }}>
+                      {secretDeleteMode && (
+                        <td style={{ textAlign: 'center' }} onClick={ev => ev.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={selectedRowIds.includes(p.id)}
+                            onChange={(ev) => toggleSelectRow(p.id, ev)}
+                            style={{ width: 16, height: 16, cursor: 'pointer' }}
+                          />
+                        </td>
+                      )}
                       <td className="td-mono">{p.payroll_id}</td>
                       <td>{p.employee_name}</td>
                       <td>
