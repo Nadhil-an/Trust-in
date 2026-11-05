@@ -30,7 +30,7 @@ export default function DisbursementList() {
         }
       }
     },
-    reload: load,
+    reload: () => load(),
   });
 
   const load = useCallback(async () => {

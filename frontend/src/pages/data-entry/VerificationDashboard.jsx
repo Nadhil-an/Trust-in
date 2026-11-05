@@ -55,7 +55,7 @@ export default function VerificationDashboard() {
         }
       }
     },
-    reload: load,
+    reload: () => load(),
   });
 
   const [modalOpen, setModalOpen] = useState(false)

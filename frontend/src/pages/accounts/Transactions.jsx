@@ -31,7 +31,7 @@ export default function TransactionList() {
         }
       }
     },
-    reload: load,
+    reload: () => load(),
   });
 
   const load = useCallback(async () => {

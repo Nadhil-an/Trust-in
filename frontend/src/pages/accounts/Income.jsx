@@ -39,7 +39,7 @@ export default function IncomeList() {
         await accountsApi.income.delete(it.id);
       }
     },
-    reload: load,
+    reload: () => load(),
   });
 
   const confirmDelete = async () => {

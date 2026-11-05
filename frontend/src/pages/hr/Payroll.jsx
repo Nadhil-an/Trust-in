@@ -77,7 +77,7 @@ export default function PayrollPage() {
         }
       }
     },
-    reload: load,
+    reload: () => load(),
   });
 
   // Generate Payroll modal

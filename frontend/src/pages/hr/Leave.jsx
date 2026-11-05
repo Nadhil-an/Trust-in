@@ -76,7 +76,7 @@ export default function LeavePage() {
         await hrApi.leave.delete(it.id);
       }
     },
-    reload: loadData,
+    reload: () => loadData(),
   });
 
 

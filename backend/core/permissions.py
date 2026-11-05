@@ -13,7 +13,18 @@ class IsAdmin(BasePermission):
 
 class IsManager(BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role in [Role.MANAGER, Role.ADMIN]
+        if not (request.user and request.user.is_authenticated):
+            return False
+        if request.user.role in [Role.MANAGER, Role.ADMIN]:
+            return True
+        from core.models import RoleFeaturePermission
+        manager_features = [
+            'assessment_requests', 'charity_inventory', 'minutes_registry', 'volunteers', 'partners_entry'
+        ]
+        return RoleFeaturePermission.objects.filter(
+            role=request.user.role,
+            feature_key__in=manager_features
+        ).exists()
 
 
 class IsAccountant(BasePermission):
@@ -23,39 +34,97 @@ class IsAccountant(BasePermission):
         if request.user.role in [Role.ACCOUNTANT, Role.ADMIN, Role.HR]:
             return True
         from core.models import RoleFeaturePermission
-        payout_features = [
+        finance_features = [
             'payouts', 'pending_payouts', 'scheduled_payouts',
-            'salary_review', 'money_requests', 'cash_closing'
+            'salary_review', 'money_requests', 'cash_closing',
+            'donations_view', 'cash_book', 'bank_ledger',
+            'income_view', 'expenses_view', 'cheques', 'transfers', 'transactions'
         ]
         return RoleFeaturePermission.objects.filter(
             role=request.user.role,
-            feature_key__in=payout_features
+            feature_key__in=finance_features
         ).exists()
 
 
 class IsFinanceOrDataEntry(BasePermission):
-    """Allows Accountant, Manager, Admin, Data Entry, and HR."""
+    """Allows Accountant, Manager, Admin, Data Entry, and HR (or any staff with finance/entry feature enabled)."""
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role in [
+        if not (request.user and request.user.is_authenticated):
+            return False
+        if request.user.role in [
             Role.ACCOUNTANT, Role.MANAGER, Role.ADMIN, Role.DATA_ENTRY, Role.HR
+        ]:
+            return True
+        from core.models import RoleFeaturePermission
+        entry_features = [
+            'donation_entry', 'donation_registry', 'purchase_entry',
+            'promoters_verification', 'promoters_registry',
+            'membership_entry', 'partners_entry', 'events_entry',
+            'inward_entry', 'material_outward', 'assets_in_stock'
         ]
+        return RoleFeaturePermission.objects.filter(
+            role=request.user.role,
+            feature_key__in=entry_features
+        ).exists()
 
 
 
 class IsHR(BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role in [Role.HR, Role.ADMIN]
+        if not (request.user and request.user.is_authenticated):
+            return False
+        if request.user.role in [Role.HR, Role.ADMIN]:
+            return True
+        from core.models import RoleFeaturePermission
+        hr_features = [
+            'hr_attendance', 'hr_leave', 'hr_payroll', 'hr_payment_advances',
+            'hr_members', 'hr_volunteers', 'hr_exec_members', 'hr_officers',
+            'hr_complaints', 'hr_staff_reports', 'hr_performance'
+        ]
+        return RoleFeaturePermission.objects.filter(
+            role=request.user.role,
+            feature_key__in=hr_features
+        ).exists()
 
 
 class IsManagerOrHR(BasePermission):
-    """Allows Manager, HR, and Admin."""
+    """Allows Manager, HR, and Admin (or any user with Manager or HR feature enabled)."""
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role in [Role.MANAGER, Role.HR, Role.ADMIN]
+        if not (request.user and request.user.is_authenticated):
+            return False
+        if request.user.role in [Role.MANAGER, Role.HR, Role.ADMIN]:
+            return True
+        from core.models import RoleFeaturePermission
+        combined_features = [
+            'assessment_requests', 'charity_inventory', 'minutes_registry', 'volunteers', 'partners_entry',
+            'hr_attendance', 'hr_leave', 'hr_payroll', 'hr_payment_advances',
+            'hr_members', 'hr_volunteers', 'hr_exec_members', 'hr_officers',
+            'hr_complaints', 'hr_staff_reports', 'hr_performance'
+        ]
+        return RoleFeaturePermission.objects.filter(
+            role=request.user.role,
+            feature_key__in=combined_features
+        ).exists()
 
 
 class IsManagerOrAccountant(BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role in [Role.MANAGER, Role.ACCOUNTANT, Role.ADMIN]
+        if not (request.user and request.user.is_authenticated):
+            return False
+        if request.user.role in [Role.MANAGER, Role.ACCOUNTANT, Role.ADMIN]:
+            return True
+        from core.models import RoleFeaturePermission
+        mgr_acc_features = [
+            'assessment_requests', 'charity_inventory', 'minutes_registry', 'volunteers', 'partners_entry',
+            'payouts', 'pending_payouts', 'scheduled_payouts',
+            'salary_review', 'money_requests', 'cash_closing',
+            'donations_view', 'cash_book', 'bank_ledger',
+            'income_view', 'expenses_view', 'cheques', 'transfers', 'transactions'
+        ]
+        return RoleFeaturePermission.objects.filter(
+            role=request.user.role,
+            feature_key__in=mgr_acc_features
+        ).exists()
 
 
 

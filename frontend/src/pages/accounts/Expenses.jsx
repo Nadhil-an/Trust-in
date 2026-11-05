@@ -37,7 +37,7 @@ export default function ExpenseList() {
         await accountsApi.expenses.delete(it.id);
       }
     },
-    reload: load,
+    reload: () => load(),
   });
 
   const [staffList, setStaffList] = useState([])

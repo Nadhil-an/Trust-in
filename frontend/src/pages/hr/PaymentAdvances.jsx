@@ -35,7 +35,7 @@ export default function PaymentAdvances() {
         await hrApi.paymentAdvances.delete(it.id);
       }
     },
-    reload: load,
+    reload: () => load(),
   });
 
 

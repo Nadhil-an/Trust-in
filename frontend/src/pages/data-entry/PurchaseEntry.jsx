@@ -50,7 +50,7 @@ export default function PurchaseEntry() {
         await accountsApi.expenses.delete(it.id);
       }
     },
-    reload: load,
+    reload: () => load(),
   });
   const [saving, setSaving]   = useState(false)
 

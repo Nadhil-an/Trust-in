@@ -55,7 +55,7 @@ export default function PromotorRegistry() {
         }
       }
     },
-    reload: load,
+    reload: () => load(),
   });
 
   const [modalOpen, setModalOpen] = useState(false)

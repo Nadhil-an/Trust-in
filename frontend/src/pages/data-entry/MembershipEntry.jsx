@@ -58,7 +58,7 @@ export default function MembershipEntry() {
         await accountsApi.income.delete(it.id);
       }
     },
-    reload: load,
+    reload: () => load(),
   });
 
   const load = useCallback(async () => {
