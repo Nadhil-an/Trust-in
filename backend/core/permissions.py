@@ -71,20 +71,7 @@ class IsFinanceOrDataEntry(BasePermission):
 
 class IsHR(BasePermission):
     def has_permission(self, request, view):
-        if not (request.user and request.user.is_authenticated):
-            return False
-        if request.user.role in [Role.HR, Role.ADMIN]:
-            return True
-        from core.models import RoleFeaturePermission
-        hr_features = [
-            'hr_attendance', 'hr_leave', 'hr_payroll', 'hr_payment_advances',
-            'hr_members', 'hr_volunteers', 'hr_exec_members', 'hr_officers',
-            'hr_complaints', 'hr_staff_reports', 'hr_performance'
-        ]
-        return RoleFeaturePermission.objects.filter(
-            role=request.user.role,
-            feature_key__in=hr_features
-        ).exists()
+        return bool(request.user and request.user.is_authenticated and request.user.role in [Role.HR, Role.ADMIN])
 
 
 class IsManagerOrHR(BasePermission):
