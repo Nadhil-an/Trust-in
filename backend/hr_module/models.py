@@ -111,11 +111,8 @@ class Member(models.Model):
                 candidate = f"{count:04d}"
             self.member_id = candidate
 
-        import re, secrets
-        needs_new_code = (
-            not self.referral_code or 
-            not re.match(r'^slt-\d+$', str(self.referral_code).strip())
-        )
+        import secrets
+        needs_new_code = not self.referral_code or not str(self.referral_code).strip()
         if needs_new_code:
             while True:
                 num = secrets.randbelow(900000) + 100000

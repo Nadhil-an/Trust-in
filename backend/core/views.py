@@ -401,10 +401,17 @@ class MemberSignupView(APIView):
                 # Resolve referral code with one-time use verification & anti-fraud
                 referring_member = None
                 matched_code_record = None
+                referring_staff_user = None
+
                 if referral_code_input:
-                    from hr_module.models import MemberReferralCode
+                    from hr_module.models import MemberReferralCode, Member
+                    from core.models import User
+                    from django.db.models import Q
+                    clean_code = referral_code_input.strip().lower()
+
+                    # 1. Check one-time MemberReferralCode
                     matched_code_record = MemberReferralCode.objects.filter(
-                        code__iexact=referral_code_input
+                        code__iexact=clean_code
                     ).select_related('member').first()
 
                     if matched_code_record:
@@ -414,14 +421,58 @@ class MemberSignupView(APIView):
                             }, status=400)
                         referring_member = matched_code_record.member
                     else:
-                        try:
-                            referring_member = Member.objects.get(
-                                referral_code__iexact=referral_code_input
-                            )
-                        except Member.DoesNotExist:
-                            return Response({
-                                'referral_code': 'Invalid referral code. Please check the code and try again.'
-                            }, status=400)
+                        # 2. Check Member.referral_code directly
+                        referring_member = Member.objects.filter(
+                            referral_code__iexact=clean_code
+                        ).first()
+
+                    # 3. Check Staff User referral codes (e.g. slt-swapnat, swapnat, SLT-0018, slt-0018)
+                    if not referring_member:
+                        core_code = clean_code[4:] if clean_code.startswith('slt-') else (clean_code[3:] if clean_code.startswith('slt') else clean_code)
+
+                        staff_user = User.objects.filter(
+                            Q(username__iexact=clean_code) |
+                            Q(username__iexact=core_code) |
+                            Q(staff_uid__iexact=clean_code) |
+                            Q(staff_uid__iexact=core_code)
+                        ).first()
+
+                        if not staff_user and len(core_code) >= 3:
+                            for u in User.objects.exclude(full_name='').iterator():
+                                c_name = re.sub(r'[^a-z0-9]', '', (u.full_name or '').lower())
+                                if c_name == core_code:
+                                    staff_user = u
+                                    break
+
+                        if staff_user:
+                            referring_staff_user = staff_user
+                            referring_member = Member.objects.filter(created_by=staff_user).first()
+                            if not referring_member and staff_user.phone:
+                                referring_member = Member.objects.filter(phone=str(staff_user.phone)).first()
+                            if not referring_member:
+                                count = Member.objects.count() + 1
+                                referring_member = Member.objects.create(
+                                    member_id=f"{count:04d}",
+                                    full_name=staff_user.full_name or staff_user.username,
+                                    phone=staff_user.phone or '',
+                                    email=staff_user.email or '',
+                                    created_by=staff_user,
+                                    status='ACTIVE',
+                                    referral_code=f"slt-{staff_user.username.lower()}"
+                                )
+
+                    # 4. Check clean_name across all members (e.g. slt-johnmathew)
+                    if not referring_member:
+                        for m in Member.objects.iterator():
+                            c_name = f"slt-{re.sub(r'[^a-z0-9]', '', (m.full_name or '').lower())}"
+                            if c_name == clean_code:
+                                referring_member = m
+                                break
+
+                    if not referring_member:
+                        return Response({
+                            'referral_code': 'Invalid referral code. Please check the code and try again.'
+                        }, status=400)
 
                     # Security check: Prevent self-referral
                     ref_phone = re.sub(r'\D', '', str(referring_member.phone or ''))[-10:]
@@ -460,7 +511,17 @@ class MemberSignupView(APIView):
                             used_at=timezone.now()
                         )
                     # Automatically issue a fresh unique code (e.g. slt-829104) to the referrer
-                    referring_member.generate_one_time_referral_code()
+                    try:
+                        referring_member.generate_one_time_referral_code()
+                    except Exception:
+                        pass
+
+                    # Immediately credit 30% membership referral bonus to referrer
+                    try:
+                        from hr_module.bonus_service import credit_referral_bonus_for_referrer
+                        credit_referral_bonus_for_referrer(member)
+                    except Exception as e:
+                        logger.warning("Could not credit referral bonus immediately: %s", e)
         except IntegrityError as e:
             err_str = str(e).lower()
             if 'email' in err_str:
