@@ -60,6 +60,16 @@ class MemberSerializer(serializers.ModelSerializer):
             (user and user.role == Role.MEMBER)
         )
 
+        # Ensure valid one-time numeric referral code format slt-XXXXXX
+        code = getattr(instance, 'referral_code', '')
+        if not code or not re.match(r'^slt-\d+$', str(code).strip()):
+            try:
+                data['referral_code'] = instance.generate_one_time_referral_code()
+            except Exception:
+                data['referral_code'] = code
+        else:
+            data['referral_code'] = code
+
         # Membership validity and expiration calculation
         from hr_module.views import calculate_member_validity
         try:
@@ -364,9 +374,16 @@ class MonthlyPayrollSerializer(serializers.ModelSerializer):
         from django.db.models import Q
         from hr_module.models import StaffBonusAccount, StaffBonusTransaction
         User = get_user_model()
-        user = User.objects.filter(
-            Q(email__iexact=obj.employee.email) | Q(full_name__iexact=obj.employee.full_name)
-        ).first()
+        user_q = Q()
+        if obj.employee.email:
+            user_q |= Q(email__iexact=obj.employee.email)
+        if obj.employee.full_name:
+            user_q |= Q(full_name__iexact=obj.employee.full_name)
+        if getattr(obj.employee, 'phone', None):
+            user_q |= Q(phone__iexact=str(obj.employee.phone)) | Q(username__iexact=str(obj.employee.phone))
+        if getattr(obj.employee, 'employee_id', None):
+            user_q |= Q(username__iexact=str(obj.employee.employee_id))
+        user = User.objects.filter(user_q).first() if user_q else None
         if not user:
             return []
         try:

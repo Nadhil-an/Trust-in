@@ -479,7 +479,7 @@ const SignupScreen = ({ navigation }) => {
                   label="Referral Code (Optional)"
                   value={form.referral_code}
                   onChangeText={(v) => setField('referral_code', v.toLowerCase().trim())}
-                  placeholder="e.g. slt-membername"
+                  placeholder="e.g. slt-104829"
                   leftIcon={<Ionicons name="gift-outline" size={19} color="#0284c7" />}
                   autoCapitalize="none"
                   error={errors.referral_code}

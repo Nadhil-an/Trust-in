@@ -1426,9 +1426,16 @@ class OfficerPayrollDataView(APIView):
         from decimal import Decimal
         from hr_module.models import PromoterRegistryEntry
         User = get_user_model()
-        user = User.objects.filter(
-            Q(email__iexact=employee.email) | Q(full_name__iexact=employee.full_name)
-        ).first()
+        user_q = Q()
+        if employee.email:
+            user_q |= Q(email__iexact=employee.email)
+        if employee.full_name:
+            user_q |= Q(full_name__iexact=employee.full_name)
+        if getattr(employee, 'phone', None):
+            user_q |= Q(phone__iexact=str(employee.phone)) | Q(username__iexact=str(employee.phone))
+        if getattr(employee, 'employee_id', None):
+            user_q |= Q(username__iexact=str(employee.employee_id))
+        user = User.objects.filter(user_q).first() if user_q else None
 
         total_excess = Decimal('0.00')
         total_shortage = Decimal('0.00')
@@ -1469,10 +1476,22 @@ class OfficerPayrollDataView(APIView):
         membership_bonus = 0.0
         total_bonus = 0.0
         bonus_history = []
+        available_bonus_balance = 0.0
         if user:
             from hr_module.models import StaffBonusAccount, StaffBonusTransaction
+            from hr_module.bonus_service import sync_staff_bonus_account
+            try:
+                sync_staff_bonus_account(user)
+            except Exception:
+                pass
+
             try:
                 acc = StaffBonusAccount.objects.get(staff=user)
+                don_bal = float(acc.donation_bonus_balance or 0)
+                mem_bal = float(acc.membership_bonus_balance or 0)
+                paid_out = float(acc.total_paid_out or 0)
+                available_bonus_balance = round(max(0.0, don_bal + mem_bal - paid_out), 2)
+
                 # Bonuses earned in this specific month/year
                 month_txns = StaffBonusTransaction.objects.filter(
                     bonus_account=acc,
@@ -1482,9 +1501,9 @@ class OfficerPayrollDataView(APIView):
                 )
                 for bt in month_txns:
                     amt = float(bt.amount)
-                    if bt.bonus_type == 'DONATION_BONUS':
+                    if bt.bonus_type in ['DONATION_BONUS', 'DONATION']:
                         donation_bonus += amt
-                    elif bt.bonus_type in ['MEMBERSHIP_BONUS', 'REFERRAL_BONUS']:
+                    elif bt.bonus_type in ['MEMBERSHIP_BONUS', 'REFERRAL_BONUS', 'MEMBERSHIP', 'REFERRAL']:
                         membership_bonus += amt
                     total_bonus += amt
                     bonus_history.append({
@@ -1498,6 +1517,12 @@ class OfficerPayrollDataView(APIView):
                         'member_name': bt.member_name,
                         'created_at': bt.created_at.strftime('%Y-%m-%d %H:%M'),
                     })
+                
+                # If no month-specific bonuses were recorded, but available balance exists from current ledger, default to available balance
+                if total_bonus == 0.0 and available_bonus_balance > 0:
+                    donation_bonus = round(don_bal, 2)
+                    membership_bonus = round(mem_bal, 2)
+                    total_bonus = round(available_bonus_balance, 2)
             except StaffBonusAccount.DoesNotExist:
                 pass
 
@@ -1519,6 +1544,7 @@ class OfficerPayrollDataView(APIView):
             'donation_bonus': float(round(donation_bonus, 2)),
             'membership_bonus': float(round(membership_bonus, 2)),
             'total_bonus': float(round(total_bonus, 2)),
+            'available_bonus_balance': float(round(available_bonus_balance, 2)),
             'bonus_history': bonus_history,
         })
 
@@ -2210,6 +2236,40 @@ class PayrollListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         payroll = serializer.save(generated_by=self.request.user)
+
+        # Debit staff bonus account if bonus is credited to salary
+        if payroll.total_bonus and payroll.total_bonus > 0:
+            try:
+                from hr_module.models import StaffBonusAccount, StaffBonusTransaction
+                from django.contrib.auth import get_user_model
+                from django.db.models import Q
+                User = get_user_model()
+                emp = payroll.employee
+                user_q = Q()
+                if emp.email:
+                    user_q |= Q(email__iexact=emp.email)
+                if emp.full_name:
+                    user_q |= Q(full_name__iexact=emp.full_name)
+                if getattr(emp, 'phone', None):
+                    user_q |= Q(phone__iexact=str(emp.phone)) | Q(username__iexact=str(emp.phone))
+                if getattr(emp, 'employee_id', None):
+                    user_q |= Q(username__iexact=str(emp.employee_id))
+                u = User.objects.filter(user_q).first() if user_q else None
+                if u:
+                    acc, _ = StaffBonusAccount.objects.get_or_create(staff=u)
+                    if not StaffBonusTransaction.objects.filter(bonus_account=acc, description__icontains=payroll.payroll_id).exists():
+                        StaffBonusTransaction.objects.create(
+                            bonus_account=acc,
+                            bonus_type=StaffBonusTransaction.BonusType.PAYOUT,
+                            direction=StaffBonusTransaction.TxnDirection.DEBIT,
+                            amount=payroll.total_bonus,
+                            description=f"Bonus & Commission disbursed via Payroll {payroll.payroll_id} ({payroll.month:02d}/{payroll.year})"
+                        )
+                        from hr_module.bonus_service import sync_staff_bonus_account
+                        sync_staff_bonus_account(u)
+            except Exception as e:
+                logger.warning(f"Error debiting bonus account for payroll {payroll.payroll_id}: {e}")
+
         AuditLog.objects.create(
             user=self.request.user, action='GENERATE_PAYROLL', module='HR',
             record_type='MonthlyPayroll', record_id=str(payroll.id),

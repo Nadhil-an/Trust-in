@@ -172,6 +172,45 @@ def credit_membership_bonus(member, staff_user=None, is_referral=False):
     return txn
 
 
+def get_user_for_member(member):
+    """
+    Get the User account associated with a Member (for mobile login and bonus crediting).
+    Ensures that whether the member registered via mobile or was enrolled by HR/staff,
+    the referral bonus is credited to the member's own account.
+    """
+    if not member:
+        return None
+    import re
+    from core.models import User, Role
+
+    # 1. Direct created_by if role is MEMBER
+    if member.created_by and getattr(member.created_by, 'role', None) == Role.MEMBER:
+        return member.created_by
+
+    # 2. Match by mobile phone number
+    clean_p = re.sub(r'\D', '', str(member.phone or ''))[-10:]
+    if clean_p:
+        u = User.objects.filter(role=Role.MEMBER).filter(phone__endswith=clean_p).first() or \
+            User.objects.filter(role=Role.MEMBER).filter(username__endswith=clean_p).first()
+        if u:
+            return u
+        u = User.objects.filter(phone__endswith=clean_p).first() or \
+            User.objects.filter(username__endswith=clean_p).first()
+        if u:
+            return u
+
+    # 3. Fallback to member.created_by
+    if member.created_by:
+        return member.created_by
+
+    # 4. Auto-sync a User account for this Member
+    try:
+        from hr_module.views import sync_member_user_account
+        return sync_member_user_account(member)
+    except Exception:
+        return None
+
+
 def credit_referral_bonus_for_referrer(new_member):
     """
     When a new member registers with a referral code:
@@ -181,8 +220,8 @@ def credit_referral_bonus_for_referrer(new_member):
     if not referring_member:
         return None
 
-    # Credit the referring member's user
-    user_to_credit = referring_member.created_by
+    # Credit the referring member's user (e.g. Swapna)
+    user_to_credit = get_user_for_member(referring_member)
     if not user_to_credit:
         return None
 

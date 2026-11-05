@@ -588,14 +588,19 @@ const ProfileScreen = ({ navigation, route }) => {
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.referralCardTitle}>My Referral Code</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+              <Text style={styles.referralCardTitle}>My Referral Code</Text>
+              <View style={{ backgroundColor: '#FEF3C7', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, borderWidth: 1, borderColor: '#FDE68A' }}>
+                <Text style={{ fontSize: 9, fontWeight: '800', color: '#B45309' }}>ONE-TIME CODE</Text>
+              </View>
+            </View>
             <Text style={styles.referralCardDesc}>
-              Share this code with new members when they register. You will earn a ₹30 (30%) membership bonus and 10% on every donation received!
+              Share this one-time code with new members when they register. You will earn a ₹30 (30%) membership bonus and a new one-time code will be generated automatically for your next referral!
             </Text>
 
             {/* Code Box */}
             <View style={styles.referralBox}>
-              <Text style={styles.referralBoxLabel}>YOUR REFERRAL CODE</Text>
+              <Text style={styles.referralBoxLabel}>YOUR ONE-TIME CODE</Text>
               <View style={styles.referralBoxInner}>
                 <Text style={styles.referralCodeDisplay}>{referralCode}</Text>
                 <TouchableOpacity

@@ -45,6 +45,7 @@ class UserSerializer(serializers.ModelSerializer):
     days_left_to_expire = serializers.SerializerMethodField()
     monthly_fee = serializers.SerializerMethodField()
     referral_code = serializers.SerializerMethodField()
+    referral_bonus = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -53,7 +54,7 @@ class UserSerializer(serializers.ModelSerializer):
             'is_active', 'is_verified', 'date_joined',
             'member_id', 'member_name', 'member_since', 'valid_upto',
             'is_subscription_expired', 'has_active_subscription', 'is_paid_member',
-            'subscription_status', 'days_left_to_expire', 'monthly_fee', 'referral_code'
+            'subscription_status', 'days_left_to_expire', 'monthly_fee', 'referral_code', 'referral_bonus'
         ]
         read_only_fields = ['id', 'date_joined']
 
@@ -175,13 +176,38 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_referral_code(self, obj):
         member = self._get_member(obj)
-        if member and getattr(member, 'referral_code', None):
-            return member.referral_code
-        # Auto-compute standard format slt-membername
-        import re
-        name = obj.full_name or obj.username or ''
-        clean_name = re.sub(r'[^a-z0-9]', '', name.lower().replace(' ', ''))
-        return f"slt-{clean_name}" if clean_name else f"slt-{obj.username}"
+        if member:
+            import re
+            code = getattr(member, 'referral_code', '')
+            if code and re.match(r'^slt-\d+$', str(code).strip()):
+                return code
+            return member.generate_one_time_referral_code()
+
+        # For staff users who don't have a Member model
+        import re, hashlib
+        code = getattr(obj, 'referral_code', None)
+        if code and re.match(r'^slt-\d+$', str(code).strip()):
+            return code
+        num = int(hashlib.md5(f"staff_{obj.id}".encode()).hexdigest(), 16) % 900000 + 100000
+        return f"slt-{num}"
+
+    def get_referral_bonus(self, obj):
+        from hr_module.models import StaffBonusAccount
+        try:
+            acc = StaffBonusAccount.objects.get(staff=obj)
+            return {
+                'membership_bonus': float(acc.membership_bonus_balance or 0),
+                'donation_bonus': float(acc.donation_bonus_balance or 0),
+                'total_bonus': float(acc.total_bonus_balance or 0),
+                'available_balance': float(acc.available_balance or 0),
+            }
+        except StaffBonusAccount.DoesNotExist:
+            return {
+                'membership_bonus': 0.0,
+                'donation_bonus': 0.0,
+                'total_bonus': 0.0,
+                'available_balance': 0.0,
+            }
 
     def get_monthly_fee(self, obj):
         member = self._get_member(obj)

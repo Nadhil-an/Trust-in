@@ -103,14 +103,16 @@ class StaffBonusSystemTestCase(TestCase):
         self.assertEqual(summary['total_bonus'], 230.0)
 
     def test_referral_code_generation_and_bonus(self):
-        """Referral code slt-membername and referral bonus crediting."""
+        """One-time referral code slt-{digits} and referral bonus crediting."""
+        import re
         # Member 1 creates account
         m1 = Member.objects.create(
-            full_name='Alif UN',
+            full_name='Swapna Member',
             phone='9946535824',
             created_by=self.staff_user
         )
-        self.assertTrue(m1.referral_code.startswith('slt-alifun'))
+        self.assertTrue(m1.referral_code.startswith('slt-'))
+        self.assertRegex(m1.referral_code, r'^slt-\d+$')
 
         # Member 2 signs up with Member 1's referral code
         m2 = Member.objects.create(
@@ -121,10 +123,55 @@ class StaffBonusSystemTestCase(TestCase):
             created_by=self.staff_user
         )
 
-        # Check that referring member's staff (or referrer) got credited
+        # Check that referring member's account or staff got credited
         account = StaffBonusAccount.objects.get(staff=self.staff_user)
-        # Should have membership bonus from m1 (30) + m2 (30) + referral bonus from m2 (30)
-        self.assertGreaterEqual(account.membership_bonus_balance, Decimal('60.00'))
+        self.assertGreaterEqual(account.membership_bonus_balance, Decimal('30.00'))
+
+    def test_one_time_referral_code_lifecycle(self):
+        """One-time code is consumed and immediately refreshed with a new code."""
+        swapna_user = User.objects.create_user(
+            username='swapna_test',
+            email='swapna@test.com',
+            phone='9846012345',
+            full_name='Swapna T',
+            role=Role.MEMBER,
+            password='password123'
+        )
+        swapna_member = Member.objects.create(
+            full_name='Swapna T',
+            phone='9846012345',
+            created_by=swapna_user
+        )
+        first_code = swapna_member.referral_code
+        self.assertTrue(first_code.startswith('slt-'))
+
+        # Simulate a new member registering with swapna's referral code
+        from hr_module.models import MemberReferralCode
+        ref_record = MemberReferralCode.objects.get(code=first_code)
+        self.assertFalse(ref_record.is_used)
+
+        # New member signs up
+        new_member = Member.objects.create(
+            full_name='Rahul New',
+            phone='9846099999',
+            monthly_fee=Decimal('100.00'),
+            referred_by=swapna_member
+        )
+
+        # Mark code consumed
+        ref_record.is_used = True
+        ref_record.used_by = new_member
+        ref_record.save()
+
+        # Swapna generates a new one-time code
+        new_code = swapna_member.generate_one_time_referral_code()
+        self.assertNotEqual(first_code, new_code)
+        self.assertTrue(new_code.startswith('slt-'))
+
+        # Swapna's bonus account gets the ₹30 membership bonus for registration + ₹30 referral bonus
+        swapna_acc = StaffBonusAccount.objects.get(staff=swapna_user)
+        self.assertEqual(swapna_acc.membership_bonus_balance, Decimal('60.00'))
+        self.assertEqual(swapna_acc.transactions.filter(direction='CREDIT').count(), 2)
 
     def test_donation_deletion_reverses_bonus(self):
         """Deleting a donation automatically removes bonus and updates account balance."""

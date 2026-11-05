@@ -398,15 +398,37 @@ class MemberSignupView(APIView):
                 chosen_type = membership_type if membership_type in valid_types else 'MEMBER'
 
                 # Create corresponding Member record linked via created_by
-                # Resolve referral code
+                # Resolve referral code with one-time use verification & anti-fraud
                 referring_member = None
+                matched_code_record = None
                 if referral_code_input:
-                    try:
-                        referring_member = Member.objects.get(
-                            referral_code__iexact=referral_code_input
-                        )
-                    except Member.DoesNotExist:
-                        pass  # Invalid code — silently ignore
+                    from hr_module.models import MemberReferralCode
+                    matched_code_record = MemberReferralCode.objects.filter(
+                        code__iexact=referral_code_input
+                    ).select_related('member').first()
+
+                    if matched_code_record:
+                        if matched_code_record.is_used:
+                            return Response({
+                                'referral_code': 'This referral code has already been used. Please ask your referrer for a fresh referral code.'
+                            }, status=400)
+                        referring_member = matched_code_record.member
+                    else:
+                        try:
+                            referring_member = Member.objects.get(
+                                referral_code__iexact=referral_code_input
+                            )
+                        except Member.DoesNotExist:
+                            return Response({
+                                'referral_code': 'Invalid referral code. Please check the code and try again.'
+                            }, status=400)
+
+                    # Security check: Prevent self-referral
+                    ref_phone = re.sub(r'\D', '', str(referring_member.phone or ''))[-10:]
+                    if ref_phone and ref_phone == phone:
+                        return Response({
+                            'referral_code': 'You cannot use your own referral code.'
+                        }, status=400)
 
                 member = Member.objects.create(
                     full_name=full_name,
@@ -420,6 +442,25 @@ class MemberSignupView(APIView):
                     monthly_fee=monthly_fee,
                     referred_by=referring_member,
                 )
+
+                # Consume the one-time referral code & automatically issue a new unique code to referrer
+                if referring_member:
+                    from hr_module.models import MemberReferralCode
+                    if matched_code_record:
+                        matched_code_record.is_used = True
+                        matched_code_record.used_by = member
+                        matched_code_record.used_at = timezone.now()
+                        matched_code_record.save(update_fields=['is_used', 'used_by', 'used_at'])
+                    else:
+                        MemberReferralCode.objects.create(
+                            member=referring_member,
+                            code=referral_code_input,
+                            is_used=True,
+                            used_by=member,
+                            used_at=timezone.now()
+                        )
+                    # Automatically issue a fresh unique code (e.g. slt-829104) to the referrer
+                    referring_member.generate_one_time_referral_code()
         except IntegrityError as e:
             err_str = str(e).lower()
             if 'email' in err_str:

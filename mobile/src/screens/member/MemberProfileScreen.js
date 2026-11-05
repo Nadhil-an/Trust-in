@@ -24,7 +24,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Colors } from '../../constants/Colors';
 import { useAuthStore } from '../../store/authStore';
-import { memberPostsApi, authApi, verificationsApi, rewardsApi } from '../../api';
+import { memberPostsApi, authApi, verificationsApi, rewardsApi, staffApi } from '../../api';
 import * as ImagePicker from 'expo-image-picker';
 import { Video, ResizeMode } from 'expo-av';
 import { resolveImageUrl } from '../../utils/imageUrl';
@@ -75,6 +75,23 @@ export default function MemberProfileScreen() {
 
   // ── Free Offers for Best Members State ──
   const [rewardSummary, setRewardSummary] = useState(null);
+  const [bonusData, setBonusData] = useState(null);
+  const [referralHistoryModal, setReferralHistoryModal] = useState(false);
+  const [loadingBonus, setLoadingBonus] = useState(false);
+
+  const fetchBonusData = async () => {
+    if (!isMe) return;
+    setLoadingBonus(true);
+    try {
+      const res = await staffApi.bonusTransactions();
+      if (res?.data) {
+        setBonusData(res.data);
+      }
+    } catch (_) {
+    } finally {
+      setLoadingBonus(false);
+    }
+  };
   const [loadingRewards, setLoadingRewards] = useState(false);
   const [claimingOfferId, setClaimingOfferId] = useState(null);
 
@@ -493,6 +510,7 @@ export default function MemberProfileScreen() {
       if (isMe) {
         checkVerificationStatus();
         fetchRewardSummary();
+        fetchBonusData();
       }
     } else {
       setLoading(false);
@@ -879,6 +897,88 @@ export default function MemberProfileScreen() {
         </View>
       )}
 
+      {/* ── Referral & Commission Section ── */}
+      {isMe && (
+        <View style={styles.memberReferralCard}>
+          <View style={styles.memberReferralHeader}>
+            <View style={styles.memberReferralIconWrap}>
+              <Ionicons name="gift" size={20} color="#0284C7" />
+            </View>
+            <View style={{ flex: 1, marginLeft: 10 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Text style={styles.memberReferralTitle}>Refer & Earn Commission</Text>
+                <View style={styles.oneTimeBadge}>
+                  <Text style={styles.oneTimeBadgeText}>ONE-TIME CODE</Text>
+                </View>
+              </View>
+              <Text style={styles.memberReferralSub}>
+                Earn ₹30 (30%) commission per member. A new code is automatically generated upon use.
+              </Text>
+            </View>
+          </View>
+
+          {/* Code and Action Buttons */}
+          <View style={styles.memberReferralCodeBox}>
+            <View>
+              <Text style={styles.memberReferralCodeLabel}>YOUR ONE-TIME CODE</Text>
+              <Text style={styles.memberReferralCodeText}>{referralCode}</Text>
+            </View>
+
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <TouchableOpacity
+                style={styles.memberReferralCopyBtn}
+                activeOpacity={0.7}
+                onPress={async () => {
+                  await Clipboard.setStringAsync(referralCode);
+                  Toast.show({
+                    type: 'success',
+                    text1: 'Referral Code Copied!',
+                    text2: `${referralCode} copied to clipboard`,
+                  });
+                }}
+              >
+                <Ionicons name="copy-outline" size={14} color="#0284C7" />
+                <Text style={styles.memberReferralCopyBtnText}>Copy</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.memberReferralShareBtn}
+                activeOpacity={0.8}
+                onPress={async () => {
+                  try {
+                    await Share.share({
+                      title: 'Join Sree Lakshmi Charitable Trust',
+                      message: `Join Sree Lakshmi Charitable Trust using my one-time referral code: ${referralCode}\n\nRegister via the app to connect and contribute! https://sreelakshmicharity.org`,
+                    });
+                  } catch (err) {}
+                }}
+              >
+                <Ionicons name="share-social-outline" size={14} color="#FFFFFF" />
+                <Text style={styles.memberReferralShareBtnText}>Share</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Earned Commission Summary Row */}
+          <TouchableOpacity
+            style={styles.memberEarningsRow}
+            activeOpacity={0.8}
+            onPress={() => setReferralHistoryModal(true)}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Ionicons name="wallet-outline" size={18} color="#16A34A" />
+              <Text style={styles.memberEarningsLabel}>Total Referral Bonus Earned:</Text>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={styles.memberEarningsVal}>
+                ₹{((bonusData?.summary?.membership_bonus ?? currentUser?.referral_bonus?.membership_bonus ?? 0)).toFixed(2)}
+              </Text>
+              <Ionicons name="chevron-forward" size={16} color="#64748B" style={{ marginLeft: 4 }} />
+            </View>
+          </TouchableOpacity>
+        </View>
+      )}
+
       {/* ── Tabs (Grid & Video Reels) ── */}
       <View style={styles.tabsRow}>
         <TouchableOpacity
@@ -1237,6 +1337,61 @@ export default function MemberProfileScreen() {
               )}
             />
           )}
+        </View>
+      </Modal>
+
+      {/* ── Referral Commission History Modal ── */}
+      <Modal
+        visible={referralHistoryModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setReferralHistoryModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { maxHeight: '80%' }]}>
+            <View style={styles.modalHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Ionicons name="gift" size={20} color="#0284C7" />
+                <Text style={styles.modalTitle}>Referral Commission History</Text>
+              </View>
+              <TouchableOpacity onPress={() => setReferralHistoryModal(false)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <Ionicons name="close" size={24} color="#64748B" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+              <View style={styles.historySummaryCard}>
+                <Text style={styles.historySummaryLabel}>Total Accumulated Referral Bonus</Text>
+                <Text style={styles.historySummaryAmount}>
+                  ₹ {((bonusData?.summary?.membership_bonus ?? currentUser?.referral_bonus?.membership_bonus ?? 0)).toFixed(2)}
+                </Text>
+                <Text style={styles.historySummarySub}>
+                  Credited directly to your member account (30% per new registration).
+                </Text>
+              </View>
+
+              <Text style={styles.historyListTitle}>Enrolled Members & Bonus Credits</Text>
+              {loadingBonus ? (
+                <ActivityIndicator color="#0284C7" style={{ marginTop: 20 }} />
+              ) : (!bonusData?.transactions || bonusData.transactions.length === 0) ? (
+                <View style={styles.emptyHistoryBox}>
+                  <Ionicons name="people-outline" size={36} color="#CBD5E1" />
+                  <Text style={styles.emptyHistoryText}>No referral bonuses earned yet</Text>
+                  <Text style={styles.emptyHistorySub}>Share your code above with friends. When they register, you will earn ₹30 per member!</Text>
+                </View>
+              ) : (
+                bonusData.transactions.map((tx) => (
+                  <View key={tx.id} style={styles.historyItemCard}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.historyItemName}>{tx.member_name || tx.description || 'New Member Enrolled'}</Text>
+                      <Text style={styles.historyItemDate}>{tx.created_at ? tx.created_at.replace('T', ' ').slice(0, 16) : 'Recently'}</Text>
+                    </View>
+                    <Text style={styles.historyItemBonus}>+₹{Number(tx.amount || 30).toFixed(2)}</Text>
+                  </View>
+                ))
+              )}
+            </ScrollView>
+          </View>
         </View>
       </Modal>
 
@@ -2498,5 +2653,205 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     color: '#64748B',
+  },
+  memberReferralCard: {
+    marginHorizontal: 16,
+    marginBottom: 14,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#BAE6FD',
+    shadowColor: '#0284C7',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  memberReferralHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  memberReferralIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: '#E0F2FE',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  memberReferralTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  oneTimeBadge: {
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+  },
+  oneTimeBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#B45309',
+  },
+  memberReferralSub: {
+    fontSize: 11,
+    color: '#64748B',
+    marginTop: 2,
+    lineHeight: 15,
+  },
+  memberReferralCodeBox: {
+    marginTop: 12,
+    backgroundColor: '#F0F9FF',
+    borderRadius: 10,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#E0F2FE',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  memberReferralCodeLabel: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#0284C7',
+    letterSpacing: 0.5,
+  },
+  memberReferralCodeText: {
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#0369A1',
+    marginTop: 2,
+  },
+  memberReferralCopyBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#BAE6FD',
+  },
+  memberReferralCopyBtnText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#0284C7',
+  },
+  memberReferralShareBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#0284C7',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  memberReferralShareBtnText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  memberEarningsRow: {
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  memberEarningsLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#334155',
+    marginLeft: 6,
+  },
+  memberEarningsVal: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#16A34A',
+  },
+  historySummaryCard: {
+    backgroundColor: '#F0FDF4',
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#BBF7D0',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  historySummaryLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#16A34A',
+    textTransform: 'uppercase',
+  },
+  historySummaryAmount: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#15803D',
+    marginTop: 4,
+  },
+  historySummarySub: {
+    fontSize: 11,
+    color: '#166534',
+    textAlign: 'center',
+    marginTop: 2,
+  },
+  historyListTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 8,
+  },
+  historyItemCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F8FAFC',
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginBottom: 8,
+  },
+  historyItemName: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  historyItemDate: {
+    fontSize: 11,
+    color: '#64748B',
+    marginTop: 2,
+  },
+  historyItemBonus: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#16A34A',
+  },
+  emptyHistoryBox: {
+    padding: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyHistoryText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#64748B',
+    marginTop: 8,
+  },
+  emptyHistorySub: {
+    fontSize: 11,
+    color: '#94A3B8',
+    textAlign: 'center',
+    marginTop: 4,
   },
 });

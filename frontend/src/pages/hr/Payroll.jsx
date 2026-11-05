@@ -13,6 +13,7 @@ import {
   SecretDeleteBanner,
 } from "../../components/shared"
 import { format } from "date-fns"
+import html2pdf from "html2pdf.js"
 import toast from "react-hot-toast"
 
 const CURRENT_MONTH = new Date().getMonth() + 1
@@ -38,6 +39,8 @@ const DEFAULT_GEN_FORM = {
   donation_bonus: 0,
   membership_bonus: 0,
   total_bonus: 0,
+  bonus_history: [],
+  collection_history: [],
   payment_method: "BANK",
   remarks: "",
 }
@@ -53,8 +56,11 @@ export default function PayrollPage() {
   const [monthFilter, setMonthFilter] = useState(CURRENT_MONTH)
   const [yearFilter, setYearFilter] = useState(CURRENT_YEAR)
 
-  // View Slip
+  // View Slip & Export
   const [selectedSlip, setSelectedSlip] = useState(null)
+  const [downloadingSlip, setDownloadingSlip] = useState(false)
+  const [allPayrollModalOpen, setAllPayrollModalOpen] = useState(false)
+  const [downloadingAllPDF, setDownloadingAllPDF] = useState(false)
   const [bonusModalOpen, setBonusModalOpen] = useState(false)
   const [staffBonusList, setStaffBonusList] = useState([])
   const [loadingBonus, setLoadingBonus] = useState(false)
@@ -120,6 +126,9 @@ export default function PayrollPage() {
           (p) => p.employee === emp.id || p.employee_name === emp.full_name
         )
         if (payroll) {
+          const donBonus = Number(payroll.donation_bonus || 0)
+          const memBonus = Number(payroll.membership_bonus || 0)
+          const totBonus = Number(payroll.total_bonus || (donBonus + memBonus))
           return {
             isGenerated: true,
             id: payroll.id,
@@ -127,9 +136,12 @@ export default function PayrollPage() {
             employee_name: payroll.employee_name,
             month: payroll.month,
             year: payroll.year,
-            basic_salary: payroll.basic_salary,
-            advance_salary: payroll.other_deductions || 0,
-            balance_salary: payroll.net_salary,
+            basic_salary: Number(payroll.basic_salary || 0),
+            donation_bonus: donBonus,
+            membership_bonus: memBonus,
+            total_bonus: totBonus,
+            advance_salary: Number(payroll.other_deductions || 0),
+            balance_salary: Number(payroll.net_salary || 0),
             status: payroll.status,
             original: payroll,
           }
@@ -154,7 +166,7 @@ export default function PayrollPage() {
 
         const mockOriginal = {
           id: "UNGEN-" + emp.id,
-          payroll_id: "N/A",
+          payroll_id: "UNGENERATED",
           employee_name: emp.full_name,
           month: monthFilter,
           year: yearFilter,
@@ -165,9 +177,12 @@ export default function PayrollPage() {
           other_allowances: 0,
           pf_deduction: 0,
           other_deductions: advanceTotal,
+          donation_bonus: 0,
+          membership_bonus: 0,
+          total_bonus: 0,
           net_salary: balance,
-          status: "PAID",
-          remarks: "",
+          status: "UNGENERATED",
+          remarks: "Pending payroll generation",
         }
 
         return {
@@ -178,6 +193,9 @@ export default function PayrollPage() {
           month: monthFilter,
           year: yearFilter,
           basic_salary: basic,
+          donation_bonus: 0,
+          membership_bonus: 0,
+          total_bonus: 0,
           advance_salary: advanceTotal,
           balance_salary: balance,
           status: "UNGENERATED",
@@ -273,6 +291,8 @@ export default function PayrollPage() {
           donation_bonus: Number(data.donation_bonus || 0),
           membership_bonus: Number(data.membership_bonus || 0),
           total_bonus: Number(data.total_bonus || (Number(data.donation_bonus || 0) + Number(data.membership_bonus || 0))),
+          bonus_history: data.bonus_history || [],
+          collection_history: data.collection_history || [],
         }))
       } catch (err) {
         if (!cancelled)
@@ -361,24 +381,150 @@ export default function PayrollPage() {
     }
   }
 
-  // ── Print Slip ─────────────────────────────────────────────────────
-  const handlePrint = () => {
-    const printContent = document.getElementById("printable-slip").innerHTML
-    const original = document.body.innerHTML
-    document.body.innerHTML = printContent
-    window.print()
-    document.body.innerHTML = original
-    window.location.reload()
+  // ── Staff Bonus Modal Loader ──────────────────────────────────────
+  const openBonusModal = async () => {
+    setBonusModalOpen(true)
+    setLoadingBonus(true)
+    try {
+      const res = await hrApi.staffBonus.all()
+      setStaffBonusList(res.data || [])
+    } catch (_) {
+      toast.error("Failed to load staff bonus records")
+    } finally {
+      setLoadingBonus(false)
+    }
   }
+
+  // ── Print & PDF Handlers ───────────────────────────────────────────
+  const handlePrintSlip = () => {
+    window.print()
+  }
+
+  const handleDownloadSlipPDF = async (slipToExport) => {
+    const slip = slipToExport || selectedSlip
+    if (!slip) return
+    const element = document.getElementById("printable-slip")
+    if (!element) return
+    setDownloadingSlip(true)
+    try {
+      const empName = (slip.employee_name || "Staff").replace(/[^a-zA-Z0-9_-]/g, "_")
+      const opt = {
+        margin: [8, 8, 8, 8],
+        filename: `Salary_Slip_${empName}_${slip.month}_${slip.year}.pdf`,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+      }
+      await html2pdf().set(opt).from(element).save()
+      toast.success("Salary slip PDF downloaded successfully!")
+    } catch (err) {
+      toast.error("Failed to generate PDF slip")
+    } finally {
+      setDownloadingSlip(false)
+    }
+  }
+
+  const handleDownloadAllPayrollPDF = async () => {
+    const element = document.getElementById("printable-all-payroll")
+    if (!element) return
+    setDownloadingAllPDF(true)
+    try {
+      const opt = {
+        margin: [6, 6, 6, 6],
+        filename: `SreeLakshmi_Payroll_Register_${monthFilter || "All"}_${yearFilter}.pdf`,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: "mm", format: "a4", orientation: "landscape" }
+      }
+      await html2pdf().set(opt).from(element).save()
+      toast.success("Complete payroll PDF downloaded successfully!")
+    } catch (err) {
+      toast.error("Failed to generate full payroll PDF")
+    } finally {
+      setDownloadingAllPDF(false)
+    }
+  }
+
+  // Summary Metrics for the current view
+  const totalBasicAll = unifiedItems.reduce((acc, it) => acc + Number(it.basic_salary || 0), 0)
+  const totalBonusAll = unifiedItems.reduce(
+    (acc, it) => acc + Number(it.total_bonus || it.original?.total_bonus || (Number(it.original?.donation_bonus || 0) + Number(it.original?.membership_bonus || 0)) || 0),
+    0
+  )
+  const totalAdvanceDeductionsAll = unifiedItems.reduce(
+    (acc, it) => acc + Number(it.advance_salary || it.original?.other_deductions || 0),
+    0
+  )
+  const totalNetAll = unifiedItems.reduce(
+    (acc, it) => acc + Number(it.balance_salary || it.original?.net_salary || 0),
+    0
+  )
 
   // ── Render ─────────────────────────────────────────────────────────
   return (
     <div>
-      <PageHeader title="Salary & Payroll" subtitle="Monthly payroll management">
-        <button className="btn btn-primary" onClick={openGenerateModal}>
-          + Generate Payroll
-        </button>
+      <PageHeader title="Salary & Payroll" subtitle="Monthly payroll management, commissions, and slips">
+        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+          <button
+            className="btn btn-secondary"
+            onClick={openBonusModal}
+            style={{ display: "flex", alignItems: "center", gap: "6px" }}
+          >
+            🎁 Bonus & Comm. Ledger
+          </button>
+          <button
+            className="btn btn-secondary"
+            onClick={() => setAllPayrollModalOpen(true)}
+            style={{ display: "flex", alignItems: "center", gap: "6px" }}
+          >
+            📄 Export All (PDF)
+          </button>
+          <button
+            className="btn btn-primary"
+            onClick={openGenerateModal}
+            style={{ display: "flex", alignItems: "center", gap: "6px" }}
+          >
+            + Generate Payroll
+          </button>
+        </div>
       </PageHeader>
+
+      {/* ── Summary KPI Cards ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "16px", marginBottom: "20px" }}>
+        <div style={{ background: "#ffffff", padding: "18px 20px", borderRadius: "12px", border: "1px solid #e2e8f0", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+          <div style={{ fontSize: "11px", fontWeight: "700", color: "#64748b", textTransform: "uppercase" }}>Total Basic Salary</div>
+          <div style={{ fontSize: "22px", fontWeight: "800", color: "#1e293b", marginTop: "4px" }}>
+            {formatINR(totalBasicAll)}
+          </div>
+          <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px" }}>{unifiedItems.length} Staff on record</div>
+        </div>
+
+        <div style={{ background: "#faf5ff", padding: "18px 20px", borderRadius: "12px", border: "1px solid #e9d5ff", boxShadow: "0 1px 3px rgba(126,34,206,0.05)" }}>
+          <div style={{ fontSize: "11px", fontWeight: "700", color: "#7e22ce", textTransform: "uppercase" }}>
+            🎁 Bonus & Commission
+          </div>
+          <div style={{ fontSize: "22px", fontWeight: "800", color: "#6b21a8", marginTop: "4px" }}>
+            +{formatINR(totalBonusAll)}
+          </div>
+          <div style={{ fontSize: "11px", color: "#a855f7", marginTop: "4px" }}>10% Donation + 30% Member</div>
+        </div>
+
+        <div style={{ background: "#ffffff", padding: "18px 20px", borderRadius: "12px", border: "1px solid #e2e8f0", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+          <div style={{ fontSize: "11px", fontWeight: "700", color: "#64748b", textTransform: "uppercase" }}>Advances & Deductions</div>
+          <div style={{ fontSize: "22px", fontWeight: "800", color: "#ef4444", marginTop: "4px" }}>
+            -{formatINR(totalAdvanceDeductionsAll)}
+          </div>
+          <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px" }}>Advances, short & PF</div>
+        </div>
+
+        <div style={{ background: "#f0fdf4", padding: "18px 20px", borderRadius: "12px", border: "1px solid #bbf7d0", boxShadow: "0 1px 3px rgba(22,163,74,0.05)" }}>
+          <div style={{ fontSize: "11px", fontWeight: "700", color: "#15803d", textTransform: "uppercase" }}>Net Disbursed Salary</div>
+          <div style={{ fontSize: "22px", fontWeight: "900", color: "#166534", marginTop: "4px" }}>
+            {formatINR(totalNetAll)}
+          </div>
+          <div style={{ fontSize: "11px", color: "#16a34a", marginTop: "4px" }}>Basic + Bonus - Deductions</div>
+        </div>
+      </div>
 
       {/* ── Main Table ── */}
       <div className="data-card">
@@ -447,11 +593,13 @@ export default function PayrollPage() {
                   <th>Employee</th>
                   <th>Month/Year</th>
                   <th>Basic Salary</th>
-                  <th>Bonus (10%+30%)</th>
-                  <th>Advance Salary</th>
-                  <th>Balance Salary</th>
+                  <th style={{ color: "#16a34a" }}>Donation Comm. (10%)</th>
+                  <th style={{ color: "#7c3aed" }}>Member Bonus (30%)</th>
+                  <th style={{ color: "#6b21a8" }}>Total Bonus & Comm.</th>
+                  <th>Advance / Shortage</th>
+                  <th>Net Payable Salary</th>
                   <th>Status</th>
-                  <th style={{ textAlign: "center" }}>Actions</th>
+                  <th style={{ textAlign: "center", minWidth: "160px" }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -475,15 +623,34 @@ export default function PayrollPage() {
                         </td>
                       )}
                       <td className="td-mono">{p.payroll_id}</td>
-                      <td>{p.employee_name}</td>
+                      <td style={{ fontWeight: 600 }}>{p.employee_name}</td>
                       <td>
                         {p.month}/{p.year}
                       </td>
                       <td>
                         <AmountDisplay amount={p.basic_salary} />
                       </td>
-                      <td style={{ color: '#9333EA', fontWeight: 600 }}>
-                        +{formatINR(p.original?.total_bonus || (Number(p.original?.donation_bonus || 0) + Number(p.original?.membership_bonus || 0)))}
+                      <td style={{ color: "#16a34a", fontWeight: 600 }}>
+                        +{formatINR(p.donation_bonus || p.original?.donation_bonus || 0)}
+                      </td>
+                      <td style={{ color: "#7c3aed", fontWeight: 600 }}>
+                        +{formatINR(p.membership_bonus || p.original?.membership_bonus || 0)}
+                      </td>
+                      <td>
+                        <span
+                          style={{
+                            display: "inline-block",
+                            padding: "3px 8px",
+                            borderRadius: "12px",
+                            background: "#faf5ff",
+                            color: "#6b21a8",
+                            fontWeight: 700,
+                            fontSize: "12px",
+                            border: "1px solid #e9d5ff",
+                          }}
+                        >
+                          +{formatINR(p.total_bonus || p.original?.total_bonus || ((p.donation_bonus || 0) + (p.membership_bonus || 0)))}
+                        </span>
                       </td>
                       <td
                         style={{
@@ -492,20 +659,40 @@ export default function PayrollPage() {
                       >
                         <AmountDisplay amount={p.advance_salary} />
                       </td>
-                      <td style={{ fontWeight: "bold" }}>
+                      <td style={{ fontWeight: "800", color: "#1d4ed8" }}>
                         <AmountDisplay amount={p.balance_salary} type="neutral" />
                       </td>
                       <td>
-                        <span className="badge badge-green">PAID</span>
+                        {p.status === "PAID" ? (
+                          <span className="badge badge-green">PAID</span>
+                        ) : p.status === "APPROVED" ? (
+                          <span className="badge badge-blue">PENDING</span>
+                        ) : (
+                          <span className="badge badge-gray">UNGENERATED</span>
+                        )}
                       </td>
                       <td style={{ textAlign: "center" }}>
-                        <button
-                          className="btn btn-sm btn-secondary"
-                          onClick={() => setSelectedSlip(p.original)}
-                          style={{ fontSize: "12px", padding: "4px 8px" }}
-                        >
-                          👁️ View Slip
-                        </button>
+                        <div style={{ display: "flex", gap: "6px", justifyContent: "center" }}>
+                          <button
+                            className="btn btn-sm btn-secondary"
+                            onClick={() => setSelectedSlip(p.original)}
+                            style={{ fontSize: "12px", padding: "4px 8px" }}
+                            title="View Salary Slip"
+                          >
+                            👁️ View Slip
+                          </button>
+                          <button
+                            className="btn btn-sm btn-secondary"
+                            onClick={() => {
+                              setSelectedSlip(p.original)
+                              setTimeout(() => handleDownloadSlipPDF(p.original), 200)
+                            }}
+                            style={{ fontSize: "12px", padding: "4px 8px", color: "#2563eb", borderColor: "#bfdbfe" }}
+                            title="Download PDF Salary Slip"
+                          >
+                            📥 PDF
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -526,13 +713,20 @@ export default function PayrollPage() {
           footer={
             <>
               <button
-                className="btn btn-secondary"
+                className="btn btn-secondary no-print"
                 onClick={() => setSelectedSlip(null)}
               >
                 Close
               </button>
-              <button className="btn btn-primary" onClick={handlePrint}>
+              <button className="btn btn-secondary no-print" onClick={handlePrintSlip}>
                 🖨️ Print Slip
+              </button>
+              <button
+                className="btn btn-primary no-print"
+                onClick={() => handleDownloadSlipPDF(selectedSlip)}
+                disabled={downloadingSlip}
+              >
+                {downloadingSlip ? "Generating PDF..." : "📥 Download PDF Slip"}
               </button>
             </>
           }
@@ -721,6 +915,59 @@ export default function PayrollPage() {
                 </div>
               </div>
             </div>
+
+            {/* Bonus & Commission Breakdown History */}
+            {selectedSlip.bonus_history && selectedSlip.bonus_history.length > 0 && (
+              <div
+                style={{
+                  marginTop: "20px",
+                  border: "1px solid #e9d5ff",
+                  borderRadius: "8px",
+                  padding: "15px",
+                  background: "#faf5ff",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: "10px",
+                  }}
+                >
+                  <h4 style={{ margin: 0, fontSize: "14px", color: "#6b21a8", fontWeight: "700" }}>
+                    🎁 Staff Bonus & Commission Ledger Breakdown
+                  </h4>
+                  <span style={{ fontSize: "12px", color: "#7e22ce", fontWeight: "600" }}>
+                    Total Credited: +{formatINR(selectedSlip.total_bonus || (Number(selectedSlip.donation_bonus || 0) + Number(selectedSlip.membership_bonus || 0)))}
+                  </span>
+                </div>
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px" }}>
+                    <thead>
+                      <tr style={{ background: "#f3e8ff", borderBottom: "1.5px solid #d8b4fe", textAlign: "left" }}>
+                        <th style={{ padding: "6px 8px" }}>Date</th>
+                        <th style={{ padding: "6px 8px" }}>Commission Category</th>
+                        <th style={{ padding: "6px 8px" }}>Description / Reference</th>
+                        <th style={{ padding: "6px 8px", textAlign: "right" }}>Amount Credited</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedSlip.bonus_history.map((bh, idx) => (
+                        <tr key={bh.id || idx} style={{ borderBottom: "1px solid #f3e8ff" }}>
+                          <td style={{ padding: "6px 8px", color: "#64748b" }}>{bh.created_at ? bh.created_at.slice(0, 10) : "-"}</td>
+                          <td style={{ padding: "6px 8px", fontWeight: "600", color: "#6b21a8" }}>{bh.bonus_type_display || bh.bonus_type}</td>
+                          <td style={{ padding: "6px 8px", color: "#475569" }}>{bh.description || bh.member_name || bh.income_id || "-"}</td>
+                          <td style={{ padding: "6px 8px", textAlign: "right", fontWeight: "700", color: "#16a34a" }}>
+                            +{formatINR(bh.amount)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
 
             {/* Daily Collection Reconciliation History */}
             {selectedSlip.collection_history && selectedSlip.collection_history.length > 0 && (
@@ -1119,6 +1366,126 @@ export default function PayrollPage() {
                   </div>
                 </div>
 
+                {/* Bonus & Commission */}
+                <div
+                  style={{
+                    borderTop: "1px solid #e9d5ff",
+                    background: "#faf5ff",
+                    borderRadius: "8px",
+                    padding: "16px",
+                    marginTop: "1rem",
+                    border: "1px solid #d8b4fe",
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                    <h4
+                      style={{
+                        fontSize: "14px",
+                        margin: 0,
+                        color: "#6b21a8",
+                        fontWeight: "700",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                      }}
+                    >
+                      🎁 Bonus & Commission (Added to Salary)
+                    </h4>
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        background: "#f3e8ff",
+                        color: "#7e22ce",
+                        fontWeight: 600,
+                        padding: "3px 8px",
+                        borderRadius: "12px",
+                        border: "1px solid #d8b4fe",
+                      }}
+                    >
+                      10% Donation + 30% Membership
+                    </span>
+                  </div>
+                  <p style={{ margin: "0 0 12px 0", fontSize: "12px", color: "#7e22ce" }}>
+                    Auto-calculated commission for this staff member during {format(new Date(genForm.year, genForm.month - 1, 1), "MMMM yyyy")}. You can review or adjust amounts before generating payroll.
+                  </p>
+                  <div className="form-grid-2">
+                    <div className="form-group">
+                      <label className="form-label" style={{ color: "#16a34a", fontWeight: "600" }}>
+                        Donation Bonus / Commission (10%)
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        className="form-control"
+                        value={genForm.donation_bonus}
+                        onChange={(e) => handleGenChange("donation_bonus", e.target.value)}
+                        placeholder="0.00"
+                      />
+                      <small style={{ color: "#64748b", fontSize: "11px" }}>
+                        ₹100 per ₹1,000 donation collected
+                      </small>
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label" style={{ color: "#7c3aed", fontWeight: "600" }}>
+                        Membership Bonus / Commission (30%)
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        className="form-control"
+                        value={genForm.membership_bonus}
+                        onChange={(e) => handleGenChange("membership_bonus", e.target.value)}
+                        placeholder="0.00"
+                      />
+                      <small style={{ color: "#64748b", fontSize: "11px" }}>
+                        ₹30 per ₹100 new member enrollment fee
+                      </small>
+                    </div>
+                  </div>
+
+                  {/* Total Bonus & Commission highlight pill */}
+                  <div
+                    style={{
+                      marginTop: "10px",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      background: "#ffffff",
+                      padding: "10px 14px",
+                      borderRadius: "6px",
+                      border: "1px dashed #c084fc",
+                    }}
+                  >
+                    <span style={{ fontSize: "13px", fontWeight: "600", color: "#6b21a8" }}>
+                      Total Bonus & Commission Credited to Salary:
+                    </span>
+                    <span style={{ fontSize: "15px", fontWeight: "800", color: "#7e22ce" }}>
+                      +{formatINR(totalBonus)}
+                    </span>
+                  </div>
+
+                  {/* Mini ledger of transactions if available */}
+                  {genForm.bonus_history && genForm.bonus_history.length > 0 && (
+                    <div style={{ marginTop: "12px", borderTop: "1px solid #f3e8ff", paddingTop: "8px" }}>
+                      <div style={{ fontSize: "11px", fontWeight: "700", color: "#6b21a8", marginBottom: "6px" }}>
+                        Breakdown of {genForm.bonus_history.length} Commission Events:
+                      </div>
+                      <div style={{ maxHeight: "120px", overflowY: "auto", fontSize: "11px", background: "#ffffff", borderRadius: "6px", padding: "6px 8px", border: "1px solid #e9d5ff" }}>
+                        {genForm.bonus_history.map((bh, idx) => (
+                          <div key={bh.id || idx} style={{ display: "flex", justifyContent: "space-between", padding: "3px 0", borderBottom: idx < genForm.bonus_history.length - 1 ? "1px solid #f1f5f9" : "none" }}>
+                            <span style={{ color: "#475569" }}>
+                              {bh.bonus_type_display || bh.bonus_type}: {bh.description || (bh.member_name ? `Member: ${bh.member_name}` : `Receipt: ${bh.income_id}`)}
+                            </span>
+                            <span style={{ fontWeight: "700", color: "#7e22ce" }}>
+                              +{formatINR(bh.amount)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 {/* Deductions */}
                 <div
                   style={{
@@ -1269,6 +1636,28 @@ export default function PayrollPage() {
                     <div
                       style={{
                         fontSize: "11px",
+                        color: "#7e22ce",
+                        textTransform: "uppercase",
+                        fontWeight: 700,
+                        letterSpacing: "0.5px",
+                      }}
+                    >
+                      Bonus & Commission
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "18px",
+                        fontWeight: "bold",
+                        color: "#7e22ce",
+                      }}
+                    >
+                      +{formatINR(totalBonus)}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: "center" }}>
+                    <div
+                      style={{
+                        fontSize: "11px",
                         color: "var(--gray-500)",
                         textTransform: "uppercase",
                         fontWeight: 700,
@@ -1402,6 +1791,204 @@ export default function PayrollPage() {
           </div>
         )}
       </Modal>
+      {/* ── Monthly Payroll Register Modal (All Page PDF & Print) ── */}
+      {allPayrollModalOpen && (
+        <Modal
+          isOpen={true}
+          onClose={() => setAllPayrollModalOpen(false)}
+          title="Monthly Payroll Register (All Staff PDF & Print)"
+          size="modal-xl"
+          footer={
+            <>
+              <button
+                className="btn btn-secondary no-print"
+                onClick={() => setAllPayrollModalOpen(false)}
+              >
+                Close
+              </button>
+              <button
+                className="btn btn-secondary no-print"
+                onClick={() => window.print()}
+              >
+                🖨️ Print Sheet
+              </button>
+              <button
+                className="btn btn-primary no-print"
+                onClick={handleDownloadAllPayrollPDF}
+                disabled={downloadingAllPDF}
+              >
+                {downloadingAllPDF ? "Generating PDF..." : "📥 Download Full PDF"}
+              </button>
+            </>
+          }
+        >
+          <div
+            id="printable-all-payroll"
+            className="printable-all-container"
+            style={{
+              padding: "24px",
+              background: "#ffffff",
+              fontFamily: "Arial, sans-serif",
+              color: "#1e293b",
+            }}
+          >
+            {/* Organization Header */}
+            <div style={{ textAlign: "center", borderBottom: "2px solid #0284c7", paddingBottom: "14px", marginBottom: "20px" }}>
+              <h2 style={{ margin: "0 0 4px 0", color: "#0f172a", fontSize: "22px", fontWeight: "800" }}>
+                Sree Lakshmi Charitable Trust
+              </h2>
+              <p style={{ margin: "0 0 4px 0", color: "#475569", fontSize: "13px" }}>
+                Reg. No: 123/2018 | Kozhikode, Kerala, India
+              </p>
+              <h3 style={{ margin: "8px 0 0 0", color: "#0284c7", fontSize: "16px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "1px" }}>
+                Monthly Payroll Register & Commission Statement — {format(new Date(yearFilter || CURRENT_YEAR, (monthFilter || CURRENT_MONTH) - 1, 1), "MMMM yyyy")}
+              </h3>
+              <div style={{ fontSize: "11px", color: "#64748b", marginTop: "4px" }}>
+                Generated on {format(new Date(), "dd MMMM yyyy, hh:mm a")} | Total Records: {unifiedItems.length}
+              </div>
+            </div>
+
+            {/* Metrics Summary Row */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginBottom: "20px", background: "#f8fafc", padding: "12px", borderRadius: "8px", border: "1px solid #e2e8f0" }}>
+              <div>
+                <div style={{ fontSize: "10px", color: "#64748b", fontWeight: "700", textTransform: "uppercase" }}>Total Basic Salary</div>
+                <div style={{ fontSize: "16px", fontWeight: "800", color: "#1e293b" }}>{formatINR(totalBasicAll)}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: "10px", color: "#7e22ce", fontWeight: "700", textTransform: "uppercase" }}>Total Bonus & Comm.</div>
+                <div style={{ fontSize: "16px", fontWeight: "800", color: "#6b21a8" }}>+{formatINR(totalBonusAll)}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: "10px", color: "#dc2626", fontWeight: "700", textTransform: "uppercase" }}>Advances & Deductions</div>
+                <div style={{ fontSize: "16px", fontWeight: "800", color: "#dc2626" }}>-{formatINR(totalAdvanceDeductionsAll)}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: "10px", color: "#15803d", fontWeight: "700", textTransform: "uppercase" }}>Net Disbursed</div>
+                <div style={{ fontSize: "16px", fontWeight: "900", color: "#166534" }}>{formatINR(totalNetAll)}</div>
+              </div>
+            </div>
+
+            {/* Table */}
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11px" }}>
+              <thead>
+                <tr style={{ background: "#0f172a", color: "#ffffff", textAlign: "left" }}>
+                  <th style={{ padding: "8px 6px" }}>#</th>
+                  <th style={{ padding: "8px 6px" }}>Payroll ID</th>
+                  <th style={{ padding: "8px 6px" }}>Staff Name</th>
+                  <th style={{ padding: "8px 6px", textAlign: "right" }}>Basic</th>
+                  <th style={{ padding: "8px 6px", textAlign: "right" }}>Donation Comm. (10%)</th>
+                  <th style={{ padding: "8px 6px", textAlign: "right" }}>Member Bonus (30%)</th>
+                  <th style={{ padding: "8px 6px", textAlign: "right" }}>Total Bonus</th>
+                  <th style={{ padding: "8px 6px", textAlign: "right" }}>Deductions</th>
+                  <th style={{ padding: "8px 6px", textAlign: "right" }}>Net Salary</th>
+                  <th style={{ padding: "8px 6px", textAlign: "center" }}>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {unifiedItems.map((row, idx) => (
+                  <tr key={row.id || idx} style={{ borderBottom: "1px solid #e2e8f0", background: idx % 2 === 0 ? "#ffffff" : "#f8fafc" }}>
+                    <td style={{ padding: "6px" }}>{idx + 1}</td>
+                    <td style={{ padding: "6px", fontFamily: "monospace" }}>{row.payroll_id}</td>
+                    <td style={{ padding: "6px", fontWeight: "600" }}>{row.employee_name}</td>
+                    <td style={{ padding: "6px", textAlign: "right" }}>{formatINR(row.basic_salary)}</td>
+                    <td style={{ padding: "6px", textAlign: "right", color: "#16a34a" }}>
+                      +{formatINR(row.donation_bonus || row.original?.donation_bonus || 0)}
+                    </td>
+                    <td style={{ padding: "6px", textAlign: "right", color: "#7c3aed" }}>
+                      +{formatINR(row.membership_bonus || row.original?.membership_bonus || 0)}
+                    </td>
+                    <td style={{ padding: "6px", textAlign: "right", fontWeight: "700", color: "#6b21a8" }}>
+                      +{formatINR(row.total_bonus || row.original?.total_bonus || ((row.donation_bonus || 0) + (row.membership_bonus || 0)))}
+                    </td>
+                    <td style={{ padding: "6px", textAlign: "right", color: "#dc2626" }}>
+                      -{formatINR(row.advance_salary || row.original?.other_deductions || 0)}
+                    </td>
+                    <td style={{ padding: "6px", textAlign: "right", fontWeight: "800", color: "#0f172a" }}>
+                      {formatINR(row.balance_salary || row.original?.net_salary || 0)}
+                    </td>
+                    <td style={{ padding: "6px", textAlign: "center" }}>
+                      <span style={{ fontSize: "10px", fontWeight: "700", padding: "2px 6px", borderRadius: "4px", background: row.status === "PAID" ? "#dcfce7" : row.status === "APPROVED" ? "#dbeafe" : "#f1f5f9", color: row.status === "PAID" ? "#166534" : row.status === "APPROVED" ? "#1e40af" : "#64748b" }}>
+                        {row.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr style={{ background: "#f1f5f9", fontWeight: "800", borderTop: "2px solid #0f172a" }}>
+                  <td colSpan={3} style={{ padding: "8px 6px" }}>GRAND TOTALS ({unifiedItems.length} STAFF)</td>
+                  <td style={{ padding: "8px 6px", textAlign: "right" }}>{formatINR(totalBasicAll)}</td>
+                  <td style={{ padding: "8px 6px", textAlign: "right", color: "#16a34a" }}>
+                    +{formatINR(unifiedItems.reduce((acc, it) => acc + Number(it.donation_bonus || it.original?.donation_bonus || 0), 0))}
+                  </td>
+                  <td style={{ padding: "8px 6px", textAlign: "right", color: "#7c3aed" }}>
+                    +{formatINR(unifiedItems.reduce((acc, it) => acc + Number(it.membership_bonus || it.original?.membership_bonus || 0), 0))}
+                  </td>
+                  <td style={{ padding: "8px 6px", textAlign: "right", color: "#6b21a8" }}>+{formatINR(totalBonusAll)}</td>
+                  <td style={{ padding: "8px 6px", textAlign: "right", color: "#dc2626" }}>-{formatINR(totalAdvanceDeductionsAll)}</td>
+                  <td style={{ padding: "8px 6px", textAlign: "right", fontSize: "13px" }}>{formatINR(totalNetAll)}</td>
+                  <td />
+                </tr>
+              </tfoot>
+            </table>
+
+            {/* Signatures */}
+            <div style={{ marginTop: "40px", display: "flex", justifyContent: "space-between", color: "#64748b", fontSize: "11px" }}>
+              <div>
+                <hr style={{ width: "160px", borderTop: "1px solid #94a3b8", margin: "0 0 5px 0" }} />
+                Prepared By (HR Officer)
+              </div>
+              <div style={{ textAlign: "center" }}>
+                <hr style={{ width: "160px", borderTop: "1px solid #94a3b8", margin: "0 0 5px 0" }} />
+                Verified By (Accountant)
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <hr style={{ width: "160px", borderTop: "1px solid #94a3b8", margin: "0 0 5px 0" }} />
+                Approved By (Managing Trustee)
+              </div>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* ── Print Styles Injection ── */}
+      <style>{`
+        @media print {
+          body * {
+            visibility: hidden !important;
+          }
+          .no-print {
+            display: none !important;
+          }
+          #printable-slip, #printable-slip *,
+          #printable-all-payroll, #printable-all-payroll * {
+            visibility: visible !important;
+          }
+          #printable-slip {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            box-shadow: none !important;
+            padding: 20px !important;
+            margin: 0 !important;
+            background: white !important;
+          }
+          #printable-all-payroll {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            box-shadow: none !important;
+            padding: 20px !important;
+            margin: 0 !important;
+            background: white !important;
+          }
+        }
+      `}</style>
+
       <ConfirmModal
         isOpen={deleteConfirmModal.open}
         onClose={() => !deleting && setDeleteConfirmModal({ open: false, items: [] })}

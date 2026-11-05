@@ -80,14 +80,27 @@ class Member(models.Model):
         db_table = 'hr_members'
         ordering = ['full_name']
 
-    def _generate_referral_code(self):
-        """Generate a unique referral code like slt-johnmathew"""
-        import re as _re
-        base = _re.sub(r'[^a-z0-9]', '', self.full_name.lower().replace(' ', ''))
-        code = f"slt-{base}" if base else f"slt-{self.member_id}"
-        if Member.objects.filter(referral_code=code).exclude(pk=self.pk).exists():
-            code = f"slt-{base}{self.member_id}"
-        return code
+    def generate_one_time_referral_code(self):
+        """
+        Generate a unique one-time referral code starting with 'slt-' followed by a unique number (e.g. slt-829104).
+        Single-use: automatically replaced with a new unique code when consumed.
+        """
+        import secrets
+        while True:
+            num = secrets.randbelow(900000) + 100000
+            candidate = f"slt-{num}"
+            if not MemberReferralCode.objects.filter(code=candidate).exists() and                not Member.objects.filter(referral_code=candidate).exclude(pk=self.pk).exists():
+                break
+
+        self.referral_code = candidate
+        self.save(update_fields=['referral_code', 'updated_at'])
+
+        MemberReferralCode.objects.get_or_create(
+            member=self,
+            code=candidate,
+            defaults={'is_used': False}
+        )
+        return candidate
 
     def save(self, *args, **kwargs):
         if not self.member_id:
@@ -97,9 +110,65 @@ class Member(models.Model):
                 count += 1
                 candidate = f"{count:04d}"
             self.member_id = candidate
-        if not self.referral_code and self.full_name:
-            self.referral_code = self._generate_referral_code()
+
+        import re, secrets
+        needs_new_code = (
+            not self.referral_code or 
+            not re.match(r'^slt-\d+$', str(self.referral_code).strip())
+        )
+        if needs_new_code:
+            while True:
+                num = secrets.randbelow(900000) + 100000
+                candidate = f"slt-{num}"
+                if not Member.objects.filter(referral_code=candidate).exclude(pk=self.pk).exists():
+                    break
+            self.referral_code = candidate
+
         super().save(*args, **kwargs)
+
+        # Ensure active MemberReferralCode record exists
+        if self.referral_code:
+            try:
+                MemberReferralCode.objects.get_or_create(
+                    member=self,
+                    code=self.referral_code,
+                    defaults={'is_used': False}
+                )
+            except Exception:
+                pass
+
+
+
+class MemberReferralCode(models.Model):
+    """
+    Tracks one-time referral codes issued to members.
+    Format: slt-{6-digit number}, e.g. slt-819203.
+    Single-use only. Once used by a new member during signup:
+      - is_used becomes True
+      - used_by points to the newly enrolled Member
+      - used_at records timestamp
+      - A new active one-time code is automatically generated for the referrer!
+    """
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    member = models.ForeignKey(
+        'Member', on_delete=models.CASCADE, related_name='one_time_referral_codes'
+    )
+    code = models.CharField(max_length=50, unique=True, db_index=True)
+    is_used = models.BooleanField(default=False, db_index=True)
+    used_by = models.ForeignKey(
+        'Member', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='used_one_time_codes'
+    )
+    used_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = 'hr_member_referral_codes'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        status = 'USED' if self.is_used else 'ACTIVE'
+        return f"{self.code} ({self.member.full_name}) [{status}]"
 
 
 class MemberDocument(models.Model):
@@ -803,7 +872,7 @@ class StaffBonusAccount(models.Model):
     staff = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name='bonus_account',
         limit_choices_to={'role__in': ['STAFF', 'FIELD_ASSESSMENT_OFFICER',
-                                        'ASSESSMENT_CALCULATION_OFFICER', 'GENERAL_ENQUIRY_OFFICER']}
+                                        'ASSESSMENT_CALCULATION_OFFICER', 'GENERAL_ENQUIRY_OFFICER', 'MEMBER']}
     )
     # Donation-based: 10% per Rs1000 donation
     donation_bonus_balance = models.DecimalField(

@@ -148,47 +148,61 @@ export default function StaffBonusLedgerPage() {
   const summary = data.summary || {}
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '40px' }}>
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '20px',
+      paddingBottom: '40px',
+      width: '100%',
+      maxWidth: '100%',
+      minWidth: 0,
+      boxSizing: 'border-box'
+    }}>
       
       {/* ── Top Header & Month Controls ── */}
       <div style={{
         background: '#FFFFFF',
         borderRadius: '16px',
         border: '1px solid #E2E8F0',
-        padding: '20px 24px',
+        padding: '16px 20px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
-        gap: '16px',
+        gap: '14px',
+        width: '100%',
+        maxWidth: '100%',
+        minWidth: 0,
+        boxSizing: 'border-box',
         boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0, flex: '1 1 280px' }}>
           <div style={{
-            width: '46px',
-            height: '46px',
+            width: '44px',
+            height: '44px',
             borderRadius: '12px',
             background: 'linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%)',
             color: '#1E4DB7',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            border: '1px solid #BFDBFE'
+            border: '1px solid #BFDBFE',
+            flexShrink: 0
           }}>
-            <Gift size={24} />
+            <Gift size={22} />
           </div>
-          <div>
-            <h1 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em' }}>
+          <div style={{ minWidth: 0 }}>
+            <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               Staff Bonus & Commission Ledger
             </h1>
-            <p style={{ margin: '3px 0 0', fontSize: '13px', color: '#64748B' }}>
+            <p style={{ margin: '3px 0 0', fontSize: '12px', color: '#64748B', lineHeight: 1.4 }}>
               Tracking monthly eligible donation incentives (10%) and membership bonuses (30%) per staff member.
             </p>
           </div>
         </div>
 
         {/* Month Selector Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', maxWidth: '100%' }}>
           <div style={{
             display: 'flex',
             alignItems: 'center',
@@ -301,14 +315,18 @@ export default function StaffBonusLedgerPage() {
         background: 'linear-gradient(135deg, #F0FDF4 0%, #EFF6FF 50%, #FAF5FF 100%)',
         border: '1px solid #C7D2FE',
         borderRadius: '14px',
-        padding: '16px 20px',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
+        padding: '14px 18px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+        width: '100%',
+        maxWidth: '100%',
+        minWidth: 0,
+        boxSizing: 'border-box'
       }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '14px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', minWidth: 0, flex: '1 1 300px' }}>
             <div style={{
-              width: '36px',
-              height: '36px',
+              width: '34px',
+              height: '34px',
               borderRadius: '10px',
               background: '#1E4DB7',
               color: '#FFFFFF',
@@ -319,11 +337,11 @@ export default function StaffBonusLedgerPage() {
             }}>
               <Award size={18} />
             </div>
-            <div>
-              <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#0F172A' }}>
+            <div style={{ minWidth: 0 }}>
+              <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>
                 Staff Incentive & Salary Commission Policy
               </h4>
-              <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#475569', lineHeight: 1.6 }}>
+              <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#475569', lineHeight: 1.5 }}>
                 • <strong>Donation Bonus:</strong> 10% (₹100 for every ₹1,000) on eligible donations collected.<br />
                 • <strong>Membership Bonus:</strong> 30% (₹30 for every ₹100 registration fee) credited to respective staff bonus balance.<br />
                 • Both bonuses are tracked independently and automatically paid out with monthly salary processing.
@@ -333,12 +351,13 @@ export default function StaffBonusLedgerPage() {
           <div style={{
             fontSize: '11px',
             fontWeight: 700,
-            padding: '5px 12px',
+            padding: '4px 10px',
             background: '#FFFFFF',
             color: '#1E4DB7',
             border: '1px solid #BFDBFE',
             borderRadius: '20px',
-            boxShadow: '0 1px 2px rgba(0,0,0,0.04)'
+            boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+            whiteSpace: 'nowrap'
           }}>
             Active Cycle: {formattedMonthLabel}
           </div>
@@ -348,23 +367,29 @@ export default function StaffBonusLedgerPage() {
       {/* ── 5 KPI Summary Cards for Selected Month ── */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: '14px'
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))',
+        gap: '12px',
+        width: '100%',
+        maxWidth: '100%',
+        minWidth: 0,
+        boxSizing: 'border-box'
       }}>
         {/* Card 1: Eligible Staff */}
         <div style={{
           background: '#FFFFFF',
-          padding: '16px 18px',
+          padding: '14px 16px',
           borderRadius: '14px',
           border: '1px solid #E2E8F0',
           display: 'flex',
           alignItems: 'center',
-          gap: '14px',
+          gap: '12px',
+          minWidth: 0,
+          boxSizing: 'border-box',
           boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
         }}>
           <div style={{
-            width: '46px',
-            height: '46px',
+            width: '42px',
+            height: '42px',
             borderRadius: '12px',
             background: '#EFF6FF',
             color: '#1E4DB7',
@@ -373,11 +398,11 @@ export default function StaffBonusLedgerPage() {
             justifyContent: 'center',
             flexShrink: 0
           }}>
-            <Users size={22} />
+            <Users size={20} />
           </div>
-          <div>
+          <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#64748B', letterSpacing: '0.04em' }}>Eligible Staff</div>
-            <div style={{ fontSize: '22px', fontWeight: 800, color: '#0F172A', marginTop: '2px' }}>{summary.total_staff || 0}</div>
+            <div style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', marginTop: '2px' }}>{summary.total_staff || 0}</div>
             <div style={{ fontSize: '11px', color: '#94A3B8' }}>Active field officers</div>
           </div>
         </div>
@@ -385,17 +410,19 @@ export default function StaffBonusLedgerPage() {
         {/* Card 2: Donation Bonus */}
         <div style={{
           background: '#FFFFFF',
-          padding: '16px 18px',
+          padding: '14px 16px',
           borderRadius: '14px',
           border: '1px solid #E2E8F0',
           display: 'flex',
           alignItems: 'center',
-          gap: '14px',
+          gap: '12px',
+          minWidth: 0,
+          boxSizing: 'border-box',
           boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
         }}>
           <div style={{
-            width: '46px',
-            height: '46px',
+            width: '42px',
+            height: '42px',
             borderRadius: '12px',
             background: '#DCFCE7',
             color: '#16A34A',
@@ -404,11 +431,11 @@ export default function StaffBonusLedgerPage() {
             justifyContent: 'center',
             flexShrink: 0
           }}>
-            <HeartHandshake size={22} />
+            <HeartHandshake size={20} />
           </div>
-          <div>
+          <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#64748B', letterSpacing: '0.04em' }}>Donation Bonus (10%)</div>
-            <div style={{ fontSize: '20px', fontWeight: 800, color: '#16A34A', marginTop: '2px' }}>{formatINR(summary.total_month_donation_bonus || 0)}</div>
+            <div style={{ fontSize: '18px', fontWeight: 800, color: '#16A34A', marginTop: '2px' }}>{formatINR(summary.total_month_donation_bonus || 0)}</div>
             <div style={{ fontSize: '11px', color: '#94A3B8' }}>₹100 per ₹1,000 received</div>
           </div>
         </div>
@@ -416,17 +443,19 @@ export default function StaffBonusLedgerPage() {
         {/* Card 3: Member Bonus */}
         <div style={{
           background: '#FFFFFF',
-          padding: '16px 18px',
+          padding: '14px 16px',
           borderRadius: '14px',
           border: '1px solid #E2E8F0',
           display: 'flex',
           alignItems: 'center',
-          gap: '14px',
+          gap: '12px',
+          minWidth: 0,
+          boxSizing: 'border-box',
           boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
         }}>
           <div style={{
-            width: '46px',
-            height: '46px',
+            width: '42px',
+            height: '42px',
             borderRadius: '12px',
             background: '#F3E8FF',
             color: '#7C3AED',
@@ -435,11 +464,11 @@ export default function StaffBonusLedgerPage() {
             justifyContent: 'center',
             flexShrink: 0
           }}>
-            <UserCheck size={22} />
+            <UserCheck size={20} />
           </div>
-          <div>
+          <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#64748B', letterSpacing: '0.04em' }}>Member Bonus (30%)</div>
-            <div style={{ fontSize: '20px', fontWeight: 800, color: '#7C3AED', marginTop: '2px' }}>{formatINR(summary.total_month_membership_bonus || 0)}</div>
+            <div style={{ fontSize: '18px', fontWeight: 800, color: '#7C3AED', marginTop: '2px' }}>{formatINR(summary.total_month_membership_bonus || 0)}</div>
             <div style={{ fontSize: '11px', color: '#94A3B8' }}>₹30 per ₹100 registration</div>
           </div>
         </div>
@@ -447,17 +476,19 @@ export default function StaffBonusLedgerPage() {
         {/* Card 4: Total Month Bonus */}
         <div style={{
           background: '#FFFFFF',
-          padding: '16px 18px',
+          padding: '14px 16px',
           borderRadius: '14px',
           border: '1px solid #E2E8F0',
           display: 'flex',
           alignItems: 'center',
-          gap: '14px',
+          gap: '12px',
+          minWidth: 0,
+          boxSizing: 'border-box',
           boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
         }}>
           <div style={{
-            width: '46px',
-            height: '46px',
+            width: '42px',
+            height: '42px',
             borderRadius: '12px',
             background: '#FEF3C7',
             color: '#D97706',
@@ -466,11 +497,11 @@ export default function StaffBonusLedgerPage() {
             justifyContent: 'center',
             flexShrink: 0
           }}>
-            <Gift size={22} />
+            <Gift size={20} />
           </div>
-          <div>
+          <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#64748B', letterSpacing: '0.04em' }}>Total Month Bonus</div>
-            <div style={{ fontSize: '20px', fontWeight: 800, color: '#D97706', marginTop: '2px' }}>{formatINR(summary.total_month_bonus || 0)}</div>
+            <div style={{ fontSize: '18px', fontWeight: 800, color: '#D97706', marginTop: '2px' }}>{formatINR(summary.total_month_bonus || 0)}</div>
             <div style={{ fontSize: '11px', color: '#94A3B8' }}>10% + 30% combined</div>
           </div>
         </div>
@@ -478,17 +509,19 @@ export default function StaffBonusLedgerPage() {
         {/* Card 5: Month Salary + Bonus */}
         <div style={{
           background: '#FFFFFF',
-          padding: '16px 18px',
+          padding: '14px 16px',
           borderRadius: '14px',
           border: '1px solid #E2E8F0',
           display: 'flex',
           alignItems: 'center',
-          gap: '14px',
+          gap: '12px',
+          minWidth: 0,
+          boxSizing: 'border-box',
           boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
         }}>
           <div style={{
-            width: '46px',
-            height: '46px',
+            width: '42px',
+            height: '42px',
             borderRadius: '12px',
             background: '#EFF6FF',
             color: '#2563EB',
@@ -497,11 +530,11 @@ export default function StaffBonusLedgerPage() {
             justifyContent: 'center',
             flexShrink: 0
           }}>
-            <Wallet size={22} />
+            <Wallet size={20} />
           </div>
-          <div>
+          <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#64748B', letterSpacing: '0.04em' }}>Month Salary + Bonus</div>
-            <div style={{ fontSize: '20px', fontWeight: 800, color: '#1E4DB7', marginTop: '2px' }}>{formatINR(summary.total_month_earnings || 0)}</div>
+            <div style={{ fontSize: '18px', fontWeight: 800, color: '#1E4DB7', marginTop: '2px' }}>{formatINR(summary.total_month_earnings || 0)}</div>
             <div style={{ fontSize: '11px', color: '#94A3B8' }}>Total month allocation</div>
           </div>
         </div>
@@ -512,14 +545,18 @@ export default function StaffBonusLedgerPage() {
         background: '#FFFFFF',
         borderRadius: '14px',
         border: '1px solid #E2E8F0',
-        padding: '14px 18px',
+        padding: '12px 16px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
-        gap: '14px'
+        gap: '12px',
+        width: '100%',
+        maxWidth: '100%',
+        minWidth: 0,
+        boxSizing: 'border-box'
       }}>
-        <div style={{ position: 'relative', width: '320px', maxWidth: '100%' }}>
+        <div style={{ position: 'relative', width: '300px', maxWidth: '100%', flex: '1 1 240px' }}>
           <Search size={15} color="#94A3B8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
           <input
             type="text"
@@ -546,7 +583,7 @@ export default function StaffBonusLedgerPage() {
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
             style={{
-              padding: '8px 12px',
+              padding: '7px 12px',
               fontSize: '12px',
               fontWeight: 500,
               borderRadius: '10px',
@@ -566,11 +603,12 @@ export default function StaffBonusLedgerPage() {
           <span style={{
             fontSize: '12px',
             fontWeight: 700,
-            padding: '6px 12px',
+            padding: '5px 12px',
             borderRadius: '20px',
             background: '#EFF6FF',
             color: '#1E4DB7',
-            border: '1px solid #BFDBFE'
+            border: '1px solid #BFDBFE',
+            whiteSpace: 'nowrap'
           }}>
             Showing {filteredStaff.length} staff
           </span>
@@ -578,7 +616,7 @@ export default function StaffBonusLedgerPage() {
       </div>
 
       {/* ── Main Staff Table Card ── */}
-      <div className="data-card" style={{ marginBottom: 0 }}>
+      <div className="data-card" style={{ marginBottom: 0, width: '100%', maxWidth: '100%', minWidth: 0, boxSizing: 'border-box', overflow: 'hidden' }}>
         <div className="data-card-header">
           <div>
             <div className="data-card-title">
@@ -603,8 +641,8 @@ export default function StaffBonusLedgerPage() {
             />
           </div>
         ) : (
-          <div className="table-wrap">
-            <table>
+          <div className="table-wrap" style={{ width: '100%', maxWidth: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <table style={{ width: '100%', minWidth: '880px', borderCollapse: 'collapse' }}>
               <thead>
                 <tr>
                   <th style={{ textAlign: 'left' }}>Staff Member</th>
