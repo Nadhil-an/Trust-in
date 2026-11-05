@@ -126,3 +126,47 @@ class StaffBonusSystemTestCase(TestCase):
         # Should have membership bonus from m1 (30) + m2 (30) + referral bonus from m2 (30)
         self.assertGreaterEqual(account.membership_bonus_balance, Decimal('60.00'))
 
+    def test_donation_deletion_reverses_bonus(self):
+        """Deleting a donation automatically removes bonus and updates account balance."""
+        income = Income.objects.create(
+            donor_name='Swapna Donor',
+            source='Direct Donation',
+            amount=Decimal('1350.00'), # 10% = 135
+            payment_method='CASH',
+            account_type='CASH',
+            cash_account=self.cash_account,
+            created_by=self.staff_user
+        )
+        account = StaffBonusAccount.objects.get(staff=self.staff_user)
+        self.assertEqual(account.donation_bonus_balance, Decimal('135.00'))
+
+        # Delete the income (as happened with Swapna's donation)
+        income.delete()
+
+        account.refresh_from_db()
+        self.assertEqual(account.donation_bonus_balance, Decimal('0.00'))
+        self.assertEqual(account.total_bonus_balance, 0.00)
+        self.assertEqual(StaffBonusTransaction.objects.filter(bonus_account=account).count(), 0)
+
+    def test_sync_staff_bonus_account_cleans_orphans(self):
+        """sync_staff_bonus_account purges orphan transactions and recalculates balances."""
+        account = StaffBonusAccount.objects.get_or_create(staff=self.staff_user)[0]
+        # Create an orphan transaction referencing a non-existent income
+        StaffBonusTransaction.objects.create(
+            bonus_account=account,
+            bonus_type=StaffBonusTransaction.BonusType.DONATION_BONUS,
+            direction=StaffBonusTransaction.TxnDirection.CREDIT,
+            amount=Decimal('135.00'),
+            income_id='NON_EXISTENT_RCP_123',
+            description='Orphan transaction'
+        )
+        account.donation_bonus_balance = Decimal('135.00')
+        account.save()
+
+        from hr_module.bonus_service import sync_staff_bonus_account
+        sync_staff_bonus_account(self.staff_user)
+
+        account.refresh_from_db()
+        self.assertEqual(account.donation_bonus_balance, Decimal('0.00'))
+        self.assertEqual(StaffBonusTransaction.objects.filter(bonus_account=account).count(), 0)
+

@@ -61,11 +61,12 @@ export default function StaffEarningsScreen({ navigation }) {
   }, []);
 
   const filteredTransactions = transactions.filter((t) => {
+    const type = (t.bonus_type || '').toUpperCase();
     if (activeFilter === 'DONATION') {
-      return t.bonus_type === 'DONATION_BONUS';
+      return type.includes('DONATION');
     }
     if (activeFilter === 'MEMBERSHIP') {
-      return t.bonus_type === 'MEMBERSHIP_BONUS' || t.bonus_type === 'REFERRAL_BONUS';
+      return type.includes('MEMBER') || type.includes('REFERRAL');
     }
     return true;
   });
