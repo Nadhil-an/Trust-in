@@ -3507,7 +3507,8 @@ class StaffBonusAllView(APIView):
     permission_classes = [IsManagerOrHR]
 
     def get(self, request):
-        from core.models import Role, User, Member
+        from core.models import Role, User
+        from hr_module.models import Member
         from django.db.models import Sum, Q
         from datetime import date
         from django.utils import timezone
@@ -3644,7 +3645,8 @@ class StaffBonusTransactionsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        from core.models import Role, User, Member
+        from core.models import Role, User
+        from hr_module.models import Member
         from django.db.models import Sum, Q
         from datetime import date
         from django.utils import timezone

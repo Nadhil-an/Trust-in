@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { hrApi } from '../../api'
-import { LoadingState, EmptyState, PageHeader, Modal, formatINR } from '../../components/shared'
+import { LoadingState, EmptyState, Modal, formatINR } from '../../components/shared'
 import { format, parseISO, subMonths, addMonths } from 'date-fns'
 import toast from 'react-hot-toast'
 import { 
   Gift, 
   Award, 
-  DollarSign, 
   Users, 
   Calendar, 
   ChevronLeft, 
@@ -14,13 +13,11 @@ import {
   Search, 
   Copy, 
   Check, 
-  ExternalLink, 
-  TrendingUp,
-  UserCheck,
-  HeartHandshake,
-  ShieldCheck,
-  RefreshCw,
-  Wallet
+  HeartHandshake, 
+  UserCheck, 
+  RefreshCw, 
+  Wallet,
+  ArrowRight
 } from 'lucide-react'
 
 export default function StaffBonusLedgerPage() {
@@ -61,6 +58,7 @@ export default function StaffBonusLedgerPage() {
         })
       }
     } catch (err) {
+      console.error('Error fetching bonus data:', err)
       toast.error('Failed to load bonus & commission data')
     } finally {
       setLoading(false)
@@ -91,6 +89,7 @@ export default function StaffBonusLedgerPage() {
       })
       setStaffDetails(res.data)
     } catch (err) {
+      console.error('Error loading staff details:', err)
       toast.error(`Failed to load details for ${staff.name}`)
     } finally {
       setLoadingStaffDetails(false)
@@ -114,6 +113,7 @@ export default function StaffBonusLedgerPage() {
 
   const handleCopy = (code, e) => {
     if (e) e.stopPropagation()
+    if (!code) return
     navigator.clipboard.writeText(code)
     setCopiedCode(code)
     toast.success(`Copied referral code: ${code}`)
@@ -148,43 +148,101 @@ export default function StaffBonusLedgerPage() {
   const summary = data.summary || {}
 
   return (
-    <div className="space-y-6">
-      {/* ── Page Header & Controls ── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-gray-200/80 shadow-sm">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="p-2 bg-purple-50 text-purple-600 rounded-xl">
-              <Gift className="w-6 h-6" />
-            </span>
-            <h1 className="text-xl md:text-2xl font-bold text-gray-900 tracking-tight">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '40px' }}>
+      
+      {/* ── Top Header & Month Controls ── */}
+      <div style={{
+        background: '#FFFFFF',
+        borderRadius: '16px',
+        border: '1px solid #E2E8F0',
+        padding: '20px 24px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '16px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{
+            width: '46px',
+            height: '46px',
+            borderRadius: '12px',
+            background: 'linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%)',
+            color: '#1E4DB7',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: '1px solid #BFDBFE'
+          }}>
+            <Gift size={24} />
+          </div>
+          <div>
+            <h1 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em' }}>
               Staff Bonus & Commission Ledger
             </h1>
+            <p style={{ margin: '3px 0 0', fontSize: '13px', color: '#64748B' }}>
+              Tracking monthly eligible donation incentives (10%) and membership bonuses (30%) per staff member.
+            </p>
           </div>
-          <p className="text-xs md:text-sm text-gray-500 mt-1">
-            Tracking monthly eligible donation incentives (10%) and membership bonuses (30%) per staff member.
-          </p>
         </div>
 
-        {/* Month Selector Toolbar */}
-        <div className="flex items-center flex-wrap gap-2">
-          <div className="flex items-center bg-gray-50 border border-gray-200 rounded-xl p-1 shadow-inner">
+        {/* Month Selector Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            background: '#F8FAFC',
+            border: '1px solid #CBD5E1',
+            borderRadius: '10px',
+            padding: '2px',
+            boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.03)'
+          }}>
             <button
               onClick={handlePrevMonth}
-              className="p-1.5 hover:bg-white hover:shadow-xs rounded-lg text-gray-600 transition"
+              style={{
+                border: 'none',
+                background: 'transparent',
+                padding: '6px 8px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                color: '#475569',
+                display: 'flex',
+                alignItems: 'center'
+              }}
               title="Previous Month"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft size={16} />
             </button>
-            <div className="flex items-center gap-1.5 px-3 font-semibold text-gray-800 text-sm">
-              <Calendar className="w-4 h-4 text-purple-600" />
+
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '0 10px',
+              fontSize: '13px',
+              fontWeight: 700,
+              color: '#0F172A'
+            }}>
+              <Calendar size={15} color="#1E4DB7" />
               <span>{formattedMonthLabel}</span>
             </div>
+
             <button
               onClick={handleNextMonth}
-              className="p-1.5 hover:bg-white hover:shadow-xs rounded-lg text-gray-600 transition"
+              style={{
+                border: 'none',
+                background: 'transparent',
+                padding: '6px 8px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                color: '#475569',
+                display: 'flex',
+                alignItems: 'center'
+              }}
               title="Next Month"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight size={16} />
             </button>
           </div>
 
@@ -192,13 +250,29 @@ export default function StaffBonusLedgerPage() {
             type="month"
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(e.target.value)}
-            className="text-xs px-2.5 py-2 border border-gray-200 rounded-xl bg-white text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            style={{
+              padding: '7px 12px',
+              fontSize: '12px',
+              fontWeight: 600,
+              borderRadius: '10px',
+              border: '1px solid #CBD5E1',
+              background: '#FFFFFF',
+              color: '#334155',
+              cursor: 'pointer'
+            }}
           />
 
           {selectedMonth !== currentMonthStr && (
             <button
               onClick={() => setSelectedMonth(currentMonthStr)}
-              className="text-xs px-3 py-2 bg-purple-50 text-purple-700 font-semibold rounded-xl border border-purple-200 hover:bg-purple-100 transition shadow-sm"
+              className="btn btn-sm"
+              style={{
+                background: '#EFF6FF',
+                color: '#1E4DB7',
+                border: '1px solid #BFDBFE',
+                fontWeight: 600,
+                borderRadius: '10px'
+              }}
             >
               This Month
             </button>
@@ -207,115 +281,280 @@ export default function StaffBonusLedgerPage() {
           <button
             onClick={fetchBonusData}
             disabled={loading}
-            className="p-2 text-gray-600 hover:bg-gray-100 border border-gray-200 rounded-xl transition shadow-sm"
+            className="btn btn-sm btn-secondary"
+            style={{
+              padding: '7px 10px',
+              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
             title="Refresh Data"
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-purple-600' : ''}`} />
+            <RefreshCw size={15} className={loading ? 'spin' : ''} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
           </button>
         </div>
       </div>
 
       {/* ── Policy Rules Banner ── */}
-      <div className="bg-gradient-to-r from-purple-50/90 via-indigo-50/70 to-blue-50/90 border border-purple-200/80 rounded-2xl p-4 shadow-sm">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <span className="p-2 bg-purple-600 text-white rounded-xl shadow-sm">
-              <Award className="w-5 h-5" />
-            </span>
+      <div style={{
+        background: 'linear-gradient(135deg, #F0FDF4 0%, #EFF6FF 50%, #FAF5FF 100%)',
+        border: '1px solid #C7D2FE',
+        borderRadius: '14px',
+        padding: '16px 20px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '10px',
+              background: '#1E4DB7',
+              color: '#FFFFFF',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0
+            }}>
+              <Award size={18} />
+            </div>
             <div>
-              <h4 className="text-sm font-bold text-purple-950">
+              <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#0F172A' }}>
                 Staff Incentive & Salary Commission Policy
               </h4>
-              <p className="text-xs text-purple-900/80 mt-0.5 leading-relaxed">
-                • <strong>Donation Bonus:</strong> 10% (₹100 for every ₹1,000) on eligible donations collected.<br className="hidden md:inline" />
+              <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#475569', lineHeight: 1.6 }}>
+                • <strong>Donation Bonus:</strong> 10% (₹100 for every ₹1,000) on eligible donations collected.<br />
                 • <strong>Membership Bonus:</strong> 30% (₹30 for every ₹100 registration fee) credited to respective staff bonus balance.<br />
                 • Both bonuses are tracked independently and automatically paid out with monthly salary processing.
               </p>
             </div>
           </div>
-          <div className="shrink-0 text-xs font-semibold px-3 py-1.5 bg-white/90 text-purple-700 border border-purple-200 rounded-xl shadow-xs">
+          <div style={{
+            fontSize: '11px',
+            fontWeight: 700,
+            padding: '5px 12px',
+            background: '#FFFFFF',
+            color: '#1E4DB7',
+            border: '1px solid #BFDBFE',
+            borderRadius: '20px',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.04)'
+          }}>
             Active Cycle: {formattedMonthLabel}
           </div>
         </div>
       </div>
 
-      {/* ── Top Summary KPI Cards for Selected Month ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
-        <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-            <Users className="w-6 h-6" />
+      {/* ── 5 KPI Summary Cards for Selected Month ── */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gap: '14px'
+      }}>
+        {/* Card 1: Eligible Staff */}
+        <div style={{
+          background: '#FFFFFF',
+          padding: '16px 18px',
+          borderRadius: '14px',
+          border: '1px solid #E2E8F0',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '14px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
+        }}>
+          <div style={{
+            width: '46px',
+            height: '46px',
+            borderRadius: '12px',
+            background: '#EFF6FF',
+            color: '#1E4DB7',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0
+          }}>
+            <Users size={22} />
           </div>
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">Eligible Staff</div>
-            <div className="text-2xl font-extrabold text-gray-900 mt-0.5">{summary.total_staff || 0}</div>
-            <div className="text-[11px] text-gray-400 mt-0.5">Active field officers</div>
+            <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#64748B', letterSpacing: '0.04em' }}>Eligible Staff</div>
+            <div style={{ fontSize: '22px', fontWeight: 800, color: '#0F172A', marginTop: '2px' }}>{summary.total_staff || 0}</div>
+            <div style={{ fontSize: '11px', color: '#94A3B8' }}>Active field officers</div>
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-            <HeartHandshake className="w-6 h-6" />
+        {/* Card 2: Donation Bonus */}
+        <div style={{
+          background: '#FFFFFF',
+          padding: '16px 18px',
+          borderRadius: '14px',
+          border: '1px solid #E2E8F0',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '14px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
+        }}>
+          <div style={{
+            width: '46px',
+            height: '46px',
+            borderRadius: '12px',
+            background: '#DCFCE7',
+            color: '#16A34A',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0
+          }}>
+            <HeartHandshake size={22} />
           </div>
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">Donation Bonus (10%)</div>
-            <div className="text-2xl font-extrabold text-emerald-600 mt-0.5">{formatINR(summary.total_month_donation_bonus || 0)}</div>
-            <div className="text-[11px] text-gray-400 mt-0.5">₹100 per ₹1,000 received</div>
+            <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#64748B', letterSpacing: '0.04em' }}>Donation Bonus (10%)</div>
+            <div style={{ fontSize: '20px', fontWeight: 800, color: '#16A34A', marginTop: '2px' }}>{formatINR(summary.total_month_donation_bonus || 0)}</div>
+            <div style={{ fontSize: '11px', color: '#94A3B8' }}>₹100 per ₹1,000 received</div>
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
-            <UserCheck className="w-6 h-6" />
+        {/* Card 3: Member Bonus */}
+        <div style={{
+          background: '#FFFFFF',
+          padding: '16px 18px',
+          borderRadius: '14px',
+          border: '1px solid #E2E8F0',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '14px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
+        }}>
+          <div style={{
+            width: '46px',
+            height: '46px',
+            borderRadius: '12px',
+            background: '#F3E8FF',
+            color: '#7C3AED',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0
+          }}>
+            <UserCheck size={22} />
           </div>
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">Member Bonus (30%)</div>
-            <div className="text-2xl font-extrabold text-purple-600 mt-0.5">{formatINR(summary.total_month_membership_bonus || 0)}</div>
-            <div className="text-[11px] text-gray-400 mt-0.5">₹30 per ₹100 registration</div>
+            <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#64748B', letterSpacing: '0.04em' }}>Member Bonus (30%)</div>
+            <div style={{ fontSize: '20px', fontWeight: 800, color: '#7C3AED', marginTop: '2px' }}>{formatINR(summary.total_month_membership_bonus || 0)}</div>
+            <div style={{ fontSize: '11px', color: '#94A3B8' }}>₹30 per ₹100 registration</div>
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-            <Gift className="w-6 h-6" />
+        {/* Card 4: Total Month Bonus */}
+        <div style={{
+          background: '#FFFFFF',
+          padding: '16px 18px',
+          borderRadius: '14px',
+          border: '1px solid #E2E8F0',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '14px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
+        }}>
+          <div style={{
+            width: '46px',
+            height: '46px',
+            borderRadius: '12px',
+            background: '#FEF3C7',
+            color: '#D97706',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0
+          }}>
+            <Gift size={22} />
           </div>
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">Total Month Bonus</div>
-            <div className="text-2xl font-extrabold text-amber-600 mt-0.5">{formatINR(summary.total_month_bonus || 0)}</div>
-            <div className="text-[11px] text-gray-400 mt-0.5">10% + 30% combined</div>
+            <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#64748B', letterSpacing: '0.04em' }}>Total Month Bonus</div>
+            <div style={{ fontSize: '20px', fontWeight: 800, color: '#D97706', marginTop: '2px' }}>{formatINR(summary.total_month_bonus || 0)}</div>
+            <div style={{ fontSize: '11px', color: '#94A3B8' }}>10% + 30% combined</div>
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-            <Wallet className="w-6 h-6" />
+        {/* Card 5: Month Salary + Bonus */}
+        <div style={{
+          background: '#FFFFFF',
+          padding: '16px 18px',
+          borderRadius: '14px',
+          border: '1px solid #E2E8F0',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '14px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
+        }}>
+          <div style={{
+            width: '46px',
+            height: '46px',
+            borderRadius: '12px',
+            background: '#EFF6FF',
+            color: '#2563EB',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0
+          }}>
+            <Wallet size={22} />
           </div>
           <div>
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-500">Month Salary + Bonus</div>
-            <div className="text-2xl font-extrabold text-indigo-700 mt-0.5">{formatINR(summary.total_month_earnings || 0)}</div>
-            <div className="text-[11px] text-gray-400 mt-0.5">Total month allocation</div>
+            <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#64748B', letterSpacing: '0.04em' }}>Month Salary + Bonus</div>
+            <div style={{ fontSize: '20px', fontWeight: 800, color: '#1E4DB7', marginTop: '2px' }}>{formatINR(summary.total_month_earnings || 0)}</div>
+            <div style={{ fontSize: '11px', color: '#94A3B8' }}>Total month allocation</div>
           </div>
         </div>
       </div>
 
       {/* ── Search & Filter Controls ── */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-gray-200/80 shadow-xs">
-        <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+      <div style={{
+        background: '#FFFFFF',
+        borderRadius: '14px',
+        border: '1px solid #E2E8F0',
+        padding: '14px 18px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '14px'
+      }}>
+        <div style={{ position: 'relative', width: '320px', maxWidth: '100%' }}>
+          <Search size={15} color="#94A3B8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
           <input
             type="text"
             placeholder="Search staff name, ID, phone, referral code..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full text-xs pl-9 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+            style={{
+              width: '100%',
+              padding: '8px 12px 8px 36px',
+              fontSize: '12px',
+              borderRadius: '10px',
+              border: '1px solid #CBD5E1',
+              background: '#F8FAFC',
+              color: '#0F172A',
+              outline: 'none',
+              boxSizing: 'border-box'
+            }}
           />
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <label className="text-xs font-semibold text-gray-500 whitespace-nowrap">Filter Role:</label>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '12px', fontWeight: 600, color: '#64748B' }}>Filter Role:</span>
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="text-xs px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+            style={{
+              padding: '8px 12px',
+              fontSize: '12px',
+              fontWeight: 500,
+              borderRadius: '10px',
+              border: '1px solid #CBD5E1',
+              background: '#F8FAFC',
+              color: '#0F172A',
+              cursor: 'pointer'
+            }}
           >
             <option value="ALL">All Roles</option>
             <option value="STAFF">General Staff</option>
@@ -323,31 +562,40 @@ export default function StaffBonusLedgerPage() {
             <option value="ASSESSMENT_CALCULATION_OFFICER">Assessment Officer</option>
             <option value="GENERAL_ENQUIRY_OFFICER">General Enquiry Officer</option>
           </select>
+
+          <span style={{
+            fontSize: '12px',
+            fontWeight: 700,
+            padding: '6px 12px',
+            borderRadius: '20px',
+            background: '#EFF6FF',
+            color: '#1E4DB7',
+            border: '1px solid #BFDBFE'
+          }}>
+            Showing {filteredStaff.length} staff
+          </span>
         </div>
       </div>
 
-      {/* ── Main Staff Table ── */}
-      <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+      {/* ── Main Staff Table Card ── */}
+      <div className="data-card" style={{ marginBottom: 0 }}>
+        <div className="data-card-header">
           <div>
-            <h3 className="font-bold text-gray-900 text-sm">
+            <div className="data-card-title">
               Staff Achieved Bonus & Monthly Earnings — {formattedMonthLabel}
-            </h3>
-            <p className="text-xs text-gray-500 mt-0.5">
-              Click on any staff member name or row to view the full itemized list of donations and member signups achieved.
-            </p>
+            </div>
+            <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>
+              Click on any staff member name or row to view their itemized statement of collections and membership bonuses.
+            </div>
           </div>
-          <span className="text-xs font-semibold text-purple-700 bg-purple-50 px-3 py-1 rounded-full border border-purple-200">
-            Showing {filteredStaff.length} of {data.results?.length || 0} staff
-          </span>
         </div>
 
         {loading ? (
-          <div className="p-12">
+          <div style={{ padding: '40px' }}>
             <LoadingState />
           </div>
         ) : filteredStaff.length === 0 ? (
-          <div className="p-12">
+          <div style={{ padding: '40px' }}>
             <EmptyState 
               icon="🎁" 
               title="No Staff Bonus Records Found" 
@@ -355,42 +603,56 @@ export default function StaffBonusLedgerPage() {
             />
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+          <div className="table-wrap">
+            <table>
               <thead>
-                <tr className="bg-gray-50/80 border-b border-gray-200/80 text-[11px] font-bold text-gray-600 uppercase tracking-wider">
-                  <th className="py-3.5 px-4">Staff Member</th>
-                  <th className="py-3.5 px-4">Referral Code</th>
-                  <th className="py-3.5 px-4 text-right">Base Salary</th>
-                  <th className="py-3.5 px-4 text-right">Donation Bonus (10%)</th>
-                  <th className="py-3.5 px-4 text-right">Member Bonus (30%)</th>
-                  <th className="py-3.5 px-4 text-right">Total Month Bonus</th>
-                  <th className="py-3.5 px-4 text-right">Month Salary + Bonus</th>
-                  <th className="py-3.5 px-4 text-right">Available Payout</th>
-                  <th className="py-3.5 px-4 text-center">Action</th>
+                <tr>
+                  <th style={{ textAlign: 'left' }}>Staff Member</th>
+                  <th style={{ textAlign: 'left' }}>Referral Code</th>
+                  <th style={{ textAlign: 'right' }}>Base Salary</th>
+                  <th style={{ textAlign: 'right' }}>Donation Bonus (10%)</th>
+                  <th style={{ textAlign: 'right' }}>Member Bonus (30%)</th>
+                  <th style={{ textAlign: 'right' }}>Total Month Bonus</th>
+                  <th style={{ textAlign: 'right' }}>Month Salary + Bonus</th>
+                  <th style={{ textAlign: 'right' }}>Available Payout</th>
+                  <th style={{ textAlign: 'center' }}>Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 text-xs">
+              <tbody>
                 {filteredStaff.map((staff) => (
                   <tr
                     key={staff.staff_uid}
                     onClick={() => openStaffDetails(staff)}
-                    className="hover:bg-purple-50/30 cursor-pointer transition group"
+                    style={{ cursor: 'pointer', transition: 'background 0.15s ease' }}
                   >
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-500 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
+                    {/* Staff Member */}
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{
+                          width: '36px',
+                          height: '36px',
+                          borderRadius: '50%',
+                          background: 'linear-gradient(135deg, #1E4DB7 0%, #2563EB 100%)',
+                          color: '#FFFFFF',
+                          fontWeight: 700,
+                          fontSize: '13px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                          boxShadow: '0 2px 4px rgba(30, 77, 183, 0.2)'
+                        }}>
                           {staff.name ? staff.name.charAt(0).toUpperCase() : 'S'}
                         </div>
                         <div>
-                          <div className="font-bold text-gray-900 group-hover:text-purple-700 transition">
+                          <div style={{ fontWeight: 700, color: '#0F172A', fontSize: '13px' }}>
                             {staff.name}
                           </div>
-                          <div className="flex items-center gap-1.5 mt-0.5">
-                            <span className="font-mono text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+                            <span className="td-mono" style={{ fontSize: '11px', color: '#64748B', background: '#F1F5F9', padding: '1px 6px', borderRadius: '4px' }}>
                               {staff.staff_uid}
                             </span>
-                            <span className="text-[10px] text-gray-500 font-medium">
+                            <span style={{ fontSize: '11px', color: '#64748B' }}>
                               {staff.role?.replace(/_/g, ' ')}
                             </span>
                           </div>
@@ -398,77 +660,120 @@ export default function StaffBonusLedgerPage() {
                       </div>
                     </td>
 
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-mono font-semibold text-purple-700 bg-purple-50 px-2 py-1 rounded-md border border-purple-200/80 text-[11px]">
+                    {/* Referral Code */}
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{
+                          fontFamily: 'monospace',
+                          fontWeight: 700,
+                          fontSize: '11px',
+                          color: '#6D28D9',
+                          background: '#F5F3FF',
+                          padding: '3px 8px',
+                          borderRadius: '6px',
+                          border: '1px solid #DDD6FE'
+                        }}>
                           {staff.referral_code || `slt-${staff.name?.toLowerCase()}`}
                         </span>
                         <button
                           onClick={(e) => handleCopy(staff.referral_code, e)}
-                          className="p-1 text-gray-400 hover:text-purple-600 transition"
+                          style={{
+                            border: 'none',
+                            background: 'transparent',
+                            cursor: 'pointer',
+                            color: '#94A3B8',
+                            padding: '4px',
+                            display: 'flex',
+                            alignItems: 'center'
+                          }}
                           title="Copy referral code"
                         >
                           {copiedCode === staff.referral_code ? (
-                            <Check className="w-3.5 h-3.5 text-emerald-600" />
+                            <Check size={14} color="#16A34A" />
                           ) : (
-                            <Copy className="w-3.5 h-3.5" />
+                            <Copy size={14} />
                           )}
                         </button>
                       </div>
                     </td>
 
-                    <td className="py-3.5 px-4 text-right font-medium text-gray-700">
+                    {/* Base Salary */}
+                    <td style={{ textAlign: 'right', fontWeight: 600, color: '#334155' }}>
                       {formatINR(staff.base_salary)}
                     </td>
 
-                    <td className="py-3.5 px-4 text-right">
-                      <div className="font-bold text-emerald-600">
+                    {/* Donation Bonus (10%) */}
+                    <td style={{ textAlign: 'right' }}>
+                      <div style={{ fontWeight: 700, color: '#16A34A', fontSize: '13px' }}>
                         +{formatINR(staff.month_donation_bonus)}
                       </div>
-                      <div className="text-[10px] text-gray-400">
+                      <div style={{ fontSize: '10px', color: '#94A3B8' }}>
                         {staff.month_donations_count || 0} donations
                       </div>
                     </td>
 
-                    <td className="py-3.5 px-4 text-right">
-                      <div className="font-bold text-purple-600">
+                    {/* Member Bonus (30%) */}
+                    <td style={{ textAlign: 'right' }}>
+                      <div style={{ fontWeight: 700, color: '#7C3AED', fontSize: '13px' }}>
                         +{formatINR(staff.month_membership_bonus)}
                       </div>
-                      <div className="text-[10px] text-gray-400">
+                      <div style={{ fontSize: '10px', color: '#94A3B8' }}>
                         {staff.month_members_count || 0} members
                       </div>
                     </td>
 
-                    <td className="py-3.5 px-4 text-right">
-                      <div className="font-bold text-purple-900 bg-purple-50/80 px-2 py-1 rounded-lg inline-block border border-purple-100">
+                    {/* Total Month Bonus */}
+                    <td style={{ textAlign: 'right' }}>
+                      <span style={{
+                        fontWeight: 700,
+                        color: '#D97706',
+                        background: '#FEF3C7',
+                        padding: '3px 8px',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        display: 'inline-block'
+                      }}>
                         +{formatINR(staff.month_total_bonus)}
-                      </div>
+                      </span>
                     </td>
 
-                    <td className="py-3.5 px-4 text-right">
-                      <div className="font-extrabold text-indigo-700 text-sm">
+                    {/* Month Salary + Bonus */}
+                    <td style={{ textAlign: 'right' }}>
+                      <div style={{ fontWeight: 800, color: '#1E4DB7', fontSize: '14px' }}>
                         {formatINR(staff.month_total_earnings)}
                       </div>
                     </td>
 
-                    <td className="py-3.5 px-4 text-right">
-                      <div className="font-semibold text-emerald-700">
+                    {/* Available Payout */}
+                    <td style={{ textAlign: 'right' }}>
+                      <div style={{ fontWeight: 700, color: '#16A34A', fontSize: '13px' }}>
                         {formatINR(staff.available_balance)}
                       </div>
-                      <div className="text-[10px] text-gray-400">
+                      <div style={{ fontSize: '10px', color: '#94A3B8' }}>
                         Paid: {formatINR(staff.total_paid_out)}
                       </div>
                     </td>
 
-                    <td className="py-3.5 px-4 text-center">
+                    {/* Action */}
+                    <td style={{ textAlign: 'center' }}>
                       <button
                         onClick={(e) => {
                           e.stopPropagation()
                           openStaffDetails(staff)
                         }}
-                        className="text-xs px-2.5 py-1.5 bg-gray-50 text-purple-700 hover:bg-purple-100 border border-gray-200 rounded-lg font-semibold transition"
+                        className="btn btn-sm btn-secondary"
+                        style={{
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          padding: '4px 10px',
+                          borderRadius: '8px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
                       >
-                        View Breakdown →
+                        <span>Breakdown</span>
+                        <ArrowRight size={12} />
                       </button>
                     </td>
                   </tr>
@@ -479,194 +784,271 @@ export default function StaffBonusLedgerPage() {
         )}
       </div>
 
-      {/* ── Staff Itemized Statement Modal / Drawer ── */}
+      {/* ── Staff Itemized Statement Modal ── */}
       {selectedStaff && (
         <Modal
-          open={!!selectedStaff}
+          isOpen={!!selectedStaff}
           onClose={() => {
             setSelectedStaff(null)
             setStaffDetails(null)
           }}
           title={`Staff Statement: ${selectedStaff.name} (${formattedMonthLabel})`}
-          width={900}
+          size="modal-xl"
         >
-          <div className="space-y-5">
-            {/* Staff Profile Overview Card */}
-            <div className="bg-gradient-to-r from-gray-50 via-purple-50/40 to-indigo-50/40 p-4 rounded-2xl border border-gray-200/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-              <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-600 text-white font-extrabold text-base flex items-center justify-center shadow-md">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+            
+            {/* Staff Profile Overview Header */}
+            <div style={{
+              background: 'linear-gradient(135deg, #F8FAFC 0%, #EFF6FF 100%)',
+              padding: '16px 20px',
+              borderRadius: '12px',
+              border: '1px solid #CBD5E1',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '14px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                <div style={{
+                  width: '46px',
+                  height: '46px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #1E4DB7 0%, #2563EB 100%)',
+                  color: '#FFFFFF',
+                  fontWeight: 800,
+                  fontSize: '16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0
+                }}>
                   {selectedStaff.name?.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-900 text-base flex items-center gap-2">
-                    {selectedStaff.name}
-                    <span className="text-[10px] font-semibold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full">
+                  <div style={{ fontSize: '16px', fontWeight: 700, color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>{selectedStaff.name}</span>
+                    <span className="badge badge-blue" style={{ fontSize: '10px' }}>
                       {selectedStaff.role?.replace(/_/g, ' ')}
                     </span>
-                  </h3>
-                  <div className="flex items-center flex-wrap gap-2 text-xs text-gray-500 mt-0.5">
-                    <span>ID: <strong className="font-mono text-gray-700">{selectedStaff.staff_uid}</strong></span>
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#64748B', display: 'flex', alignItems: 'center', gap: '10px', marginTop: '3px', flexWrap: 'wrap' }}>
+                    <span>ID: <strong className="td-mono">{selectedStaff.staff_uid}</strong></span>
                     {selectedStaff.phone && <span>• Phone: <strong>{selectedStaff.phone}</strong></span>}
                     {selectedStaff.email && <span>• Email: <strong>{selectedStaff.email}</strong></span>}
                   </div>
                 </div>
               </div>
 
-              {/* Referral Code Pill */}
-              <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-purple-200 shadow-xs">
+              {/* Referral Code Box */}
+              <div style={{
+                background: '#FFFFFF',
+                padding: '8px 14px',
+                borderRadius: '10px',
+                border: '1px solid #DDD6FE',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
                 <div>
-                  <div className="text-[10px] text-gray-400 font-semibold uppercase">Referral Code</div>
-                  <div className="font-mono font-bold text-purple-700 text-xs">
+                  <div style={{ fontSize: '10px', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase' }}>Referral Code</div>
+                  <div style={{ fontFamily: 'monospace', fontWeight: 700, color: '#6D28D9', fontSize: '13px' }}>
                     {selectedStaff.referral_code}
                   </div>
                 </div>
                 <button
                   onClick={(e) => handleCopy(selectedStaff.referral_code, e)}
-                  className="p-1 hover:bg-purple-50 rounded text-purple-600 transition"
-                  title="Copy Code"
+                  style={{
+                    border: 'none',
+                    background: '#F5F3FF',
+                    color: '#6D28D9',
+                    padding: '6px',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}
+                  title="Copy Referral Code"
                 >
                   {copiedCode === selectedStaff.referral_code ? (
-                    <Check className="w-4 h-4 text-emerald-600" />
+                    <Check size={14} color="#16A34A" />
                   ) : (
-                    <Copy className="w-4 h-4" />
+                    <Copy size={14} />
                   )}
                 </button>
               </div>
             </div>
 
-            {/* 4 Performance Metric Cards for the Month */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="bg-gray-50/90 p-3.5 rounded-xl border border-gray-200">
-                <div className="text-[11px] font-semibold text-gray-500 uppercase">1-Month Base Salary</div>
-                <div className="text-xl font-bold text-gray-900 mt-1">
+            {/* 4 Performance Metric Cards for Selected Staff */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+              gap: '12px'
+            }}>
+              <div style={{ background: '#F8FAFC', padding: '12px 14px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>Base Salary</div>
+                <div style={{ fontSize: '18px', fontWeight: 800, color: '#0F172A', marginTop: '2px' }}>
                   {formatINR(staffDetails?.month_summary?.base_salary ?? selectedStaff.base_salary)}
                 </div>
-                <div className="text-[10px] text-gray-400 mt-0.5">Standard salary</div>
+                <div style={{ fontSize: '10px', color: '#94A3B8' }}>Standard 1-Month Salary</div>
               </div>
 
-              <div className="bg-emerald-50/70 p-3.5 rounded-xl border border-emerald-200">
-                <div className="text-[11px] font-semibold text-emerald-700 uppercase">Donation Bonus (10%)</div>
-                <div className="text-xl font-bold text-emerald-600 mt-1">
+              <div style={{ background: '#F0FDF4', padding: '12px 14px', borderRadius: '10px', border: '1px solid #BBF7D0' }}>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: '#16A34A', textTransform: 'uppercase' }}>Donation Bonus (10%)</div>
+                <div style={{ fontSize: '18px', fontWeight: 800, color: '#16A34A', marginTop: '2px' }}>
                   +{formatINR(staffDetails?.month_summary?.donation_bonus ?? selectedStaff.month_donation_bonus)}
                 </div>
-                <div className="text-[10px] text-emerald-600/80 mt-0.5">
+                <div style={{ fontSize: '10px', color: '#16A34A' }}>
                   {staffDetails?.month_summary?.donations_count ?? selectedStaff.month_donations_count ?? 0} donations
                 </div>
               </div>
 
-              <div className="bg-purple-50/70 p-3.5 rounded-xl border border-purple-200">
-                <div className="text-[11px] font-semibold text-purple-700 uppercase">Member Bonus (30%)</div>
-                <div className="text-xl font-bold text-purple-600 mt-1">
+              <div style={{ background: '#FAF5FF', padding: '12px 14px', borderRadius: '10px', border: '1px solid #E9D5FF' }}>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: '#7C3AED', textTransform: 'uppercase' }}>Member Bonus (30%)</div>
+                <div style={{ fontSize: '18px', fontWeight: 800, color: '#7C3AED', marginTop: '2px' }}>
                   +{formatINR(staffDetails?.month_summary?.membership_bonus ?? selectedStaff.month_membership_bonus)}
                 </div>
-                <div className="text-[10px] text-purple-600/80 mt-0.5">
+                <div style={{ fontSize: '10px', color: '#7C3AED' }}>
                   {staffDetails?.month_summary?.members_count ?? selectedStaff.month_members_count ?? 0} registrations
                 </div>
               </div>
 
-              <div className="bg-indigo-50/90 p-3.5 rounded-xl border border-indigo-200">
-                <div className="text-[11px] font-semibold text-indigo-700 uppercase">Total Month Earnings</div>
-                <div className="text-xl font-extrabold text-indigo-700 mt-1">
+              <div style={{ background: '#EFF6FF', padding: '12px 14px', borderRadius: '10px', border: '1px solid #BFDBFE' }}>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: '#1E4DB7', textTransform: 'uppercase' }}>Total Month Earnings</div>
+                <div style={{ fontSize: '18px', fontWeight: 800, color: '#1E4DB7', marginTop: '2px' }}>
                   {formatINR(staffDetails?.month_summary?.total_earnings ?? selectedStaff.month_total_earnings)}
                 </div>
-                <div className="text-[10px] text-indigo-500 mt-0.5">Salary + All Bonuses</div>
+                <div style={{ fontSize: '10px', color: '#1E4DB7' }}>Salary + All Bonuses</div>
               </div>
             </div>
 
-            {/* Sub-Tabs for Breakdown */}
-            <div className="flex border-b border-gray-200 text-xs">
+            {/* Sub-Tabs for Filtering Transactions */}
+            <div style={{
+              display: 'flex',
+              borderBottom: '2px solid #E2E8F0',
+              gap: '4px'
+            }}>
               <button
                 onClick={() => setActiveTab('all')}
-                className={`px-4 py-2.5 font-bold border-b-2 transition ${
-                  activeTab === 'all'
-                    ? 'border-purple-600 text-purple-700'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
+                style={{
+                  border: 'none',
+                  background: 'transparent',
+                  padding: '8px 16px',
+                  fontWeight: 700,
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                  color: activeTab === 'all' ? '#1E4DB7' : '#64748B',
+                  borderBottom: activeTab === 'all' ? '2px solid #1E4DB7' : '2px solid transparent',
+                  marginBottom: '-2px'
+                }}
               >
                 All Month Transactions ({(staffDetails?.transactions || []).length})
               </button>
+
               <button
                 onClick={() => setActiveTab('donations')}
-                className={`px-4 py-2.5 font-bold border-b-2 transition ${
-                  activeTab === 'donations'
-                    ? 'border-emerald-600 text-emerald-700'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
+                style={{
+                  border: 'none',
+                  background: 'transparent',
+                  padding: '8px 16px',
+                  fontWeight: 700,
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                  color: activeTab === 'donations' ? '#16A34A' : '#64748B',
+                  borderBottom: activeTab === 'donations' ? '2px solid #16A34A' : '2px solid transparent',
+                  marginBottom: '-2px'
+                }}
               >
                 Donation Collections (10%) (
-                {(staffDetails?.transactions || []).filter(t => t.bonus_type === 'DONATION').length}
+                {(staffDetails?.transactions || []).filter(t => (t.bonus_type || '').includes('DONATION')).length}
                 )
               </button>
+
               <button
                 onClick={() => setActiveTab('members')}
-                className={`px-4 py-2.5 font-bold border-b-2 transition ${
-                  activeTab === 'members'
-                    ? 'border-purple-600 text-purple-700'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
+                style={{
+                  border: 'none',
+                  background: 'transparent',
+                  padding: '8px 16px',
+                  fontWeight: 700,
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                  color: activeTab === 'members' ? '#7C3AED' : '#64748B',
+                  borderBottom: activeTab === 'members' ? '2px solid #7C3AED' : '2px solid transparent',
+                  marginBottom: '-2px'
+                }}
               >
                 New Member Signups (30%) (
-                {(staffDetails?.transactions || []).filter(t => t.bonus_type === 'MEMBERSHIP').length}
+                {(staffDetails?.transactions || []).filter(t => (t.bonus_type || '').includes('MEMBER') || (t.bonus_type || '').includes('REFERRAL')).length}
                 )
               </button>
             </div>
 
-            {/* Itemized Transactions Table */}
+            {/* Transactions Table */}
             {loadingStaffDetails ? (
-              <div className="py-12">
+              <div style={{ padding: '30px' }}>
                 <LoadingState />
               </div>
             ) : !staffDetails?.transactions || staffDetails.transactions.length === 0 ? (
-              <div className="py-10 text-center text-gray-500 text-xs bg-gray-50 rounded-xl border border-dashed border-gray-200">
+              <div style={{
+                padding: '30px',
+                textAlign: 'center',
+                color: '#64748B',
+                fontSize: '12px',
+                background: '#F8FAFC',
+                borderRadius: '10px',
+                border: '1px dashed #CBD5E1'
+              }}>
                 No bonus activity recorded for {selectedStaff.name} during {formattedMonthLabel}.
               </div>
             ) : (
-              <div className="table-wrap max-h-72 overflow-y-auto">
-                <table className="w-full text-left">
+              <div className="table-wrap" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                <table>
                   <thead>
-                    <tr className="bg-gray-50 text-[11px] font-bold text-gray-600 uppercase border-b border-gray-200">
-                      <th className="py-2.5 px-3">Date & Time</th>
-                      <th className="py-2.5 px-3">Type</th>
-                      <th className="py-2.5 px-3">Details / Reference</th>
-                      <th className="py-2.5 px-3 text-right">Bonus Amount Credited</th>
+                    <tr>
+                      <th style={{ textAlign: 'left' }}>Date & Time</th>
+                      <th style={{ textAlign: 'left' }}>Type</th>
+                      <th style={{ textAlign: 'left' }}>Details / Reference</th>
+                      <th style={{ textAlign: 'right' }}>Bonus Amount Credited</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100 text-xs">
+                  <tbody>
                     {(staffDetails.transactions || [])
                       .filter(t => {
-                        if (activeTab === 'donations') return t.bonus_type === 'DONATION'
-                        if (activeTab === 'members') return t.bonus_type === 'MEMBERSHIP'
+                        const type = (t.bonus_type || '').toUpperCase()
+                        if (activeTab === 'donations') return type.includes('DONATION')
+                        if (activeTab === 'members') return type.includes('MEMBER') || type.includes('REFERRAL')
                         return true
                       })
                       .map((t) => (
-                        <tr key={t.id} className="hover:bg-gray-50/70">
-                          <td className="py-2.5 px-3 text-gray-500 font-mono text-[11px]">
+                        <tr key={t.id}>
+                          <td style={{ color: '#64748B', fontSize: '11px' }} className="td-mono">
                             {t.created_at ? format(parseISO(t.created_at), 'dd MMM yyyy, hh:mm a') : '—'}
                           </td>
-                          <td className="py-2.5 px-3">
-                            {t.bonus_type === 'DONATION' ? (
-                              <span className="inline-flex items-center gap-1 font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 text-[10px]">
+                          <td>
+                            {(t.bonus_type || '').includes('DONATION') ? (
+                              <span className="badge badge-green" style={{ fontSize: '10px' }}>
                                 💖 10% Donation
                               </span>
-                            ) : t.bonus_type === 'MEMBERSHIP' ? (
-                              <span className="inline-flex items-center gap-1 font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200 text-[10px]">
+                            ) : (t.bonus_type || '').includes('MEMBER') || (t.bonus_type || '').includes('REFERRAL') ? (
+                              <span className="badge badge-purple" style={{ fontSize: '10px', background: '#F3E8FF', color: '#7C3AED', border: '1px solid #E9D5FF' }}>
                                 👥 30% Member
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200 text-[10px]">
+                              <span className="badge badge-blue" style={{ fontSize: '10px' }}>
                                 {t.bonus_type}
                               </span>
                             )}
                           </td>
-                          <td className="py-2.5 px-3 text-gray-800">
-                            <div className="font-medium">{t.description || 'Bonus incentive'}</div>
+                          <td style={{ color: '#0F172A' }}>
+                            <div style={{ fontWeight: 600 }}>{t.description || 'Bonus incentive'}</div>
                             {t.member_name && (
-                              <div className="text-[10px] text-gray-500">
+                              <div style={{ fontSize: '11px', color: '#64748B', marginTop: '2px' }}>
                                 Member: <strong>{t.member_name}</strong>
                               </div>
                             )}
                           </td>
-                          <td className="py-2.5 px-3 text-right font-bold text-emerald-600">
+                          <td style={{ textAlign: 'right', fontWeight: 700, color: '#16A34A', fontSize: '13px' }}>
                             +{formatINR(t.amount)}
                           </td>
                         </tr>
@@ -677,18 +1059,39 @@ export default function StaffBonusLedgerPage() {
             )}
 
             {/* All-Time Account Balances Summary Footer */}
-            <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 text-xs flex flex-wrap items-center justify-between gap-3">
-              <div className="text-gray-500">
-                All-time accumulated bonus: <strong className="text-purple-700">{formatINR(selectedStaff.total_bonus)}</strong> · 
-                Paid out via payroll: <strong className="text-gray-700">{formatINR(selectedStaff.total_paid_out)}</strong>
+            <div style={{
+              background: '#F8FAFC',
+              padding: '14px 18px',
+              borderRadius: '10px',
+              border: '1px solid #E2E8F0',
+              fontSize: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '10px'
+            }}>
+              <div style={{ color: '#64748B' }}>
+                All-time accumulated bonus: <strong style={{ color: '#7C3AED' }}>{formatINR(selectedStaff.total_bonus)}</strong> · 
+                Paid out via payroll: <strong style={{ color: '#0F172A' }}>{formatINR(selectedStaff.total_paid_out)}</strong>
               </div>
-              <div className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
+              <div style={{
+                fontSize: '12px',
+                fontWeight: 700,
+                color: '#16A34A',
+                background: '#DCFCE7',
+                padding: '4px 12px',
+                borderRadius: '8px',
+                border: '1px solid #BBF7D0'
+              }}>
                 Available for Next Salary Cycle: {formatINR(selectedStaff.available_balance)}
               </div>
             </div>
+
           </div>
         </Modal>
       )}
+
     </div>
   )
 }
