@@ -1265,7 +1265,7 @@ const styles = StyleSheet.create({
   // 4. Caption & Description Styles (Under Action Buttons)
   captionSection: {
     paddingHorizontal: 14,
-    paddingBottom: 12,
+    paddingBottom: 4,
     backgroundColor: '#FFFFFF',
   },
   captionRow: {
@@ -1338,7 +1338,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 4,
+    marginTop: 2,
     gap: 8,
   },
   donateNowBtn: {
