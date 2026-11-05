@@ -43,57 +43,7 @@ const ChartTip = ({ active, payload, label }) => {
           <strong>{p.value}</strong>
         </div>
       ))}
-      {/* ── Manager Staff Bonus & Commission Ledger Modal ── */}
-      <Modal
-        open={showBonusModal}
-        onClose={() => setShowBonusModal(false)}
-        title="Staff Bonus & Commission Ledger (10% Donation + 30% Member)"
-        width={850}
-      >
-        <div style={{ marginBottom: 16, background: '#FAF5FF', border: '1px solid #E9D5FF', borderRadius: 8, padding: '12px 16px' }}>
-          <h4 style={{ margin: '0 0 6px 0', color: '#7E22CE', fontSize: 14 }}>Staff Incentive & Commission Policy</h4>
-          <p style={{ margin: 0, fontSize: 12, color: '#6B21A8', lineHeight: 1.5 }}>
-            • <strong>Donation Bonus:</strong> 10% (₹100 per ₹1,000) credited to staff bonus account for eligible donations.<br />
-            • <strong>Membership Bonus:</strong> 30% (₹30 per ₹100) credited to respective staff bonus account upon new member registration.<br />
-            • Both bonuses are tracked separately and automatically paid out as part of monthly salary processing.
-          </p>
-        </div>
 
-        {loadingBonus ? (
-          <LoadingState />
-        ) : staffBonusList.length === 0 ? (
-          <EmptyState icon="🎁" title="No staff bonus accounts found" />
-        ) : (
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Staff ID</th>
-                  <th>Staff Name</th>
-                  <th>Donation Bonus (10%)</th>
-                  <th>Member Bonus (30%)</th>
-                  <th>Total Accumulated</th>
-                  <th>Paid via Salary</th>
-                  <th>Available Balance</th>
-                </tr>
-              </thead>
-              <tbody>
-                {staffBonusList.map((sb) => (
-                  <tr key={sb.staff_uid}>
-                    <td className="td-mono">{sb.staff_uid || "-"}</td>
-                    <td style={{ fontWeight: 600 }}>{sb.name}</td>
-                    <td style={{ color: '#16a34a', fontWeight: 600 }}>+{formatINR(sb.donation_bonus)}</td>
-                    <td style={{ color: '#7c3aed', fontWeight: 600 }}>+{formatINR(sb.membership_bonus)}</td>
-                    <td style={{ fontWeight: 700, color: '#9333ea' }}>{formatINR(sb.total_bonus)}</td>
-                    <td style={{ color: '#64748b' }}>{formatINR(sb.total_paid_out)}</td>
-                    <td style={{ fontWeight: 800, color: '#15803d' }}>{formatINR(sb.available_balance)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Modal>
     </div>
   )
 }
@@ -248,7 +198,8 @@ export default function ManagerDashboard() {
 
   useEffect(() => {
     load()
-    const handler = () => load()
+    loadStaffBonuses()
+    const handler = () => { load(); loadStaffBonuses(); }
     window.addEventListener('dashboard-refresh', handler)
     return () => window.removeEventListener('dashboard-refresh', handler)
   }, [])
@@ -455,8 +406,8 @@ export default function ManagerDashboard() {
       {/* Birthday Banner */}
       <BirthdayBanner />
 
-      {/* ── 5 SUMMARY CARDS ──────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 16, marginBottom: 20 }}>
+      {/* ── 6 SUMMARY CARDS ──────────────────────────────────── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 16, marginBottom: 20 }}>
         <SummaryCard
           icon="💝"
           label="Today's Donations"
@@ -501,6 +452,15 @@ export default function ManagerDashboard() {
           color={CLR.red}
           active={false}
           onClick={() => navigate('/payouts')}
+        />
+        <SummaryCard
+          icon="🎁"
+          label="Staff Bonus & Incentive"
+          value={formatINR(staffBonusList.reduce((acc, sb) => acc + (Number(sb.total_bonus) || 0), 0))}
+          sub="10% Donation · 30% Member"
+          color="#9333EA"
+          active={showBonusModal}
+          onClick={() => { setShowBonusModal(true); loadStaffBonuses(); }}
         />
       </div>
 
@@ -894,6 +854,58 @@ export default function ManagerDashboard() {
           </div>
         </Modal>
       )}
+
+      {/* ── Manager Staff Bonus & Commission Ledger Modal ── */}
+      <Modal
+        open={showBonusModal}
+        onClose={() => setShowBonusModal(false)}
+        title="Staff Bonus & Commission Ledger (10% Donation + 30% Member)"
+        width={850}
+      >
+        <div style={{ marginBottom: 16, background: '#FAF5FF', border: '1px solid #E9D5FF', borderRadius: 8, padding: '12px 16px' }}>
+          <h4 style={{ margin: '0 0 6px 0', color: '#7E22CE', fontSize: 14 }}>Staff Incentive & Commission Policy</h4>
+          <p style={{ margin: 0, fontSize: 12, color: '#6B21A8', lineHeight: 1.5 }}>
+            • <strong>Donation Bonus:</strong> 10% (₹100 per ₹1,000) credited to staff bonus account for eligible donations.<br />
+            • <strong>Membership Bonus:</strong> 30% (₹30 per ₹100) credited to respective staff bonus account upon new member registration.<br />
+            • Both bonuses are tracked separately and automatically paid out as part of monthly salary processing.
+          </p>
+        </div>
+
+        {loadingBonus ? (
+          <LoadingState />
+        ) : staffBonusList.length === 0 ? (
+          <EmptyState icon="🎁" title="No staff bonus accounts found" />
+        ) : (
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Staff ID</th>
+                  <th>Staff Name</th>
+                  <th>Donation Bonus (10%)</th>
+                  <th>Member Bonus (30%)</th>
+                  <th>Total Accumulated</th>
+                  <th>Paid via Salary</th>
+                  <th>Available Balance</th>
+                </tr>
+              </thead>
+              <tbody>
+                {staffBonusList.map((sb) => (
+                  <tr key={sb.staff_uid}>
+                    <td className="td-mono">{sb.staff_uid || "-"}</td>
+                    <td style={{ fontWeight: 600 }}>{sb.name}</td>
+                    <td style={{ color: '#16a34a', fontWeight: 600 }}>+{formatINR(sb.donation_bonus)}</td>
+                    <td style={{ color: '#7c3aed', fontWeight: 600 }}>+{formatINR(sb.membership_bonus)}</td>
+                    <td style={{ fontWeight: 700, color: '#9333ea' }}>{formatINR(sb.total_bonus)}</td>
+                    <td style={{ color: '#64748b' }}>{formatINR(sb.total_paid_out)}</td>
+                    <td style={{ fontWeight: 800, color: '#15803d' }}>{formatINR(sb.available_balance)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Modal>
     </div>
   )
 }
