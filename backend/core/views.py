@@ -475,7 +475,7 @@ class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        return Response(UserSerializer(request.user).data)
+        return Response(UserSerializer(request.user, context={'request': request}).data)
 
     def patch(self, request):
         print("INCOMING PATCH to ProfileView")
@@ -485,7 +485,7 @@ class ProfileView(APIView):
         if serializer.is_valid():
             serializer.save()
             print("SAVE SUCCESS!")
-            return Response(serializer.data)
+            return Response(UserSerializer(request.user, context={'request': request}).data)
         print("SERIALIZER ERRORS:", serializer.errors)
         return Response(serializer.errors, status=400)
 

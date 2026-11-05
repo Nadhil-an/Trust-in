@@ -125,3 +125,4 @@ class StaffBonusSystemTestCase(TestCase):
         account = StaffBonusAccount.objects.get(staff=self.staff_user)
         # Should have membership bonus from m1 (30) + m2 (30) + referral bonus from m2 (30)
         self.assertGreaterEqual(account.membership_bonus_balance, Decimal('60.00'))
+

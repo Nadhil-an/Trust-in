@@ -14,8 +14,11 @@ import {
   Alert,
   Platform,
   KeyboardAvoidingView,
+  Share,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import * as Clipboard from 'expo-clipboard';
+import { resolveImageUrl } from '../../utils/imageUrl';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
 import { useAuthStore } from '../../store/authStore';
@@ -35,6 +38,30 @@ const ProfileScreen = ({ navigation, route }) => {
     Toast.show({ type: 'success', text1: newLang === 'ml' ? 'ഭാഷ മാറ്റി' : 'Language changed' });
   };
   
+  // Referral Modal State
+  const [referralModalVisible, setReferralModalVisible] = useState(false);
+
+  // Sync profile on mount to ensure photo & referral_code are up to date
+  useEffect(() => {
+    const syncProfileData = async () => {
+      try {
+        const res = await authApi.getProfile();
+        if (res?.data) {
+          const photoUrl = res.data.photo || res.data.avatar;
+          updateUser({
+            ...user,
+            ...res.data,
+            avatar: photoUrl || user?.avatar,
+            photo: photoUrl || user?.photo,
+          });
+        }
+      } catch (_) {}
+    };
+    if (isAuthenticated) {
+      syncProfileData();
+    }
+  }, [isAuthenticated]);
+
   // Password Management States
   const [pwdChoiceModal, setPwdChoiceModal] = useState(false);
   const [updatePwdModal, setUpdatePwdModal] = useState(false);
@@ -92,7 +119,13 @@ const ProfileScreen = ({ navigation, route }) => {
   const phone = user?.phone || null;
   const location = user?.address || null;
   const dateOfBirth = user?.date_of_birth || user?.dob || null;
-  const avatar = user?.avatar;
+  const rawAvatar = user?.photo || user?.avatar || user?.profile_photo;
+  const avatar = resolveImageUrl(rawAvatar);
+
+  const cleanNameForCode = (
+    user?.full_name || user?.username || 'member'
+  ).toLowerCase().replace(/[^a-z0-9]/g, '');
+  const referralCode = user?.referral_code || `slt-${cleanNameForCode}`;
 
   const openEditModal = () => {
     setEditForm({
@@ -101,7 +134,7 @@ const ProfileScreen = ({ navigation, route }) => {
       email: user?.email || '',
       address: user?.address || '',
       date_of_birth: user?.date_of_birth || user?.dob || '',
-      avatar: user?.avatar || ''
+      avatar: user?.photo || user?.avatar || ''
     });
     setEditModal(true);
   };
@@ -469,6 +502,29 @@ const ProfileScreen = ({ navigation, route }) => {
             <Ionicons name="chevron-forward" size={18} color={Colors.gray400} />
           </TouchableOpacity>
 
+          {/* Referral Code Row */}
+          <TouchableOpacity 
+            style={styles.menuRow} 
+            onPress={() => setReferralModalVisible(true)}
+            activeOpacity={0.7}
+          >
+            <View style={styles.menuLeft}>
+              <Ionicons name="gift-outline" size={20} color="#0284c7" />
+              <View>
+                <Text style={styles.menuText}>My Referral Code</Text>
+                <Text style={{ fontSize: 11, color: '#0284c7', fontWeight: '700', marginTop: 1 }}>
+                  {referralCode}
+                </Text>
+              </View>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <View style={{ backgroundColor: '#E0F2FE', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 }}>
+                <Text style={{ fontSize: 10.5, fontWeight: '700', color: '#0284c7' }}>Share</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={Colors.gray400} />
+            </View>
+          </TouchableOpacity>
+
           <TouchableOpacity style={styles.menuRow} onPress={() => setPwdChoiceModal(true)}>
             <View style={styles.menuLeft}>
               <Ionicons name="key-outline" size={20} color={Colors.gray600} />
@@ -509,6 +565,86 @@ const ProfileScreen = ({ navigation, route }) => {
           <Text style={styles.logoutText}>{t('auth.logout')}</Text>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* Referral Code Modal */}
+      <Modal
+        visible={referralModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setReferralModalVisible(false)}
+      >
+        <View style={styles.referralOverlay}>
+          <View style={styles.referralModalCard}>
+            <View style={styles.referralModalTop}>
+              <View style={styles.referralIconCircle}>
+                <Ionicons name="gift" size={28} color="#0284c7" />
+              </View>
+              <TouchableOpacity
+                onPress={() => setReferralModalVisible(false)}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                style={styles.referralCloseBtn}
+              >
+                <Ionicons name="close" size={22} color="#64748B" />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.referralCardTitle}>My Referral Code</Text>
+            <Text style={styles.referralCardDesc}>
+              Share this code with new members when they register. You will earn a ₹30 (30%) membership bonus and 10% on every donation received!
+            </Text>
+
+            {/* Code Box */}
+            <View style={styles.referralBox}>
+              <Text style={styles.referralBoxLabel}>YOUR REFERRAL CODE</Text>
+              <View style={styles.referralBoxInner}>
+                <Text style={styles.referralCodeDisplay}>{referralCode}</Text>
+                <TouchableOpacity
+                  style={styles.copyBtnPill}
+                  activeOpacity={0.7}
+                  onPress={async () => {
+                    await Clipboard.setStringAsync(referralCode);
+                    Toast.show({
+                      type: 'success',
+                      text1: 'Referral Code Copied!',
+                      text2: `${referralCode} copied to clipboard`,
+                    });
+                  }}
+                >
+                  <Ionicons name="copy-outline" size={15} color="#0284c7" />
+                  <Text style={styles.copyBtnText}>Copy</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Buttons */}
+            <TouchableOpacity
+              style={styles.shareCodeBtn}
+              activeOpacity={0.85}
+              onPress={async () => {
+                try {
+                  await Share.share({
+                    title: 'Join Sree Lakshmi Charitable Trust',
+                    message: `Join Sree Lakshmi Charitable Trust using my referral code: ${referralCode}\n\nDownload the app to register, track contributions and support our charitable mission! https://sreelakshmicharity.org`,
+                  });
+                } catch (err) {
+                  console.warn('Share error', err);
+                }
+              }}
+            >
+              <Ionicons name="share-social-outline" size={20} color="#FFFFFF" />
+              <Text style={styles.shareCodeBtnText}>Share Referral Code</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.referralDismissBtn}
+              activeOpacity={0.7}
+              onPress={() => setReferralModalVisible(false)}
+            >
+              <Text style={styles.referralDismissBtnText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       {/* Edit Profile Modal */}
       <Modal visible={editModal} transparent animationType="slide" onRequestClose={() => setEditModal(false)}>
@@ -1372,6 +1508,133 @@ const styles = StyleSheet.create({
     color: '#0284c7',
     fontSize: 14,
     fontWeight: '700',
+  },
+  // Referral Modal Styles
+  referralOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  referralModalCard: {
+    width: '100%',
+    maxWidth: 380,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 22,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  referralModalTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  referralIconCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#E0F2FE',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  referralCloseBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  referralCardTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: 6,
+    letterSpacing: -0.3,
+  },
+  referralCardDesc: {
+    fontSize: 13,
+    color: '#64748B',
+    lineHeight: 19,
+    marginBottom: 18,
+  },
+  referralBox: {
+    backgroundColor: '#F0F9FF',
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: '#BAE6FD',
+    padding: 14,
+    marginBottom: 18,
+  },
+  referralBoxLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#0369A1',
+    letterSpacing: 0.8,
+    marginBottom: 6,
+  },
+  referralBoxInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  referralCodeDisplay: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#0284c7',
+    letterSpacing: 0.5,
+  },
+  copyBtnPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#BAE6FD',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  copyBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0284c7',
+  },
+  shareCodeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#0284c7',
+    paddingVertical: 14,
+    borderRadius: 14,
+    marginBottom: 10,
+    shadowColor: '#0284c7',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  shareCodeBtnText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  referralDismissBtn: {
+    paddingVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  referralDismissBtnText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#64748B',
   },
 });
 

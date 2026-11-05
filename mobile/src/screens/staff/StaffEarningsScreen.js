@@ -94,21 +94,21 @@ export default function StaffEarningsScreen({ navigation }) {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#9333EA"
-            colors={['#9333EA']}
+            tintColor="#0284C7"
+            colors={['#0284C7']}
           />
         }
       >
         {loading ? (
           <View style={styles.centerBox}>
-            <ActivityIndicator size="large" color="#9333EA" />
+            <ActivityIndicator size="large" color="#0284C7" />
             <Text style={styles.loadingText}>Loading bonus & earnings...</Text>
           </View>
         ) : (
           <>
             {/* Primary Hero Balance Card */}
             <LinearGradient
-              colors={['#7E22CE', '#9333EA', '#A855F7']}
+              colors={['#0284C7', '#0369A1', '#075985']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.heroCard}
@@ -163,13 +163,13 @@ export default function StaffEarningsScreen({ navigation }) {
               </View>
 
               {/* 2. Membership Bonus Card */}
-              <View style={[styles.breakdownCard, { borderColor: '#DDD6FE' }]}>
-                <View style={[styles.cardIconWrap, { backgroundColor: '#EDE9FE' }]}>
-                  <Ionicons name="people" size={18} color="#7C3AED" />
+              <View style={[styles.breakdownCard, { borderColor: '#BAE6FD' }]}>
+                <View style={[styles.cardIconWrap, { backgroundColor: '#E0F2FE' }]}>
+                  <Ionicons name="people" size={18} color="#0284C7" />
                 </View>
                 <Text style={styles.cardTypeTitle}>Member Bonus</Text>
                 <Text style={styles.cardRule}>30% (₹30) per ₹100</Text>
-                <Text style={[styles.cardAmount, { color: '#7C3AED' }]}>
+                <Text style={[styles.cardAmount, { color: '#0284C7' }]}>
                   ₹ {(summary?.membership_bonus || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </Text>
                 <Text style={styles.cardFootnote}>One-time new registration</Text>
@@ -249,8 +249,8 @@ export default function StaffEarningsScreen({ navigation }) {
                             backgroundColor: isDonation
                               ? '#DCFCE7'
                               : isReferral
-                              ? '#FCE7F3'
-                              : '#EDE9FE',
+                              ? '#E0F2FE'
+                              : '#E0F2FE',
                           },
                         ]}
                       >
@@ -267,8 +267,8 @@ export default function StaffEarningsScreen({ navigation }) {
                             isDonation
                               ? '#16A34A'
                               : isReferral
-                              ? '#DB2777'
-                              : '#7C3AED'
+                              ? '#0284C7'
+                              : '#0284C7'
                           }
                         />
                       </View>
@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     padding: 20,
     marginBottom: 20,
-    shadowColor: '#7E22CE',
+    shadowColor: '#0284C7',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.25,
     shadowRadius: 10,
@@ -546,8 +546,8 @@ const styles = StyleSheet.create({
     borderColor: '#E2E8F0',
   },
   filterPillActive: {
-    backgroundColor: '#9333EA',
-    borderColor: '#9333EA',
+    backgroundColor: '#0284C7',
+    borderColor: '#0284C7',
   },
   filterPillText: {
     fontSize: 12,
@@ -637,8 +637,8 @@ const styles = StyleSheet.create({
   txMemberPill: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#7C3AED',
-    backgroundColor: '#EDE9FE',
+    color: '#0369A1',
+    backgroundColor: '#E0F2FE',
     paddingHorizontal: 6,
     paddingVertical: 1.5,
     borderRadius: 6,
@@ -668,3 +668,4 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
 });
+

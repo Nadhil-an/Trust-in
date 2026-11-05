@@ -20,6 +20,7 @@ import { usePushNotifications } from '../../hooks/usePushNotifications';
 import { useOfflineStore } from '../../store/offlineStore';
 import { OfflineBar, EventBanner } from '../../components/shared';
 import { verifyAttendanceMarked } from '../../utils/attendanceGuard';
+import { resolveImageUrl } from '../../utils/imageUrl';
 
 const { width } = Dimensions.get('window');
 
@@ -283,9 +284,9 @@ const StaffHomeScreen = ({ navigation, route }) => {
               </View>
             )}
 
-            {user?.avatar ? (
+            {(user?.photo || user?.avatar) ? (
               <Image 
-                source={{ uri: user.avatar }} 
+                source={{ uri: resolveImageUrl(user?.photo || user?.avatar) }} 
                 style={[
                   { width: 38, height: 38, borderRadius: 19, borderWidth: 1.5, borderColor: '#0284C7' },
                   isUserBirthday && { borderColor: '#F59E0B', borderWidth: 2.5 }
@@ -405,15 +406,15 @@ const StaffHomeScreen = ({ navigation, route }) => {
                         </View>
 
                         <TouchableOpacity 
-                          style={[styles.collThirdBox, { borderColor: '#E9D5FF', backgroundColor: '#FAF5FF' }]}
+                          style={[styles.collThirdBox, { borderColor: '#BAE6FD', backgroundColor: '#F0F9FF' }]}
                           activeOpacity={0.8}
                           onPress={() => navigation.navigate('StaffEarnings')}
                         >
-                          <View style={[styles.collThirdIcon, { backgroundColor: '#F3E8FF' }]}>
-                            <Ionicons name="gift-outline" size={14} color="#9333EA" />
+                          <View style={[styles.collThirdIcon, { backgroundColor: '#E0F2FE' }]}>
+                            <Ionicons name="gift-outline" size={14} color="#0284C7" />
                           </View>
-                          <Text style={[styles.collThirdLabel, { color: '#7E22CE' }]}>Earnings</Text>
-                          <Text style={[styles.collThirdVal, { color: '#9333EA', fontWeight: '800' }]}>
+                          <Text style={[styles.collThirdLabel, { color: '#0369A1' }]}>Earnings</Text>
+                          <Text style={[styles.collThirdVal, { color: '#0284C7', fontWeight: '800' }]}>
                             ₹{Number(stats?.total_bonus || 0).toLocaleString()}
                           </Text>
                         </TouchableOpacity>
@@ -430,7 +431,7 @@ const StaffHomeScreen = ({ navigation, route }) => {
                     onPress={() => navigation.navigate('StaffEarnings')}
                   >
                     <LinearGradient
-                      colors={['#7E22CE', '#9333EA', '#A855F7']}
+                      colors={['#0284C7', '#0369A1', '#075985']}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 1 }}
                       style={styles.earningsSlideCard}
@@ -445,7 +446,7 @@ const StaffHomeScreen = ({ navigation, route }) => {
                           <Text style={styles.earningsSlideSubtitle}>Track 10% donation & 30% member bonus</Text>
                         </View>
                         <View style={styles.earningsSlideIconWrap}>
-                          <Ionicons name="wallet" size={24} color="#9333EA" />
+                          <Ionicons name="wallet" size={24} color="#0284C7" />
                         </View>
                       </View>
 
@@ -946,7 +947,7 @@ const styles = StyleSheet.create({
   earningsSlideCard: {
     borderRadius: 20,
     padding: 16,
-    shadowColor: '#7E22CE',
+    shadowColor: '#0284C7',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
