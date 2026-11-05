@@ -44,6 +44,8 @@ export default function FeatureAccess() {
     try {
       await coreApi.features.updateFeatureRoles({ feature_key: featureKey, roles: newRoles })
       toast.success('Permissions updated')
+      window.dispatchEvent(new CustomEvent('features-updated'))
+      window.dispatchEvent(new CustomEvent('dashboard-refresh'))
     } catch (err) {
       toast.error('Failed to update permissions')
       fetchAssignments() // revert on error
@@ -51,7 +53,20 @@ export default function FeatureAccess() {
   }
 
   // Get distinct categories
-  const categories = ['ALL', 'SOCIAL MEDIA DASHBOARD', 'MANAGER CORE', 'FINANCE & DONATIONS', 'TIME & PAYROLL', 'DIRECTORY', 'STOCK MANAGEMENT', 'PEOPLE & RELATIONS', 'SHARED FEATURES']
+  const categories = [
+    'ALL',
+    'TIME & PAYROLL',
+    'PAYOUTS & CLOSING',
+    'SHARED FEATURES',
+    'FINANCE & DONATIONS',
+    'MANAGER CORE',
+    'DIRECTORY',
+    'STOCK MANAGEMENT',
+    'PEOPLE & RELATIONS',
+    'SOCIAL MEDIA DASHBOARD',
+    'TRANSACTIONS',
+    'LEDGERS',
+  ]
 
   // Group features by category for display
   const groupedFeatures = {}

@@ -11,6 +11,7 @@ import {
 import BirthdayBanner from '../../components/BirthdayBanner'
 import StaffPerformanceReport from '../../components/reports/StaffPerformanceReport'
 import StaffPerformanceFilter from '../../components/reports/StaffPerformanceFilter'
+import { useFeatureStore } from '../../store/featureStore'
 
 // ── colour tokens ────────────────────────────────────────────────
 const C = {
@@ -110,6 +111,7 @@ export default function HRDashboard() {
   const [showReport, setShowReport] = useState(false)
   const [showStaffFilterReport, setShowStaffFilterReport] = useState(false)
   const navigate = useNavigate()
+  const { hasFeature } = useFeatureStore()
 
   // Secret delete mode (Ctrl + Shift + Q)
   const [secretDeleteMode, setSecretDeleteMode] = useState(false)
@@ -297,6 +299,16 @@ export default function HRDashboard() {
           <p style={{ fontSize: 13, color: '#9ca3af', margin: '3px 0 0' }}>Good {greeting} — {format(new Date(), 'EEEE, dd MMMM yyyy')}</p>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
+          {hasFeature('payouts') && (
+            <button className="btn btn-secondary" onClick={() => navigate('/slt/disburse/payouts')} style={{ background: '#FEF3C7', color: '#D97706', fontWeight: 700, border: '1px solid #FDE68A' }}>
+              💸 Payouts
+            </button>
+          )}
+          {hasFeature('scheduled_payouts') && (
+            <button className="btn btn-secondary" onClick={() => navigate('/slt/shared/scheduled-payouts')} style={{ background: '#F0F9FF', color: '#0284C7', fontWeight: 700, border: '1px solid #BAE6FD' }}>
+              🎯 Scheduled Payouts
+            </button>
+          )}
           <button className="btn btn-secondary" onClick={() => setShowStaffFilterReport(true)} style={{ background: '#F0FDF4', color: '#16A34A', fontWeight: 700, border: '1px solid #BBF7D0' }}>
             📈 Staff Performance
           </button>
@@ -313,7 +325,7 @@ export default function HRDashboard() {
               📅 {d.leave.pending} leave requests pending
             </div>
           )}
-          <button className="btn btn-primary" onClick={() => navigate('/hr/attendance')}>Mark Attendance</button>
+          <button className="btn btn-primary" onClick={() => navigate('/slt/hr/attendance')}>Mark Attendance</button>
         </div>
       </div>
 
@@ -511,7 +523,7 @@ export default function HRDashboard() {
               <ProgressRow label="Absent"   value={att.absent_today  || 0} total={attTotal} color={C.red}    />
               <ProgressRow label="On Leave" value={att.on_leave      || 0} total={attTotal} color={C.yellow} />
               <div style={{ marginTop: 18 }}>
-                <button className="btn btn-sm btn-primary" onClick={() => navigate('/hr/attendance')}>Mark / View Attendance →</button>
+                <button className="btn btn-sm btn-primary" onClick={() => navigate('/slt/hr/attendance')}>Mark / View Attendance →</button>
               </div>
             </div>
           </div>
@@ -547,8 +559,8 @@ export default function HRDashboard() {
             <MiniTile icon="🎂" label="Birthdays This Month" value={d.alerts?.upcoming_birthdays || 0} color={C.purple} />
           </div>
           <div style={{ display: 'flex', gap: 12 }}>
-            <button className="btn btn-primary btn-sm" onClick={() => navigate('/hr/leave')}>Review Leave Requests →</button>
-            <button className="btn btn-secondary btn-sm" onClick={() => navigate('/hr/officers')}>Manage Staff Documents →</button>
+            <button className="btn btn-primary btn-sm" onClick={() => navigate('/slt/hr/leave')}>Review Leave Requests →</button>
+            <button className="btn btn-secondary btn-sm" onClick={() => navigate('/slt/hr/officers')}>Manage Staff Documents →</button>
           </div>
         </Panel>
       )}
@@ -560,7 +572,7 @@ export default function HRDashboard() {
             <div style={{ fontSize: 15, fontWeight: 700, color: '#111827' }}>Attendance — Last 7 Days</div>
             <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>Daily present vs absent vs leave trend</div>
           </div>
-          <button className="btn btn-secondary btn-sm" onClick={() => navigate('/hr/attendance')}>View Full Attendance →</button>
+          <button className="btn btn-secondary btn-sm" onClick={() => navigate('/slt/hr/attendance')}>View Full Attendance →</button>
         </div>
         <ResponsiveContainer width="100%" height={160}>
           <BarChart data={history} barSize={16} barCategoryGap="30%">

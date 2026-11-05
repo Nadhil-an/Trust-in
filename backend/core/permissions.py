@@ -18,14 +18,26 @@ class IsManager(BasePermission):
 
 class IsAccountant(BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.role in [Role.ACCOUNTANT, Role.ADMIN]
+        if not (request.user and request.user.is_authenticated):
+            return False
+        if request.user.role in [Role.ACCOUNTANT, Role.ADMIN, Role.HR]:
+            return True
+        from core.models import RoleFeaturePermission
+        payout_features = [
+            'payouts', 'pending_payouts', 'scheduled_payouts',
+            'salary_review', 'money_requests', 'cash_closing'
+        ]
+        return RoleFeaturePermission.objects.filter(
+            role=request.user.role,
+            feature_key__in=payout_features
+        ).exists()
 
 
 class IsFinanceOrDataEntry(BasePermission):
-    """Allows Accountant, Manager, Admin, and Data Entry."""
+    """Allows Accountant, Manager, Admin, Data Entry, and HR."""
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.role in [
-            Role.ACCOUNTANT, Role.MANAGER, Role.ADMIN, Role.DATA_ENTRY
+            Role.ACCOUNTANT, Role.MANAGER, Role.ADMIN, Role.DATA_ENTRY, Role.HR
         ]
 
 

@@ -16,8 +16,8 @@ const EMPTY_FORM = {
 
 export default function ScheduledPayouts() {
   const { user } = useAuthStore()
-  const isDataEntry = user?.role === 'DATA_ENTRY' || user?.role === 'MANAGER'
-  const isAccountant = user?.role === 'ACCOUNTANT'
+  const isDataEntry = user?.role === 'DATA_ENTRY' || user?.role === 'MANAGER' || user?.role === 'ADMIN' || user?.role === 'HR'
+  const isAccountant = user?.role === 'ACCOUNTANT' || user?.role === 'ADMIN' || user?.role === 'HR'
   
   const [payouts, setPayouts] = useState([])
   const [totalFunds, setTotalFunds] = useState(0)

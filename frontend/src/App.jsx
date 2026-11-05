@@ -130,6 +130,16 @@ export default function App() {
     if (isAuthenticated) {
       fetchProfile()
       fetchFeatures()
+
+      const handleRefreshFeatures = () => {
+        fetchFeatures()
+      }
+      window.addEventListener('features-updated', handleRefreshFeatures)
+      window.addEventListener('dashboard-refresh', handleRefreshFeatures)
+      return () => {
+        window.removeEventListener('features-updated', handleRefreshFeatures)
+        window.removeEventListener('dashboard-refresh', handleRefreshFeatures)
+      }
     }
   }, [isAuthenticated])
 
