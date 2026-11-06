@@ -929,13 +929,25 @@ export default function PayrollPage() {
                       <td>
                         <AmountDisplay amount={p.basic_salary} />
                       </td>
-                      <td style={{ color: "#16a34a", fontWeight: 600 }}>
+                      <td
+                        style={{ color: "#16a34a", fontWeight: 600, cursor: "pointer" }}
+                        onClick={() => handleOpenBonusFromRow(p)}
+                        title="Click to view full bonus history & statement"
+                      >
                         +{formatINR(p.donation_bonus || p.original?.donation_bonus || 0)}
                       </td>
-                      <td style={{ color: "#7c3aed", fontWeight: 600 }}>
+                      <td
+                        style={{ color: "#7c3aed", fontWeight: 600, cursor: "pointer" }}
+                        onClick={() => handleOpenBonusFromRow(p)}
+                        title="Click to view full bonus history & statement"
+                      >
                         +{formatINR(p.membership_bonus || p.original?.membership_bonus || 0)}
                       </td>
-                      <td>
+                      <td
+                        style={{ cursor: "pointer" }}
+                        onClick={() => handleOpenBonusFromRow(p)}
+                        title="Click to view full bonus breakdown statement"
+                      >
                         <span
                           style={{
                             display: "inline-block",
@@ -954,7 +966,11 @@ export default function PayrollPage() {
                       <td
                         style={{
                           color: p.advance_salary > 0 ? "#ef4444" : "inherit",
+                          fontWeight: p.advance_salary > 0 ? 600 : "normal",
+                          cursor: p.advance_salary > 0 ? "pointer" : "default",
                         }}
+                        onClick={() => p.advance_salary > 0 && handleOpenDeductionFromRow(p)}
+                        title={p.advance_salary > 0 ? "Click to view deduction history & reasons" : ""}
                       >
                         <AmountDisplay amount={p.advance_salary} />
                       </td>
@@ -1690,19 +1706,40 @@ export default function PayrollPage() {
                     >
                       🎁 Bonus & Incentives (Added to Salary)
                     </h4>
-                    <span
-                      style={{
-                        fontSize: "11px",
-                        background: "#f3e8ff",
-                        color: "#7e22ce",
-                        fontWeight: 600,
-                        padding: "3px 8px",
-                        borderRadius: "12px",
-                        border: "1px solid #d8b4fe",
-                      }}
-                    >
-                      10% / 15% Donation + 30% Membership
-                    </span>
+                    <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                      <button
+                        type="button"
+                        onClick={handleOpenBonusFromGen}
+                        style={{
+                          background: "#7e22ce",
+                          color: "#ffffff",
+                          border: "none",
+                          borderRadius: "6px",
+                          padding: "4px 10px",
+                          fontSize: "11px",
+                          fontWeight: "600",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "4px",
+                        }}
+                      >
+                        <span>📄</span> View & Download Statement
+                      </button>
+                      <span
+                        style={{
+                          fontSize: "11px",
+                          background: "#f3e8ff",
+                          color: "#7e22ce",
+                          fontWeight: 600,
+                          padding: "3px 8px",
+                          borderRadius: "12px",
+                          border: "1px solid #d8b4fe",
+                        }}
+                      >
+                        10% / 15% Donation + 30% Membership
+                      </span>
+                    </div>
                   </div>
                   <p style={{ margin: "0 0 12px 0", fontSize: "12px", color: "#7e22ce" }}>
                     Auto-calculated incentives for this staff member during {format(new Date(genForm.year, genForm.month - 1, 1), "MMMM yyyy")}. You can review or adjust amounts before generating payroll.
@@ -1793,16 +1830,37 @@ export default function PayrollPage() {
                     marginTop: "0.5rem",
                   }}
                 >
-                  <h4
-                    style={{
-                      fontSize: "14px",
-                      marginBottom: "12px",
-                      color: "var(--gray-700)",
-                      fontWeight: "600",
-                    }}
-                  >
-                    Deductions
-                  </h4>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                    <h4
+                      style={{
+                        fontSize: "14px",
+                        margin: 0,
+                        color: "var(--gray-700)",
+                        fontWeight: "600",
+                      }}
+                    >
+                      Deductions
+                    </h4>
+                    <button
+                      type="button"
+                      onClick={handleOpenDeductionFromGen}
+                      style={{
+                        background: "#dc2626",
+                        color: "#ffffff",
+                        border: "none",
+                        borderRadius: "6px",
+                        padding: "4px 10px",
+                        fontSize: "11px",
+                        fontWeight: "600",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px",
+                      }}
+                    >
+                      <span>📋</span> View Breakdown & Download Statement
+                    </button>
+                  </div>
                   <div className="form-grid-2">
                     <div className="form-group">
                       <label className="form-label">PF Deduction</label>
@@ -1931,7 +1989,19 @@ export default function PayrollPage() {
                       {formatINR(genForm.basic_salary)}
                     </div>
                   </div>
-                  <div style={{ textAlign: "center" }}>
+                  <div
+                    onClick={handleOpenBonusFromGen}
+                    style={{
+                      textAlign: "center",
+                      cursor: "pointer",
+                      padding: "6px 14px",
+                      borderRadius: "8px",
+                      background: "#faf5ff",
+                      border: "1px solid #d8b4fe",
+                      transition: "all 0.2s ease",
+                    }}
+                    title="Click to view full bonus history & download statement"
+                  >
                     <div
                       style={{
                         fontSize: "11px",
@@ -1939,9 +2009,14 @@ export default function PayrollPage() {
                         textTransform: "uppercase",
                         fontWeight: 700,
                         letterSpacing: "0.5px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "4px",
                       }}
                     >
-                      Bonus & Incentives
+                      <span>Bonus & Incentives</span>
+                      <span style={{ fontSize: "10px" }}>🔍</span>
                     </div>
                     <div
                       style={{
@@ -1952,18 +2027,38 @@ export default function PayrollPage() {
                     >
                       +{formatINR(totalBonus)}
                     </div>
+                    <div style={{ fontSize: "10px", color: "#9333ea", textDecoration: "underline", fontWeight: "600" }}>
+                      View & Download
+                    </div>
                   </div>
-                  <div style={{ textAlign: "center" }}>
+                  <div
+                    onClick={handleOpenDeductionFromGen}
+                    style={{
+                      textAlign: "center",
+                      cursor: "pointer",
+                      padding: "6px 14px",
+                      borderRadius: "8px",
+                      background: "#fef2f2",
+                      border: "1px solid #fecaca",
+                      transition: "all 0.2s ease",
+                    }}
+                    title="Click to view full reduction & shortage history to explain to employee"
+                  >
                     <div
                       style={{
                         fontSize: "11px",
-                        color: "var(--gray-500)",
+                        color: "var(--danger-color)",
                         textTransform: "uppercase",
                         fontWeight: 700,
                         letterSpacing: "0.5px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "4px",
                       }}
                     >
-                      Deductions & Shortage
+                      <span>Deductions & Shortage</span>
+                      <span style={{ fontSize: "10px" }}>📋</span>
                     </div>
                     <div
                       style={{
@@ -1973,6 +2068,9 @@ export default function PayrollPage() {
                       }}
                     >
                       - {formatINR(totalDeductions)}
+                    </div>
+                    <div style={{ fontSize: "10px", color: "#dc2626", textDecoration: "underline", fontWeight: "600" }}>
+                      View Reasons & Download
                     </div>
                   </div>
                   {(Number(genForm.collection_excess || 0) > 0) && (
@@ -2250,8 +2348,641 @@ export default function PayrollPage() {
         </Modal>
       )}
 
+      {/* ── Bonus & Incentives Statement Modal ── */}
+      {bonusStatementModal && (
+        <Modal
+          isOpen={true}
+          onClose={() => setBonusStatementModal(null)}
+          title={`Bonus & Incentives Breakdown — ${bonusStatementModal.employee_name}`}
+          size="modal-lg"
+          overlayClass="statement-top-modal"
+          footer={
+            <div style={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
+              <button
+                type="button"
+                className="btn btn-secondary no-print"
+                onClick={() => setBonusStatementModal(null)}
+              >
+                Close
+              </button>
+              <div style={{ display: "flex", gap: "8px" }} className="no-print">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={handleExportBonusCSV}
+                  disabled={!bonusStatementModal.transactions?.length}
+                  style={{ fontSize: "13px", padding: "6px 12px" }}
+                >
+                  📊 Export CSV
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => window.print()}
+                  style={{ fontSize: "13px", padding: "6px 12px" }}
+                >
+                  🖨️ Print
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={handleDownloadBonusPDF}
+                  disabled={downloadingBonusPDF}
+                  style={{ background: "#7e22ce", borderColor: "#6b21a8", fontSize: "13px", padding: "6px 14px" }}
+                >
+                  {downloadingBonusPDF ? "Generating PDF..." : "📥 Download Statement (PDF)"}
+                </button>
+              </div>
+            </div>
+          }
+        >
+          <div
+            id="printable-bonus-statement"
+            style={{
+              padding: "20px",
+              fontFamily: "Arial, sans-serif",
+              color: "#1e293b",
+              background: "#ffffff",
+            }}
+          >
+            {/* Trust Header */}
+            <div
+              style={{
+                textAlign: "center",
+                borderBottom: "2px solid #e2e8f0",
+                paddingBottom: "14px",
+                marginBottom: "16px",
+              }}
+            >
+              <h2 style={{ margin: "0 0 4px 0", color: "#1e293b", fontSize: "20px" }}>
+                Sree Lakshmi Charitable Trust
+              </h2>
+              <div style={{ fontSize: "12px", color: "#64748b", marginBottom: "4px" }}>
+                Reg. No: 123/2020 | Registered Charitable Trust
+              </div>
+              <div
+                style={{
+                  display: "inline-block",
+                  padding: "4px 14px",
+                  borderRadius: "20px",
+                  background: "#faf5ff",
+                  border: "1px solid #d8b4fe",
+                  color: "#6b21a8",
+                  fontWeight: "bold",
+                  fontSize: "13px",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.5px",
+                  marginTop: "6px",
+                }}
+              >
+                🎁 Staff Bonus & Incentives Statement
+              </div>
+            </div>
+
+            {/* Employee & Period Details */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "12px",
+                background: "#f8fafc",
+                padding: "12px 16px",
+                borderRadius: "8px",
+                border: "1px solid #e2e8f0",
+                marginBottom: "16px",
+                fontSize: "13px",
+              }}
+            >
+              <div>
+                <div><strong>Staff Member:</strong> {bonusStatementModal.employee_name}</div>
+                {bonusStatementModal.employee_id && (
+                  <div><strong>Employee ID:</strong> {bonusStatementModal.employee_id}</div>
+                )}
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div>
+                  <strong>Statement Period:</strong>{" "}
+                  {format(new Date(bonusStatementModal.year, bonusStatementModal.month - 1, 1), "MMMM yyyy")}
+                </div>
+                <div style={{ color: "#64748b", fontSize: "12px" }}>
+                  Generated on {format(new Date(), "dd-MMM-yyyy, hh:mm a")}
+                </div>
+              </div>
+            </div>
+
+            {/* Total Summary Cards */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, 1fr)",
+                gap: "10px",
+                marginBottom: "16px",
+              }}
+            >
+              <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", padding: "10px", borderRadius: "8px", textAlign: "center" }}>
+                <div style={{ fontSize: "11px", fontWeight: "700", color: "#166534" }}>DONATION BONUS (10%)</div>
+                <div style={{ fontSize: "16px", fontWeight: "800", color: "#15803d", marginTop: "2px" }}>
+                  +{formatINR(bonusStatementModal.donation_bonus)}
+                </div>
+              </div>
+              <div style={{ background: "#faf5ff", border: "1px solid #d8b4fe", padding: "10px", borderRadius: "8px", textAlign: "center" }}>
+                <div style={{ fontSize: "11px", fontWeight: "700", color: "#7e22ce" }}>MEMBER BONUS (30%)</div>
+                <div style={{ fontSize: "16px", fontWeight: "800", color: "#7e22ce", marginTop: "2px" }}>
+                  +{formatINR(bonusStatementModal.membership_bonus)}
+                </div>
+              </div>
+              <div style={{ background: "#ede9fe", border: "1px solid #c084fc", padding: "10px", borderRadius: "8px", textAlign: "center" }}>
+                <div style={{ fontSize: "11px", fontWeight: "700", color: "#581c87" }}>TOTAL BONUS CREDITED</div>
+                <div style={{ fontSize: "18px", fontWeight: "900", color: "#6b21a8", marginTop: "2px" }}>
+                  +{formatINR(bonusStatementModal.total_bonus)}
+                </div>
+              </div>
+            </div>
+
+            {/* Itemized Transactions Table */}
+            <div style={{ marginBottom: "20px" }}>
+              <div style={{ fontSize: "13px", fontWeight: "700", color: "#1e293b", marginBottom: "8px" }}>
+                Itemized Bonus Transactions ({bonusStatementModal.transactions?.length || 0} events):
+              </div>
+              {(!bonusStatementModal.transactions || bonusStatementModal.transactions.length === 0) ? (
+                <div style={{ textAlign: "center", padding: "20px", background: "#f8fafc", borderRadius: "8px", border: "1px solid #e2e8f0", color: "#64748b", fontSize: "13px" }}>
+                  No individual bonus transactions recorded for this period. Total bonus amount is credited from accumulated balance.
+                </div>
+              ) : (
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px", border: "1px solid #e2e8f0" }}>
+                  <thead>
+                    <tr style={{ background: "#faf5ff", borderBottom: "2px solid #d8b4fe" }}>
+                      <th style={{ padding: "8px 6px", textAlign: "left" }}>Date & Time</th>
+                      <th style={{ padding: "8px 6px", textAlign: "left" }}>Type</th>
+                      <th style={{ padding: "8px 6px", textAlign: "left" }}>Member / Donor Name</th>
+                      <th style={{ padding: "8px 6px", textAlign: "left" }}>Reference</th>
+                      <th style={{ padding: "8px 6px", textAlign: "right" }}>Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {bonusStatementModal.transactions.map((tx, idx) => (
+                      <tr key={tx.id || idx} style={{ borderBottom: "1px solid #f1f5f9", background: idx % 2 === 0 ? "#ffffff" : "#fcfaff" }}>
+                        <td style={{ padding: "8px 6px", whiteSpace: "nowrap" }}>
+                          {tx.created_at ? format(new Date(tx.created_at), "dd-MMM-yyyy, hh:mm a") : "-"}
+                        </td>
+                        <td style={{ padding: "8px 6px" }}>
+                          <span
+                            style={{
+                              display: "inline-block",
+                              padding: "2px 6px",
+                              borderRadius: "4px",
+                              fontSize: "11px",
+                              fontWeight: "600",
+                              background: (tx.bonus_type || "").includes("DONATION") ? "#dcfce7" : "#f3e8ff",
+                              color: (tx.bonus_type || "").includes("DONATION") ? "#166534" : "#6b21a8",
+                            }}
+                          >
+                            {tx.bonus_type_display || tx.bonus_type}
+                          </span>
+                        </td>
+                        <td style={{ padding: "8px 6px", fontWeight: "600", color: "#1e293b" }}>
+                          {tx.donor_name ? (
+                            <span><span style={{ color: "#16a34a", fontSize: "11px" }}>Donor:</span> {tx.donor_name}</span>
+                          ) : tx.member_name ? (
+                            <span><span style={{ color: "#7c3aed", fontSize: "11px" }}>Member:</span> {tx.member_name}</span>
+                          ) : (
+                            "-"
+                          )}
+                        </td>
+                        <td style={{ padding: "8px 6px", color: "#64748b", fontFamily: "monospace" }}>
+                          {tx.income_id || tx.member_id || "-"}
+                        </td>
+                        <td style={{ padding: "8px 6px", textAlign: "right", fontWeight: "700", color: "#7e22ce" }}>
+                          +{formatINR(tx.amount)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr style={{ background: "#faf5ff", borderTop: "2px solid #d8b4fe", fontWeight: "bold" }}>
+                      <td colSpan={4} style={{ padding: "10px 6px", textAlign: "right", color: "#6b21a8" }}>
+                        Total Bonus & Incentives Credited to Salary:
+                      </td>
+                      <td style={{ padding: "10px 6px", textAlign: "right", color: "#7e22ce", fontSize: "14px" }}>
+                        +{formatINR(bonusStatementModal.total_bonus)}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              )}
+            </div>
+
+            {/* Signature Area */}
+            <div
+              style={{
+                marginTop: "30px",
+                display: "flex",
+                justifyContent: "space-between",
+                paddingTop: "20px",
+                borderTop: "1px dashed #cbd5e1",
+                fontSize: "12px",
+                color: "#475569",
+              }}
+            >
+              <div style={{ textAlign: "center", width: "180px" }}>
+                <div style={{ height: "40px" }}></div>
+                <div style={{ borderTop: "1px solid #94a3b8", paddingTop: "4px", fontWeight: "600" }}>
+                  Staff Signature
+                </div>
+              </div>
+              <div style={{ textAlign: "center", width: "180px" }}>
+                <div style={{ height: "40px" }}></div>
+                <div style={{ borderTop: "1px solid #94a3b8", paddingTop: "4px", fontWeight: "600" }}>
+                  Verified by HR
+                </div>
+              </div>
+              <div style={{ textAlign: "center", width: "180px" }}>
+                <div style={{ height: "40px" }}></div>
+                <div style={{ borderTop: "1px solid #94a3b8", paddingTop: "4px", fontWeight: "600" }}>
+                  Authorized Signatory
+                </div>
+              </div>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* ── Deductions & Shortage Statement Modal ── */}
+      {deductionStatementModal && (
+        <Modal
+          isOpen={true}
+          onClose={() => setDeductionStatementModal(null)}
+          title={`Deductions & Shortage Breakdown — ${deductionStatementModal.employee_name}`}
+          size="modal-lg"
+          overlayClass="statement-top-modal"
+          footer={
+            <div style={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
+              <button
+                type="button"
+                className="btn btn-secondary no-print"
+                onClick={() => setDeductionStatementModal(null)}
+              >
+                Close
+              </button>
+              <div style={{ display: "flex", gap: "8px" }} className="no-print">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={handleExportDeductionCSV}
+                  disabled={deductionStatementModal.total_deductions === 0 && (!deductionStatementModal.advances?.length && !deductionStatementModal.shortages?.length)}
+                  style={{ fontSize: "13px", padding: "6px 12px" }}
+                >
+                  📊 Export CSV
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => window.print()}
+                  style={{ fontSize: "13px", padding: "6px 12px" }}
+                >
+                  🖨️ Print
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={handleDownloadDeductionPDF}
+                  disabled={downloadingDeductionPDF}
+                  style={{ background: "#dc2626", borderColor: "#b91c1c", fontSize: "13px", padding: "6px 14px" }}
+                >
+                  {downloadingDeductionPDF ? "Generating PDF..." : "📥 Download Statement (PDF)"}
+                </button>
+              </div>
+            </div>
+          }
+        >
+          <div
+            id="printable-deduction-statement"
+            style={{
+              padding: "20px",
+              fontFamily: "Arial, sans-serif",
+              color: "#1e293b",
+              background: "#ffffff",
+            }}
+          >
+            {/* Trust Header */}
+            <div
+              style={{
+                textAlign: "center",
+                borderBottom: "2px solid #e2e8f0",
+                paddingBottom: "14px",
+                marginBottom: "16px",
+              }}
+            >
+              <h2 style={{ margin: "0 0 4px 0", color: "#1e293b", fontSize: "20px" }}>
+                Sree Lakshmi Charitable Trust
+              </h2>
+              <div style={{ fontSize: "12px", color: "#64748b", marginBottom: "4px" }}>
+                Reg. No: 123/2020 | Registered Charitable Trust
+              </div>
+              <div
+                style={{
+                  display: "inline-block",
+                  padding: "4px 14px",
+                  borderRadius: "20px",
+                  background: "#fef2f2",
+                  border: "1px solid #fecaca",
+                  color: "#dc2626",
+                  fontWeight: "bold",
+                  fontSize: "13px",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.5px",
+                  marginTop: "6px",
+                }}
+              >
+                📋 Salary Deductions & Shortage Breakdown Statement
+              </div>
+            </div>
+
+            {/* Employee & Period Details */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "12px",
+                background: "#f8fafc",
+                padding: "12px 16px",
+                borderRadius: "8px",
+                border: "1px solid #e2e8f0",
+                marginBottom: "16px",
+                fontSize: "13px",
+              }}
+            >
+              <div>
+                <div><strong>Staff Member:</strong> {deductionStatementModal.employee_name}</div>
+                {deductionStatementModal.employee_id && (
+                  <div><strong>Employee ID:</strong> {deductionStatementModal.employee_id}</div>
+                )}
+                <div><strong>Purpose:</strong> Employee salary reduction verification & explanation</div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div>
+                  <strong>Payroll Period:</strong>{" "}
+                  {format(new Date(deductionStatementModal.year, deductionStatementModal.month - 1, 1), "MMMM yyyy")}
+                </div>
+                <div style={{ color: "#64748b", fontSize: "12px" }}>
+                  Issued on: {format(new Date(), "dd-MMM-yyyy, hh:mm a")}
+                </div>
+              </div>
+            </div>
+
+            {/* Summary Cards Row */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(4, 1fr)",
+                gap: "10px",
+                marginBottom: "20px",
+              }}
+            >
+              <div style={{ background: "#fff1f2", border: "1px solid #fecdd3", padding: "10px", borderRadius: "8px", textAlign: "center" }}>
+                <div style={{ fontSize: "11px", fontWeight: "700", color: "#be123c" }}>SALARY ADVANCES</div>
+                <div style={{ fontSize: "16px", fontWeight: "800", color: "#e11d48", marginTop: "2px" }}>
+                  - {formatINR(deductionStatementModal.advance_salary)}
+                </div>
+                <div style={{ fontSize: "10px", color: "#9f1239", marginTop: "2px" }}>
+                  {deductionStatementModal.advances?.length || 0} Request(s)
+                </div>
+              </div>
+              <div style={{ background: "#fef2f2", border: "1px solid #fecaca", padding: "10px", borderRadius: "8px", textAlign: "center" }}>
+                <div style={{ fontSize: "11px", fontWeight: "700", color: "#991b1b" }}>COLLECTION SHORTAGE</div>
+                <div style={{ fontSize: "16px", fontWeight: "800", color: "#dc2626", marginTop: "2px" }}>
+                  - {formatINR(deductionStatementModal.collection_shortage)}
+                </div>
+                <div style={{ fontSize: "10px", color: "#b91c1c", marginTop: "2px" }}>
+                  {deductionStatementModal.shortages?.length || 0} Day(s)
+                </div>
+              </div>
+              <div style={{ background: "#f8fafc", border: "1px solid #e2e8f0", padding: "10px", borderRadius: "8px", textAlign: "center" }}>
+                <div style={{ fontSize: "11px", fontWeight: "700", color: "#475569" }}>PF DEDUCTION</div>
+                <div style={{ fontSize: "16px", fontWeight: "800", color: "#334155", marginTop: "2px" }}>
+                  - {formatINR(deductionStatementModal.pf_deduction)}
+                </div>
+                <div style={{ fontSize: "10px", color: "#64748b", marginTop: "2px" }}>Statutory</div>
+              </div>
+              <div style={{ background: "#450a0a", border: "1px solid #7f1d1d", padding: "10px", borderRadius: "8px", textAlign: "center", color: "#ffffff" }}>
+                <div style={{ fontSize: "11px", fontWeight: "700", color: "#fca5a5" }}>TOTAL DEDUCTIONS</div>
+                <div style={{ fontSize: "18px", fontWeight: "900", color: "#ffffff", marginTop: "2px" }}>
+                  - {formatINR(deductionStatementModal.total_deductions)}
+                </div>
+                <div style={{ fontSize: "10px", color: "#fecaca", marginTop: "2px" }}>Debited from Salary</div>
+              </div>
+            </div>
+
+            {/* Section 1: Itemized Salary Advances */}
+            <div style={{ marginBottom: "20px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                <h4 style={{ margin: 0, fontSize: "13px", fontWeight: "700", color: "#991b1b" }}>
+                  1. Advance Salary Taken During {format(new Date(deductionStatementModal.year, deductionStatementModal.month - 1, 1), "MMMM yyyy")}
+                </h4>
+                <span style={{ fontSize: "11px", color: "#64748b" }}>
+                  Shows day and reason of advance disbursed
+                </span>
+              </div>
+              {(!deductionStatementModal.advances || deductionStatementModal.advances.length === 0) ? (
+                <div style={{ padding: "10px 14px", background: "#f8fafc", borderRadius: "6px", border: "1px solid #e2e8f0", fontSize: "12px", color: "#64748b" }}>
+                  {deductionStatementModal.advance_salary > 0
+                    ? `Total advance deduction of ₹${deductionStatementModal.advance_salary} is applied to this payroll cycle.`
+                    : "No advance salary was taken by this staff member in this month."}
+                </div>
+              ) : (
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px", border: "1px solid #e2e8f0" }}>
+                  <thead>
+                    <tr style={{ background: "#fef2f2", borderBottom: "2px solid #fecaca" }}>
+                      <th style={{ padding: "8px 8px", textAlign: "left", width: "110px" }}>Date Disbursed</th>
+                      <th style={{ padding: "8px 8px", textAlign: "left", width: "130px" }}>Voucher No</th>
+                      <th style={{ padding: "8px 8px", textAlign: "left" }}>Reason / Purpose of Advance</th>
+                      <th style={{ padding: "8px 8px", textAlign: "left", width: "110px" }}>Payment Mode</th>
+                      <th style={{ padding: "8px 8px", textAlign: "right", width: "110px" }}>Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {deductionStatementModal.advances.map((adv, idx) => (
+                      <tr key={adv.id || idx} style={{ borderBottom: "1px solid #f1f5f9", background: idx % 2 === 0 ? "#ffffff" : "#fffbfa" }}>
+                        <td style={{ padding: "8px 8px", fontWeight: "600", color: "#0f172a" }}>
+                          {adv.date ? format(new Date(adv.date), "dd-MMM-yyyy") : "-"}
+                        </td>
+                        <td style={{ padding: "8px 8px", fontFamily: "monospace", color: "#475569" }}>
+                          {adv.expense_id || adv.reference_number || `ADV-${idx + 1}`}
+                        </td>
+                        <td style={{ padding: "8px 8px", color: "#1e293b" }}>
+                          <div style={{ fontWeight: "600" }}>{adv.purpose || "Salary Advance Request"}</div>
+                          {adv.remarks && <div style={{ fontSize: "11px", color: "#64748b" }}>{adv.remarks}</div>}
+                        </td>
+                        <td style={{ padding: "8px 8px", color: "#475569" }}>
+                          <span style={{ display: "inline-block", padding: "2px 6px", borderRadius: "4px", background: "#f1f5f9", fontSize: "11px", fontWeight: "600" }}>
+                            {adv.payment_method || "CASH"}
+                          </span>
+                        </td>
+                        <td style={{ padding: "8px 8px", textAlign: "right", fontWeight: "700", color: "#dc2626" }}>
+                          - {formatINR(adv.amount)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr style={{ background: "#fff5f5", borderTop: "2px solid #fecaca", fontWeight: "bold" }}>
+                      <td colSpan={4} style={{ padding: "8px", textAlign: "right", color: "#991b1b" }}>
+                        Subtotal Advances Deducted:
+                      </td>
+                      <td style={{ padding: "8px", textAlign: "right", color: "#dc2626", fontSize: "13px" }}>
+                        - {formatINR(deductionStatementModal.advance_salary)}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              )}
+            </div>
+
+            {/* Section 2: Collection Shortages from Promoter Registry */}
+            <div style={{ marginBottom: "20px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                <h4 style={{ margin: 0, fontSize: "13px", fontWeight: "700", color: "#991b1b" }}>
+                  2. Promoter Registry Daily Collection Shortages
+                </h4>
+                <span style={{ fontSize: "11px", color: "#64748b" }}>
+                  Days when cash/online submitted was less than collection books
+                </span>
+              </div>
+              {(!deductionStatementModal.shortages || deductionStatementModal.shortages.length === 0) ? (
+                <div style={{ padding: "10px 14px", background: "#f8fafc", borderRadius: "6px", border: "1px solid #e2e8f0", fontSize: "12px", color: "#64748b" }}>
+                  {deductionStatementModal.collection_shortage > 0
+                    ? `Total collection shortage of ₹${deductionStatementModal.collection_shortage} is debited from salary.`
+                    : "No daily collection shortages recorded for this staff member in this month."}
+                </div>
+              ) : (
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px", border: "1px solid #e2e8f0" }}>
+                  <thead>
+                    <tr style={{ background: "#fef2f2", borderBottom: "2px solid #fecaca" }}>
+                      <th style={{ padding: "8px 8px", textAlign: "left", width: "110px" }}>Shortage Date</th>
+                      <th style={{ padding: "8px 8px", textAlign: "left", width: "130px" }}>Entry / VR Code</th>
+                      <th style={{ padding: "8px 8px", textAlign: "left" }}>Receipt Voucher Book Range</th>
+                      <th style={{ padding: "8px 8px", textAlign: "right" }}>Expected</th>
+                      <th style={{ padding: "8px 8px", textAlign: "right" }}>Submitted</th>
+                      <th style={{ padding: "8px 8px", textAlign: "right", width: "110px" }}>Shortage Deducted</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {deductionStatementModal.shortages.map((sh, idx) => (
+                      <tr key={sh.id || idx} style={{ borderBottom: "1px solid #f1f5f9", background: idx % 2 === 0 ? "#ffffff" : "#fffbfa" }}>
+                        <td style={{ padding: "8px 8px", fontWeight: "600", color: "#0f172a" }}>
+                          {sh.date ? format(new Date(sh.date), "dd-MMM-yyyy") : "-"}
+                        </td>
+                        <td style={{ padding: "8px 8px", fontFamily: "monospace", color: "#475569" }}>
+                          {sh.entry_code || "-"}
+                        </td>
+                        <td style={{ padding: "8px 8px", color: "#1e293b" }}>
+                          {sh.voucher_range || "-"}
+                        </td>
+                        <td style={{ padding: "8px 8px", textAlign: "right", color: "#64748b" }}>
+                          {formatINR(sh.cash_collected || sh.total_expected || 0)}
+                        </td>
+                        <td style={{ padding: "8px 8px", textAlign: "right", color: "#16a34a", fontWeight: "600" }}>
+                          {formatINR(sh.cash_submitted || sh.total_submitted || 0)}
+                        </td>
+                        <td style={{ padding: "8px 8px", textAlign: "right", fontWeight: "700", color: "#dc2626" }}>
+                          - {formatINR(Math.abs(Number(sh.excess_less || 0)))}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr style={{ background: "#fff5f5", borderTop: "2px solid #fecaca", fontWeight: "bold" }}>
+                      <td colSpan={5} style={{ padding: "8px", textAlign: "right", color: "#991b1b" }}>
+                        Subtotal Collection Shortage Deducted:
+                      </td>
+                      <td style={{ padding: "8px", textAlign: "right", color: "#dc2626", fontSize: "13px" }}>
+                        - {formatINR(deductionStatementModal.collection_shortage)}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              )}
+            </div>
+
+            {/* Section 3: Statutory PF Deductions (if applicable) */}
+            {Number(deductionStatementModal.pf_deduction || 0) > 0 && (
+              <div style={{ marginBottom: "20px" }}>
+                <h4 style={{ margin: "0 0 6px 0", fontSize: "13px", fontWeight: "700", color: "#475569" }}>
+                  3. Statutory Provident Fund (PF) Deduction
+                </h4>
+                <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 14px", background: "#f8fafc", borderRadius: "6px", border: "1px solid #e2e8f0", fontSize: "12px" }}>
+                  <span>Monthly Provident Fund (Employee PF Contribution)</span>
+                  <span style={{ fontWeight: "700", color: "#dc2626" }}>- {formatINR(deductionStatementModal.pf_deduction)}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Total Deductions Callout Box */}
+            <div
+              style={{
+                background: "#fef2f2",
+                border: "2px dashed #f87171",
+                padding: "12px 16px",
+                borderRadius: "8px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "20px",
+              }}
+            >
+              <div>
+                <div style={{ fontWeight: "700", color: "#991b1b", fontSize: "14px" }}>
+                  Net Total Reductions from Monthly Salary:
+                </div>
+                <div style={{ fontSize: "11px", color: "#b91c1c" }}>
+                  Debited advance salary requests, promoter collection shortages, and statutory deductions.
+                </div>
+              </div>
+              <div style={{ fontSize: "20px", fontWeight: "900", color: "#dc2626" }}>
+                - {formatINR(deductionStatementModal.total_deductions)}
+              </div>
+            </div>
+
+            {/* Signature Area */}
+            <div
+              style={{
+                marginTop: "30px",
+                display: "flex",
+                justifyContent: "space-between",
+                paddingTop: "20px",
+                borderTop: "1px dashed #cbd5e1",
+                fontSize: "12px",
+                color: "#475569",
+              }}
+            >
+              <div style={{ textAlign: "center", width: "180px" }}>
+                <div style={{ height: "40px" }}></div>
+                <div style={{ borderTop: "1px solid #94a3b8", paddingTop: "4px", fontWeight: "600" }}>
+                  Employee Signature (Acknowledgment)
+                </div>
+              </div>
+              <div style={{ textAlign: "center", width: "180px" }}>
+                <div style={{ height: "40px" }}></div>
+                <div style={{ borderTop: "1px solid #94a3b8", paddingTop: "4px", fontWeight: "600" }}>
+                  Verified by Accounts / HR
+                </div>
+              </div>
+              <div style={{ textAlign: "center", width: "180px" }}>
+                <div style={{ height: "40px" }}></div>
+                <div style={{ borderTop: "1px solid #94a3b8", paddingTop: "4px", fontWeight: "600" }}>
+                  Authorized Trustee
+                </div>
+              </div>
+            </div>
+          </div>
+        </Modal>
+      )}
+
       {/* ── Print Styles Injection ── */}
       <style>{`
+        .statement-top-modal {
+          z-index: 1050 !important;
+        }
         @media print {
           body * {
             visibility: hidden !important;
@@ -2260,21 +2991,13 @@ export default function PayrollPage() {
             display: none !important;
           }
           #printable-slip, #printable-slip *,
-          #printable-all-payroll, #printable-all-payroll * {
+          #printable-all-payroll, #printable-all-payroll *,
+          #printable-bonus-statement, #printable-bonus-statement *,
+          #printable-deduction-statement, #printable-deduction-statement * {
             visibility: visible !important;
           }
-          #printable-slip {
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
-            width: 100% !important;
-            max-width: 100% !important;
-            box-shadow: none !important;
-            padding: 20px !important;
-            margin: 0 !important;
-            background: white !important;
-          }
-          #printable-all-payroll {
+          #printable-slip, #printable-all-payroll,
+          #printable-bonus-statement, #printable-deduction-statement {
             position: absolute !important;
             left: 0 !important;
             top: 0 !important;
