@@ -124,7 +124,7 @@ const MemberHomeScreen = ({ navigation }) => {
     if (status === 'NOT_SUBSCRIBED' || (!hasActive && !isPaid)) {
       Toast.show({
         type: 'info',
-        text1: '⚠️ Trust Membership Required',
+        text1: '⚠️ KCC Membership Required',
         text2: 'Tap here to activate monthly membership (₹100/mo) & unlock digital ID.',
         visibilityTime: 6000,
         onPress: () => navigation.navigate('MembershipPayment'),
@@ -499,7 +499,7 @@ const MemberHomeScreen = ({ navigation }) => {
               </View>
               <View style={styles.notifBannerContent}>
                 <View style={styles.notifTitleRow}>
-                  <Text style={styles.notifBannerTitleAmber}>Trust Membership Required</Text>
+                  <Text style={styles.notifBannerTitleAmber}>KCC Membership Required</Text>
                   <View style={styles.notifHeaderRight}>
                     <View style={styles.actionPillAmber}>
                       <Text style={styles.actionPillAmberText}>₹100/mo</Text>
@@ -558,7 +558,7 @@ const MemberHomeScreen = ({ navigation }) => {
                   </View>
                 </View>
                 <Text style={styles.notifBannerDescOrange}>
-                  Your Trust membership expires {daysLeftToExpire === 0 ? 'today' : daysLeftToExpire === 1 ? 'in 1 day' : ('in ' + daysLeftToExpire + ' days')} ({validUpto}). Please update your payment to maintain active privileges.
+                  Your KCC membership expires {daysLeftToExpire === 0 ? 'today' : daysLeftToExpire === 1 ? 'in 1 day' : ('in ' + daysLeftToExpire + ' days')} ({validUpto}). Please update your payment to maintain active privileges.
                 </Text>
                 <View style={styles.notifBannerActionRow}>
                   <Text style={styles.notifBannerActionOrange}>Renew Payment (₹{monthlyFee}/mo)</Text>

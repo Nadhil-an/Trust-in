@@ -86,8 +86,8 @@ const MembershipCardScreen = ({ navigation }) => {
                   resizeMode="contain"
                 />
                 <View style={styles.logoTextContainer}>
-                  <Text style={[styles.trustLogoTitle, { color: '#475569' }]}>SREELAKSHMI</Text>
-                  <Text style={styles.trustLogoSub}>CHARITABLE TRUST</Text>
+                  <Text style={[styles.trustLogoTitle, { color: '#475569' }]}>KERALA CHARITY</Text>
+                  <Text style={styles.trustLogoSub}>COMMUNITY (KCC)</Text>
                 </View>
               </View>
 
@@ -104,7 +104,7 @@ const MembershipCardScreen = ({ navigation }) => {
               </View>
               <Text style={styles.lockedTitle}>DIGITAL ID CARD LOCKED</Text>
               <Text style={styles.lockedSub}>
-                Membership subscription is required to unlock your official verified Trust digital ID card, member ID, and privileges.
+                Membership subscription is required to unlock your official verified KCC digital ID card, member ID, and privileges.
               </Text>
             </View>
 
@@ -128,8 +128,8 @@ const MembershipCardScreen = ({ navigation }) => {
                   resizeMode="contain"
                 />
                 <View style={styles.logoTextContainer}>
-                  <Text style={styles.trustLogoTitle}>SREELAKSHMI</Text>
-                  <Text style={styles.trustLogoSub}>CHARITABLE TRUST</Text>
+                  <Text style={styles.trustLogoTitle}>KERALA CHARITY</Text>
+                  <Text style={styles.trustLogoSub}>COMMUNITY (KCC)</Text>
                 </View>
               </View>
 
@@ -222,7 +222,7 @@ const MembershipCardScreen = ({ navigation }) => {
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.quoteText}>"Kindness makes a lasting difference."</Text>
-            <Text style={styles.quoteAuthor}>— Sreelakshmi Charitable Trust</Text>
+            <Text style={styles.quoteAuthor}>— Kerala Charity Community</Text>
           </View>
         </View>
       </ScrollView>

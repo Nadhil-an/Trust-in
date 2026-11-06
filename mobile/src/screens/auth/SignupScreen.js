@@ -222,7 +222,7 @@ const SignupScreen = ({ navigation }) => {
 
       Toast.show({
         type: 'success',
-        text1: '🎉 Welcome to Sree Lakshmi Trust!',
+        text1: '🎉 Welcome to Kerala Charity Community (KCC)!',
         text2: `Logged in as ${res.data.user.full_name || 'Member'}.`,
         visibilityTime: 4000,
       });
@@ -315,8 +315,8 @@ const SignupScreen = ({ navigation }) => {
               <Ionicons name="arrow-back" size={22} color="#0f172a" />
             </TouchableOpacity>
             <View style={styles.topBarCenter}>
-              <Text style={styles.brandTitle}>SREE LAKSHMI</Text>
-              <Text style={styles.brandSubtitle}>CHARITABLE TRUST</Text>
+              <Text style={styles.brandTitle}>KERALA CHARITY</Text>
+              <Text style={styles.brandSubtitle}>COMMUNITY (KCC)</Text>
             </View>
             <View style={{ width: 40 }} />
           </View>

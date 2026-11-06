@@ -604,7 +604,7 @@ const AddMemberScreen = ({ navigation, route }) => {
               <Ionicons name="checkmark-circle" size={50} color={Colors.success} />
             </View>
             <Text style={styles.modalTitle}>Member Registered!</Text>
-            <Text style={styles.modalSub}>Member added successfully. Registration details sent to member via Trust WhatsApp.</Text>
+            <Text style={styles.modalSub}>Member added successfully. Registration details sent to member via KCC WhatsApp.</Text>
 
             <View style={styles.credentialsBox}>
               <View style={styles.credRow}>

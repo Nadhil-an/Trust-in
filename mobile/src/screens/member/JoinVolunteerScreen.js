@@ -210,8 +210,8 @@ export default function JoinVolunteerScreen({ navigation }) {
   const handleShareCard = async (vol) => {
     try {
       await Share.share({
-        title: 'Sree Lakshmi Charitable Trust - Official Volunteer',
-        message: `🌟 I am an Official Volunteer of Sree Lakshmi Charitable Trust!\nName: ${vol.full_name}\nVolunteer ID: ${vol.volunteer_id}\nBlood Group: ${vol.blood_group || 'N/A'}\nJoin us in serving humanity!`,
+        title: 'Kerala Charity Community - Official Volunteer',
+        message: `🌟 I am an Official Volunteer of Kerala Charity Community (KCC)!\nName: ${vol.full_name}\nVolunteer ID: ${vol.volunteer_id}\nBlood Group: ${vol.blood_group || 'N/A'}\nJoin us in serving humanity!`,
       });
     } catch (e) {
       console.log('Share error:', e);
@@ -264,8 +264,8 @@ export default function JoinVolunteerScreen({ navigation }) {
                     resizeMode="contain"
                   />
                   <View>
-                    <Text style={styles.idTrustTitle}>SREELAKSHMI</Text>
-                    <Text style={styles.idTrustSub}>CHARITABLE TRUST</Text>
+                    <Text style={styles.idTrustTitle}>KERALA CHARITY</Text>
+                    <Text style={styles.idTrustSub}>COMMUNITY (KCC)</Text>
                   </View>
                 </View>
                 <View style={styles.volunteerTag}>
@@ -410,7 +410,7 @@ export default function JoinVolunteerScreen({ navigation }) {
             <View style={styles.infoNoticeCard}>
               <Ionicons name="information-circle-outline" size={20} color="#0284c7" />
               <Text style={styles.infoNoticeText}>
-                As an official volunteer, you represent the heart of Sree Lakshmi Charitable Trust. Carry your digital card for field activities and community events.
+                As an official volunteer, you represent the heart of Kerala Charity Community. Carry your digital card for field activities and community events.
               </Text>
             </View>
           </View>
@@ -423,7 +423,7 @@ export default function JoinVolunteerScreen({ navigation }) {
               </View>
               <Text style={styles.pendingTitle}>Application Under Review</Text>
               <Text style={styles.pendingSubtitle}>
-                Your application to join as an official Volunteer is currently being reviewed by the Trust Management.
+                Your application to join as an official Volunteer is currently being reviewed by KCC Management.
               </Text>
 
               <View style={styles.appRefRow}>
@@ -486,7 +486,7 @@ export default function JoinVolunteerScreen({ navigation }) {
               </View>
               <Text style={styles.heroTitle}>Join Our Mission of Service</Text>
               <Text style={styles.heroSub}>
-                Become an authorized volunteer of Sree Lakshmi Charitable Trust. Help us deliver relief, organize community programs, and transform lives.
+                Become an authorized volunteer of Kerala Charity Community. Help us deliver relief, organize community programs, and transform lives.
               </Text>
             </View>
 
@@ -670,7 +670,7 @@ export default function JoinVolunteerScreen({ navigation }) {
               <View style={styles.declarationRow}>
                 <Ionicons name="shield-checkmark" size={18} color="#0284c7" />
                 <Text style={styles.declarationText}>
-                  I hereby declare that the details provided are accurate and agree to abide by the principles of Sree Lakshmi Charitable Trust.
+                  I hereby declare that the details provided are accurate and agree to abide by the principles of Kerala Charity Community.
                 </Text>
               </View>
 

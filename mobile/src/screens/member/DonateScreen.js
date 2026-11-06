@@ -188,7 +188,7 @@ const DonateScreen = ({ navigation, route }) => {
           order_id: data.order_id,
           amount: data.amount,
           currency: data.currency || 'INR',
-          name: 'Sree Lakshmi Charitable Trust',
+          name: 'Kerala Charity Community',
           description: `${selectedPurpose} Donation`,
           prefill_name: isAnonymous ? '' : donorName,
           prefill_contact: donorPhone,
@@ -218,7 +218,7 @@ const DonateScreen = ({ navigation, route }) => {
           subscription_id: data.subscription_id,
           amount: amountVal,
           currency: 'INR',
-          name: 'Sree Lakshmi Charitable Trust',
+          name: 'Kerala Charity Community',
           description: `Monthly Donation - ${selectedPurpose}`,
           prefill_name: isAnonymous ? '' : donorName,
           prefill_contact: donorPhone,
@@ -340,7 +340,7 @@ const DonateScreen = ({ navigation, route }) => {
         </TouchableOpacity>
         <View style={styles.headerTitleWrap}>
           <Text style={styles.headerTitle}>Make a Donation</Text>
-          <Text style={styles.headerSubtitle}>Sree Lakshmi Charitable Trust</Text>
+          <Text style={styles.headerSubtitle}>Kerala Charity Community</Text>
         </View>
         <View style={{ width: 40 }} />
       </View>
@@ -618,7 +618,7 @@ const DonateScreen = ({ navigation, route }) => {
             <View style={{ flex: 1 }}>
               <Text style={styles.taxBenefitTitle}>80G Tax Exemption Eligible</Text>
               <Text style={styles.taxBenefitDesc}>
-                All charitable contributions to Sree Lakshmi Charitable Trust qualify for 50%
+                All charitable contributions to Kerala Charity Community (KCC) qualify for 50%
                 tax deduction under Section 80G of the Income Tax Act.
               </Text>
             </View>

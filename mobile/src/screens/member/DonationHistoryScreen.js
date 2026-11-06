@@ -121,7 +121,7 @@ const DonationHistoryScreen = ({ navigation }) => {
             </View>
 
             <View style={styles.trustBadge}>
-              <Text style={styles.trustBadgeText}>SREE LAKSHMI CHARITABLE TRUST</Text>
+              <Text style={styles.trustBadgeText}>KERALA CHARITY COMMUNITY</Text>
             </View>
 
             <Text style={styles.guestTitle}>Donation History & Receipts</Text>
@@ -249,8 +249,8 @@ const DonationHistoryScreen = ({ navigation }) => {
                   resizeMode="contain"
                 />
                 <View>
-                  <Text style={[styles.trustLogoTitle, { color: '#475569' }]}>SREELAKSHMI</Text>
-                  <Text style={styles.trustLogoSub}>CHARITABLE TRUST</Text>
+                  <Text style={[styles.trustLogoTitle, { color: '#475569' }]}>KERALA CHARITY</Text>
+                  <Text style={styles.trustLogoSub}>COMMUNITY (KCC)</Text>
                 </View>
               </View>
 
@@ -267,7 +267,7 @@ const DonationHistoryScreen = ({ navigation }) => {
               </View>
               <Text style={styles.lockedTitle}>DIGITAL ID CARD LOCKED</Text>
               <Text style={styles.lockedSub}>
-                Membership subscription is required to unlock your official verified Trust digital ID card, member ID, and privileges.
+                Membership subscription is required to unlock your official verified KCC digital ID card, member ID, and privileges.
               </Text>
             </View>
 
@@ -295,8 +295,8 @@ const DonationHistoryScreen = ({ navigation }) => {
                     resizeMode="contain"
                   />
                   <View>
-                    <Text style={styles.trustLogoTitle}>SREELAKSHMI</Text>
-                    <Text style={styles.trustLogoSub}>CHARITABLE TRUST</Text>
+                    <Text style={styles.trustLogoTitle}>KERALA CHARITY</Text>
+                    <Text style={styles.trustLogoSub}>COMMUNITY (KCC)</Text>
                   </View>
                 </View>
 

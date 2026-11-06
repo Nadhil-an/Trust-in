@@ -144,7 +144,7 @@ export default function BirthdayPopup({ visible, birthdays = [], onClose }) {
   const hasBirthdays = today.length > 0;
 
   const wishes = currentUserObj 
-    ? [`Dear ${currentUserObj.name}, Sree Lakshmi Charitable Trust wishes you a joyous and blessed Birthday filled with happiness & prosperity! 💖🎂`]
+    ? [`Dear ${currentUserObj.name}, Kerala Charity Community wishes you a joyous and blessed Birthday filled with happiness & prosperity! 💖🎂`]
     : [
         "May your day be as bright as your smile! ✨",
         "Wishing you joy, laughter, and amazing memories! 🎊",

@@ -160,7 +160,7 @@ export default function PostCard({
   const authorPhotoUrl = isOfficialAnnouncement ? null : resolveImageUrl(post.author?.photo);
   const districtName = formatDistrictKerala(post.address);
   const isCharity = (post.post_type || '').toUpperCase() === 'CHARITY';
-  const displaySubtitle = isOfficialAnnouncement ? 'Sree Lakshmi Charitable Trust' : districtName;
+  const displaySubtitle = isOfficialAnnouncement ? 'Kerala Charity Community' : districtName;
 
   const handleDonate = () => {
     if (!currentUserId) {
@@ -245,7 +245,7 @@ export default function PostCard({
   const handleShare = async () => {
     try {
       const desc = post.description || '';
-      const shareMessage = `Sree Lakshmi Trust • Community Post\n\nBy: ${authorName} (${districtName})\n\n"${desc}"\n\nView and support on the Sree Lakshmi Trust App.`;
+      const shareMessage = `Kerala Charity Community • Community Post\n\nBy: ${authorName} (${districtName})\n\n"${desc}"\n\nView and support on the KCC App.`;
       await Share.share({
         message: shareMessage,
         title: 'Community Post',
@@ -268,7 +268,7 @@ export default function PostCard({
       const cleanPhone = post.contact_number.replace(/\D/g, '');
       Linking.openURL(
         `whatsapp://send?phone=91${cleanPhone}&text=${encodeURIComponent(
-          `Hello, I saw your community post on Sree Lakshmi Trust: "${post.description?.slice(0, 60)}..."`
+          `Hello, I saw your community post on Kerala Charity Community (KCC): "${post.description?.slice(0, 60)}..."`
         )}`
       );
     } else {

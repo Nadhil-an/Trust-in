@@ -251,7 +251,7 @@ export default function CreatePostScreen({ navigation }) {
           <View style={styles.infoBanner}>
             <Ionicons name="information-circle" size={20} color="#0284c7" style={{ marginTop: 1 }} />
             <Text style={styles.infoBannerText}>
-              Share hardships or issues you or someone in your community are facing. Your post is visible to all members and routed to Trust officers.
+              Share hardships or issues you or someone in your community are facing. Your post is visible to all members and routed to KCC officers.
             </Text>
             <TouchableOpacity
               style={styles.closeBannerBtn}

@@ -180,7 +180,7 @@ export default function MemberRewardsScreen() {
         </TouchableOpacity>
         <View style={{ flex: 1, marginLeft: 8 }}>
           <Text style={styles.headerTitle}>Free Offers & Member Awards</Text>
-          <Text style={styles.headerSubtitle}>Sree Lakshmi Charitable Trust</Text>
+          <Text style={styles.headerSubtitle}>Kerala Charity Community</Text>
         </View>
         <TouchableOpacity
           onPress={onRefresh}
@@ -229,7 +229,7 @@ export default function MemberRewardsScreen() {
               <Text style={styles.heroBadgeIcon}>{currentBadge?.icon || '🏅'}</Text>
               <Text style={styles.heroBadgeName}>{currentBadge?.name || 'Active Member'}</Text>
               <Text style={styles.heroBadgeDesc}>
-                {currentBadge?.description || 'Participate in Trust activities and subscriptions to unlock higher badges.'}
+                {currentBadge?.description || 'Participate in KCC activities and subscriptions to unlock higher badges.'}
               </Text>
             </View>
 
@@ -277,7 +277,7 @@ export default function MemberRewardsScreen() {
             {offersExpanded ? (
               <View style={{ marginTop: 10 }}>
                 <Text style={styles.sectionSubtitle}>
-                  Activate and claim your Trust benefits. Free offers are provided for verified community and staff members. Fulfillments are managed directly by Trust administration.
+                  Activate and claim your KCC benefits. Free offers are provided for verified community and staff members. Fulfillments are managed directly by KCC administration.
                 </Text>
 
                 <View style={{ marginTop: 12 }}>
@@ -384,7 +384,7 @@ export default function MemberRewardsScreen() {
             >
               <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
                 <Ionicons name="ribbon-outline" size={20} color="#0F172A" />
-                <Text style={styles.sectionTitle}>Trust Badge Roadmap</Text>
+                <Text style={styles.sectionTitle}>KCC Badge Roadmap</Text>
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <View style={styles.countBadge}>

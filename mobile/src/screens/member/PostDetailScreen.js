@@ -232,7 +232,7 @@ const PostDetailScreen = ({ route, navigation }) => {
   const handleWhatsApp = () => {
     if (!post.contact_number) return;
     const cleanPhone = post.contact_number.replace(/[^0-9]/g, '');
-    const url = `whatsapp://send?phone=${cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone}&text=Hello, regarding your problem post on Sree Lakshmi Trust app: "${post.description?.slice(0, 60)}..."`;
+    const url = `whatsapp://send?phone=${cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone}&text=Hello, regarding your problem post on Kerala Charity Community (KCC) app: "${post.description?.slice(0, 60)}..."`;
     Linking.openURL(url).catch(() => {
       Alert.alert('WhatsApp Not Installed', 'Please install WhatsApp or contact via direct call.');
     });
@@ -243,7 +243,7 @@ const PostDetailScreen = ({ route, navigation }) => {
       const authorName = post.author?.full_name || post.author?.username || 'Community Member';
       const districtName = formatDistrictKerala(post.address);
       const desc = post.description || '';
-      const shareMessage = `Sree Lakshmi Trust • Community Post\n\nBy: ${authorName} (${districtName})\n\n"${desc}"\n\nView and support on the Sree Lakshmi Trust App.`;
+      const shareMessage = `Kerala Charity Community • Community Post\n\nBy: ${authorName} (${districtName})\n\n"${desc}"\n\nView and support on the KCC App.`;
       await Share.share({
         message: shareMessage,
         title: 'Community Post',
@@ -518,7 +518,7 @@ const PostDetailScreen = ({ route, navigation }) => {
                   ) : null}
                 </View>
                 <Text style={styles.orgSub}>
-                  {isOfficialAnnouncement ? 'Sree Lakshmi Charitable Trust' : `Member ID: ${authorMemberId || 'N/A'} • Citizen Reporter`}
+                  {isOfficialAnnouncement ? 'Kerala Charity Community' : `Member ID: ${authorMemberId || 'N/A'} • Citizen Reporter`}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -528,7 +528,7 @@ const PostDetailScreen = ({ route, navigation }) => {
               <View style={styles.trackingBanner}>
                 <View style={styles.trackingHeader}>
                   <Ionicons name="shield-checkmark" size={18} color="#059669" />
-                  <Text style={styles.trackingTitle}>Trust Verification in Progress</Text>
+                  <Text style={styles.trackingTitle}>KCC Verification in Progress</Text>
                 </View>
                 <Text style={styles.trackingDesc}>
                   This issue has been forwarded to the Field Assessment Officer (FAO) for physical verification and cost estimation.

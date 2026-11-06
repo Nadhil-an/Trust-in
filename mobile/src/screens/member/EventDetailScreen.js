@@ -78,7 +78,7 @@ const EventDetailScreen = ({ route, navigation }) => {
           <View style={styles.orgBox}>
             <Ionicons name="shield-checkmark" size={20} color="#0284c7" />
             <View>
-              <Text style={styles.orgTitle}>Organized by Sreelakshmi Charitable Trust</Text>
+              <Text style={styles.orgTitle}>Organized by Kerala Charity Community</Text>
               <Text style={styles.orgSub}>Dedicated to education, healthcare & community welfare.</Text>
             </View>
           </View>

@@ -168,8 +168,8 @@ const LoginScreen = ({ navigation }) => {
         {/* Branding Logo */}
         <View style={styles.header}>
           <Image source={require('../../../assets/trust-logo.png')} style={styles.logo} resizeMode="contain" />
-          <Text style={styles.trust}>Sree Lakshmi</Text>
-          <Text style={styles.trustSub}>CHARITABLE TRUST</Text>
+          <Text style={styles.trust}>Kerala Charity</Text>
+          <Text style={styles.trustSub}>COMMUNITY (KCC)</Text>
         </View>
 
         {/* Welcome Text */}

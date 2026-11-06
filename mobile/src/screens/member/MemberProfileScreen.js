@@ -567,7 +567,7 @@ export default function MemberProfileScreen() {
     const fullName = profileData?.full_name || initialUser?.full_name || '';
     try {
       await Share.share({
-        message: `Check out ${fullName} (@${username}) on Sree Lakshmi Charitable Trust!`,
+        message: `Check out ${fullName} (@${username}) on Kerala Charity Community (KCC)!`,
         title: `${fullName} • Member Profile`,
       });
     } catch (_) {}
@@ -677,7 +677,7 @@ export default function MemberProfileScreen() {
         )}
 
         <Text style={styles.bioTagline}>
-          Community Member • Sree Lakshmi Charitable Trust
+          Community Member • Kerala Charity Community
         </Text>
 
         {!!profileData?.user?.badge_summary && (
@@ -947,8 +947,8 @@ export default function MemberProfileScreen() {
                 onPress={async () => {
                   try {
                     await Share.share({
-                      title: 'Join Sree Lakshmi Charitable Trust',
-                      message: `Join Sree Lakshmi Charitable Trust using my one-time referral code: ${referralCode}\n\nRegister via the app to connect and contribute! https://sreelakshmicharity.org`,
+                      title: 'Join Kerala Charity Community',
+                      message: `Join Kerala Charity Community (KCC) using my one-time referral code: ${referralCode}\n\nRegister via the app to connect and contribute! https://sreelakshmicharity.org`,
                     });
                   } catch (err) {}
                 }}
@@ -1097,7 +1097,7 @@ export default function MemberProfileScreen() {
         <View style={styles.guestContainer}>
           <View style={styles.guestCard}>
             <Ionicons name="person-circle-outline" size={76} color="#0284c7" />
-            <Text style={styles.guestTitle}>Welcome to Sree Lakshmi</Text>
+            <Text style={styles.guestTitle}>Welcome to Kerala Charity Community</Text>
             <Text style={styles.guestSubtitle}>Please login to access your member profile and community posts.</Text>
             <TouchableOpacity
               style={styles.guestLoginBtn}

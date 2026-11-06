@@ -394,7 +394,7 @@ const ProfileScreen = ({ navigation, route }) => {
             </View>
 
             <View style={styles.trustBadge}>
-              <Text style={styles.trustBadgeText}>SREE LAKSHMI CHARITABLE TRUST</Text>
+              <Text style={styles.trustBadgeText}>KERALA CHARITY COMMUNITY</Text>
             </View>
 
             <Text style={styles.guestTitle}>Member Profile & Digital ID</Text>
@@ -628,8 +628,8 @@ const ProfileScreen = ({ navigation, route }) => {
               onPress={async () => {
                 try {
                   await Share.share({
-                    title: 'Join Sree Lakshmi Charitable Trust',
-                    message: `Join Sree Lakshmi Charitable Trust using my referral code: ${referralCode}\n\nDownload the app to register, track contributions and support our charitable mission! https://sreelakshmicharity.org`,
+                    title: 'Join Kerala Charity Community',
+                    message: `Join Kerala Charity Community (KCC) using my referral code: ${referralCode}\n\nDownload the app to register, track contributions and support our charitable mission! https://sreelakshmicharity.org`,
                   });
                 } catch (err) {
                   console.warn('Share error', err);

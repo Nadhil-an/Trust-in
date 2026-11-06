@@ -232,7 +232,7 @@ export default function MyPostsScreen({ navigation }) {
             </View>
 
             <View style={styles.trustBadge}>
-              <Text style={styles.trustBadgeText}>SREE LAKSHMI CHARITABLE TRUST</Text>
+              <Text style={styles.trustBadgeText}>KERALA CHARITY COMMUNITY</Text>
             </View>
 
             <Text style={styles.guestTitle}>Member Posts & Requests</Text>
