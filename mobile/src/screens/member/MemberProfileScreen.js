@@ -897,7 +897,7 @@ export default function MemberProfileScreen() {
         </View>
       )}
 
-      {/* ── Referral & Commission Section ── */}
+      {/* ── Referral & Rewards Section ── */}
       {isMe && (
         <View style={styles.memberReferralCard}>
           <View style={styles.memberReferralHeader}>
@@ -906,13 +906,13 @@ export default function MemberProfileScreen() {
             </View>
             <View style={{ flex: 1, marginLeft: 10 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Text style={styles.memberReferralTitle}>Refer & Earn Commission</Text>
+                <Text style={styles.memberReferralTitle}>Refer & Earn Reward</Text>
                 <View style={styles.oneTimeBadge}>
                   <Text style={styles.oneTimeBadgeText}>ONE-TIME CODE</Text>
                 </View>
               </View>
               <Text style={styles.memberReferralSub}>
-                Earn ₹30 (30%) commission per member. A new code is automatically generated upon use.
+                Earn ₹30 (30%) bonus per member. A new code is automatically generated upon use.
               </Text>
             </View>
           </View>
@@ -1340,7 +1340,7 @@ export default function MemberProfileScreen() {
         </View>
       </Modal>
 
-      {/* ── Referral Commission History Modal ── */}
+      {/* ── Referral Reward History Modal ── */}
       <Modal
         visible={referralHistoryModal}
         transparent
@@ -1352,7 +1352,7 @@ export default function MemberProfileScreen() {
             <View style={styles.modalHeader}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <Ionicons name="gift" size={20} color="#0284C7" />
-                <Text style={styles.modalTitle}>Referral Commission History</Text>
+                <Text style={styles.modalTitle}>Referral Reward History</Text>
               </View>
               <TouchableOpacity onPress={() => setReferralHistoryModal(false)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                 <Ionicons name="close" size={24} color="#64748B" />

@@ -84,7 +84,7 @@ export default function StaffEarningsScreen({ navigation }) {
         >
           <Ionicons name="arrow-back" size={24} color="#0F172A" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Earnings & Commission</Text>
+        <Text style={styles.headerTitle}>Staff Earnings & Incentives</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -155,8 +155,8 @@ export default function StaffEarningsScreen({ navigation }) {
                 <View style={[styles.cardIconWrap, { backgroundColor: '#DCFCE7' }]}>
                   <Ionicons name="heart" size={18} color="#16A34A" />
                 </View>
-                <Text style={styles.cardTypeTitle}>Donation Bonus</Text>
-                <Text style={styles.cardRule}>10% on every ₹1,000</Text>
+                <Text style={styles.cardTypeTitle}>Donation Incentive</Text>
+                <Text style={styles.cardRule}>10% base (15% on ₹1.5L+)</Text>
                 <Text style={[styles.cardAmount, { color: '#16A34A' }]}>
                   ₹ {(summary?.donation_bonus || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </Text>

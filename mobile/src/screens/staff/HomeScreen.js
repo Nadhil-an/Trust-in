@@ -440,10 +440,10 @@ const StaffHomeScreen = ({ navigation, route }) => {
                         <View>
                           <View style={styles.earningsPill}>
                             <Ionicons name="sparkles" size={11} color="#FFFFFF" />
-                            <Text style={styles.earningsPillText}>BONUS & COMMISSION</Text>
+                            <Text style={styles.earningsPillText}>BONUS & INCENTIVES</Text>
                           </View>
                           <Text style={styles.earningsSlideTitle}>My Earnings</Text>
-                          <Text style={styles.earningsSlideSubtitle}>Track 10% donation & 30% member bonus</Text>
+                          <Text style={styles.earningsSlideSubtitle}>Track donation incentives & member bonuses</Text>
                         </View>
                         <View style={styles.earningsSlideIconWrap}>
                           <Ionicons name="wallet" size={24} color="#0284C7" />
