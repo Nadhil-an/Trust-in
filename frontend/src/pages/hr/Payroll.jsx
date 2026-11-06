@@ -21,6 +21,7 @@ const CURRENT_YEAR = new Date().getFullYear()
 
 const DEFAULT_GEN_FORM = {
   employee: "",
+  employee_name: "",
   month: CURRENT_MONTH,
   year: CURRENT_YEAR,
   salary_structure: "",
@@ -41,6 +42,7 @@ const DEFAULT_GEN_FORM = {
   total_bonus: 0,
   bonus_history: [],
   collection_history: [],
+  advances_history: [],
   payment_method: "BANK",
   remarks: "",
 }
@@ -65,6 +67,11 @@ export default function PayrollPage() {
   const [staffBonusList, setStaffBonusList] = useState([])
   const [loadingBonus, setLoadingBonus] = useState(false)
 
+  // Bonus & Deduction Statement Modals (with itemized history and download)
+  const [bonusStatementModal, setBonusStatementModal] = useState(null)
+  const [deductionStatementModal, setDeductionStatementModal] = useState(null)
+  const [downloadingBonusPDF, setDownloadingBonusPDF] = useState(false)
+  const [downloadingDeductionPDF, setDownloadingDeductionPDF] = useState(false)
 
   // Generate Payroll modal
   const [genModal, setGenModal] = useState(false)
@@ -133,6 +140,7 @@ export default function PayrollPage() {
             isGenerated: true,
             id: payroll.id,
             payroll_id: payroll.payroll_id,
+            employee_id: emp.id,
             employee_name: payroll.employee_name,
             month: payroll.month,
             year: payroll.year,
@@ -166,6 +174,7 @@ export default function PayrollPage() {
 
         const mockOriginal = {
           id: "UNGEN-" + emp.id,
+          employee: emp.id,
           payroll_id: "UNGENERATED",
           employee_name: emp.full_name,
           month: monthFilter,
@@ -188,6 +197,7 @@ export default function PayrollPage() {
         return {
           isGenerated: false,
           id: "UNGEN-" + emp.id,
+          employee_id: emp.id,
           payroll_id: "-",
           employee_name: emp.full_name,
           month: monthFilter,
@@ -276,6 +286,7 @@ export default function PayrollPage() {
 
         setGenForm((prev) => ({
           ...prev,
+          employee_name: data.employee_name || prev.employee_name || "",
           salary_structure: structure.id,
           present_days: att.present,
           absent_days: att.absent,
@@ -293,6 +304,7 @@ export default function PayrollPage() {
           total_bonus: Number(data.total_bonus || (Number(data.donation_bonus || 0) + Number(data.membership_bonus || 0))),
           bonus_history: data.bonus_history || [],
           collection_history: data.collection_history || [],
+          advances_history: data.advances_history || [],
         }))
       } catch (err) {
         if (!cancelled)
@@ -443,6 +455,293 @@ export default function PayrollPage() {
     } finally {
       setDownloadingAllPDF(false)
     }
+  }
+
+  // ── Bonus & Deduction History Modal Handlers ───────────────────────
+  const handleOpenBonusFromGen = () => {
+    const empObj = employees.find((e) => e.id === genForm.employee)
+    setBonusStatementModal({
+      employee_name: empObj?.full_name || genForm.employee_name || "Staff Member",
+      employee_id: empObj?.employee_id || "",
+      month: genForm.month,
+      year: genForm.year,
+      donation_bonus: Number(genForm.donation_bonus || 0),
+      membership_bonus: Number(genForm.membership_bonus || 0),
+      total_bonus: totalBonus,
+      transactions: genForm.bonus_history || [],
+    })
+  }
+
+  const handleOpenDeductionFromGen = () => {
+    const empObj = employees.find((e) => e.id === genForm.employee)
+    const shortages = (genForm.collection_history || []).filter(
+      (c) => Number(c.excess_less || 0) < 0 || c.status === "SHORTAGE"
+    )
+    setDeductionStatementModal({
+      employee_name: empObj?.full_name || genForm.employee_name || "Staff Member",
+      employee_id: empObj?.employee_id || "",
+      month: genForm.month,
+      year: genForm.year,
+      pf_deduction: Number(genForm.pf_deduction || 0),
+      advance_salary: Number(genForm.other_deductions || 0),
+      collection_shortage: Number(genForm.collection_shortage || 0),
+      total_deductions: totalDeductions,
+      advances: genForm.advances_history || [],
+      shortages: shortages,
+    })
+  }
+
+  const handleOpenBonusFromRow = async (row) => {
+    const empId = row.employee_id || row.employee || row.original?.employee
+    const targetMonth = row.month || monthFilter || CURRENT_MONTH
+    const targetYear = row.year || yearFilter || CURRENT_YEAR
+    const empName = row.employee_name || "Staff Member"
+    const empObj = employees.find((e) => e.id === empId || e.full_name === empName)
+
+    if (empObj?.id || empId) {
+      try {
+        const res = await hrApi.officers.payrollData(empObj?.id || empId, {
+          month: targetMonth,
+          year: targetYear,
+        })
+        const data = res.data
+        setBonusStatementModal({
+          employee_name: data.employee_name || empName,
+          employee_id: empObj?.employee_id || "",
+          month: targetMonth,
+          year: targetYear,
+          donation_bonus: Number(row.donation_bonus || data.donation_bonus || 0),
+          membership_bonus: Number(row.membership_bonus || data.membership_bonus || 0),
+          total_bonus: Number(row.total_bonus || data.total_bonus || 0),
+          transactions: data.bonus_history || [],
+        })
+        return
+      } catch (err) {
+        // Fallback below
+      }
+    }
+
+    setBonusStatementModal({
+      employee_name: empName,
+      employee_id: empObj?.employee_id || "",
+      month: targetMonth,
+      year: targetYear,
+      donation_bonus: Number(row.donation_bonus || 0),
+      membership_bonus: Number(row.membership_bonus || 0),
+      total_bonus: Number(row.total_bonus || 0),
+      transactions: [],
+    })
+  }
+
+  const handleOpenDeductionFromRow = async (row) => {
+    const empId = row.employee_id || row.employee || row.original?.employee
+    const targetMonth = row.month || monthFilter || CURRENT_MONTH
+    const targetYear = row.year || yearFilter || CURRENT_YEAR
+    const empName = row.employee_name || "Staff Member"
+    const empObj = employees.find((e) => e.id === empId || e.full_name === empName)
+
+    if (empObj?.id || empId) {
+      try {
+        const res = await hrApi.officers.payrollData(empObj?.id || empId, {
+          month: targetMonth,
+          year: targetYear,
+        })
+        const data = res.data
+        const shortages = (data.collection_history || []).filter(
+          (c) => Number(c.excess_less || 0) < 0 || c.status === "SHORTAGE"
+        )
+        const advAmt = Number(data.salary_advance_taken || row.advance_salary || 0)
+        const shortAmt = Number(data.collection_shortage || row.original?.collection_shortage || 0)
+        const pfAmt = Number(data.salary_structure?.pf_deduction || row.original?.pf_deduction || 0)
+        setDeductionStatementModal({
+          employee_name: data.employee_name || empName,
+          employee_id: empObj?.employee_id || "",
+          month: targetMonth,
+          year: targetYear,
+          pf_deduction: pfAmt,
+          advance_salary: advAmt,
+          collection_shortage: shortAmt,
+          total_deductions: advAmt + shortAmt + pfAmt,
+          advances: data.advances_history || [],
+          shortages: shortages,
+        })
+        return
+      } catch (err) {
+        // Fallback below
+      }
+    }
+
+    const empAdvances = recentAdvances.filter(
+      (a) => (a.payee || "").toLowerCase() === empName.toLowerCase()
+    )
+    setDeductionStatementModal({
+      employee_name: empName,
+      employee_id: empObj?.employee_id || "",
+      month: targetMonth,
+      year: targetYear,
+      pf_deduction: Number(row.original?.pf_deduction || 0),
+      advance_salary: Number(row.advance_salary || 0),
+      collection_shortage: Number(row.original?.collection_shortage || 0),
+      total_deductions: Number(row.advance_salary || 0) + Number(row.original?.collection_shortage || 0) + Number(row.original?.pf_deduction || 0),
+      advances: empAdvances.map((a) => ({
+        id: a.id,
+        date: a.date,
+        amount: Number(a.amount),
+        purpose: a.purpose || "Salary Advance",
+        payment_method: a.payment_method || "CASH",
+        expense_id: a.expense_id || "",
+      })),
+      shortages: [],
+    })
+  }
+
+  const handleDownloadBonusPDF = async () => {
+    const element = document.getElementById("printable-bonus-statement")
+    if (!element) return
+    setDownloadingBonusPDF(true)
+    try {
+      const empName = (bonusStatementModal?.employee_name || "Staff").replace(/[^a-zA-Z0-9_-]/g, "_")
+      const opt = {
+        margin: [8, 8, 8, 8],
+        filename: `Bonus_Statement_${empName}_${bonusStatementModal?.month}_${bonusStatementModal?.year}.pdf`,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      }
+      await html2pdf().set(opt).from(element).save()
+      toast.success("Bonus statement PDF downloaded successfully!")
+    } catch (err) {
+      toast.error("Failed to generate Bonus Statement PDF")
+    } finally {
+      setDownloadingBonusPDF(false)
+    }
+  }
+
+  const handleExportBonusCSV = () => {
+    if (!bonusStatementModal?.transactions?.length) {
+      toast.error("No transactions to export")
+      return
+    }
+    const headers = [
+      "Date & Time",
+      "Incentive Type",
+      "Member / Donor Name",
+      "Reference (Receipt / ID)",
+      "Description",
+      "Amount (INR)",
+    ]
+    const rows = bonusStatementModal.transactions.map((t) => [
+      t.created_at || "",
+      t.bonus_type_display || t.bonus_type || "",
+      `"${(t.donor_name || t.member_name || "").replace(/"/g, '""')}"`,
+      t.income_id || t.member_id || "",
+      `"${(t.description || "").replace(/"/g, '""')}"`,
+      Number(t.amount || 0).toFixed(2),
+    ])
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers.join(","), ...rows.map((e) => e.join(","))].join("\n")
+    const encodedUri = encodeURI(csvContent)
+    const link = document.createElement("a")
+    link.setAttribute("href", encodedUri)
+    link.setAttribute(
+      "download",
+      `Bonus_Statement_${(bonusStatementModal.employee_name || "Staff").replace(/\s+/g, "_")}_${bonusStatementModal.month}_${bonusStatementModal.year}.csv`
+    )
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    toast.success("Bonus statement CSV downloaded!")
+  }
+
+  const handleDownloadDeductionPDF = async () => {
+    const element = document.getElementById("printable-deduction-statement")
+    if (!element) return
+    setDownloadingDeductionPDF(true)
+    try {
+      const empName = (deductionStatementModal?.employee_name || "Staff").replace(/[^a-zA-Z0-9_-]/g, "_")
+      const opt = {
+        margin: [8, 8, 8, 8],
+        filename: `Deductions_Statement_${empName}_${deductionStatementModal?.month}_${deductionStatementModal?.year}.pdf`,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+      }
+      await html2pdf().set(opt).from(element).save()
+      toast.success("Deduction statement PDF downloaded successfully!")
+    } catch (err) {
+      toast.error("Failed to generate Deduction Statement PDF")
+    } finally {
+      setDownloadingDeductionPDF(false)
+    }
+  }
+
+  const handleExportDeductionCSV = () => {
+    const rows = []
+    rows.push([
+      "Deduction Type",
+      "Date",
+      "Reference / Voucher",
+      "Reason / Description",
+      "Payment Method",
+      "Amount (INR)",
+    ])
+
+    if (deductionStatementModal?.advances?.length) {
+      deductionStatementModal.advances.forEach((a) => {
+        rows.push([
+          "Salary Advance",
+          a.date || "",
+          a.expense_id || a.reference_number || "",
+          `"${(a.purpose || a.remarks || "Salary Advance").replace(/"/g, '""')}"`,
+          a.payment_method || "CASH",
+          Number(a.amount || 0).toFixed(2),
+        ])
+      })
+    }
+
+    if (deductionStatementModal?.shortages?.length) {
+      deductionStatementModal.shortages.forEach((s) => {
+        rows.push([
+          "Collection Shortage",
+          s.date || "",
+          s.entry_code || s.voucher_range || "",
+          `"Promoter Registry Daily Shortage (Expected: ${s.cash_collected || s.total_expected || 0}, Submitted: ${s.cash_submitted || s.total_submitted || 0})"`,
+          "DAILY SUBMISSION",
+          Math.abs(Number(s.excess_less || 0)).toFixed(2),
+        ])
+      })
+    }
+
+    if (Number(deductionStatementModal?.pf_deduction || 0) > 0) {
+      rows.push([
+        "Provident Fund (PF)",
+        "-",
+        "-",
+        "Monthly Statutory PF Contribution",
+        "-",
+        Number(deductionStatementModal.pf_deduction).toFixed(2),
+      ])
+    }
+
+    if (rows.length <= 1) {
+      toast.error("No deductions to export")
+      return
+    }
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," + rows.map((e) => e.join(",")).join("\n")
+    const encodedUri = encodeURI(csvContent)
+    const link = document.createElement("a")
+    link.setAttribute("href", encodedUri)
+    link.setAttribute(
+      "download",
+      `Deductions_Statement_${(deductionStatementModal.employee_name || "Staff").replace(/\s+/g, "_")}_${deductionStatementModal.month}_${deductionStatementModal.year}.csv`
+    )
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    toast.success("Deductions CSV downloaded!")
   }
 
   // Summary Metrics for the current view

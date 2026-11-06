@@ -1413,16 +1413,10 @@ class OfficerPayrollDataView(APIView):
         
         # Get Salary Advances taken in this month
         from accounts_module.models import Expense
-        advances = Expense.objects.filter(
-            category='SALARY ADVANCE',
-            payee__iexact=employee.full_name,
-            date__year=year,
-            date__month=month
-        ).exclude(status='CANCELLED')
-        
-        advance_taken = sum(float(exp.amount) for exp in advances)
+        from accounts_module.models import Income
+        import re
 
-        # Get Daily Collection Discrepancies (Excess / Shortage) from Promoter Registry
+        # Build user identity matching for promoter / bonuses / advances
         from django.contrib.auth import get_user_model
         from decimal import Decimal
         from hr_module.models import PromoterRegistryEntry
@@ -1438,6 +1432,45 @@ class OfficerPayrollDataView(APIView):
             user_q |= Q(username__iexact=str(employee.employee_id))
         user = User.objects.filter(user_q).first() if user_q else None
 
+        payee_names = [employee.full_name]
+        if user:
+            if user.full_name and user.full_name not in payee_names:
+                payee_names.append(user.full_name)
+            if user.username and user.username not in payee_names:
+                payee_names.append(user.username)
+
+        payee_q = Q()
+        for p_name in payee_names:
+            if p_name:
+                payee_q |= Q(payee__iexact=p_name)
+
+        adv_cat_q = Q(category__iexact='SALARY ADVANCE') | Q(category__iexact='SALARY_ADVANCE') | Q(purpose__icontains='Salary Advance')
+
+        advances = Expense.objects.filter(
+            adv_cat_q,
+            payee_q,
+            date__year=year,
+            date__month=month
+        ).exclude(status='CANCELLED').order_by('date')
+        
+        advance_taken = sum(float(exp.amount) for exp in advances)
+        advances_history = [
+            {
+                'id': str(exp.id),
+                'expense_id': exp.expense_id or '',
+                'date': exp.date.strftime('%Y-%m-%d') if exp.date else '',
+                'payee': exp.payee,
+                'amount': float(exp.amount),
+                'payment_method': exp.payment_method or 'CASH',
+                'reference_number': exp.reference_number or '',
+                'purpose': exp.purpose or 'Salary Advance',
+                'remarks': exp.remarks or '',
+                'status': exp.status,
+            }
+            for exp in advances
+        ]
+
+        # Get Daily Collection Discrepancies (Excess / Shortage) from Promoter Registry
         total_excess = Decimal('0.00')
         total_shortage = Decimal('0.00')
         collection_history = []
@@ -1507,6 +1540,26 @@ class OfficerPayrollDataView(APIView):
                     elif bt.bonus_type in ['MEMBERSHIP_BONUS', 'REFERRAL_BONUS', 'MEMBERSHIP', 'REFERRAL']:
                         membership_bonus += amt
                     total_bonus += amt
+
+                    b_type = bt.bonus_type or ''
+                    donor_name = ''
+                    member_name = bt.member_name or ''
+                    if 'DONATION' in b_type.upper():
+                        inc = Income.objects.filter(receipt_number=bt.income_id).first() if bt.income_id else None
+                        if inc and inc.donor_name:
+                            donor_name = inc.donor_name
+                        elif member_name:
+                            donor_name = member_name
+                        elif 'donated by' in (bt.description or ''):
+                            m = re.search(r'donated by\s+(?:referred member\s+)?([^(\n—]+)', bt.description)
+                            if m:
+                                donor_name = m.group(1).strip()
+                    else:
+                        if not member_name and 'enrolling' in (bt.description or ''):
+                            m = re.search(r'enrolling\s+([^(\n—]+)', bt.description)
+                            if m:
+                                member_name = m.group(1).strip()
+
                     bonus_history.append({
                         'id': str(bt.id),
                         'bonus_type': bt.bonus_type,
@@ -1515,7 +1568,8 @@ class OfficerPayrollDataView(APIView):
                         'description': bt.description,
                         'income_id': bt.income_id,
                         'member_id': bt.member_id,
-                        'member_name': bt.member_name,
+                        'member_name': member_name,
+                        'donor_name': donor_name,
                         'created_at': bt.created_at.strftime('%Y-%m-%d %H:%M'),
                     })
                 
@@ -1524,6 +1578,44 @@ class OfficerPayrollDataView(APIView):
                     donation_bonus = round(don_bal, 2)
                     membership_bonus = round(mem_bal, 2)
                     total_bonus = round(available_bonus_balance, 2)
+
+                    accum_txns = StaffBonusTransaction.objects.filter(
+                        bonus_account=acc,
+                        direction='CREDIT'
+                    ).order_by('-created_at')[:50]
+                    for bt in accum_txns:
+                        amt = float(bt.amount)
+                        b_type = bt.bonus_type or ''
+                        donor_name = ''
+                        member_name = bt.member_name or ''
+                        if 'DONATION' in b_type.upper():
+                            inc = Income.objects.filter(receipt_number=bt.income_id).first() if bt.income_id else None
+                            if inc and inc.donor_name:
+                                donor_name = inc.donor_name
+                            elif member_name:
+                                donor_name = member_name
+                            elif 'donated by' in (bt.description or ''):
+                                m = re.search(r'donated by\s+(?:referred member\s+)?([^(\n—]+)', bt.description)
+                                if m:
+                                    donor_name = m.group(1).strip()
+                        else:
+                            if not member_name and 'enrolling' in (bt.description or ''):
+                                m = re.search(r'enrolling\s+([^(\n—]+)', bt.description)
+                                if m:
+                                    member_name = m.group(1).strip()
+
+                        bonus_history.append({
+                            'id': str(bt.id),
+                            'bonus_type': bt.bonus_type,
+                            'bonus_type_display': bt.get_bonus_type_display(),
+                            'amount': amt,
+                            'description': bt.description,
+                            'income_id': bt.income_id,
+                            'member_id': bt.member_id,
+                            'member_name': member_name,
+                            'donor_name': donor_name,
+                            'created_at': bt.created_at.strftime('%Y-%m-%d %H:%M'),
+                        })
             except StaffBonusAccount.DoesNotExist:
                 pass
 
@@ -1538,6 +1630,7 @@ class OfficerPayrollDataView(APIView):
                 'late': att_counts.get('LATE', 0),
             },
             'salary_advance_taken': advance_taken,
+            'advances_history': advances_history,
             'collection_excess': float(total_excess),
             'collection_shortage': float(total_shortage),
             'net_collection_adjustment': float(total_excess - total_shortage),

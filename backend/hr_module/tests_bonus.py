@@ -270,3 +270,87 @@ class StaffBonusSystemTestCase(TestCase):
         bonus_acc = StaffBonusAccount.objects.get(staff=self.staff_user)
         self.assertGreaterEqual(bonus_acc.membership_bonus_balance, Decimal('30.00'))
 
+    def test_officer_payroll_data_advances_and_bonus_history(self):
+        """Verify OfficerPayrollDataView returns itemized advances_history and bonus_history."""
+        from rest_framework.test import APIRequestFactory, force_authenticate
+        from accounts_module.models import Expense
+        from hr_module.views import OfficerPayrollDataView
+        from datetime import date
+
+        hr_user = User.objects.create_user(
+            username='hr_admin_payroll',
+            email='hr_pay@test.com',
+            full_name='HR Payroll Admin',
+            role=Role.HR,
+            password='password123'
+        )
+
+        today = timezone.now().date()
+
+        officer = ExecutiveOfficer.objects.create(
+            full_name=self.staff_user.full_name,
+            email=self.staff_user.email,
+            phone='9988776655',
+            employee_id='SLT-EMP-001',
+            designation='Field Officer',
+            department='Field',
+            joining_date=date(today.year, 1, 1),
+            status='ACTIVE'
+        )
+
+        SalaryStructure.objects.create(
+            employee=officer,
+            basic_salary=Decimal('25000.00'),
+            pf_deduction=Decimal('0.00'),
+            effective_from=date(today.year, 1, 1),
+            is_active=True,
+            created_by=hr_user
+        )
+
+        # Create salary advance expense
+        Expense.objects.create(
+            date=today,
+            payee=officer.full_name,
+            category='SALARY ADVANCE',
+            amount=Decimal('100.00'),
+            payment_method='CASH',
+            purpose='Emergency Medical Advance',
+            created_by=hr_user
+        )
+
+        # Create bonus transaction
+        acc, _ = StaffBonusAccount.objects.get_or_create(staff=self.staff_user)
+        StaffBonusTransaction.objects.create(
+            bonus_account=acc,
+            bonus_type=StaffBonusTransaction.BonusType.MEMBERSHIP_BONUS,
+            direction=StaffBonusTransaction.TxnDirection.CREDIT,
+            amount=Decimal('30.00'),
+            member_name='New Member ACO',
+            description='Membership bonus (30%) for enrolling ACO',
+            created_at=timezone.now()
+        )
+
+        factory = APIRequestFactory()
+        request = factory.get(f'/api/hr/officers/{officer.id}/payroll-data/?month={today.month}&year={today.year}')
+        force_authenticate(request, user=hr_user)
+
+        response = OfficerPayrollDataView.as_view()(request, pk=officer.id)
+        self.assertEqual(response.status_code, 200)
+
+        # Check advances_history
+        self.assertIn('advances_history', response.data)
+        self.assertEqual(len(response.data['advances_history']), 1)
+        adv = response.data['advances_history'][0]
+        self.assertEqual(adv['amount'], 100.00)
+        self.assertEqual(adv['purpose'], 'Emergency Medical Advance')
+        self.assertEqual(response.data['salary_advance_taken'], 100.00)
+
+        # Check bonus_history
+        self.assertIn('bonus_history', response.data)
+        self.assertEqual(len(response.data['bonus_history']), 1)
+        bh = response.data['bonus_history'][0]
+        self.assertEqual(bh['amount'], 30.00)
+        self.assertEqual(bh['member_name'], 'New Member ACO')
+        self.assertEqual(response.data['total_bonus'], 30.00)
+
+

@@ -1033,7 +1033,7 @@ from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser
 from django.shortcuts import get_object_or_404
 from core.models import (
-    MemberPost, MemberPostImage, MemberPostLike, MemberPostComment, MemberPostStatus,
+    MemberPost, MemberPostType, MemberPostImage, MemberPostLike, MemberPostComment, MemberPostStatus,
     MemberPostCategory, UserFollow, MemberVerificationRequest, PublicCooperationMessage,
     SocialPoll, SocialPollOption, SocialPollVote, VerificationStatus, POMCategory, POMStatus, PollStatus
 )
@@ -1056,7 +1056,8 @@ class MemberPostViewSet(ModelViewSet):
         user = self.request.user if (self.request and self.request.user.is_authenticated) else None
         user_role = getattr(user, 'role', '') if user else ''
         is_staff_user = getattr(user, 'is_staff', False) or getattr(user, 'is_superuser', False)
-        is_moderator = user_role in ['SOCIAL_MEDIA', 'ADMIN', 'MANAGER'] or is_staff_user
+        # Any dashboard staff or moderator can view, manage, and delete community posts
+        is_moderator = user_role in ['SOCIAL_MEDIA', 'ADMIN', 'MANAGER', 'STAFF', 'HR', 'DATA_ENTRY', 'ACCOUNTANT', 'FIELD_ASSESSMENT_OFFICER'] or is_staff_user
 
         # For single-object actions (retrieve, destroy, update, toggle-pin, etc.)
         if getattr(self, 'detail', False) or (hasattr(self, 'action') and self.action in ['retrieve', 'destroy', 'update', 'partial_update', 'toggle_pin', 'approve', 'reject', 'comments', 'toggle_like', 'forward_to_fao']):
@@ -1115,7 +1116,8 @@ class MemberPostViewSet(ModelViewSet):
     def perform_create(self, serializer):
         video_file = self.request.FILES.get('video')
         user_role = getattr(self.request.user, 'role', '')
-        initial_status = MemberPostStatus.APPROVED if user_role in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA'] else MemberPostStatus.PENDING_APPROVAL
+        # Direct community publishing: Members post directly and their post is immediately published (APPROVED) without approval
+        initial_status = MemberPostStatus.APPROVED
         post_cat = self.request.data.get('post_category') or MemberPostCategory.PUBLIC
         is_pin = self.request.data.get('is_pinned') in ['true', '1', True]
         if post_cat == MemberPostCategory.OFFICIAL_TRUST and user_role not in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA']:
@@ -1127,6 +1129,7 @@ class MemberPostViewSet(ModelViewSet):
             author=self.request.user,
             is_active=True,
             status=initial_status,
+            approved_at=timezone.now(),
             post_category=post_cat,
             is_pinned=is_pin,
             expires_at=expires_at_val,
@@ -1146,8 +1149,8 @@ class MemberPostViewSet(ModelViewSet):
         # Record qualifying self-service activity for Best Member Rewards
         try:
             from core.reward_service import record_self_service_activity
-            activity_type = 'PROBLEM_REPORT' if post.post_type == MemberPostType.PROBLEM else 'OTHER'
-            record_self_service_activity(self.request.user, activity_type, post.id, post.title or 'Member Community Post')
+            activity_type = 'CHARITY' if getattr(post, 'post_type', None) == MemberPostType.CHARITY else 'COMMUNITY_POST'
+            record_self_service_activity(self.request.user, activity_type, post.id, getattr(post, 'title', None) or 'Member Community Post')
         except Exception as e:
             import logging
             logging.getLogger(__name__).error(f"Error recording post self-service: {e}")
@@ -1174,7 +1177,7 @@ class MemberPostViewSet(ModelViewSet):
         super().check_object_permissions(request, obj)
         user_role = getattr(request.user, 'role', '')
         is_staff_user = getattr(request.user, 'is_staff', False) or getattr(request.user, 'is_superuser', False)
-        is_moderator = user_role in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA', 'DATA_ENTRY', 'HR', 'STAFF'] or is_staff_user
+        is_moderator = user_role in ['ADMIN', 'MANAGER', 'SOCIAL_MEDIA', 'DATA_ENTRY', 'HR', 'STAFF', 'ACCOUNTANT', 'FIELD_ASSESSMENT_OFFICER'] or is_staff_user
 
         if self.action in ['update', 'partial_update']:
             if obj.author != request.user and not is_moderator:

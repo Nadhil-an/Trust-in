@@ -184,8 +184,8 @@ export default function CreatePostScreen({ navigation }) {
 
       Toast.show({
         type: 'success',
-        text1: 'Submitted for Moderation',
-        text2: 'Your post will be published to the mobile application once approved by the Social Media team.',
+        text1: 'Post Published 🎉',
+        text2: 'Your post is now live and visible to the community.',
       });
       navigation.goBack();
     } catch (err) {

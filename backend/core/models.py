@@ -233,7 +233,7 @@ class MemberPost(models.Model):
     contact_number = models.CharField(max_length=25, blank=True)
     address = models.TextField(blank=True)
     video = models.FileField(upload_to='member_posts/videos/', null=True, blank=True)
-    status = models.CharField(max_length=25, choices=MemberPostStatus.choices, default=MemberPostStatus.PENDING_APPROVAL)
+    status = models.CharField(max_length=25, choices=MemberPostStatus.choices, default=MemberPostStatus.APPROVED)
     rejection_reason = models.TextField(blank=True, default='')
     approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_posts')
     approved_at = models.DateTimeField(null=True, blank=True)

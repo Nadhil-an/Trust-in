@@ -150,8 +150,7 @@ export const SideDrawer = ({ visible, onClose, navigation, currentRoute = 'Home'
                 />
               </View>
               <View style={styles.brandTextGroup}>
-                <Text style={styles.brandTitle}>SREELAKSHMI</Text>
-                <Text style={styles.brandSubtitle}>CHARITABLE TRUST</Text>
+                <Text style={styles.brandTitle}>Kerala Charity Community</Text>
               </View>
             </View>
 
@@ -246,7 +245,8 @@ export const SideDrawer = ({ visible, onClose, navigation, currentRoute = 'Home'
               <View style={styles.quoteBox}>
                 <Text style={styles.scriptTextMain}>Together</Text>
                 <Text style={styles.scriptTextSub}>for a Better Tomorrow</Text>
-                <Ionicons name="heart" size={18} color="#1689D8" style={{ marginTop: 6 }} />
+                <Text style={styles.trustFooterText}>Sreelakshmi Charitable Trust</Text>
+                <Ionicons name="heart" size={16} color="#1689D8" style={{ marginTop: 4 }} />
               </View>
             </View>
 
@@ -315,19 +315,15 @@ const styles = StyleSheet.create({
     borderRadius: 22,
   },
   brandTextGroup: {
-    justify: 'center',
+    flex: 1,
+    justifyContent: 'center',
   },
   brandTitle: {
     fontSize: 16,
-    fontWeight: '900',
-    color: '#1689D8',
-    letterSpacing: 0.8,
-  },
-  brandSubtitle: {
-    fontSize: 11,
     fontWeight: '800',
     color: '#1689D8',
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
+    lineHeight: 21,
   },
   menuScroll: {
     flex: 1,
@@ -364,7 +360,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
   },
   footerContainer: {
-    height: 130,
+    height: 142,
     position: 'relative',
     justify: 'center',
     alignItems: 'center',
@@ -376,7 +372,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: -40,
     right: -40,
-    height: 100,
+    height: 112,
     backgroundColor: '#EAF7FF',
     borderTopLeftRadius: 180,
     borderTopRightRadius: 180,
@@ -386,7 +382,7 @@ const styles = StyleSheet.create({
     bottom: -15,
     left: -20,
     right: -20,
-    height: 80,
+    height: 92,
     backgroundColor: '#BAE6FD',
     borderTopLeftRadius: 140,
     borderTopRightRadius: 140,
@@ -395,7 +391,7 @@ const styles = StyleSheet.create({
   quoteBox: {
     alignItems: 'center',
     zIndex: 2,
-    marginBottom: 10,
+    marginBottom: 6,
   },
   scriptTextMain: {
     fontSize: 17,
@@ -409,6 +405,13 @@ const styles = StyleSheet.create({
     color: '#1689D8',
     fontStyle: 'italic',
     marginTop: -2,
+  },
+  trustFooterText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0369A1',
+    letterSpacing: 0.3,
+    marginTop: 4,
   },
 });
 
