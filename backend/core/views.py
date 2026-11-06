@@ -405,7 +405,6 @@ class MemberSignupView(APIView):
 
                 if referral_code_input:
                     from hr_module.models import MemberReferralCode, Member
-                    from core.models import User
                     from django.db.models import Q
                     clean_code = referral_code_input.strip().lower()
 

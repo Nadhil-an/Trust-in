@@ -233,17 +233,40 @@ class StaffBonusSystemTestCase(TestCase):
         self.assertEqual(code1, code2)
 
         # Code from StaffBonusAllView (used by web dashboard table)
+        hr_user = User.objects.create_user(
+            username='hr_admin_test',
+            email='hr@test.com',
+            full_name='HR Admin',
+            role=Role.HR,
+            password='password123'
+        )
         factory = APIRequestFactory()
         request = factory.get('/api/hr/staff-bonus/all/')
-        force_authenticate(request, user=self.staff_user)
-        # Promote temporarily to HR/Manager to access view
-        self.staff_user.role = Role.HR
-        self.staff_user.save()
+        force_authenticate(request, user=hr_user)
 
-        response = StaffBonusAllView().get(request)
+        response = StaffBonusAllView.as_view()(request)
         self.assertEqual(response.status_code, 200)
-        staff_row = next((s for s in response.data['staff_members'] if s['staff_uid'] == self.staff_user.staff_uid), None)
+        staff_row = next((s for s in response.data if s['staff_uid'] == self.staff_user.staff_uid), None)
         self.assertIsNotNone(staff_row)
         self.assertEqual(staff_row['referral_code'], code1)
         self.assertRegex(staff_row['referral_code'], r'^slt-\d+$')
+
+        # Test Signup with this staff referral code
+        from core.views import MemberSignupView
+        req_signup = factory.post('/api/core/auth/signup/', {
+            'username': 'mem_staff_ref',
+            'phone': '9876543210',
+            'email': 'newmem@test.com',
+            'password': 'password123',
+            'full_name': 'New Referred Member',
+            'referral_code': code1
+        }, format='json')
+        res_signup = MemberSignupView.as_view()(req_signup)
+        self.assertEqual(res_signup.status_code, 201)
+        new_u = User.objects.get(username='9876543210')
+        new_m = Member.objects.get(created_by=new_u)
+        self.assertIsNotNone(new_m.referred_by)
+        self.assertEqual(new_m.referred_by.created_by, self.staff_user)
+        bonus_acc = StaffBonusAccount.objects.get(staff=self.staff_user)
+        self.assertGreaterEqual(bonus_acc.membership_bonus_balance, Decimal('30.00'))
 
