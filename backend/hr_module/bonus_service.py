@@ -68,6 +68,7 @@ def credit_donation_bonus(income):
             direction=StaffBonusTransaction.TxnDirection.CREDIT,
             amount=bonus_amount,
             income_id=income.receipt_number or str(income.id),
+            member_name=income.donor_name,
             description=(
                 f"10% donation bonus on Rs{amount} collected "
                 f"(Receipt: {income.receipt_number})"

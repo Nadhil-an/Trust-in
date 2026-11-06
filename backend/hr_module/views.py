@@ -3602,6 +3602,7 @@ class StaffBonusAllView(APIView):
     permission_classes = [IsManagerOrHR]
 
     def get(self, request):
+        import re
         from core.models import Role, User
         from hr_module.models import Member
         from django.db.models import Sum, Q
@@ -3737,6 +3738,7 @@ class StaffBonusTransactionsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        import re
         from core.models import Role, User
         from hr_module.models import Member
         from django.db.models import Sum, Q
@@ -3862,7 +3864,14 @@ class StaffBonusTransactionsView(APIView):
                     'description': t.description,
                     'income_id': t.income_id,
                     'member_id': t.member_id,
-                    'member_name': t.member_name,
+                    'member_name': t.member_name or (
+                        re.search(r'enrolling\s+([^(\n—]+)', t.description).group(1).strip()
+                        if ('enrolling' in (t.description or '') and re.search(r'enrolling\s+([^(\n—]+)', t.description))
+                        else ''
+                    ),
+                    'staff_name': target_user.full_name or target_user.username,
+                    'staff_uid': target_user.staff_uid or '',
+                    'staff_designation': (target_user.get_role_display() if hasattr(target_user, 'get_role_display') else (target_user.role or '')).replace('_', ' ').title(),
                     'created_at': t.created_at.isoformat(),
                 }
                 for t in txns

@@ -1044,53 +1044,81 @@ export default function StaffBonusLedgerPage() {
                 <table>
                   <thead>
                     <tr>
-                      <th style={{ textAlign: 'left' }}>Date & Time</th>
-                      <th style={{ textAlign: 'left' }}>Type</th>
-                      <th style={{ textAlign: 'left' }}>Details / Reference</th>
-                      <th style={{ textAlign: 'right' }}>Bonus Amount Credited</th>
+                      <th style={{ textAlign: 'left', padding: '10px 14px' }}>Date & Time</th>
+                      <th style={{ textAlign: 'left', padding: '10px 14px' }}>Staff Member</th>
+                      <th style={{ textAlign: 'left', padding: '10px 14px' }}>New Member Name</th>
+                      <th style={{ textAlign: 'left', padding: '10px 14px' }}>Staff Designation</th>
+                      <th style={{ textAlign: 'right', padding: '10px 14px' }}>Amount</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {(staffDetails.transactions || [])
-                      .filter(t => {
+                    {(() => {
+                      const filtered = (staffDetails.transactions || []).filter(t => {
                         const type = (t.bonus_type || '').toUpperCase()
                         if (activeTab === 'donations') return type.includes('DONATION')
                         if (activeTab === 'members') return type.includes('MEMBER') || type.includes('REFERRAL')
                         return true
                       })
-                      .map((t) => (
-                        <tr key={t.id}>
-                          <td style={{ color: '#64748B', fontSize: '11px' }} className="td-mono">
-                            {t.created_at ? format(parseISO(t.created_at), 'dd MMM yyyy, hh:mm a') : '—'}
-                          </td>
-                          <td>
-                            {(t.bonus_type || '').includes('DONATION') ? (
-                              <span className="badge badge-green" style={{ fontSize: '10px' }}>
-                                💖 10% Donation
+
+                      if (filtered.length === 0) {
+                        return (
+                          <tr>
+                            <td colSpan={5} style={{ textAlign: 'center', color: '#64748B', padding: '24px', fontSize: '12px' }}>
+                              No {activeTab === 'donations' ? 'donation' : activeTab === 'members' ? 'member signup' : 'bonus'} transactions found for this period.
+                            </td>
+                          </tr>
+                        )
+                      }
+
+                      return filtered.map((t) => {
+                        const staffName = t.staff_name || staffDetails?.staff?.name || selectedStaff?.name || '—'
+                        const staffUid = t.staff_uid || staffDetails?.staff?.staff_uid || selectedStaff?.staff_uid || ''
+                        const rawRole = t.staff_designation || staffDetails?.staff?.role || selectedStaff?.role || 'STAFF'
+                        const designation = rawRole.replace(/_/g, ' ')
+                        const memberName = t.member_name || (t.bonus_type?.includes('DONATION') ? 'Direct Donor' : '—')
+
+                        return (
+                          <tr key={t.id}>
+                            {/* 1. Date & Time */}
+                            <td style={{ color: '#64748B', fontSize: '11px', whiteSpace: 'nowrap', padding: '10px 14px' }} className="td-mono">
+                              {t.created_at ? format(parseISO(t.created_at), 'dd MMM yyyy, hh:mm a') : '—'}
+                            </td>
+
+                            {/* 2. Staff Member Name */}
+                            <td style={{ color: '#0F172A', fontWeight: 600, fontSize: '12px', padding: '10px 14px' }}>
+                              <div>{staffName}</div>
+                              {staffUid && (
+                                <div style={{ fontSize: '10px', color: '#64748B', fontFamily: 'monospace', fontWeight: 500, marginTop: '2px' }}>
+                                  ID: {staffUid}
+                                </div>
+                              )}
+                            </td>
+
+                            {/* 3. New Member Name */}
+                            <td style={{ color: '#0F172A', fontSize: '12px', padding: '10px 14px' }}>
+                              <div style={{ fontWeight: 600 }}>{memberName}</div>
+                              {t.member_id && (
+                                <div style={{ fontSize: '10px', color: '#64748B', fontFamily: 'monospace', marginTop: '2px' }}>
+                                  ID: {t.member_id}
+                                </div>
+                              )}
+                            </td>
+
+                            {/* 4. Staff Designation */}
+                            <td style={{ padding: '10px 14px' }}>
+                              <span className="badge badge-blue" style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 600 }}>
+                                {designation}
                               </span>
-                            ) : (t.bonus_type || '').includes('MEMBER') || (t.bonus_type || '').includes('REFERRAL') ? (
-                              <span className="badge badge-purple" style={{ fontSize: '10px', background: '#F3E8FF', color: '#7C3AED', border: '1px solid #E9D5FF' }}>
-                                👥 30% Member
-                              </span>
-                            ) : (
-                              <span className="badge badge-blue" style={{ fontSize: '10px' }}>
-                                {t.bonus_type}
-                              </span>
-                            )}
-                          </td>
-                          <td style={{ color: '#0F172A' }}>
-                            <div style={{ fontWeight: 600 }}>{t.description || 'Bonus incentive'}</div>
-                            {t.member_name && (
-                              <div style={{ fontSize: '11px', color: '#64748B', marginTop: '2px' }}>
-                                Member: <strong>{t.member_name}</strong>
-                              </div>
-                            )}
-                          </td>
-                          <td style={{ textAlign: 'right', fontWeight: 700, color: '#16A34A', fontSize: '13px' }}>
-                            +{formatINR(t.amount)}
-                          </td>
-                        </tr>
-                      ))}
+                            </td>
+
+                            {/* 5. Amount */}
+                            <td style={{ textAlign: 'right', fontWeight: 700, color: '#16A34A', fontSize: '13px', whiteSpace: 'nowrap', padding: '10px 14px' }}>
+                              +{formatINR(t.amount)}
+                            </td>
+                          </tr>
+                        )
+                      })
+                    })()}
                   </tbody>
                 </table>
               </div>
