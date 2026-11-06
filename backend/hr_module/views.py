@@ -502,7 +502,8 @@ class MemberListCreateView(generics.ListCreateAPIView):
     serializer_class = MemberSerializer
     filterset_fields = ['status', 'membership_type', 'gender']
     search_fields = ['member_id', 'full_name', 'phone', 'email']
-    ordering_fields = ['full_name', 'joining_date', 'created_at']
+    ordering_fields = ['full_name', 'joining_date', 'created_at', 'member_id']
+    ordering = ['-created_at', '-member_id']
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get_queryset(self):
@@ -520,7 +521,7 @@ class MemberListCreateView(generics.ListCreateAPIView):
             import logging
             logging.getLogger(__name__).error(f"[MemberListCreateView] Error syncing member expiries: {e}")
 
-        qs = Member.objects.all()
+        qs = Member.objects.all().order_by('-created_at', '-member_id')
         # If the user is STAFF (and not manager/admin/hr), only show members they added
         from core.models import Role
         if self.request.user.role == Role.STAFF:
@@ -3430,6 +3431,21 @@ class MemberPayOnlineView(APIView):
         if hasattr(user, '_cached_subscription_info'):
             delattr(user, '_cached_subscription_info')
 
+        # Credit 30% membership referral bonus to referrer
+        try:
+            from hr_module.models import Member
+            from hr_module.bonus_service import credit_referral_bonus_for_referrer, credit_membership_bonus
+            mem = Member.objects.filter(created_by=user).first()
+            if not mem and getattr(user, 'phone', None):
+                mem = Member.objects.filter(phone=str(user.phone)).first()
+            if mem:
+                if mem.referred_by:
+                    credit_referral_bonus_for_referrer(mem)
+                elif mem.created_by and mem.created_by.role in ['STAFF', 'FIELD_ASSESSMENT_OFFICER', 'ASSESSMENT_CALCULATION_OFFICER', 'GENERAL_ENQUIRY_OFFICER']:
+                    credit_membership_bonus(mem)
+        except Exception:
+            pass
+
         # Broadcast live dashboard refresh
         try:
             push_dashboard_refresh(['ACCOUNTANT', 'MANAGER', 'ADMIN', 'STAFF', 'DATA_ENTRY', 'MEMBER'], user_id=user.id if user else None)
@@ -3517,6 +3533,21 @@ class MemberMarkPaidOfficeView(APIView):
         if hasattr(user, '_cached_subscription_info'):
             delattr(user, '_cached_subscription_info')
 
+        # Credit 30% membership referral bonus to referrer
+        try:
+            from hr_module.models import Member
+            from hr_module.bonus_service import credit_referral_bonus_for_referrer, credit_membership_bonus
+            mem = Member.objects.filter(created_by=user).first()
+            if not mem and getattr(user, 'phone', None):
+                mem = Member.objects.filter(phone=str(user.phone)).first()
+            if mem:
+                if mem.referred_by:
+                    credit_referral_bonus_for_referrer(mem)
+                elif mem.created_by and mem.created_by.role in ['STAFF', 'FIELD_ASSESSMENT_OFFICER', 'ASSESSMENT_CALCULATION_OFFICER', 'GENERAL_ENQUIRY_OFFICER']:
+                    credit_membership_bonus(mem)
+        except Exception:
+            pass
+
         try:
             push_dashboard_refresh(['ACCOUNTANT', 'MANAGER', 'ADMIN', 'STAFF', 'DATA_ENTRY', 'MEMBER'], user_id=user.id if user else None)
         except Exception:
@@ -3543,8 +3574,12 @@ class StaffBonusSummaryView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        from hr_module.bonus_service import get_staff_bonus_summary
+        from hr_module.bonus_service import get_staff_bonus_summary, sync_staff_referrals_and_bonuses
         from core.models import Role
+        try:
+            sync_staff_referrals_and_bonuses()
+        except Exception:
+            pass
 
         staff_id = request.query_params.get('staff_id')
         if staff_id and request.user.role in [Role.HR, Role.MANAGER, Role.ADMIN]:
@@ -3632,12 +3667,9 @@ class StaffBonusAllView(APIView):
                     if struct:
                         base_salary = float(struct.basic_salary or struct.gross_salary or 15000.0)
 
-            # Referral code lookup
-            referral_code = f"slt-{u.username.lower()}"
-            if u.phone:
-                mem = Member.objects.filter(phone=u.phone).first()
-                if mem and mem.referral_code:
-                    referral_code = mem.referral_code
+            # Referral code lookup (guaranteed numeric parity with mobile app)
+            from core.serializers import get_user_referral_code
+            referral_code = get_user_referral_code(u)
 
             # Monthly transactions for target year and month
             month_txns = StaffBonusTransaction.objects.filter(
@@ -3777,12 +3809,9 @@ class StaffBonusTransactionsView(APIView):
 
         m_earnings = base_salary + m_total_bonus
 
-        # Referral code
-        referral_code = f"slt-{target_user.username.lower()}"
-        if target_user.phone:
-            mem = Member.objects.filter(phone=target_user.phone).first()
-            if mem and mem.referral_code:
-                referral_code = mem.referral_code
+        # Referral code (guaranteed numeric parity with mobile app)
+        from core.serializers import get_user_referral_code
+        referral_code = get_user_referral_code(target_user)
 
         # Pagination / limit
         page_size = int(request.query_params.get('page_size', 100))

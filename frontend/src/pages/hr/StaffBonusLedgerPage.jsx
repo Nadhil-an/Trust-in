@@ -711,7 +711,7 @@ export default function StaffBonusLedgerPage() {
                           borderRadius: '6px',
                           border: '1px solid #DDD6FE'
                         }}>
-                          {staff.referral_code || `slt-${staff.name?.toLowerCase()}`}
+                          {staff.referral_code || '—'}
                         </span>
                         <button
                           onClick={(e) => handleCopy(staff.referral_code, e)}

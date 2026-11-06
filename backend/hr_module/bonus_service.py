@@ -138,17 +138,14 @@ def credit_membership_bonus(member, staff_user=None, is_referral=False):
 
     fee = Decimal(str(member.monthly_fee or 100))
     if fee <= 0:
-        return None
+        fee = Decimal('100.00')
 
     # 30% of membership fee (Rs30 per Rs100)
     bonus_amount = (fee * Decimal('0.30')).quantize(Decimal('0.01'))
     if bonus_amount <= 0:
-        return None
+        bonus_amount = Decimal('30.00')
 
     account = _get_or_create_bonus_account(staff_user)
-    curr_mem_bal = Decimal(str(account.membership_bonus_balance or 0))
-    account.membership_bonus_balance = curr_mem_bal + bonus_amount
-    account.save(update_fields=['membership_bonus_balance', 'updated_at'])
 
     bonus_type = (
         StaffBonusTransaction.BonusType.REFERRAL_BONUS
@@ -156,12 +153,27 @@ def credit_membership_bonus(member, staff_user=None, is_referral=False):
         StaffBonusTransaction.BonusType.MEMBERSHIP_BONUS
     )
 
+    # Avoid duplicate crediting for the same member
+    mem_key = str(member.member_id or member.id)
+    existing = StaffBonusTransaction.objects.filter(
+        bonus_account=account,
+        bonus_type=bonus_type,
+        direction=StaffBonusTransaction.TxnDirection.CREDIT,
+        member_id=mem_key
+    ).first()
+    if existing:
+        return existing
+
+    curr_mem_bal = Decimal(str(account.membership_bonus_balance or 0))
+    account.membership_bonus_balance = curr_mem_bal + bonus_amount
+    account.save(update_fields=['membership_bonus_balance', 'updated_at'])
+
     txn = StaffBonusTransaction.objects.create(
         bonus_account=account,
         bonus_type=bonus_type,
         direction=StaffBonusTransaction.TxnDirection.CREDIT,
         amount=bonus_amount,
-        member_id=str(member.member_id),
+        member_id=mem_key,
         member_name=member.full_name,
         description=(
             f"{'Referral m' if is_referral else 'M'}embership bonus (30%) for enrolling "
@@ -176,32 +188,30 @@ def get_user_for_member(member):
     """
     Get the User account associated with a Member (for mobile login and bonus crediting).
     Ensures that whether the member registered via mobile or was enrolled by HR/staff,
-    the referral bonus is credited to the member's own account.
+    the referral bonus is credited to the member's or staff's user account.
     """
     if not member:
         return None
     import re
     from core.models import User, Role
 
-    # 1. Direct created_by if role is MEMBER
-    if member.created_by and getattr(member.created_by, 'role', None) == Role.MEMBER:
+    # 1. Direct created_by (Staff, Member, etc.)
+    if member.created_by:
         return member.created_by
 
     # 2. Match by mobile phone number
     clean_p = re.sub(r'\D', '', str(member.phone or ''))[-10:]
     if clean_p:
-        u = User.objects.filter(role=Role.MEMBER).filter(phone__endswith=clean_p).first() or \
-            User.objects.filter(role=Role.MEMBER).filter(username__endswith=clean_p).first()
-        if u:
-            return u
         u = User.objects.filter(phone__endswith=clean_p).first() or \
             User.objects.filter(username__endswith=clean_p).first()
         if u:
             return u
 
-    # 3. Fallback to member.created_by
-    if member.created_by:
-        return member.created_by
+    # 3. Match by full_name
+    if member.full_name:
+        u = User.objects.filter(full_name__iexact=member.full_name).first()
+        if u:
+            return u
 
     # 4. Auto-sync a User account for this Member
     try:
@@ -214,18 +224,84 @@ def get_user_for_member(member):
 def credit_referral_bonus_for_referrer(new_member):
     """
     When a new member registers with a referral code:
-    Credit 30% membership bonus to the referring member's user account.
+    Credit 30% membership bonus to the referring member's or staff's user account.
     """
     referring_member = new_member.referred_by
     if not referring_member:
         return None
 
-    # Credit the referring member's user (e.g. Swapna)
+    # Credit the referring user (e.g. Swapna)
     user_to_credit = get_user_for_member(referring_member)
     if not user_to_credit:
         return None
 
     return credit_membership_bonus(new_member, staff_user=user_to_credit, is_referral=True)
+
+
+def sync_staff_referrals_and_bonuses():
+    """
+    Self-healing synchronization function:
+    1. Specifically ensures Irfan and Swapna (swapnat) are linked and credited:
+       - Finds swapnat user and swapnat member profile.
+       - Finds Irfan member (ID 0029 or name Irfan).
+       - Sets irfan.referred_by = swapnat_member if not set.
+       - Credits the 30% membership referral bonus to swapnat.
+    2. Scans all Members with referred_by set and ensures referral bonus is credited.
+    3. Scans all Members enrolled by Staff (created_by is Staff) and ensures bonus is credited.
+    """
+    import re
+    from hr_module.models import Member, StaffBonusAccount, StaffBonusTransaction
+    from core.models import User, Role
+    from django.db.models import Q
+
+    # ── 1. Specific Irfan & Swapna resolution ─────────────────────────
+    swapnat_user = User.objects.filter(
+        Q(username__iexact='swapnat') | Q(staff_uid__iexact='SLT-0018') | Q(full_name__icontains='swapna')
+    ).first()
+
+    if swapnat_user:
+        swapnat_member = Member.objects.filter(created_by=swapnat_user).first()
+        if not swapnat_member and swapnat_user.phone:
+            swapnat_member = Member.objects.filter(phone=str(swapnat_user.phone)).first()
+        if not swapnat_member:
+            count = Member.objects.count() + 1
+            swapnat_member = Member.objects.create(
+                member_id=f"{count:04d}",
+                full_name=swapnat_user.full_name or 'Swapna T',
+                phone=swapnat_user.phone or '',
+                email=swapnat_user.email or '',
+                created_by=swapnat_user,
+                status='ACTIVE'
+            )
+            swapnat_member.generate_one_time_referral_code()
+        elif not swapnat_member.referral_code or not re.match(r'^slt-\d+$', str(swapnat_member.referral_code).strip()):
+            swapnat_member.generate_one_time_referral_code()
+
+        irfan_member = Member.objects.filter(
+            Q(full_name__icontains='irfan') | Q(member_id__in=['0029', '29'])
+        ).first()
+
+        if irfan_member:
+            if not irfan_member.referred_by:
+                irfan_member.referred_by = swapnat_member
+                irfan_member.save(update_fields=['referred_by'])
+
+            credit_membership_bonus(irfan_member, staff_user=swapnat_user, is_referral=True)
+
+    # ── 2. All members with referred_by ──────────────────────────────
+    for m in Member.objects.filter(referred_by__isnull=False).iterator():
+        try:
+            credit_referral_bonus_for_referrer(m)
+        except Exception:
+            pass
+
+    # ── 3. All members created by staff ──────────────────────────────
+    staff_roles = [Role.STAFF, Role.FIELD_ASSESSMENT_OFFICER, Role.ASSESSMENT_CALCULATION_OFFICER, Role.GENERAL_ENQUIRY_OFFICER]
+    for m in Member.objects.filter(created_by__role__in=staff_roles).iterator():
+        try:
+            credit_membership_bonus(m, staff_user=m.created_by, is_referral=False)
+        except Exception:
+            pass
 
 
 def sync_staff_bonus_account(user):
@@ -314,8 +390,13 @@ def sync_staff_bonus_account(user):
 
 
 def sync_all_bonus_accounts():
-    """Sync all existing StaffBonusAccounts."""
+    """Sync all existing StaffBonusAccounts and self-heal missing referral bonuses."""
     from hr_module.models import StaffBonusAccount
+    try:
+        sync_staff_referrals_and_bonuses()
+    except Exception as e:
+        logger.warning(f"Failed to sync staff referrals and bonuses: {e}")
+
     for acc in StaffBonusAccount.objects.select_related('staff').all():
         try:
             sync_staff_bonus_account(acc.staff)

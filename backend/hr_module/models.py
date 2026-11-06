@@ -78,7 +78,7 @@ class Member(models.Model):
 
     class Meta:
         db_table = 'hr_members'
-        ordering = ['full_name']
+        ordering = ['-created_at', '-member_id']
 
     def generate_one_time_referral_code(self):
         """

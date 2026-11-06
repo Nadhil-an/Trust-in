@@ -113,7 +113,7 @@ class MRMMemberDirectoryView(APIView):
         badge_filter = request.query_params.get('badge')
         membership_type = request.query_params.get('membership_type')
 
-        qs = Member.objects.all().order_by('-joining_date')
+        qs = Member.objects.all().order_by('-created_at', '-joining_date', '-member_id')
 
         if q:
             qs = qs.filter(

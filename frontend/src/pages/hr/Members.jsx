@@ -53,7 +53,7 @@ export default function Members() {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const params = {}
+      const params = { ordering: '-created_at', page_size: 1000 }
       if (search) params.search = search
       if (statusFilter) params.status = statusFilter
       const res = await hrApi.members.list(params)
@@ -70,11 +70,29 @@ export default function Members() {
   const officeCount = totalCount - mobileCount;
   const activeCount = items.filter(m => m.status === 'ACTIVE').length;
 
-  const filteredItems = items.filter(m => {
-    if (sourceFilter === "MOBILE" && !m.is_phone_signup) return false;
-    if (sourceFilter === "OFFICE" && m.is_phone_signup) return false;
-    return true;
-  });
+  const filteredItems = items
+    .filter(m => {
+      if (sourceFilter === "MOBILE" && !m.is_phone_signup) return false;
+      if (sourceFilter === "OFFICE" && m.is_phone_signup) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      // Latest member on top: sort by created_at descending, then joining_date descending, then member_id descending
+      if (a.created_at && b.created_at) {
+        const timeDiff = new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        if (timeDiff !== 0) return timeDiff;
+      }
+      if (a.joining_date && b.joining_date) {
+        const dateDiff = new Date(b.joining_date).getTime() - new Date(a.joining_date).getTime();
+        if (dateDiff !== 0) return dateDiff;
+      }
+      const numA = parseInt(a.member_id, 10);
+      const numB = parseInt(b.member_id, 10);
+      if (!isNaN(numA) && !isNaN(numB) && numA !== numB) {
+        return numB - numA;
+      }
+      return String(b.member_id || '').localeCompare(String(a.member_id || ''));
+    });
 
   // Real-time synchronization
   useEffect(() => {

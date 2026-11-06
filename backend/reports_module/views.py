@@ -270,7 +270,7 @@ class MemberReportView(APIView):
         fmt = request.query_params.get('format', 'json')
         f = get_common_filters(request)
         from hr_module.models import Member
-        qs = Member.objects.all()
+        qs = Member.objects.all().order_by('-created_at', '-member_id')
         if f['status']: qs = qs.filter(status=f['status'])
 
         headers = ['Member ID', 'Name', 'Phone', 'Email', 'Type', 'Joining Date', 'Status']

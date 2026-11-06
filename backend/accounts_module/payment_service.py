@@ -163,6 +163,16 @@ def record_successful_donation(payment, razorpay_payment_id=None, razorpay_signa
                         receipt_number=income.receipt_number,
                         amount=payment.amount
                     )
+                # Credit 30% membership referral bonus to referrer
+                if is_membership:
+                    try:
+                        from hr_module.bonus_service import credit_referral_bonus_for_referrer, credit_membership_bonus
+                        if member.referred_by:
+                            credit_referral_bonus_for_referrer(member)
+                        elif member.created_by and getattr(member.created_by, 'role', '') in ['STAFF', 'FIELD_ASSESSMENT_OFFICER', 'ASSESSMENT_CALCULATION_OFFICER', 'GENERAL_ENQUIRY_OFFICER']:
+                            credit_membership_bonus(member)
+                    except Exception as b_err:
+                        logger.warning(f"[Bonus Credit Error on Membership Payment]: {b_err}")
         except Exception as e:
             logger.warning(f"[Member Status Update Error]: {e}")
 

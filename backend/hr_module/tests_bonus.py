@@ -217,3 +217,33 @@ class StaffBonusSystemTestCase(TestCase):
         self.assertEqual(account.donation_bonus_balance, Decimal('0.00'))
         self.assertEqual(StaffBonusTransaction.objects.filter(bonus_account=account).count(), 0)
 
+    def test_staff_referral_code_parity_between_serializer_and_dashboard(self):
+        """Staff referral code is strictly numeric (slt-{digits}) and 100% identical across mobile & web."""
+        import re
+        from core.serializers import get_user_referral_code, UserSerializer
+        from hr_module.views import StaffBonusAllView
+        from rest_framework.test import APIRequestFactory, force_authenticate
+
+        # Staff user referral code from canonical function
+        code1 = get_user_referral_code(self.staff_user)
+        self.assertRegex(code1, r'^slt-\d+$')
+
+        # Code from UserSerializer (used by mobile app profile)
+        code2 = UserSerializer(self.staff_user).data['referral_code']
+        self.assertEqual(code1, code2)
+
+        # Code from StaffBonusAllView (used by web dashboard table)
+        factory = APIRequestFactory()
+        request = factory.get('/api/hr/staff-bonus/all/')
+        force_authenticate(request, user=self.staff_user)
+        # Promote temporarily to HR/Manager to access view
+        self.staff_user.role = Role.HR
+        self.staff_user.save()
+
+        response = StaffBonusAllView().get(request)
+        self.assertEqual(response.status_code, 200)
+        staff_row = next((s for s in response.data['staff_members'] if s['staff_uid'] == self.staff_user.staff_uid), None)
+        self.assertIsNotNone(staff_row)
+        self.assertEqual(staff_row['referral_code'], code1)
+        self.assertRegex(staff_row['referral_code'], r'^slt-\d+$')
+

@@ -426,16 +426,29 @@ class MemberSignupView(APIView):
                             referral_code__iexact=clean_code
                         ).first()
 
-                    # 3. Check Staff User referral codes (e.g. slt-swapnat, swapnat, SLT-0018, slt-0018)
+                    # 3. Check Staff User referral codes (e.g. slt-104829, slt-swapnat, swapnat, SLT-0018, slt-0018)
                     if not referring_member:
+                        from core.serializers import get_user_referral_code, get_user_member
                         core_code = clean_code[4:] if clean_code.startswith('slt-') else (clean_code[3:] if clean_code.startswith('slt') else clean_code)
 
-                        staff_user = User.objects.filter(
-                            Q(username__iexact=clean_code) |
-                            Q(username__iexact=core_code) |
-                            Q(staff_uid__iexact=clean_code) |
-                            Q(staff_uid__iexact=core_code)
-                        ).first()
+                        staff_roles = [
+                            Role.STAFF, Role.FIELD_ASSESSMENT_OFFICER,
+                            Role.ASSESSMENT_CALCULATION_OFFICER, Role.GENERAL_ENQUIRY_OFFICER,
+                            Role.HR, Role.MANAGER, Role.ADMIN
+                        ]
+                        staff_user = None
+                        for su in User.objects.filter(role__in=staff_roles, is_active=True).iterator():
+                            if get_user_referral_code(su).lower() == clean_code:
+                                staff_user = su
+                                break
+
+                        if not staff_user:
+                            staff_user = User.objects.filter(
+                                Q(username__iexact=clean_code) |
+                                Q(username__iexact=core_code) |
+                                Q(staff_uid__iexact=clean_code) |
+                                Q(staff_uid__iexact=core_code)
+                            ).first()
 
                         if not staff_user and len(core_code) >= 3:
                             for u in User.objects.exclude(full_name='').iterator():
@@ -446,19 +459,17 @@ class MemberSignupView(APIView):
 
                         if staff_user:
                             referring_staff_user = staff_user
-                            referring_member = Member.objects.filter(created_by=staff_user).first()
-                            if not referring_member and staff_user.phone:
-                                referring_member = Member.objects.filter(phone=str(staff_user.phone)).first()
+                            referring_member = get_user_member(staff_user)
                             if not referring_member:
                                 count = Member.objects.count() + 1
                                 referring_member = Member.objects.create(
-                                    member_id=f"{count:04d}",
+                                    member_id=staff_user.staff_uid or f"STF{count:03d}",
                                     full_name=staff_user.full_name or staff_user.username,
                                     phone=staff_user.phone or '',
                                     email=staff_user.email or '',
                                     created_by=staff_user,
                                     status='ACTIVE',
-                                    referral_code=f"slt-{staff_user.username.lower()}"
+                                    referral_code=clean_code
                                 )
 
                     # 4. Check clean_name across all members (e.g. slt-johnmathew)

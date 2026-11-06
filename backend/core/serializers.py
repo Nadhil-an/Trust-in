@@ -10,7 +10,7 @@ from core.models import (
 def get_user_member(user):
     if not user:
         return None
-    if hasattr(user, '_cached_member'):
+    if hasattr(user, '_cached_member') and user._cached_member:
         return user._cached_member
     from hr_module.models import Member
     target_username = (user.username or '').strip()
@@ -18,6 +18,8 @@ def get_user_member(user):
     target_name = (user.full_name or '').strip().lower()
 
     member = Member.objects.filter(created_by=user).first()
+    if not member and getattr(user, 'staff_uid', None):
+        member = Member.objects.filter(member_id__iexact=str(user.staff_uid).strip()).first()
     if not member and target_username:
         member = Member.objects.filter(member_id__iexact=target_username).first()
     if not member and target_name:
@@ -30,6 +32,65 @@ def get_user_member(user):
                 break
     user._cached_member = member
     return member
+
+
+def get_user_referral_code(user):
+    """
+    Returns the canonical numeric referral code ('slt-{6-digit number}')
+    for any user (Staff or Member), guaranteeing 100% parity across mobile app and web dashboard.
+    """
+    if not user:
+        return ''
+    import re, hashlib
+    from hr_module.models import Member, MemberReferralCode
+    from core.models import Role
+
+    # 1. Look for existing Member associated with this user
+    member = get_user_member(user)
+    target_username = (getattr(user, 'username', '') or '').strip()
+    target_uid = str(getattr(user, 'staff_uid', '') or '').strip()
+    target_name = (getattr(user, 'full_name', '') or '').strip()
+
+    # If staff user, ensure an associated Member record exists for unified referral tracking
+    is_staff_role = getattr(user, 'role', '') in [
+        Role.STAFF, Role.FIELD_ASSESSMENT_OFFICER,
+        Role.ASSESSMENT_CALCULATION_OFFICER, Role.GENERAL_ENQUIRY_OFFICER,
+        Role.HR, Role.MANAGER, Role.ADMIN
+    ]
+    if not member and is_staff_role:
+        try:
+            count = Member.objects.count() + 1
+            m_id = target_uid or f"STF{count:03d}"
+            while Member.objects.filter(member_id=m_id).exists():
+                count += 1
+                m_id = f"STF{count:03d}"
+            member = Member.objects.create(
+                member_id=m_id,
+                full_name=target_name or target_username,
+                phone=getattr(user, 'phone', '') or '',
+                email=getattr(user, 'email', '') or '',
+                created_by=user,
+                status='ACTIVE'
+            )
+            user._cached_member = member
+        except Exception:
+            pass
+
+    if member:
+        code = getattr(member, 'referral_code', '')
+        if code and re.match(r'^slt-\d+$', str(code).strip()):
+            return str(code).strip()
+        # Look for active unused one-time code in MemberReferralCode
+        active_code = MemberReferralCode.objects.filter(member=member, is_used=False).first()
+        if active_code and re.match(r'^slt-\d+$', str(active_code.code).strip()):
+            member.referral_code = active_code.code
+            member.save(update_fields=['referral_code', 'updated_at'])
+            return active_code.code
+        return member.generate_one_time_referral_code()
+
+    # Fallback deterministic numeric code based on user's ID
+    num = int(hashlib.md5(f"staff_{user.id}".encode()).hexdigest(), 16) % 900000 + 100000
+    return f"slt-{num}"
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -175,21 +236,7 @@ class UserSerializer(serializers.ModelSerializer):
         return self._get_subscription_info(obj)['days_left_to_expire']
 
     def get_referral_code(self, obj):
-        member = self._get_member(obj)
-        if member:
-            import re
-            code = getattr(member, 'referral_code', '')
-            if code and re.match(r'^slt-\d+$', str(code).strip()):
-                return code
-            return member.generate_one_time_referral_code()
-
-        # For staff users who don't have a Member model
-        import re, hashlib
-        code = getattr(obj, 'referral_code', None)
-        if code and re.match(r'^slt-\d+$', str(code).strip()):
-            return code
-        num = int(hashlib.md5(f"staff_{obj.id}".encode()).hexdigest(), 16) % 900000 + 100000
-        return f"slt-{num}"
+        return get_user_referral_code(obj)
 
     def get_referral_bonus(self, obj):
         from hr_module.models import StaffBonusAccount
