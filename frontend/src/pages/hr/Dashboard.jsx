@@ -374,7 +374,7 @@ export default function HRDashboard() {
           onClick={() => toggle('leave')}
         />
         <SummaryCard
-          icon="🎁" label="Staff Bonus & Commission" color={C.purple} active={false}
+          icon="🎁" label="Staff Bonus & Incentives" color={C.purple} active={false}
           value={formatINR(staffBonusList.reduce((acc, sb) => acc + (Number(sb.total_bonus) || 0), 0))}
           sub="10% Donation · 30% Member"
           onClick={() => navigate('/slt/hr/bonus-ledger')}
@@ -678,17 +678,17 @@ export default function HRDashboard() {
         </Modal>
       )}
 
-      {/* ── HR Staff Bonus & Commission Ledger Modal ── */}
+      {/* ── HR Staff Bonus & Incentive Ledger Modal ── */}
       <Modal
         open={showBonusModal}
         onClose={() => setShowBonusModal(false)}
-        title="Staff Bonus & Commission Ledger (10% Donation + 30% Member)"
+        title="Staff Bonus & Incentive Ledger (10% / 15% Donation + 30% Member)"
         width={850}
       >
         <div style={{ marginBottom: 16, background: '#FAF5FF', border: '1px solid #E9D5FF', borderRadius: 8, padding: '12px 16px' }}>
-          <h4 style={{ margin: '0 0 6px 0', color: '#7E22CE', fontSize: 14 }}>Staff Incentive & Commission Policy</h4>
+          <h4 style={{ margin: '0 0 6px 0', color: '#7E22CE', fontSize: 14 }}>Staff Incentive & Bonus Policy</h4>
           <p style={{ margin: 0, fontSize: 12, color: '#6B21A8', lineHeight: 1.5 }}>
-            • <strong>Donation Bonus:</strong> 10% (₹100 per ₹1,000) credited to staff bonus account for eligible donations.<br />
+            • <strong>Donation Incentive:</strong> 10% base on every donation collected. Once staff achieves ₹1,50,000 in monthly collections, the incentive rate increases to <strong>15%</strong> for that month onwards.<br />
             • <strong>Membership Bonus:</strong> 30% (₹30 per ₹100) credited to respective staff bonus account upon new member registration.<br />
             • Both bonuses are tracked separately and automatically paid out as part of monthly salary processing.
           </p>

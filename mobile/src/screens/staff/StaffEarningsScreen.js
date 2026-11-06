@@ -15,6 +15,26 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { staffApi } from '../../api';
 import Toast from 'react-native-toast-message';
 
+const formatTxDate = (dateStr) => {
+  if (!dateStr) return 'Recently';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = months[d.getMonth()];
+    const year = d.getFullYear();
+    let hours = d.getHours();
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    return `${day} ${month} ${year}, ${hours}:${minutes} ${ampm}`;
+  } catch {
+    return dateStr;
+  }
+};
+
 export default function StaffEarningsScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(true);
@@ -233,8 +253,27 @@ export default function StaffEarningsScreen({ navigation }) {
             ) : (
               <View style={styles.transactionsList}>
                 {filteredTransactions.map((t, idx) => {
-                  const isDonation = t.bonus_type === 'DONATION_BONUS';
-                  const isReferral = t.bonus_type === 'REFERRAL_BONUS';
+                  const isDonation = (t.bonus_type || '').includes('DONATION');
+                  const isReferral = (t.bonus_type || '').includes('REFERRAL');
+
+                  // Resolve target display name (Member name or Donator name)
+                  let personLabel = isDonation ? 'Donator' : 'Member';
+                  let personName = t.member_name || t.donor_name || '';
+
+                  if (!personName && t.description) {
+                    if (isDonation) {
+                      const match = t.description.match(/donated by\s+(?:referred member\s+)?([^(\n—]+)/i);
+                      if (match && match[1]) personName = match[1].trim();
+                    } else {
+                      const match = t.description.match(/enrolling\s+([^(\n—]+)/i);
+                      if (match && match[1]) personName = match[1].trim();
+                    }
+                  }
+
+                  if (!personName) {
+                    personName = isDonation ? 'Direct Donor' : 'New Member';
+                  }
+
                   return (
                     <View
                       key={t.id || idx}
@@ -288,20 +327,29 @@ export default function StaffEarningsScreen({ navigation }) {
                           </Text>
                         </View>
 
-                        <Text style={styles.txDesc} numberOfLines={2}>
-                          {t.description || (t.member_name ? `Member: ${t.member_name}` : 'Bonus credit')}
-                        </Text>
+                        {/* Display the Member's name or Donator's name clearly under the bonus title */}
+                        <View style={styles.txPersonRow}>
+                          <Ionicons
+                            name={isDonation ? 'heart' : 'person'}
+                            size={12}
+                            color={isDonation ? '#16A34A' : '#0284C7'}
+                          />
+                          <Text style={styles.txPersonLabel}>
+                            {personLabel}:{' '}
+                            <Text style={styles.txPersonName}>{personName}</Text>
+                          </Text>
+                        </View>
 
                         <View style={styles.txMetaRow}>
-                          <Text style={styles.txDate}>{t.created_at || 'Recently'}</Text>
-                          {Boolean(t.income_id) && (
-                            <Text style={styles.txReceiptPill}>
-                              Receipt: {t.income_id}
-                            </Text>
-                          )}
+                          <Text style={styles.txDate}>{formatTxDate(t.created_at)}</Text>
                           {Boolean(t.member_id) && (
                             <Text style={styles.txMemberPill}>
                               ID: {t.member_id}
+                            </Text>
+                          )}
+                          {Boolean(t.income_id) && (
+                            <Text style={styles.txReceiptPill}>
+                              Receipt: {t.income_id}
                             </Text>
                           )}
                         </View>
@@ -608,6 +656,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '800',
     color: '#16A34A',
+  },
+  txPersonRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 2,
+    marginBottom: 4,
+  },
+  txPersonLabel: {
+    fontSize: 12,
+    color: '#64748B',
+    fontWeight: '500',
+  },
+  txPersonName: {
+    fontSize: 12.5,
+    fontWeight: '700',
+    color: '#0F172A',
   },
   txDesc: {
     fontSize: 11.5,

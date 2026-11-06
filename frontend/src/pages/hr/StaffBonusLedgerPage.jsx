@@ -17,12 +17,15 @@ import {
   UserCheck, 
   RefreshCw, 
   Wallet,
-  ArrowRight
+  ArrowRight,
+  X,
+  Info
 } from 'lucide-react'
 
 export default function StaffBonusLedgerPage() {
   const currentMonthStr = format(new Date(), 'yyyy-MM')
   const [selectedMonth, setSelectedMonth] = useState(currentMonthStr)
+  const [showPolicyBanner, setShowPolicyBanner] = useState(true)
   const [data, setData] = useState({ summary: {}, results: [] })
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -193,10 +196,10 @@ export default function StaffBonusLedgerPage() {
           </div>
           <div style={{ minWidth: 0 }}>
             <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              Staff Bonus & Commission Ledger
+              Staff Bonus & Incentive Ledger
             </h1>
             <p style={{ margin: '3px 0 0', fontSize: '12px', color: '#64748B', lineHeight: 1.4 }}>
-              Tracking monthly eligible donation incentives (10%) and membership bonuses (30%) per staff member.
+              Tracking monthly eligible donation incentives (10% base / 15% tier) and membership bonuses (30%) per staff member.
             </p>
           </div>
         </div>
@@ -260,22 +263,6 @@ export default function StaffBonusLedgerPage() {
             </button>
           </div>
 
-          <input
-            type="month"
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
-            style={{
-              padding: '7px 12px',
-              fontSize: '12px',
-              fontWeight: 600,
-              borderRadius: '10px',
-              border: '1px solid #CBD5E1',
-              background: '#FFFFFF',
-              color: '#334155',
-              cursor: 'pointer'
-            }}
-          />
-
           {selectedMonth !== currentMonthStr && (
             <button
               onClick={() => setSelectedMonth(currentMonthStr)}
@@ -289,6 +276,27 @@ export default function StaffBonusLedgerPage() {
               }}
             >
               This Month
+            </button>
+          )}
+
+          {!showPolicyBanner && (
+            <button
+              onClick={() => setShowPolicyBanner(true)}
+              className="btn btn-sm"
+              style={{
+                background: '#F0FDF4',
+                color: '#16A34A',
+                border: '1px solid #BBF7D0',
+                fontWeight: 600,
+                borderRadius: '10px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+              title="Show Policy"
+            >
+              <Award size={14} />
+              <span>Show Policy</span>
             </button>
           )}
 
@@ -311,58 +319,82 @@ export default function StaffBonusLedgerPage() {
       </div>
 
       {/* ── Policy Rules Banner ── */}
-      <div style={{
-        background: 'linear-gradient(135deg, #F0FDF4 0%, #EFF6FF 50%, #FAF5FF 100%)',
-        border: '1px solid #C7D2FE',
-        borderRadius: '14px',
-        padding: '14px 18px',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
-        width: '100%',
-        maxWidth: '100%',
-        minWidth: 0,
-        boxSizing: 'border-box'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '14px', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', minWidth: 0, flex: '1 1 300px' }}>
-            <div style={{
-              width: '34px',
-              height: '34px',
-              borderRadius: '10px',
-              background: '#1E4DB7',
-              color: '#FFFFFF',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0
-            }}>
-              <Award size={18} />
+      {showPolicyBanner && (
+        <div style={{
+          background: 'linear-gradient(135deg, #F0FDF4 0%, #EFF6FF 50%, #FAF5FF 100%)',
+          border: '1px solid #C7D2FE',
+          borderRadius: '14px',
+          padding: '14px 18px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+          width: '100%',
+          maxWidth: '100%',
+          minWidth: 0,
+          boxSizing: 'border-box'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '14px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', minWidth: 0, flex: '1 1 300px' }}>
+              <div style={{
+                width: '34px',
+                height: '34px',
+                borderRadius: '10px',
+                background: '#1E4DB7',
+                color: '#FFFFFF',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
+              }}>
+                <Award size={18} />
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>
+                  Staff Incentive & Salary Policy
+                </h4>
+                <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#475569', lineHeight: 1.5 }}>
+                  • <strong>Donation Incentive:</strong> 10% base on every donation collected. Once staff achieves ₹1,50,000 in monthly collections, the incentive rate increases to <strong>15%</strong> for that month onwards.<br />
+                  • <strong>Membership Bonus:</strong> 30% (₹30 for every ₹100 registration fee) credited to respective staff bonus balance.<br />
+                  • Both bonuses and incentives are tracked independently and automatically paid out with monthly salary processing.
+                </p>
+              </div>
             </div>
-            <div style={{ minWidth: 0 }}>
-              <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 700, color: '#0F172A' }}>
-                Staff Incentive & Salary Commission Policy
-              </h4>
-              <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#475569', lineHeight: 1.5 }}>
-                • <strong>Donation Bonus:</strong> 10% (₹100 for every ₹1,000) on eligible donations collected.<br />
-                • <strong>Membership Bonus:</strong> 30% (₹30 for every ₹100 registration fee) credited to respective staff bonus balance.<br />
-                • Both bonuses are tracked independently and automatically paid out with monthly salary processing.
-              </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{
+                fontSize: '11px',
+                fontWeight: 700,
+                padding: '4px 10px',
+                background: '#FFFFFF',
+                color: '#1E4DB7',
+                border: '1px solid #BFDBFE',
+                borderRadius: '20px',
+                boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+                whiteSpace: 'nowrap'
+              }}>
+                Active Cycle: {formattedMonthLabel}
+              </div>
+              <button
+                onClick={() => setShowPolicyBanner(false)}
+                style={{
+                  border: '1px solid #CBD5E1',
+                  background: '#FFFFFF',
+                  width: '26px',
+                  height: '26px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  color: '#64748B',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.06)'
+                }}
+                title="Close Policy"
+                aria-label="Close Policy"
+              >
+                <X size={14} />
+              </button>
             </div>
-          </div>
-          <div style={{
-            fontSize: '11px',
-            fontWeight: 700,
-            padding: '4px 10px',
-            background: '#FFFFFF',
-            color: '#1E4DB7',
-            border: '1px solid #BFDBFE',
-            borderRadius: '20px',
-            boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
-            whiteSpace: 'nowrap'
-          }}>
-            Active Cycle: {formattedMonthLabel}
           </div>
         </div>
-      </div>
+      )}
 
       {/* ── 5 KPI Summary Cards for Selected Month ── */}
       <div style={{
@@ -434,9 +466,9 @@ export default function StaffBonusLedgerPage() {
             <HeartHandshake size={20} />
           </div>
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#64748B', letterSpacing: '0.04em' }}>Donation Bonus (10%)</div>
+            <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', color: '#64748B', letterSpacing: '0.04em' }}>Donation Incentive</div>
             <div style={{ fontSize: '18px', fontWeight: 800, color: '#16A34A', marginTop: '2px' }}>{formatINR(summary.total_month_donation_bonus || 0)}</div>
-            <div style={{ fontSize: '11px', color: '#94A3B8' }}>₹100 per ₹1,000 received</div>
+            <div style={{ fontSize: '11px', color: '#94A3B8' }}>10% base (15% on ₹1.5L+)</div>
           </div>
         </div>
 
@@ -648,7 +680,7 @@ export default function StaffBonusLedgerPage() {
                   <th style={{ textAlign: 'left' }}>Staff Member</th>
                   <th style={{ textAlign: 'left' }}>Referral Code</th>
                   <th style={{ textAlign: 'right' }}>Base Salary</th>
-                  <th style={{ textAlign: 'right' }}>Donation Bonus (10%)</th>
+                  <th style={{ textAlign: 'right' }}>Donation Incentive</th>
                   <th style={{ textAlign: 'right' }}>Member Bonus (30%)</th>
                   <th style={{ textAlign: 'right' }}>Total Month Bonus</th>
                   <th style={{ textAlign: 'right' }}>Month Salary + Bonus</th>
@@ -740,13 +772,13 @@ export default function StaffBonusLedgerPage() {
                       {formatINR(staff.base_salary)}
                     </td>
 
-                    {/* Donation Bonus (10%) */}
+                    {/* Donation Incentive */}
                     <td style={{ textAlign: 'right' }}>
                       <div style={{ fontWeight: 700, color: '#16A34A', fontSize: '13px' }}>
                         +{formatINR(staff.month_donation_bonus)}
                       </div>
-                      <div style={{ fontSize: '10px', color: '#94A3B8' }}>
-                        {staff.month_donations_count || 0} donations
+                      <div style={{ fontSize: '10px', color: staff.achieved_tier ? '#16A34A' : '#64748B', fontWeight: staff.achieved_tier ? 700 : 500 }}>
+                        {staff.achieved_tier ? '⭐ 15% Tier' : `${staff.donation_rate || 10}% rate`} • {staff.month_donations_count || 0} donations
                       </div>
                     </td>
 
@@ -932,12 +964,12 @@ export default function StaffBonusLedgerPage() {
               </div>
 
               <div style={{ background: '#F0FDF4', padding: '12px 14px', borderRadius: '10px', border: '1px solid #BBF7D0' }}>
-                <div style={{ fontSize: '11px', fontWeight: 700, color: '#16A34A', textTransform: 'uppercase' }}>Donation Bonus (10%)</div>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: '#16A34A', textTransform: 'uppercase' }}>Donation Incentive</div>
                 <div style={{ fontSize: '18px', fontWeight: 800, color: '#16A34A', marginTop: '2px' }}>
                   +{formatINR(staffDetails?.month_summary?.donation_bonus ?? selectedStaff.month_donation_bonus)}
                 </div>
-                <div style={{ fontSize: '10px', color: '#16A34A' }}>
-                  {staffDetails?.month_summary?.donations_count ?? selectedStaff.month_donations_count ?? 0} donations
+                <div style={{ fontSize: '10px', color: '#16A34A', fontWeight: (staffDetails?.month_summary?.achieved_tier || selectedStaff?.achieved_tier) ? 700 : 500 }}>
+                  {(staffDetails?.month_summary?.achieved_tier || selectedStaff?.achieved_tier) ? '⭐ 15% Tier' : '10% Base Rate'} • {staffDetails?.month_summary?.donations_count ?? selectedStaff.month_donations_count ?? 0} donations
                 </div>
               </div>
 

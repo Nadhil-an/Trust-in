@@ -463,14 +463,14 @@ export default function PayrollPage() {
   // ── Render ─────────────────────────────────────────────────────────
   return (
     <div>
-      <PageHeader title="Salary & Payroll" subtitle="Monthly payroll management, commissions, and slips">
+      <PageHeader title="Salary & Payroll" subtitle="Monthly payroll management, incentives, and slips">
         <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
           <button
             className="btn btn-secondary"
             onClick={openBonusModal}
             style={{ display: "flex", alignItems: "center", gap: "6px" }}
           >
-            🎁 Bonus & Comm. Ledger
+            🎁 Bonus & Inc. Ledger
           </button>
           <button
             className="btn btn-secondary"
@@ -501,7 +501,7 @@ export default function PayrollPage() {
 
         <div style={{ background: "#faf5ff", padding: "18px 20px", borderRadius: "12px", border: "1px solid #e9d5ff", boxShadow: "0 1px 3px rgba(126,34,206,0.05)" }}>
           <div style={{ fontSize: "11px", fontWeight: "700", color: "#7e22ce", textTransform: "uppercase" }}>
-            🎁 Bonus & Commission
+            🎁 Bonus & Incentives
           </div>
           <div style={{ fontSize: "22px", fontWeight: "800", color: "#6b21a8", marginTop: "4px" }}>
             +{formatINR(totalBonusAll)}
@@ -936,7 +936,7 @@ export default function PayrollPage() {
                   }}
                 >
                   <h4 style={{ margin: 0, fontSize: "14px", color: "#6b21a8", fontWeight: "700" }}>
-                    🎁 Staff Bonus & Commission Ledger Breakdown
+                    🎁 Staff Bonus & Incentive Ledger Breakdown
                   </h4>
                   <span style={{ fontSize: "12px", color: "#7e22ce", fontWeight: "600" }}>
                     Total Credited: +{formatINR(selectedSlip.total_bonus || (Number(selectedSlip.donation_bonus || 0) + Number(selectedSlip.membership_bonus || 0)))}
@@ -947,7 +947,7 @@ export default function PayrollPage() {
                     <thead>
                       <tr style={{ background: "#f3e8ff", borderBottom: "1.5px solid #d8b4fe", textAlign: "left" }}>
                         <th style={{ padding: "6px 8px" }}>Date</th>
-                        <th style={{ padding: "6px 8px" }}>Commission Category</th>
+                        <th style={{ padding: "6px 8px" }}>Incentive Category</th>
                         <th style={{ padding: "6px 8px" }}>Description / Reference</th>
                         <th style={{ padding: "6px 8px", textAlign: "right" }}>Amount Credited</th>
                       </tr>

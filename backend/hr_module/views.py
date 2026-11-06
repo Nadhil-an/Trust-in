@@ -3891,11 +3891,17 @@ class StaffBonusTransactionsView(APIView):
                     'description': t.description,
                     'income_id': t.income_id,
                     'member_id': t.member_id,
-                    'member_name': t.member_name or (
-                        re.search(r'enrolling\s+([^(\n—]+)', t.description).group(1).strip()
-                        if ('enrolling' in (t.description or '') and re.search(r'enrolling\s+([^(\n—]+)', t.description))
-                        else ''
+                    'member_name': (
+                        (Income.objects.filter(receipt_number=t.income_id).first().donor_name if (t.bonus_type and 'DONATION' in t.bonus_type.upper() and t.income_id and Income.objects.filter(receipt_number=t.income_id).exists()) else '')
+                        or t.member_name
+                        or (re.search(r'enrolling\s+([^(\n—]+)', t.description).group(1).strip() if ('enrolling' in (t.description or '') and re.search(r'enrolling\s+([^(\n—]+)', t.description)) else '')
+                        or (re.search(r'donated by\s+(?:referred member\s+)?([^(\n—]+)', t.description).group(1).strip() if ('donated by' in (t.description or '') and re.search(r'donated by\s+(?:referred member\s+)?([^(\n—]+)', t.description)) else '')
                     ),
+                    'donor_name': (
+                        (Income.objects.filter(receipt_number=t.income_id).first().donor_name if (t.income_id and Income.objects.filter(receipt_number=t.income_id).exists()) else '')
+                        or t.member_name
+                        or (re.search(r'donated by\s+(?:referred member\s+)?([^(\n—]+)', t.description).group(1).strip() if ('donated by' in (t.description or '') and re.search(r'donated by\s+(?:referred member\s+)?([^(\n—]+)', t.description)) else '')
+                    ) if (t.bonus_type and 'DONATION' in t.bonus_type.upper()) else '',
                     'staff_name': target_user.full_name or target_user.username,
                     'staff_uid': target_user.staff_uid or '',
                     'staff_designation': (target_user.get_role_display() if hasattr(target_user, 'get_role_display') else (target_user.role or '')).replace('_', ' ').title(),
