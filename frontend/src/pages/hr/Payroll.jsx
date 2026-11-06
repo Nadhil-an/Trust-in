@@ -1389,7 +1389,7 @@ export default function PayrollPage() {
                         gap: "6px",
                       }}
                     >
-                      🎁 Bonus & Commission (Added to Salary)
+                      🎁 Bonus & Incentives (Added to Salary)
                     </h4>
                     <span
                       style={{
@@ -1402,16 +1402,16 @@ export default function PayrollPage() {
                         border: "1px solid #d8b4fe",
                       }}
                     >
-                      10% Donation + 30% Membership
+                      10% / 15% Donation + 30% Membership
                     </span>
                   </div>
                   <p style={{ margin: "0 0 12px 0", fontSize: "12px", color: "#7e22ce" }}>
-                    Auto-calculated commission for this staff member during {format(new Date(genForm.year, genForm.month - 1, 1), "MMMM yyyy")}. You can review or adjust amounts before generating payroll.
+                    Auto-calculated incentives for this staff member during {format(new Date(genForm.year, genForm.month - 1, 1), "MMMM yyyy")}. You can review or adjust amounts before generating payroll.
                   </p>
                   <div className="form-grid-2">
                     <div className="form-group">
                       <label className="form-label" style={{ color: "#16a34a", fontWeight: "600" }}>
-                        Donation Bonus / Commission (10%)
+                        Donation Incentive (10% base / 15% tier)
                       </label>
                       <input
                         type="number"
@@ -1422,12 +1422,12 @@ export default function PayrollPage() {
                         placeholder="0.00"
                       />
                       <small style={{ color: "#64748b", fontSize: "11px" }}>
-                        ₹100 per ₹1,000 donation collected
+                        10% base (15% once ₹1,50,000 monthly collections achieved)
                       </small>
                     </div>
                     <div className="form-group">
                       <label className="form-label" style={{ color: "#7c3aed", fontWeight: "600" }}>
-                        Membership Bonus / Commission (30%)
+                        Membership Bonus (30%)
                       </label>
                       <input
                         type="number"
@@ -1443,7 +1443,7 @@ export default function PayrollPage() {
                     </div>
                   </div>
 
-                  {/* Total Bonus & Commission highlight pill */}
+                  {/* Total Bonus & Incentives highlight pill */}
                   <div
                     style={{
                       marginTop: "10px",
@@ -1457,7 +1457,7 @@ export default function PayrollPage() {
                     }}
                   >
                     <span style={{ fontSize: "13px", fontWeight: "600", color: "#6b21a8" }}>
-                      Total Bonus & Commission Credited to Salary:
+                      Total Bonus & Incentives Credited to Salary:
                     </span>
                     <span style={{ fontSize: "15px", fontWeight: "800", color: "#7e22ce" }}>
                       +{formatINR(totalBonus)}
@@ -1468,7 +1468,7 @@ export default function PayrollPage() {
                   {genForm.bonus_history && genForm.bonus_history.length > 0 && (
                     <div style={{ marginTop: "12px", borderTop: "1px solid #f3e8ff", paddingTop: "8px" }}>
                       <div style={{ fontSize: "11px", fontWeight: "700", color: "#6b21a8", marginBottom: "6px" }}>
-                        Breakdown of {genForm.bonus_history.length} Commission Events:
+                        Breakdown of {genForm.bonus_history.length} Incentive Events:
                       </div>
                       <div style={{ maxHeight: "120px", overflowY: "auto", fontSize: "11px", background: "#ffffff", borderRadius: "6px", padding: "6px 8px", border: "1px solid #e9d5ff" }}>
                         {genForm.bonus_history.map((bh, idx) => (
@@ -1642,7 +1642,7 @@ export default function PayrollPage() {
                         letterSpacing: "0.5px",
                       }}
                     >
-                      Bonus & Commission
+                      Bonus & Incentives
                     </div>
                     <div
                       style={{
@@ -1740,17 +1740,17 @@ export default function PayrollPage() {
           </form>
         </Modal>
       )}
-      {/* ── Staff Bonus & Commission Management Modal ── */}
+      {/* ── Staff Bonus & Incentive Management Modal ── */}
       <Modal
         open={bonusModalOpen}
         onClose={() => setBonusModalOpen(false)}
-        title="Staff Bonus & Commission Ledger (10% Donation + 30% Member)"
+        title="Staff Bonus & Incentive Ledger (10% / 15% Donation + 30% Member)"
         width={850}
       >
         <div style={{ marginBottom: 16, background: '#FAF5FF', border: '1px solid #E9D5FF', borderRadius: 8, padding: '12px 16px' }}>
-          <h4 style={{ margin: '0 0 6px 0', color: '#7E22CE', fontSize: 14 }}>Salary Bonus & Commission Policy</h4>
+          <h4 style={{ margin: '0 0 6px 0', color: '#7E22CE', fontSize: 14 }}>Salary Bonus & Incentive Policy</h4>
           <p style={{ margin: 0, fontSize: 12, color: '#6B21A8', lineHeight: 1.5 }}>
-            • <strong>Donation Bonus:</strong> 10% (₹100 per ₹1,000) allocated to staff bonus account for eligible donations.<br />
+            • <strong>Donation Incentive:</strong> 10% base on every donation collected. Once staff achieves ₹1,50,000 in monthly collections, the incentive rate increases to <strong>15%</strong> for that month onwards.<br />
             • <strong>Membership Bonus:</strong> 30% (₹30 per ₹100) credited to respective staff bonus account upon new member registration.<br />
             • Both bonuses are tracked separately and automatically added during monthly salary processing.
           </p>
@@ -1841,7 +1841,7 @@ export default function PayrollPage() {
                 Reg. No: 123/2018 | Kozhikode, Kerala, India
               </p>
               <h3 style={{ margin: "8px 0 0 0", color: "#0284c7", fontSize: "16px", fontWeight: "700", textTransform: "uppercase", letterSpacing: "1px" }}>
-                Monthly Payroll Register & Commission Statement — {format(new Date(yearFilter || CURRENT_YEAR, (monthFilter || CURRENT_MONTH) - 1, 1), "MMMM yyyy")}
+                Monthly Payroll Register & Incentive Statement — {format(new Date(yearFilter || CURRENT_YEAR, (monthFilter || CURRENT_MONTH) - 1, 1), "MMMM yyyy")}
               </h3>
               <div style={{ fontSize: "11px", color: "#64748b", marginTop: "4px" }}>
                 Generated on {format(new Date(), "dd MMMM yyyy, hh:mm a")} | Total Records: {unifiedItems.length}

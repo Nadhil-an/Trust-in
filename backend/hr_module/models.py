@@ -907,7 +907,7 @@ class StaffBonusTransaction(models.Model):
     Individual bonus credit/debit transaction for a staff member.
     """
     class BonusType(models.TextChoices):
-        DONATION_BONUS = 'DONATION_BONUS', 'Donation Bonus (10%)'
+        DONATION_BONUS = 'DONATION_BONUS', 'Donation Incentive'
         MEMBERSHIP_BONUS = 'MEMBERSHIP_BONUS', 'Membership Bonus (30%)'
         REFERRAL_BONUS = 'REFERRAL_BONUS', 'Referral Membership Bonus (30%)'
         PAYOUT = 'PAYOUT', 'Paid Out via Salary'
