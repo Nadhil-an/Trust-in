@@ -2264,7 +2264,7 @@ class PayrollListCreateView(generics.ListCreateAPIView):
                             bonus_type=StaffBonusTransaction.BonusType.PAYOUT,
                             direction=StaffBonusTransaction.TxnDirection.DEBIT,
                             amount=payroll.total_bonus,
-                            description=f"Bonus & Commission disbursed via Payroll {payroll.payroll_id} ({payroll.month:02d}/{payroll.year})"
+                            description=f"Bonus & Incentives disbursed via Payroll {payroll.payroll_id} ({payroll.month:02d}/{payroll.year})"
                         )
                         from hr_module.bonus_service import sync_staff_bonus_account
                         sync_staff_bonus_account(u)
@@ -3692,6 +3692,16 @@ class StaffBonusAllView(APIView):
             tot_month_bonus += m_total_bonus
             tot_month_earnings += m_earnings
 
+            from hr_module.bonus_service import get_staff_donation_bonus_rate
+            from accounts_module.models import Income
+            m_target_date = date(target_year, target_month, 1)
+            donation_rate = int(get_staff_donation_bonus_rate(u, m_target_date) * 100)
+            month_donations_collected = float(Income.objects.filter(
+                created_by=u,
+                date__year=target_year,
+                date__month=target_month
+            ).aggregate(s=Sum('amount'))['s'] or 0.0)
+
             result.append({
                 'staff_uid': u.staff_uid,
                 'name': u.full_name,
@@ -3700,6 +3710,10 @@ class StaffBonusAllView(APIView):
                 'email': u.email or '',
                 'referral_code': referral_code,
                 'base_salary': round(base_salary, 2),
+                'donation_rate': donation_rate,
+                'achieved_tier': donation_rate >= 15,
+                'month_donations_collected': round(month_donations_collected, 2),
+                'threshold_amount': 150000.0,
                 'month_donation_bonus': round(m_donation, 2),
                 'month_membership_bonus': round(m_member, 2),
                 'month_total_bonus': round(m_total_bonus, 2),
@@ -3811,6 +3825,15 @@ class StaffBonusTransactionsView(APIView):
 
         m_earnings = base_salary + m_total_bonus
 
+        from hr_module.bonus_service import get_staff_donation_bonus_rate
+        from accounts_module.models import Income
+        donation_rate = int(get_staff_donation_bonus_rate(target_user, date(t_year, t_month, 1)) * 100)
+        month_donations_collected = float(Income.objects.filter(
+            created_by=target_user,
+            date__year=t_year,
+            date__month=t_month
+        ).aggregate(s=Sum('amount'))['s'] or 0.0)
+
         # Referral code (guaranteed numeric parity with mobile app)
         from core.serializers import get_user_referral_code
         referral_code = get_user_referral_code(target_user)
@@ -3833,6 +3856,10 @@ class StaffBonusTransactionsView(APIView):
             'month_label': month_label,
             'month_summary': {
                 'base_salary': round(base_salary, 2),
+                'donation_rate': donation_rate,
+                'achieved_tier': donation_rate >= 15,
+                'month_donations_collected': round(month_donations_collected, 2),
+                'threshold_amount': 150000.0,
                 'donation_bonus': round(m_donation, 2),
                 'membership_bonus': round(m_member, 2),
                 'total_bonus': round(m_total_bonus, 2),
