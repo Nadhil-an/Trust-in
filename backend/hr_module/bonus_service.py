@@ -20,6 +20,86 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+DONATION_BONUS_BASE_RATE = Decimal('0.10')       # 10%
+DONATION_BONUS_TIER_RATE = Decimal('0.15')       # 15%
+DONATION_BONUS_THRESHOLD = Decimal('150000.00')  # Rs 1,50,000 threshold in one month
+
+
+def get_staff_donation_bonus_rate(staff_user, target_date=None):
+    """
+    Determine the donation incentive rate for a staff member.
+    Policy:
+    - Base rate: 10% on every donation collected.
+    - Tier threshold: Once staff achieves >= Rs 1,50,000 in monthly donation collections,
+      from that month onwards (or for that month once achieved), the rate increases to 15%.
+    """
+    if not staff_user:
+        return DONATION_BONUS_BASE_RATE
+
+    from accounts_module.models import Income
+    from django.db.models import Sum
+    from datetime import date
+    from django.utils import timezone
+
+    if target_date is None:
+        target_date = timezone.now().date()
+    elif hasattr(target_date, 'date'):
+        target_date = target_date.date()
+
+    # 1. Check if staff achieved >= Rs 1,50,000 in this target month
+    curr_month_total = Income.objects.filter(
+        created_by=staff_user,
+        date__year=target_date.year,
+        date__month=target_date.month
+    ).aggregate(s=Sum('amount'))['s'] or Decimal('0.00')
+
+    if Decimal(str(curr_month_total)) >= DONATION_BONUS_THRESHOLD:
+        return DONATION_BONUS_TIER_RATE
+
+    # 2. Check if staff achieved >= Rs 1,50,000 in any prior month on or before target_date
+    prior_groups = Income.objects.filter(
+        created_by=staff_user,
+        date__lte=target_date
+    ).values('date__year', 'date__month').annotate(total=Sum('amount'))
+
+    for entry in prior_groups:
+        if Decimal(str(entry['total'] or 0)) >= DONATION_BONUS_THRESHOLD:
+            ey = entry['date__year']
+            em = entry['date__month']
+            if (ey < target_date.year) or (ey == target_date.year and em <= target_date.month):
+                return DONATION_BONUS_TIER_RATE
+
+    return DONATION_BONUS_BASE_RATE
+
+
+def _upgrade_staff_month_donations_to_tier(staff_user, account, year, month):
+    """
+    When a staff member achieves the Rs 1,50,000 milestone in a month, upgrade
+    any existing 10% donation transactions in that month to 15%.
+    """
+    from hr_module.models import StaffBonusTransaction
+    from accounts_module.models import Income
+
+    month_txns = StaffBonusTransaction.objects.filter(
+        bonus_account=account,
+        direction=StaffBonusTransaction.TxnDirection.CREDIT,
+        bonus_type=StaffBonusTransaction.BonusType.DONATION_BONUS,
+        created_at__year=year,
+        created_at__month=month
+    )
+    for txn in month_txns:
+        if txn.income_id:
+            inc = Income.objects.filter(receipt_number=txn.income_id).first()
+            if inc:
+                expected_amount = (Decimal(str(inc.amount)) * DONATION_BONUS_TIER_RATE).quantize(Decimal('0.01'))
+                if txn.amount != expected_amount:
+                    diff = expected_amount - txn.amount
+                    txn.amount = expected_amount
+                    txn.description = f"15% donation incentive on Rs{inc.amount} collected (Receipt: {inc.receipt_number})"
+                    txn.save(update_fields=['amount', 'description'])
+                    account.donation_bonus_balance += diff
+                    account.save(update_fields=['donation_bonus_balance', 'updated_at'])
+
 
 def _get_or_create_bonus_account(user):
     """Get or create a bonus account for a staff member or referring user."""
@@ -30,7 +110,9 @@ def _get_or_create_bonus_account(user):
 
 def credit_donation_bonus(income):
     """
-    Credit 10% donation bonus.
+    Credit donation incentive:
+    - Base rate: 10% on every donation.
+    - Achieved rate: 15% once staff achieves Rs 1,50,000 in one month.
     1. To the staff member who collected/created the donation.
     2. To the referring member if the donor was enrolled via a referral code.
     
@@ -39,16 +121,13 @@ def credit_donation_bonus(income):
     """
     from hr_module.models import StaffBonusAccount, StaffBonusTransaction
     from core.models import Role
+    from django.utils import timezone
 
     amount = Decimal(str(income.amount or 0))
     if amount <= 0:
         return None
 
-    # 10% bonus on the donation amount
-    bonus_amount = (amount * Decimal('0.10')).quantize(Decimal('0.01'))
-    if bonus_amount <= 0:
-        return None
-
+    income_date = income.date or timezone.now().date()
     credited_txns = []
 
     # ── 1. Staff collector bonus ──────────────────────────────────
@@ -57,24 +136,54 @@ def credit_donation_bonus(income):
         Role.STAFF, Role.FIELD_ASSESSMENT_OFFICER,
         Role.ASSESSMENT_CALCULATION_OFFICER, Role.GENERAL_ENQUIRY_OFFICER
     ]:
-        account = _get_or_create_bonus_account(staff_user)
-        curr_bal = Decimal(str(account.donation_bonus_balance or 0))
-        account.donation_bonus_balance = curr_bal + bonus_amount
-        account.save(update_fields=['donation_bonus_balance', 'updated_at'])
+        rate = get_staff_donation_bonus_rate(staff_user, income_date)
+        rate_pct = int(rate * 100)
+        bonus_amount = (amount * rate).quantize(Decimal('0.01'))
 
-        txn = StaffBonusTransaction.objects.create(
+        account = _get_or_create_bonus_account(staff_user)
+
+        # Check existing transaction for this income to avoid duplicates
+        existing = StaffBonusTransaction.objects.filter(
             bonus_account=account,
-            bonus_type=StaffBonusTransaction.BonusType.DONATION_BONUS,
-            direction=StaffBonusTransaction.TxnDirection.CREDIT,
-            amount=bonus_amount,
             income_id=income.receipt_number or str(income.id),
-            member_name=income.donor_name,
-            description=(
-                f"10% donation bonus on Rs{amount} collected "
-                f"(Receipt: {income.receipt_number})"
-            ),
-        )
-        credited_txns.append(txn)
+            direction=StaffBonusTransaction.TxnDirection.CREDIT,
+            bonus_type=StaffBonusTransaction.BonusType.DONATION_BONUS
+        ).first()
+
+        if existing:
+            if existing.amount != bonus_amount or f"{rate_pct}%" not in existing.description:
+                diff = bonus_amount - existing.amount
+                existing.amount = bonus_amount
+                existing.description = (
+                    f"{rate_pct}% donation incentive on Rs{amount} collected "
+                    f"(Receipt: {income.receipt_number})"
+                )
+                existing.save(update_fields=['amount', 'description'])
+                account.donation_bonus_balance += diff
+                account.save(update_fields=['donation_bonus_balance', 'updated_at'])
+            credited_txns.append(existing)
+        else:
+            curr_bal = Decimal(str(account.donation_bonus_balance or 0))
+            account.donation_bonus_balance = curr_bal + bonus_amount
+            account.save(update_fields=['donation_bonus_balance', 'updated_at'])
+
+            txn = StaffBonusTransaction.objects.create(
+                bonus_account=account,
+                bonus_type=StaffBonusTransaction.BonusType.DONATION_BONUS,
+                direction=StaffBonusTransaction.TxnDirection.CREDIT,
+                amount=bonus_amount,
+                income_id=income.receipt_number or str(income.id),
+                member_name=income.donor_name,
+                description=(
+                    f"{rate_pct}% donation incentive on Rs{amount} collected "
+                    f"(Receipt: {income.receipt_number})"
+                ),
+            )
+            credited_txns.append(txn)
+
+        # If staff has reached 15% tier in this month, ensure earlier transactions in this month are upgraded to 15%
+        if rate == DONATION_BONUS_TIER_RATE:
+            _upgrade_staff_month_donations_to_tier(staff_user, account, income_date.year, income_date.month)
 
     # ── 2. Referral donor bonus ───────────────────────────────────
     from hr_module.models import Member
@@ -96,21 +205,22 @@ def credit_donation_bonus(income):
         referrer = donor_member.referred_by
         referrer_user = referrer.created_by
         if referrer_user and referrer_user != staff_user:
+            ref_bonus_amount = (amount * Decimal('0.10')).quantize(Decimal('0.01'))
             ref_account = _get_or_create_bonus_account(referrer_user)
             curr_ref_bal = Decimal(str(ref_account.donation_bonus_balance or 0))
-            ref_account.donation_bonus_balance = curr_ref_bal + bonus_amount
+            ref_account.donation_bonus_balance = curr_ref_bal + ref_bonus_amount
             ref_account.save(update_fields=['donation_bonus_balance', 'updated_at'])
 
             ref_txn = StaffBonusTransaction.objects.create(
                 bonus_account=ref_account,
                 bonus_type=StaffBonusTransaction.BonusType.DONATION_BONUS,
                 direction=StaffBonusTransaction.TxnDirection.CREDIT,
-                amount=bonus_amount,
+                amount=ref_bonus_amount,
                 income_id=income.receipt_number or str(income.id),
                 member_id=str(donor_member.member_id),
                 member_name=donor_member.full_name,
                 description=(
-                    f"10% referral donation bonus on Rs{amount} donated by "
+                    f"10% referral donation incentive on Rs{amount} donated by "
                     f"referred member {donor_member.full_name} ({donor_member.member_id})"
                 ),
             )
@@ -358,7 +468,25 @@ def sync_staff_bonus_account(user):
                 txn.delete()
                 continue
 
-    # 2. Recalculate balances from remaining valid transactions
+    # 2. Re-verify donation bonus rates (10% base or 15% tier if Rs 1,50,000 achieved)
+    for txn in list(StaffBonusTransaction.objects.filter(bonus_account=account, bonus_type=StaffBonusTransaction.BonusType.DONATION_BONUS)):
+        if txn.income_id:
+            val_uuid = None
+            try:
+                val_uuid = uuid.UUID(str(txn.income_id))
+            except (ValueError, AttributeError):
+                pass
+            inc = Income.objects.filter(Q(id=val_uuid) | Q(receipt_number=txn.income_id)).first() if val_uuid else Income.objects.filter(receipt_number=txn.income_id).first()
+            if inc and inc.created_by == user:
+                rate = get_staff_donation_bonus_rate(user, inc.date)
+                rate_pct = int(rate * 100)
+                expected_amount = (Decimal(str(inc.amount)) * rate).quantize(Decimal('0.01'))
+                if txn.amount != expected_amount or f"{rate_pct}%" not in txn.description:
+                    txn.amount = expected_amount
+                    txn.description = f"{rate_pct}% donation incentive on Rs{inc.amount} collected (Receipt: {inc.receipt_number})"
+                    txn.save(update_fields=['amount', 'description'])
+
+    # 3. Recalculate balances from remaining valid transactions
     remaining = StaffBonusTransaction.objects.filter(bonus_account=account)
 
     don_credits = remaining.filter(
