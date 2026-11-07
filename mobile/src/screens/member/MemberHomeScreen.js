@@ -1000,7 +1000,6 @@ const styles = StyleSheet.create({
     color: '#0284c7',
     letterSpacing: 0.2,
   },
-  },
   iconBtn: { padding: 4 },
   brandTitleContainer: { alignItems: 'center' },
   brandTitle: { fontSize: 13, fontWeight: '900', color: '#0284c7', letterSpacing: 1 },
