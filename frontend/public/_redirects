@@ -4,9 +4,5 @@
 # Proxy media file requests to EC2 backend
 /media/*  https://api.sreelakshmicharity.org/media/:splat  200
 
-# Direct app landing / download routes
-/kcc  /kcc.html  200
-/app  /app.html  200
-
 # SPA fallback — must be LAST
 /*  /index.html  200
