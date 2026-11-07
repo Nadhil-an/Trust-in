@@ -131,7 +131,7 @@ export default function PomPosterCard({ item, onResponseSuccess }) {
 
   const handleShare = async () => {
     try {
-      const message = `📢 *KERALA CHARITY COMMUNITY (KCC) - PUBLIC APPEAL*\n\n*${item.title}*\n\n${item.description}\n\n📍 Location: ${item.target_location || 'General'}\n📞 Contact: ${item.contact_person || 'KCC Coordinator'} (${item.contact_phone || 'N/A'})\n\nPlease share with friends & family to help!`;
+      const message = `📢 *KERALA CHARITY COMMUNITY - PUBLIC APPEAL*\n\n*${item.title}*\n\n${item.description}\n\n📍 Location: ${item.target_location || 'General'}\n📞 Contact: ${item.contact_person || 'Community Coordinator'} (${item.contact_phone || 'N/A'})\n\nPlease share with friends & family to help!`;
       await Share.share({ message });
     } catch (_) {}
   };

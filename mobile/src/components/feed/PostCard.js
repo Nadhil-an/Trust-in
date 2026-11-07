@@ -245,7 +245,7 @@ export default function PostCard({
   const handleShare = async () => {
     try {
       const desc = post.description || '';
-      const shareMessage = `Kerala Charity Community • Community Post\n\nBy: ${authorName} (${districtName})\n\n"${desc}"\n\nView and support on the KCC App:\nhttps://sreelakshmicharity.org`;
+      const shareMessage = `Kerala Charity Community • Community Post\n\nBy: ${authorName} (${districtName})\n\n"${desc}"\n\nView and support on the Kerala Charity Community App:\nhttps://sreelakshmicharity.org`;
       await Share.share({
         message: shareMessage,
         title: 'Community Post',
@@ -268,7 +268,7 @@ export default function PostCard({
       const cleanPhone = post.contact_number.replace(/\D/g, '');
       Linking.openURL(
         `whatsapp://send?phone=91${cleanPhone}&text=${encodeURIComponent(
-          `Hello, I saw your community post on Kerala Charity Community (KCC): "${post.description?.slice(0, 60)}..."`
+          `Hello, I saw your community post on Kerala Charity Community: "${post.description?.slice(0, 60)}..."`
         )}`
       );
     } else {

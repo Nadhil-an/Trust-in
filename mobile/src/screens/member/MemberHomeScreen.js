@@ -124,7 +124,7 @@ const MemberHomeScreen = ({ navigation }) => {
     if (status === 'NOT_SUBSCRIBED' || (!hasActive && !isPaid)) {
       Toast.show({
         type: 'info',
-        text1: '⚠️ KCC Membership Required',
+        text1: '⚠️ Membership Required',
         text2: 'Tap here to activate monthly membership (₹100/mo) & unlock digital ID.',
         visibilityTime: 6000,
         onPress: () => navigation.navigate('MembershipPayment'),
@@ -451,17 +451,19 @@ const MemberHomeScreen = ({ navigation }) => {
 
         {/* Center: Brand Title & Logo */}
         <View style={styles.centerBrandContainer} pointerEvents="none">
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Image
-              source={require('../../../assets/trust-logo.png')}
-              style={{ width: 30, height: 30 }}
-              resizeMode="contain"
-            />
-            <View style={{ alignItems: 'flex-start' }}>
-              <Text style={styles.headerBrandTitle}>KCC</Text>
-              <Text style={styles.headerBrandSub}>KERALA CHARITY COMMUNITY</Text>
-            </View>
-          </View>
+          <Image
+            source={require('../../../assets/trust-logo.png')}
+            style={styles.headerBrandLogo}
+            resizeMode="contain"
+          />
+          <Text
+            style={styles.headerBrandTitle}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.72}
+          >
+            Kerala Charity Community
+          </Text>
         </View>
 
         {/* Right Icons: Search Icon (opens suggestions & search), Notification, Profile */}
@@ -512,7 +514,7 @@ const MemberHomeScreen = ({ navigation }) => {
               </View>
               <View style={styles.notifBannerContent}>
                 <View style={styles.notifTitleRow}>
-                  <Text style={styles.notifBannerTitleAmber}>KCC Membership Required</Text>
+                  <Text style={styles.notifBannerTitleAmber}>Membership Required</Text>
                   <View style={styles.notifHeaderRight}>
                     <View style={styles.actionPillAmber}>
                       <Text style={styles.actionPillAmberText}>₹100/mo</Text>
@@ -571,7 +573,7 @@ const MemberHomeScreen = ({ navigation }) => {
                   </View>
                 </View>
                 <Text style={styles.notifBannerDescOrange}>
-                  Your KCC membership expires {daysLeftToExpire === 0 ? 'today' : daysLeftToExpire === 1 ? 'in 1 day' : ('in ' + daysLeftToExpire + ' days')} ({validUpto}). Please update your payment to maintain active privileges.
+                  Your membership expires {daysLeftToExpire === 0 ? 'today' : daysLeftToExpire === 1 ? 'in 1 day' : ('in ' + daysLeftToExpire + ' days')} ({validUpto}). Please update your payment to maintain active privileges.
                 </Text>
                 <View style={styles.notifBannerActionRow}>
                   <Text style={styles.notifBannerActionOrange}>Renew Payment (₹{monthlyFee}/mo)</Text>
@@ -972,35 +974,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 10,
     backgroundColor: Colors.white,
     borderBottomWidth: 1,
     borderBottomColor: Colors.gray100,
-    position: 'relative',
     height: 56,
   },
   centerBrandContainer: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
+    flex: 1,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
+    marginLeft: 8,
+    marginRight: 6,
+    gap: 7,
+  },
+  headerBrandLogo: {
+    width: 32,
+    height: 32,
   },
   headerBrandTitle: {
-    fontSize: 16,
-    fontWeight: '900',
-    color: '#0284c7',
-    letterSpacing: 0.6,
-    lineHeight: 18,
-  },
-  headerBrandSub: {
-    fontSize: 8,
+    flex: 1,
+    fontSize: 14.5,
     fontWeight: '800',
-    color: '#64748b',
-    letterSpacing: 0.5,
-    lineHeight: 10,
+    color: '#0284c7',
+    letterSpacing: 0.2,
+  },
   },
   iconBtn: { padding: 4 },
   brandTitleContainer: { alignItems: 'center' },

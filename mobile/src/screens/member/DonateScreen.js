@@ -618,7 +618,7 @@ const DonateScreen = ({ navigation, route }) => {
             <View style={{ flex: 1 }}>
               <Text style={styles.taxBenefitTitle}>80G Tax Exemption Eligible</Text>
               <Text style={styles.taxBenefitDesc}>
-                All charitable contributions to Kerala Charity Community (KCC) qualify for 50%
+                All charitable contributions to Kerala Charity Community qualify for 50%
                 tax deduction under Section 80G of the Income Tax Act.
               </Text>
             </View>

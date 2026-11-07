@@ -629,7 +629,7 @@ const ProfileScreen = ({ navigation, route }) => {
                 try {
                   await Share.share({
                     title: 'Join Kerala Charity Community',
-                    message: `Join Kerala Charity Community (KCC) using my referral code: ${referralCode}\n\nDownload the app to register, track contributions and support our charitable mission! https://sreelakshmicharity.org`,
+                    message: `Join Kerala Charity Community using my referral code: ${referralCode}\n\nDownload the app to register, track contributions and support our charitable mission! https://sreelakshmicharity.org`,
                   });
                 } catch (err) {
                   console.warn('Share error', err);

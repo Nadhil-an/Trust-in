@@ -69,3 +69,4 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunPython(create_google_play_tester, remove_google_play_tester),
     ]
+

@@ -119,7 +119,7 @@ const MembershipPaymentScreen = ({ navigation, route }) => {
     setIsRecurring(recurring);
 
     try {
-      const donorName = activeUser?.full_name || activeUser?.username || 'KCC Member';
+      const donorName = activeUser?.full_name || activeUser?.username || 'Community Member';
       const donorPhone = activeUser?.phone || '';
       const donorEmail = activeUser?.email || '';
 
@@ -391,7 +391,7 @@ const MembershipPaymentScreen = ({ navigation, route }) => {
           <View style={styles.planHeader}>
             <View style={styles.planBadge}>
               <Ionicons name="sparkles" size={13} color="#0284c7" />
-              <Text style={styles.planBadgeText}>MONTHLY KCC MEMBERSHIP</Text>
+              <Text style={styles.planBadgeText}>MONTHLY MEMBERSHIP</Text>
             </View>
             <Text style={styles.planTitle}>Individual Member Subscription</Text>
             <View style={styles.priceRow}>
@@ -407,7 +407,7 @@ const MembershipPaymentScreen = ({ navigation, route }) => {
           <View style={styles.benefitsList}>
             <View style={styles.benefitItem}>
               <Ionicons name="checkmark-circle" size={18} color="#0284c7" />
-              <Text style={styles.benefitText}>Official Verified Digital KCC ID Card unlocked</Text>
+              <Text style={styles.benefitText}>Official Verified Digital ID Card unlocked</Text>
             </View>
             <View style={styles.benefitItem}>
               <Ionicons name="checkmark-circle" size={18} color="#0284c7" />
@@ -419,7 +419,7 @@ const MembershipPaymentScreen = ({ navigation, route }) => {
             </View>
             <View style={styles.benefitItem}>
               <Ionicons name="checkmark-circle" size={18} color="#0284c7" />
-              <Text style={styles.benefitText}>Voting and representation in Annual KCC Initiatives</Text>
+              <Text style={styles.benefitText}>Voting and representation in Annual Community Initiatives</Text>
             </View>
           </View>
         </View>
@@ -520,9 +520,9 @@ const MembershipPaymentScreen = ({ navigation, route }) => {
           <View style={styles.methodCard}>
             <View style={styles.officeInfoBox}>
               <Ionicons name="business" size={32} color="#0284c7" style={{ marginBottom: 8 }} />
-              <Text style={styles.officeTitle}>Cash Payment at KCC Office</Text>
+              <Text style={styles.officeTitle}>Cash Payment at Office</Text>
               <Text style={styles.officeDesc}>
-                You can hand over the monthly membership fee of ₹{amount} in cash to our registered KCC office in Thamarassery / Mukkam or to an authorized staff field collector.
+                You can hand over the monthly membership fee of ₹{amount} in cash to our registered office in Thamarassery / Mukkam or to an authorized staff field collector.
               </Text>
               <Text style={styles.officeNote}>
                 Clicking the button below will register an official cash collection request. Once verified by our accountant, your digital membership card will be activated.
@@ -540,7 +540,7 @@ const MembershipPaymentScreen = ({ navigation, route }) => {
               ) : (
                 <>
                   <Ionicons name="checkmark-circle" size={18} color={Colors.white} />
-                  <Text style={styles.payNowPrimaryBtnText}>Notify KCC Office of Cash Payment</Text>
+                  <Text style={styles.payNowPrimaryBtnText}>Notify Office of Cash Payment</Text>
                 </>
               )}
             </TouchableOpacity>

@@ -169,7 +169,7 @@ const LoginScreen = ({ navigation }) => {
         <View style={styles.header}>
           <Image source={require('../../../assets/trust-logo.png')} style={styles.logo} resizeMode="contain" />
           <Text style={styles.trust}>Kerala Charity</Text>
-          <Text style={styles.trustSub}>COMMUNITY (KCC)</Text>
+          <Text style={styles.trustSub}>COMMUNITY</Text>
         </View>
 
         {/* Welcome Text */}

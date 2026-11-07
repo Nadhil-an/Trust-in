@@ -222,7 +222,7 @@ const SignupScreen = ({ navigation }) => {
 
       Toast.show({
         type: 'success',
-        text1: '🎉 Welcome to Kerala Charity Community (KCC)!',
+        text1: '🎉 Welcome to Kerala Charity Community!',
         text2: `Logged in as ${res.data.user.full_name || 'Member'}.`,
         visibilityTime: 4000,
       });
@@ -316,7 +316,7 @@ const SignupScreen = ({ navigation }) => {
             </TouchableOpacity>
             <View style={styles.topBarCenter}>
               <Text style={styles.brandTitle}>KERALA CHARITY</Text>
-              <Text style={styles.brandSubtitle}>COMMUNITY (KCC)</Text>
+              <Text style={styles.brandSubtitle}>COMMUNITY</Text>
             </View>
             <View style={{ width: 40 }} />
           </View>

@@ -567,7 +567,7 @@ export default function MemberProfileScreen() {
     const fullName = profileData?.full_name || initialUser?.full_name || '';
     try {
       await Share.share({
-        message: `Check out ${fullName} (@${username}) on Kerala Charity Community (KCC)!`,
+        message: `Check out ${fullName} (@${username}) on Kerala Charity Community!`,
         title: `${fullName} • Member Profile`,
       });
     } catch (_) {}
@@ -948,7 +948,7 @@ export default function MemberProfileScreen() {
                   try {
                     await Share.share({
                       title: 'Join Kerala Charity Community',
-                      message: `Join Kerala Charity Community (KCC) using my one-time referral code: ${referralCode}\n\nRegister via the app to connect and contribute! https://sreelakshmicharity.org`,
+                      message: `Join Kerala Charity Community using my one-time referral code: ${referralCode}\n\nRegister via the app to connect and contribute! https://sreelakshmicharity.org`,
                     });
                   } catch (err) {}
                 }}

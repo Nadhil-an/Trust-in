@@ -87,7 +87,7 @@ const MembershipCardScreen = ({ navigation }) => {
                 />
                 <View style={styles.logoTextContainer}>
                   <Text style={[styles.trustLogoTitle, { color: '#475569' }]}>KERALA CHARITY</Text>
-                  <Text style={styles.trustLogoSub}>COMMUNITY (KCC)</Text>
+                  <Text style={styles.trustLogoSub}>COMMUNITY</Text>
                 </View>
               </View>
 
@@ -104,7 +104,7 @@ const MembershipCardScreen = ({ navigation }) => {
               </View>
               <Text style={styles.lockedTitle}>DIGITAL ID CARD LOCKED</Text>
               <Text style={styles.lockedSub}>
-                Membership subscription is required to unlock your official verified KCC digital ID card, member ID, and privileges.
+                Membership subscription is required to unlock your official verified digital ID card, member ID, and privileges.
               </Text>
             </View>
 
@@ -129,7 +129,7 @@ const MembershipCardScreen = ({ navigation }) => {
                 />
                 <View style={styles.logoTextContainer}>
                   <Text style={styles.trustLogoTitle}>KERALA CHARITY</Text>
-                  <Text style={styles.trustLogoSub}>COMMUNITY (KCC)</Text>
+                  <Text style={styles.trustLogoSub}>COMMUNITY</Text>
                 </View>
               </View>
 

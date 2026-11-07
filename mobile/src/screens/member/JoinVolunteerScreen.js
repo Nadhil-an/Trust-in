@@ -211,7 +211,7 @@ export default function JoinVolunteerScreen({ navigation }) {
     try {
       await Share.share({
         title: 'Kerala Charity Community - Official Volunteer',
-        message: `🌟 I am an Official Volunteer of Kerala Charity Community (KCC)!\nName: ${vol.full_name}\nVolunteer ID: ${vol.volunteer_id}\nBlood Group: ${vol.blood_group || 'N/A'}\nJoin us in serving humanity!`,
+        message: `🌟 I am an Official Volunteer of Kerala Charity Community!\nName: ${vol.full_name}\nVolunteer ID: ${vol.volunteer_id}\nBlood Group: ${vol.blood_group || 'N/A'}\nJoin us in serving humanity!`,
       });
     } catch (e) {
       console.log('Share error:', e);
@@ -265,7 +265,7 @@ export default function JoinVolunteerScreen({ navigation }) {
                   />
                   <View>
                     <Text style={styles.idTrustTitle}>KERALA CHARITY</Text>
-                    <Text style={styles.idTrustSub}>COMMUNITY (KCC)</Text>
+                    <Text style={styles.idTrustSub}>COMMUNITY</Text>
                   </View>
                 </View>
                 <View style={styles.volunteerTag}>
@@ -423,7 +423,7 @@ export default function JoinVolunteerScreen({ navigation }) {
               </View>
               <Text style={styles.pendingTitle}>Application Under Review</Text>
               <Text style={styles.pendingSubtitle}>
-                Your application to join as an official Volunteer is currently being reviewed by KCC Management.
+                Your application to join as an official Volunteer is currently being reviewed by Community Management.
               </Text>
 
               <View style={styles.appRefRow}>

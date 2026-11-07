@@ -90,7 +90,7 @@ const StockInventoryScreen = ({ navigation }) => {
         </TouchableOpacity>
         <View style={styles.headerTitleWrap}>
           <Text style={styles.headerTitle}>Stock & Inventory</Text>
-          <Text style={styles.headerSubtitle}>Real-time KCC Stock Availability</Text>
+          <Text style={styles.headerSubtitle}>Real-time Stock Availability</Text>
         </View>
         <TouchableOpacity style={styles.backBtn} onPress={onRefresh}>
           <Ionicons name="refresh" size={22} color={Colors.white} />
