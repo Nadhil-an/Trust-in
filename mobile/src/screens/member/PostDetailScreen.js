@@ -243,7 +243,7 @@ const PostDetailScreen = ({ route, navigation }) => {
       const authorName = post.author?.full_name || post.author?.username || 'Community Member';
       const districtName = formatDistrictKerala(post.address);
       const desc = post.description || '';
-      const shareMessage = `Kerala Charity Community • Community Post\n\nBy: ${authorName} (${districtName})\n\n"${desc}"\n\nView and support on the KCC App.`;
+      const shareMessage = `Kerala Charity Community • Community Post\n\nBy: ${authorName} (${districtName})\n\n"${desc}"\n\nView and support on the KCC App:\nhttps://sreelakshmicharity.org`;
       await Share.share({
         message: shareMessage,
         title: 'Community Post',

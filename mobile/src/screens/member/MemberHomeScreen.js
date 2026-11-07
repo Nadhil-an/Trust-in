@@ -449,7 +449,20 @@ const MemberHomeScreen = ({ navigation }) => {
           <Ionicons name="menu-outline" size={26} color={Colors.textPrimary} />
         </TouchableOpacity>
 
-
+        {/* Center: Brand Title & Logo */}
+        <View style={styles.centerBrandContainer} pointerEvents="none">
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Image
+              source={require('../../../assets/trust-logo.png')}
+              style={{ width: 30, height: 30 }}
+              resizeMode="contain"
+            />
+            <View style={{ alignItems: 'flex-start' }}>
+              <Text style={styles.headerBrandTitle}>KCC</Text>
+              <Text style={styles.headerBrandSub}>KERALA CHARITY COMMUNITY</Text>
+            </View>
+          </View>
+        </View>
 
         {/* Right Icons: Search Icon (opens suggestions & search), Notification, Profile */}
         <View style={styles.rightIcons}>
@@ -977,17 +990,17 @@ const styles = StyleSheet.create({
   },
   headerBrandTitle: {
     fontSize: 16,
-    fontWeight: '800',
+    fontWeight: '900',
     color: '#0284c7',
-    letterSpacing: 0.2,
-    textAlign: 'center',
+    letterSpacing: 0.6,
+    lineHeight: 18,
   },
   headerBrandSub: {
-    fontSize: 8.5,
-    fontWeight: '700',
+    fontSize: 8,
+    fontWeight: '800',
     color: '#64748b',
-    letterSpacing: 0.8,
-    textAlign: 'center',
+    letterSpacing: 0.5,
+    lineHeight: 10,
   },
   iconBtn: { padding: 4 },
   brandTitleContainer: { alignItems: 'center' },
