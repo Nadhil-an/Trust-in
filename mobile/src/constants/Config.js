@@ -46,6 +46,10 @@ export const Config = {
 
   // Settings
   TIMEOUT: 15000,
+
+  // Community App Share & Store Links
+  APP_SHARE_URL: 'https://dashboard.sreelakshmicharity.org/kcc',
+  PLAY_STORE_URL: 'https://play.google.com/store/apps/details?id=com.sreelakshmiappsteam.mobile',
 };
 
 export const Roles = {

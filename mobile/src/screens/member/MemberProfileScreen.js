@@ -23,6 +23,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Colors } from '../../constants/Colors';
+import { Config } from '../../constants/Config';
 import { useAuthStore } from '../../store/authStore';
 import { memberPostsApi, authApi, verificationsApi, rewardsApi, staffApi } from '../../api';
 import * as ImagePicker from 'expo-image-picker';
@@ -567,8 +568,9 @@ export default function MemberProfileScreen() {
     const fullName = profileData?.full_name || initialUser?.full_name || '';
     try {
       await Share.share({
-        message: `Check out ${fullName} (@${username}) on Kerala Charity Community!`,
-        title: `${fullName} • Member Profile`,
+        message: `Check out ${fullName} (@${username}) on Kerala Charity Community!\n${Config.APP_SHARE_URL}`,
+        title: `${fullName} • Kerala Charity Community`,
+        url: Config.APP_SHARE_URL,
       });
     } catch (_) {}
   };
@@ -948,7 +950,8 @@ export default function MemberProfileScreen() {
                   try {
                     await Share.share({
                       title: 'Join Kerala Charity Community',
-                      message: `Join Kerala Charity Community using my one-time referral code: ${referralCode}\n\nRegister via the app to connect and contribute! https://sreelakshmicharity.org`,
+                      message: `Join Kerala Charity Community using my one-time referral code: ${referralCode}\n\nRegister via the app to connect and contribute! ${Config.APP_SHARE_URL}`,
+                      url: Config.APP_SHARE_URL,
                     });
                   } catch (err) {}
                 }}

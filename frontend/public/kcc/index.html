@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kerala Charity Community</title>
+  <meta name="description" content="Official mobile application of Sree Lakshmi Charitable Trust. Connect, share, and support charity relief initiatives across Kerala." />
+
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://dashboard.sreelakshmicharity.org/kcc" />
+  <link rel="icon" type="image/png" href="/kcc-logo-512.png" />
+  <link rel="apple-touch-icon" href="/kcc-logo-512.png" />
+
+  <!-- Open Graph / WhatsApp / Facebook Link Preview Tags -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://dashboard.sreelakshmicharity.org/kcc" />
+  <meta property="og:site_name" content="Kerala Charity Community" />
+  <meta property="og:title" content="Kerala Charity Community" />
+  <meta property="og:description" content="Official mobile app of Sree Lakshmi Charitable Trust. Download now to connect, track contributions, and support charity relief initiatives across Kerala." />
+  <meta property="og:image" content="https://dashboard.sreelakshmicharity.org/kcc-logo-512.png" />
+  <meta property="og:image:secure_url" content="https://dashboard.sreelakshmicharity.org/kcc-logo-512.png" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="512" />
+  <meta property="og:image:height" content="512" />
+  <meta property="og:image:alt" content="Kerala Charity Community Logo" />
+
+  <!-- Twitter Meta Tags -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:url" content="https://dashboard.sreelakshmicharity.org/kcc" />
+  <meta name="twitter:title" content="Kerala Charity Community" />
+  <meta name="twitter:description" content="Official mobile app of Sree Lakshmi Charitable Trust. Download and support charity relief initiatives across Kerala." />
+  <meta name="twitter:image" content="https://dashboard.sreelakshmicharity.org/kcc-logo-512.png" />
+
+  <style>
+    :root {
+      --primary: #2563EB;
+      --primary-dark: #1D4ED8;
+      --navy: #0B192C;
+      --slate: #1E293B;
+      --card-bg: rgba(255, 255, 255, 0.98);
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at 50% 20%, #1E3E62 0%, #0B192C 100%);
+      color: #0F172A;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+    .card {
+      background: var(--card-bg);
+      border-radius: 28px;
+      padding: 36px 28px;
+      max-width: 440px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(12px);
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      background: #EFF6FF;
+      color: #1D4ED8;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      letter-spacing: 0.3px;
+    }
+    .badge-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #2563EB;
+    }
+    .logo-wrap {
+      width: 110px;
+      height: 110px;
+      margin: 0 auto 20px auto;
+      border-radius: 24px;
+      box-shadow: 0 12px 30px rgba(37, 99, 235, 0.25);
+      background: #ffffff;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+    }
+    .logo-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: 800;
+      color: #0F172A;
+      line-height: 1.25;
+      margin-bottom: 6px;
+    }
+    .trust-subtitle {
+      font-size: 13px;
+      font-weight: 600;
+      color: #2563EB;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .tagline {
+      font-size: 14px;
+      color: #64748B;
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+    .btn-play {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background: #000000;
+      color: #FFFFFF;
+      padding: 14px 24px;
+      border-radius: 16px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: transform 0.15s ease, background 0.15s ease;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.18);
+      margin-bottom: 12px;
+    }
+    .btn-play:hover {
+      background: #1F2937;
+      transform: translateY(-1px);
+    }
+    .btn-play svg {
+      width: 28px;
+      height: 28px;
+      flex-shrink: 0;
+    }
+    .btn-play-text {
+      text-align: left;
+    }
+    .btn-play-small {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      opacity: 0.85;
+      display: block;
+    }
+    .btn-play-title {
+      font-size: 16px;
+      font-weight: 700;
+      display: block;
+      line-height: 1.1;
+    }
+    .btn-secondary {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      background: #F1F5F9;
+      color: #334155;
+      border-radius: 14px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      transition: background 0.15s ease;
+    }
+    .btn-secondary:hover {
+      background: #E2E8F0;
+    }
+    .redirect-status {
+      margin-top: 16px;
+      font-size: 12px;
+      color: #64748B;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .spinner {
+      width: 12px;
+      height: 12px;
+      border: 2px solid #CBD5E1;
+      border-top-color: #2563EB;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    footer {
+      margin-top: 24px;
+      text-align: center;
+      color: rgba(255, 255, 255, 0.65);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    footer a {
+      color: #93C5FD;
+      text-decoration: none;
+    }
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="badge">
+      <span class="badge-dot"></span>
+      Official Mobile App • ഔദ്യോഗിക ആപ്പ്
+    </div>
+
+    <div class="logo-wrap">
+      <img src="/kcc-logo-512.png" alt="Kerala Charity Community Logo" />
+    </div>
+
+    <h1>Kerala Charity Community</h1>
+    <div class="trust-subtitle">Sree Lakshmi Charitable Trust</div>
+    <p class="tagline">Together for a Better Tomorrow • കൈകോർക്കാം ഒരു നല്ല നാളേക്കായി. Connect, track contributions, and support charitable relief across Kerala.</p>
+
+    <!-- Google Play Download Button -->
+    <a id="playStoreLink" class="btn-play" href="https://play.google.com/store/apps/details?id=com.sreelakshmiappsteam.mobile" target="_blank" rel="noopener">
+      <svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M47.7 20.3C44.4 23.8 42.5 29.3 42.5 36.6V475.4C42.5 482.7 44.4 488.2 47.7 491.7L49.9 493.7L305.8 257.9V254.1L49.9 18.3L47.7 20.3Z" fill="#2196F3"/>
+        <path d="M391.2 343.3L305.8 257.9V254.1L391.2 168.7L392.8 169.6L493.9 227.1C502.5 232 507.3 241.1 507.3 251.1C507.3 261.1 502.5 270.2 493.9 275.1L392.8 332.6L391.2 343.3Z" fill="#FFC107"/>
+        <path d="M392.8 332.6L305.8 256L47.7 491.7C52.4 496.7 60.1 498 68.6 493.2L392.8 332.6Z" fill="#F44336"/>
+        <path d="M392.8 169.6L68.6 8.8C60.1 4 52.4 5.3 47.7 10.3L305.8 256L392.8 169.6Z" fill="#4CAF50"/>
+      </svg>
+      <div class="btn-play-text">
+        <span class="btn-play-small">GET IT ON</span>
+        <span class="btn-play-title">Google Play</span>
+      </div>
+    </a>
+
+    <!-- Web Dashboard Button -->
+    <a class="btn-secondary" href="https://dashboard.sreelakshmicharity.org/">
+      Open Web Portal & Dashboard →
+    </a>
+
+    <div class="redirect-status" id="redirectMsg">
+      <div class="spinner"></div>
+      <span>Redirecting to Google Play Store...</span>
+    </div>
+  </div>
+
+  <footer>
+    <p><strong>Sree Lakshmi Charitable Trust</strong></p>
+    <p>Reg. No: 67/2026 • Kozhikode, Kerala</p>
+    <p style="margin-top: 6px;">
+      <a href="/privacy_policy.html">Privacy Policy</a> • 
+      <a href="https://sreelakshmicharity.org">Official Website</a>
+    </p>
+  </footer>
+
+  <script>
+    (function() {
+      // Configurable Target Play Store Package URL
+      var PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.sreelakshmiappsteam.mobile";
+      var PLAY_STORE_INTENT = "market://details?id=com.sreelakshmiappsteam.mobile";
+
+      var playLink = document.getElementById("playStoreLink");
+      if (playLink) {
+        playLink.href = PLAY_STORE_URL;
+      }
+
+      // Check query parameters (support ?preview=1 or ?noredirect=1 to inspect landing page)
+      var urlParams = new URLSearchParams(window.location.search);
+      var isPreview = urlParams.get("preview") === "1" || urlParams.get("noredirect") === "1";
+      var statusEl = document.getElementById("redirectMsg");
+
+      if (isPreview) {
+        if (statusEl) statusEl.style.display = "none";
+        return;
+      }
+
+      // On Android mobile devices, redirect to Google Play
+      var isAndroid = /Android/i.test(navigator.userAgent);
+      if (isAndroid) {
+        setTimeout(function() {
+          // Attempt direct Play Store opening
+          window.location.href = PLAY_STORE_URL;
+        }, 600);
+      } else {
+        if (statusEl) {
+          statusEl.innerHTML = '<span>Available for Android devices on Google Play Store</span>';
+        }
+      }
+    })();
+  </script>
+</body>
+</html>

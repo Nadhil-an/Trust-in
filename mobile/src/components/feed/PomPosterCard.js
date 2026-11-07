@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Toast from 'react-native-toast-message';
+import { Config } from '../../constants/Config';
 import { Colors } from '../../constants/Colors';
 import { resolveImageUrl } from '../../utils/imageUrl';
 import { pomApi } from '../../api';
@@ -131,8 +132,13 @@ export default function PomPosterCard({ item, onResponseSuccess }) {
 
   const handleShare = async () => {
     try {
-      const message = `📢 *KERALA CHARITY COMMUNITY - PUBLIC APPEAL*\n\n*${item.title}*\n\n${item.description}\n\n📍 Location: ${item.target_location || 'General'}\n📞 Contact: ${item.contact_person || 'Community Coordinator'} (${item.contact_phone || 'N/A'})\n\nPlease share with friends & family to help!`;
-      await Share.share({ message });
+      const shareUrl = Config.APP_SHARE_URL || 'https://dashboard.sreelakshmicharity.org/kcc';
+      const message = `📢 *KERALA CHARITY COMMUNITY - PUBLIC APPEAL*\n\n*${item.title}*\n\n${item.description}\n\n📍 Location: ${item.target_location || 'General'}\n📞 Contact: ${item.contact_person || 'Community Coordinator'} (${item.contact_phone || 'N/A'})\n\nView and support on the Kerala Charity Community App:\n${shareUrl}`;
+      await Share.share({
+        message,
+        title: 'Kerala Charity Community Public Appeal',
+        url: shareUrl,
+      });
     } catch (_) {}
   };
 

@@ -21,6 +21,7 @@ import * as Clipboard from 'expo-clipboard';
 import { resolveImageUrl } from '../../utils/imageUrl';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
+import { Config } from '../../constants/Config';
 import { useAuthStore } from '../../store/authStore';
 import { authApi } from '../../api';
 import Toast from 'react-native-toast-message';
@@ -629,7 +630,8 @@ const ProfileScreen = ({ navigation, route }) => {
                 try {
                   await Share.share({
                     title: 'Join Kerala Charity Community',
-                    message: `Join Kerala Charity Community using my referral code: ${referralCode}\n\nDownload the app to register, track contributions and support our charitable mission! https://sreelakshmicharity.org`,
+                    message: `Join Kerala Charity Community using my referral code: ${referralCode}\n\nDownload the app to register, track contributions and support our charitable mission! ${Config.APP_SHARE_URL}`,
+                    url: Config.APP_SHARE_URL,
                   });
                 } catch (err) {
                   console.warn('Share error', err);

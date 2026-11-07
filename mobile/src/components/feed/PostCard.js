@@ -18,6 +18,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { Video, ResizeMode } from 'expo-av';
 import Toast from 'react-native-toast-message';
+import { Config } from '../../constants/Config';
 import { memberPostsApi } from '../../api';
 import { resolveImageUrl } from '../../utils/imageUrl';
 import { formatDistrictKerala } from '../../utils/location';
@@ -245,10 +246,12 @@ export default function PostCard({
   const handleShare = async () => {
     try {
       const desc = post.description || '';
-      const shareMessage = `Kerala Charity Community • Community Post\n\nBy: ${authorName} (${districtName})\n\n"${desc}"\n\nView and support on the Kerala Charity Community App:\nhttps://sreelakshmicharity.org`;
+      const shareUrl = Config.APP_SHARE_URL || 'https://dashboard.sreelakshmicharity.org/kcc';
+      const shareMessage = `Kerala Charity Community • Community Post\n\nBy: ${authorName} (${districtName})\n\n"${desc}"\n\nView and support on the Kerala Charity Community App:\n${shareUrl}`;
       await Share.share({
         message: shareMessage,
-        title: 'Community Post',
+        title: 'Kerala Charity Community',
+        url: shareUrl,
       });
     } catch (err) {
       console.log('Share error:', err);

@@ -17,6 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import Toast from 'react-native-toast-message';
 import { Colors } from '../../constants/Colors';
+import { Config } from '../../constants/Config';
 import { useAuthStore } from '../../store/authStore';
 import { volunteersApi } from '../../api';
 import { resolveImageUrl } from '../../utils/imageUrl';
@@ -211,7 +212,8 @@ export default function JoinVolunteerScreen({ navigation }) {
     try {
       await Share.share({
         title: 'Kerala Charity Community - Official Volunteer',
-        message: `🌟 I am an Official Volunteer of Kerala Charity Community!\nName: ${vol.full_name}\nVolunteer ID: ${vol.volunteer_id}\nBlood Group: ${vol.blood_group || 'N/A'}\nJoin us in serving humanity!`,
+        message: `🌟 I am an Official Volunteer of Kerala Charity Community!\nName: ${vol.full_name}\nVolunteer ID: ${vol.volunteer_id}\nBlood Group: ${vol.blood_group || 'N/A'}\n\nJoin us in serving humanity:\n${Config.APP_SHARE_URL}`,
+        url: Config.APP_SHARE_URL,
       });
     } catch (e) {
       console.log('Share error:', e);
