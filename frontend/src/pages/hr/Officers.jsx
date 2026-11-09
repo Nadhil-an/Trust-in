@@ -637,7 +637,12 @@ export default function Officers() {
       setRemoveAccessStaff(null);
       loadStaff();
     } catch (err) {
-      toast.error(err.response?.data?.error || "Failed to remove access");
+      const msg = err.response?.data?.error || "Failed to remove access";
+      if (err.response?.status === 404) {
+        toast.error(`No app account found for ${removeAccessStaff.full_name}. This staff member has no mobile login to remove.`, { duration: 6000 });
+      } else {
+        toast.error(msg);
+      }
     } finally {
       setIsRemovingAccess(false);
     }
