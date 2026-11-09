@@ -302,6 +302,8 @@ export default function Officers() {
   const [resetPasswordValue, setResetPasswordValue] = useState('');
   const [resetPasswordError, setResetPasswordError] = useState(null);
   const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const [removeAccessStaff, setRemoveAccessStaff] = useState(null);
+  const [isRemovingAccess, setIsRemovingAccess] = useState(false);
 
   const handleConfirmReactivate = async (e) => {
     if (e) e.preventDefault();
@@ -626,6 +628,21 @@ export default function Officers() {
     }
   }
 
+  const handleConfirmRemoveAccess = async () => {
+    if (!removeAccessStaff || isRemovingAccess) return;
+    setIsRemovingAccess(true);
+    try {
+      await hrApi.officers.removeAccess(removeAccessStaff.id);
+      toast.success(`Access removed for ${removeAccessStaff.full_name}. They are now logged out and cannot log in.`, { duration: 6000 });
+      setRemoveAccessStaff(null);
+      loadStaff();
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Failed to remove access");
+    } finally {
+      setIsRemovingAccess(false);
+    }
+  }
+
   const openViewModal = (o) => {
     setViewItem(o)
     setGraphDays(7)
@@ -848,6 +865,12 @@ export default function Officers() {
                                   handleResetPassword(o);
                                 }}>
                                   Reset Pass
+                                </button>
+                                <button className="btn btn-sm btn-secondary" style={{ color: '#DC2626', borderColor: '#FEE2E2', background: '#FFF5F5', fontWeight: 600 }} onClick={(e)=>{
+                                  e.stopPropagation();
+                                  setRemoveAccessStaff(o);
+                                }}>
+                                  Remove Access
                                 </button>
                                 <button className="btn btn-sm btn-secondary" onClick={(e)=>{
                                   e.stopPropagation(); 
@@ -1510,6 +1533,55 @@ export default function Officers() {
                 </li>
               ))}
             </ul>
+          </div>
+        </Modal>
+      )}
+
+      {/* Remove Access Confirmation Modal */}
+      {removeAccessStaff && (
+        <Modal
+          isOpen={!!removeAccessStaff}
+          onClose={() => setRemoveAccessStaff(null)}
+          title="Remove App Access"
+        >
+          <div style={{ padding: '8px 0' }}>
+            <div style={{
+              background: '#FEF2F2',
+              border: '1px solid #FCA5A5',
+              borderRadius: 8,
+              padding: '12px 16px',
+              marginBottom: 16,
+              color: '#B91C1C',
+              fontSize: '0.88rem'
+            }}>
+              <strong>⚠️ Warning:</strong> This will immediately log out <strong>{removeAccessStaff.full_name}</strong> from the mobile app and block all future logins until HR resets their password.
+            </div>
+            <p style={{ fontSize: '0.9rem', color: '#374151', marginBottom: 4 }}>
+              Staff member: <strong>{removeAccessStaff.full_name}</strong>
+            </p>
+            <p style={{ fontSize: '0.85rem', color: '#6B7280', marginBottom: 16 }}>
+              Employee ID: <span style={{ fontFamily: 'monospace', fontWeight: 600 }}>{removeAccessStaff.employee_id}</span>
+            </p>
+            <p style={{ fontSize: '0.88rem', color: '#374151', marginBottom: 20 }}>
+              To restore access later, use <strong>"Reset Pass"</strong> from the HR dashboard.
+            </p>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <button
+                className="btn btn-sm btn-secondary"
+                onClick={() => setRemoveAccessStaff(null)}
+                disabled={isRemovingAccess}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-sm"
+                style={{ background: '#DC2626', color: '#fff', borderColor: '#DC2626', fontWeight: 700 }}
+                onClick={handleConfirmRemoveAccess}
+                disabled={isRemovingAccess}
+              >
+                {isRemovingAccess ? 'Removing...' : 'Remove Access'}
+              </button>
+            </div>
           </div>
         </Modal>
       )}

@@ -1366,6 +1366,57 @@ class ExecutiveOfficerResetPasswordView(APIView):
         return Response({'message': 'Password reset successfully.'})
 
 
+class ExecutiveOfficerRemoveAccessView(APIView):
+    """
+    Remove mobile/app access for a staff member.
+    - Sets is_active=False on their User account (blocks all future logins).
+    - Rotates (invalidates) their password so old credentials are wiped.
+    - Outstanding JWT tokens will be rejected on next use because the user is inactive.
+    HR can restore access later via Reset Password + Reactivate.
+    """
+    permission_classes = [IsHR]
+
+    def post(self, request, pk):
+        try:
+            instance = ExecutiveOfficer.objects.get(pk=pk)
+        except ExecutiveOfficer.DoesNotExist:
+            return Response({'error': 'Staff not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        from core.models import User, AuditLog
+        from django.db.models import Q
+        import uuid as _uuid
+
+        q = Q(username__iexact=instance.employee_id)
+        if instance.phone:
+            q |= Q(username__iexact=instance.phone)
+            q |= Q(phone__iexact=instance.phone)
+        if instance.email:
+            q |= Q(email__iexact=instance.email)
+
+        users = list(User.objects.filter(q).exclude(role__in=['ADMIN', 'MANAGER']))
+        name_users = list(User.objects.filter(full_name__iexact=instance.full_name).exclude(role__in=['ADMIN', 'MANAGER']))
+        all_users = set(users + name_users)
+
+        if not all_users:
+            return Response({'error': 'No user account found for this staff member.'}, status=status.HTTP_404_NOT_FOUND)
+
+        for u in all_users:
+            # Deactivate the account — login is impossible while is_active=False
+            u.is_active = False
+            # Rotate password to an unguessable random string so the old password
+            # cannot be used even if is_active is somehow toggled externally.
+            u.set_password(str(_uuid.uuid4()))
+            u.save(update_fields=['is_active', 'password'])
+
+        AuditLog.objects.create(
+            action='REMOVE_ACCESS',
+            user=request.user,
+            description=f"Removed app access for staff: {instance.full_name} ({instance.employee_id})"
+        )
+
+        return Response({'message': f'Access removed for {instance.full_name}. They cannot log in until HR resets their password.'})
+
+
 class DesignationListView(APIView):
     permission_classes = [IsAnyStaff]
 
