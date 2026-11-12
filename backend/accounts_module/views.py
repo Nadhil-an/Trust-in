@@ -889,7 +889,8 @@ class TotalFundsView(APIView):
 
 class DaySheetView(APIView):
     """
-    Returns a structured Day Sheet for a given date.
+    Returns a structured Day Sheet for a given date, or a list of Day Sheets
+    for a date range when `from_date` and `to_date` query params are provided.
 
     DEBIT side  = Opening balances (OB CASH, OB BANK) + income collected that day
     CREDIT side = Expenses paid that day + disbursements
@@ -898,18 +899,57 @@ class DaySheetView(APIView):
     permission_classes = [IsFinanceOrDataEntry]
 
     def get(self, request):
-        from datetime import date as dt_date
-        from django.db.models import Sum, Q
+        from datetime import datetime, timedelta
+        from rest_framework import status
+
+        from_str = request.query_params.get('from_date')
+        to_str = request.query_params.get('to_date')
+
+        if from_str and to_str:
+            try:
+                start_date = datetime.strptime(from_str, '%Y-%m-%d').date()
+                end_date = datetime.strptime(to_str, '%Y-%m-%d').date()
+            except ValueError:
+                return Response(
+                    {'detail': 'Invalid date format. Use YYYY-MM-DD.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if start_date > end_date:
+                return Response(
+                    {'detail': 'from_date must be on or before to_date.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if (end_date - start_date).days > 365:
+                return Response(
+                    {'detail': 'Date range cannot exceed 366 days.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            sheets = []
+            curr = start_date
+            while curr <= end_date:
+                sheets.append(self._build_day_sheet(curr))
+                curr += timedelta(days=1)
+
+            return Response({
+                'from_date': start_date.strftime('%Y-%m-%d'),
+                'to_date': end_date.strftime('%Y-%m-%d'),
+                'sheets': sheets,
+            })
 
         date_str = request.query_params.get('date')
         try:
             if date_str:
-                from datetime import datetime
                 target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
             else:
                 target_date = timezone.localdate()
         except ValueError:
             target_date = timezone.localdate()
+
+        return Response(self._build_day_sheet(target_date))
+
+    def _build_day_sheet(self, target_date):
+        from django.db.models import Sum, Q
 
         # ── Opening Balances (previous day closing balances via CashClosing)
         from cashier_module.models import CashClosing
@@ -1065,8 +1105,9 @@ class DaySheetView(APIView):
         sheet_closing = round(total_debit - total_credit, 2)
         closing_diff = round((physical_cash + physical_bank) - sheet_closing, 2)
 
-        return Response({
+        return {
             'date': target_date.strftime('%d-%m-%Y'),
+            'iso_date': target_date.strftime('%Y-%m-%d'),
             'debit_rows': debit_rows,
             'credit_rows': credit_rows,
             'total_debit': round(total_debit, 2),
@@ -1080,5 +1121,5 @@ class DaySheetView(APIView):
             'has_closing': closing is not None,
             'notes': closing.notes if closing else '',
             'mobile_totals': mobile_totals,
-        })
+        }
 

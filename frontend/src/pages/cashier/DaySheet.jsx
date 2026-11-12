@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { accountsApi, cashierApi } from '../../api'
-import { format } from 'date-fns'
+import { format, startOfMonth, endOfMonth, subMonths, subDays, differenceInCalendarDays } from 'date-fns'
 import toast from 'react-hot-toast'
 import { Modal, Combobox } from '../../components/shared'
 import PaymentMethodSelector from '../../components/PaymentMethodSelector'
@@ -46,6 +46,12 @@ export default function DaySheet() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const printRef = useRef()
+
+  const [showPrintModal, setShowPrintModal] = useState(false)
+  const [printFromDate, setPrintFromDate] = useState(date)
+  const [printToDate, setPrintToDate] = useState(date)
+  const [skipEmptyDays, setSkipEmptyDays] = useState(false)
+  const [printLoading, setPrintLoading] = useState(false)
 
   const [debits, setDebits] = useState([])
   const [credits, setCredits] = useState([])
@@ -398,19 +404,15 @@ export default function DaySheet() {
 
   useEffect(() => { load() }, [load])
 
-  useEffect(() => {
-    if (!data) return
+  const buildSheetRowsFromData = useCallback((sheetData, targetIsoDate, { cleanLocalStorage = false } = {}) => {
+    const savedDebits = sheetData.debit_rows || []
+    const savedCredits = sheetData.credit_rows || []
 
-    const savedDebits = data.debit_rows || []
-    const savedCredits = data.credit_rows || []
-
-    // Build debit rows — preserve incomes that come from backend
     const obCash = savedDebits.find(r => r.particular === 'OB CASH') || { particular: 'OB CASH', amount: '', sc: 'CASH' }
     const obBank = savedDebits.find(r => r.particular === 'OB BANK') || { particular: 'OB BANK', amount: '', sc: 'BANK' }
 
     const AUTO_PARTICULARS = new Set(['BY CASH', 'BY ONLINE', 'BY BANK', 'DONATION', 'TOTAL DONATION', 'TOTAL', 'OB CASH', 'OB BANK'])
 
-    // Income entries that came from the backend (have an `id`, excluding auto-computed particulars)
     const incomes = savedDebits.filter(r => {
       const p = (r.particular || '').trim().toUpperCase()
       return !AUTO_PARTICULARS.has(p) && !r.isDonationHeader && !r.isTotalDonation
@@ -422,12 +424,10 @@ export default function DaySheet() {
       { particular: '', amount: '', sc: 'CASH' },
       { particular: '', amount: '', sc: 'CASH' },
       { particular: 'DONATION', amount: '', sc: 'CASH', isDonationHeader: true },
-      { particular: 'BY CASH', amount: (data.mobile_totals && data.mobile_totals.cash > 0) ? data.mobile_totals.cash : '', sc: 'CASH' },
-      { particular: 'BY ONLINE', amount: (data.mobile_totals && data.mobile_totals.online > 0) ? data.mobile_totals.online : '', sc: 'BANK' },
+      { particular: 'BY CASH', amount: (sheetData.mobile_totals && sheetData.mobile_totals.cash > 0) ? sheetData.mobile_totals.cash : '', sc: 'CASH' },
+      { particular: 'BY ONLINE', amount: (sheetData.mobile_totals && sheetData.mobile_totals.online > 0) ? sheetData.mobile_totals.online : '', sc: 'BANK' },
       { particular: 'TOTAL DONATION', amount: '', sc: 'CASH', isTotalDonation: true },
     ]
-
-    // ── Clean stale localStorage extras ──────────────────────────────────────
 
     const backendIncomeIds = new Set(incomes.filter(r => r.id).map(r => String(r.id)))
     const backendExpenseIds = new Set(savedCredits.filter(r => r.id).map(r => String(r.id)))
@@ -436,18 +436,17 @@ export default function DaySheet() {
 
     const cleanExtras = (rows) => rows.filter(r => {
       const p = (r.particular || '').trim().toUpperCase()
-      if (AUTO_PARTICULARS.has(p)) return false  // auto-computed, never cache
+      if (AUTO_PARTICULARS.has(p)) return false
       if (r.id && (backendIncomeIds.has(String(r.id)) || backendExpenseIds.has(String(r.id)))) return false
-      if (backendIncomeParticulars.has(p) || backendExpenseParticulars.has(p)) return false // match backend names
+      if (backendIncomeParticulars.has(p) || backendExpenseParticulars.has(p)) return false
       return true
     })
 
-    const rawDExtras = loadExtraDebits(date)
+    const rawDExtras = loadExtraDebits(targetIsoDate)
     const cleanDExtras = cleanExtras(rawDExtras)
-    if (cleanDExtras.length !== rawDExtras.length) saveExtraDebits(date, cleanDExtras)
+    if (cleanLocalStorage && cleanDExtras.length !== rawDExtras.length) saveExtraDebits(targetIsoDate, cleanDExtras)
     const dExtras = cleanDExtras.map(r => ({ ...r, isExtra: true }))
 
-    // Place extra credit fields before DONATION
     const dRows = [...fixedRows]
     const donIdx = dRows.findIndex(r => r.particular === 'DONATION' || r.isDonationHeader)
     const allCreditExtras = [...incomes, ...dExtras]
@@ -456,37 +455,64 @@ export default function DaySheet() {
     } else if (allCreditExtras.length > 0) {
       dRows.push(...allCreditExtras)
     }
-    setDebits(dRows.map(r => ({ ...r, amount: r.amount != null ? r.amount : '' })))
+    const builtDebits = dRows.map(r => ({ ...r, amount: r.amount != null ? r.amount : '' }))
 
-    const rawCExtras = loadExtraCredits(date)
+    const rawCExtras = loadExtraCredits(targetIsoDate)
     const cleanCExtras = cleanExtras(rawCExtras)
-    if (cleanCExtras.length !== rawCExtras.length) saveExtraCredits(date, cleanCExtras)
+    if (cleanLocalStorage && cleanCExtras.length !== rawCExtras.length) saveExtraCredits(targetIsoDate, cleanCExtras)
     const cExtras = cleanCExtras.map(r => ({ ...r, isExtra: true }))
 
-    // Build debit/expense rows — start with min 4 rows
     const cRows = savedCredits.map(r => ({ ...r, amount: r.amount != null ? r.amount : '' }))
     while (cRows.length < 4) cRows.push({ particular: '', amount: '', sc: 'CASH' })
-    setCredits([...cRows, ...cExtras])
+    const builtCredits = [...cRows, ...cExtras]
 
-    // Restore closing balances
-    setClosing({
-      cashInHand: data.has_closing ? (data.physical_cash != null ? data.physical_cash : '') : '',
-      bankBalance: data.has_closing ? (data.physical_bank != null ? data.physical_bank : '') : '',
-      sheetClosing: data.has_closing ? (data.sheet_closing != null ? data.sheet_closing : '') : '',
-      notes: data.has_closing ? (data.notes || '') : ''
-    })
-  }, [data])
+    const builtClosing = {
+      cashInHand: sheetData.has_closing ? (sheetData.physical_cash != null ? sheetData.physical_cash : '') : '',
+      bankBalance: sheetData.has_closing ? (sheetData.physical_bank != null ? sheetData.physical_bank : '') : '',
+      sheetClosing: sheetData.has_closing ? (sheetData.sheet_closing != null ? sheetData.sheet_closing : '') : '',
+      notes: sheetData.has_closing ? (sheetData.notes || '') : ''
+    }
+
+    const hasActivity =
+      incomes.length > 0 ||
+      savedCredits.length > 0 ||
+      dExtras.some(r => r.particular || r.amount) ||
+      cExtras.some(r => r.particular || r.amount) ||
+      (sheetData.mobile_totals && (sheetData.mobile_totals.cash > 0 || sheetData.mobile_totals.online > 0)) ||
+      Boolean(sheetData.has_closing)
+
+    return { debits: builtDebits, credits: builtCredits, closing: builtClosing, hasActivity }
+  }, [])
+
+  useEffect(() => {
+    if (!data) return
+    const { debits: builtDebits, credits: builtCredits, closing: builtClosing } = buildSheetRowsFromData(data, date, { cleanLocalStorage: true })
+    setDebits(builtDebits)
+    setCredits(builtCredits)
+    setClosing(builtClosing)
+  }, [data, date, buildSheetRowsFromData])
 
 
-  const handlePrint = () => {
-    const win = window.open('', '_blank')
+  const openPrintModal = () => {
+    setPrintFromDate(date)
+    setPrintToDate(date)
+    setShowPrintModal(true)
+  }
+
+  const renderDaySheetPageHtml = ({ targetIsoDate, sheetDebits, sheetCredits, sheetClosing }) => {
     const formatAmt = (amt) => amt ? Number(amt).toLocaleString('en-IN') : ''
+    const dCreditSum = sheetDebits.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0)
+    const dDebitSum = sheetCredits.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0)
+    const dTotalValue = dCreditSum - dDebitSum
+    const dTotalHandBank = (Number(sheetClosing.cashInHand) || 0) + (Number(sheetClosing.bankBalance) || 0)
+    const dNetDiff = dTotalHandBank - dTotalValue
+    const dHasAllClosingInputs = sheetClosing.cashInHand !== '' && sheetClosing.cashInHand != null && sheetClosing.bankBalance !== '' && sheetClosing.bankBalance != null
 
     let tableHtml = ''
-    const maxLen = Math.max(debits.length, credits.length)
+    const maxLen = Math.max(sheetDebits.length, sheetCredits.length)
     for (let i = 0; i < maxLen; i++) {
-      const d = debits[i] || {}
-      const c = credits[i] || {}
+      const d = sheetDebits[i] || {}
+      const c = sheetCredits[i] || {}
       if (!d.particular && !d.amount && !c.particular && !c.amount && i >= 6) continue
 
       tableHtml += `
@@ -495,7 +521,7 @@ export default function DaySheet() {
             ? `<td colspan="3" class="bold" style="text-align: left; padding-left: 12px; color: #15803d; font-size: 14px; letter-spacing: 2px; background-color: #dcfce7;">DONATION</td>`
             : (d.isTotalDonation || d.particular === 'TOTAL DONATION')
             ? `<td class="bold right" style="color: #0369a1; padding-right: 12px;">TOTAL DONATION</td>
-               <td class="bold right" style="color: #0369a1;">${formatAmt(Number(debits.find(r => r.particular === 'BY CASH')?.amount || 0) + Number(debits.find(r => r.particular === 'BY ONLINE')?.amount || 0))}</td>
+               <td class="bold right" style="color: #0369a1;">${formatAmt(Number(sheetDebits.find(r => r.particular === 'BY CASH')?.amount || 0) + Number(sheetDebits.find(r => r.particular === 'BY ONLINE')?.amount || 0))}</td>
                <td></td>`
             : `<td>${d.particular || ''}</td>
                <td class="right">${formatAmt(d.amount)}</td>
@@ -509,10 +535,142 @@ export default function DaySheet() {
       `
     }
 
+    return `
+      <div class="day-sheet-page">
+        <div class="print-header">
+          <img src="${window.location.origin}/logo-full.png" alt="Sree Lakshmi Trust Logo" onerror="this.onerror=null; this.src='${window.location.origin}/logo-only.png';" />
+          <h1>Sree Lakshmi Trust</h1>
+          <h2>Day Sheet</h2>
+          <p>Date: ${format(new Date(targetIsoDate), 'dd-MM-yyyy')}</p>
+        </div>
+        
+        <table>
+          <thead>
+            <tr>
+              <th colspan="3" class="header-debit">CREDIT</th>
+              <th colspan="3" class="header-credit">DEBIT</th>
+            </tr>
+            <tr>
+              <th width="35%">Particular</th>
+              <th width="10%">Amount (₹)</th>
+              <th width="5%">SC</th>
+              <th width="35%">Particular</th>
+              <th width="10%">Amount (₹)</th>
+              <th width="5%">SC</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tableHtml}
+            <tr class="total-row">
+              <td class="right">TOTAL CREDIT</td>
+              <td class="right" style="color: #15803d;">${formatAmt(dCreditSum)}</td>
+              <td></td>
+              <td class="right">TOTAL DEBIT</td>
+              <td class="right" style="color: #0369a1;">${formatAmt(dDebitSum)}</td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="clearfix">
+          <div class="summary-table" style="padding-right: 15px; box-sizing: border-box;">
+            <table>
+              <thead>
+                <tr>
+                  <th colspan="2" style="background: #fef9c3; color: #a16207;">BY HAND AND BANK CLOSING</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Cash In Hand (CASH)</td><td class="right">${formatAmt(sheetClosing.cashInHand)}</td></tr>
+                <tr><td>Bank Balance (BANK)</td><td class="right">${formatAmt(sheetClosing.bankBalance)}</td></tr>
+                <tr class="bold"><td>Total (By Hand & Bank)</td><td class="right">${formatAmt(dTotalHandBank)}</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="summary-table" style="padding-left: 15px; box-sizing: border-box;">
+            <table>
+              <thead>
+                <tr>
+                  <th colspan="2" style="background: #e0f2fe; color: #0369a1;">READING / SHEET CLOSING</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Total Credit</td><td class="right">${formatAmt(dCreditSum)}</td></tr>
+                <tr><td>Total Debit</td><td class="right">${formatAmt(dDebitSum)}</td></tr>
+                <tr class="bold"><td>Profit / Loss</td><td class="right" style="color: ${dTotalValue > 0 ? '#15803d' : (dTotalValue < 0 ? '#b91c1c' : 'inherit')}">${dTotalValue > 0 ? '+' + formatAmt(dTotalValue) + ' (Profit)' : (dTotalValue < 0 ? '-' + formatAmt(Math.abs(dTotalValue)) + ' (Loss)' : '0')}</td></tr>
+                <tr class="bold"><td>Shortage / Excess</td><td class="right" style="color: ${!dHasAllClosingInputs ? '#6b7280' : (dNetDiff < 0 ? '#dc2626' : (dNetDiff > 0 ? '#16a34a' : 'inherit'))}">${!dHasAllClosingInputs ? '—' : (dNetDiff > 0 ? '+' + formatAmt(dNetDiff) + ' (Excess)' : (dNetDiff < 0 ? '-' + formatAmt(Math.abs(dNetDiff)) + ' (Shortage)' : '0'))}</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    `
+  }
+
+  const executePrint = async () => {
+    if (!printFromDate || !printToDate) {
+      toast.error('Please select both From Date and To Date.')
+      return
+    }
+    if (printFromDate > printToDate) {
+      toast.error('From Date must be on or before To Date.')
+      return
+    }
+
+    let pagesToRender = []
+    if (printFromDate === date && printToDate === date) {
+      pagesToRender = [{
+        targetIsoDate: date,
+        sheetDebits: debits,
+        sheetCredits: credits,
+        sheetClosing: closing,
+      }]
+    } else {
+      setPrintLoading(true)
+      try {
+        const res = await accountsApi.daySheet({ from_date: printFromDate, to_date: printToDate })
+        const rawSheets = res.data?.sheets || []
+        for (const sheet of rawSheets) {
+          const built = buildSheetRowsFromData(sheet, sheet.iso_date)
+          if (skipEmptyDays && !built.hasActivity) continue
+          pagesToRender.push({
+            targetIsoDate: sheet.iso_date,
+            sheetDebits: built.debits,
+            sheetCredits: built.credits,
+            sheetClosing: built.closing,
+          })
+        }
+      } catch (err) {
+        toast.error(err.response?.data?.detail || 'Failed to load Day Sheets for the selected range')
+        setPrintLoading(false)
+        return
+      } finally {
+        setPrintLoading(false)
+      }
+    }
+
+    if (pagesToRender.length === 0) {
+      toast.error('No day sheets found with transactions in the selected date range.')
+      return
+    }
+
+    const win = window.open('', '_blank')
+    if (!win) {
+      toast.error('Pop-up blocked. Please allow pop-ups to print.')
+      return
+    }
+
+    const docTitle = printFromDate === printToDate
+      ? `Day Sheet — ${printFromDate}`
+      : `Day Sheet — ${printFromDate} to ${printToDate}`
+
+    const pagesHtml = pagesToRender.map(renderDaySheetPageHtml).join('')
+
     win.document.write(`
       <html>
         <head>
-          <title>Day Sheet — ${date}</title>
+          <title>${docTitle}</title>
           <style>
             body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px; margin: 30px; color: #333; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             @page { margin: 0; }
@@ -520,6 +678,8 @@ export default function DaySheet() {
               body { margin: 15mm; } 
               * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } 
             }
+            .day-sheet-page { page-break-after: always; break-after: page; }
+            .day-sheet-page:last-child { page-break-after: auto; break-after: auto; }
             .print-header { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 2px solid #0369a1; }
             .print-header img { max-height: 80px; margin-bottom: 12px; object-fit: contain; }
             .print-header h1 { color: #0369a1; margin: 0 0 5px 0; font-size: 24px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 800; }
@@ -540,80 +700,15 @@ export default function DaySheet() {
           </style>
         </head>
         <body>
-          <div class="print-header">
-            <img src="${window.location.origin}/logo-full.png" alt="Sree Lakshmi Trust Logo" onerror="this.onerror=null; this.src='${window.location.origin}/logo-only.png';" />
-            <h1>Sree Lakshmi Trust</h1>
-            <h2>Day Sheet</h2>
-            <p>Date: ${format(new Date(date), 'dd-MM-yyyy')}</p>
-          </div>
-          
-          <table>
-            <thead>
-              <tr>
-                <th colspan="3" class="header-debit">CREDIT</th>
-                <th colspan="3" class="header-credit">DEBIT</th>
-              </tr>
-              <tr>
-                <th width="35%">Particular</th>
-                <th width="10%">Amount (₹)</th>
-                <th width="5%">SC</th>
-                <th width="35%">Particular</th>
-                <th width="10%">Amount (₹)</th>
-                <th width="5%">SC</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${tableHtml}
-              <tr class="total-row">
-                <td class="right">TOTAL CREDIT</td>
-                <td class="right" style="color: #15803d;">${formatAmt(totalCreditSum)}</td>
-                <td></td>
-                <td class="right">TOTAL DEBIT</td>
-                <td class="right" style="color: #0369a1;">${formatAmt(totalDebitSum)}</td>
-                <td></td>
-              </tr>
-            </tbody>
-          </table>
-
-          <div class="clearfix">
-            <div class="summary-table" style="padding-right: 15px; box-sizing: border-box;">
-              <table>
-                <thead>
-                  <tr>
-                    <th colspan="2" style="background: #fef9c3; color: #a16207;">BY HAND AND BANK CLOSING</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr><td>Cash In Hand (CASH)</td><td class="right">${formatAmt(closing.cashInHand)}</td></tr>
-                  <tr><td>Bank Balance (BANK)</td><td class="right">${formatAmt(closing.bankBalance)}</td></tr>
-                  <tr class="bold"><td>Total (By Hand & Bank)</td><td class="right">${formatAmt(totalHandBank)}</td></tr>
-                </tbody>
-              </table>
-            </div>
-
-            <div class="summary-table" style="padding-left: 15px; box-sizing: border-box;">
-              <table>
-                <thead>
-                  <tr>
-                    <th colspan="2" style="background: #e0f2fe; color: #0369a1;">READING / SHEET CLOSING</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr><td>Total Credit</td><td class="right">${formatAmt(totalCreditSum)}</td></tr>
-                  <tr><td>Total Debit</td><td class="right">${formatAmt(totalDebitSum)}</td></tr>
-                  <tr class="bold"><td>Profit / Loss</td><td class="right" style="color: ${totalValue > 0 ? '#15803d' : (totalValue < 0 ? '#b91c1c' : 'inherit')}">${totalValue > 0 ? '+' + formatAmt(totalValue) + ' (Profit)' : (totalValue < 0 ? '-' + formatAmt(Math.abs(totalValue)) + ' (Loss)' : '0')}</td></tr>
-                  <tr class="bold"><td>Shortage / Excess</td><td class="right" style="color: ${!hasAllClosingInputs ? '#6b7280' : (netDiff < 0 ? '#dc2626' : (netDiff > 0 ? '#16a34a' : 'inherit'))}">${!hasAllClosingInputs ? '—' : (netDiff > 0 ? '+' + formatAmt(netDiff) + ' (Excess)' : (netDiff < 0 ? '-' + formatAmt(Math.abs(netDiff)) + ' (Shortage)' : '0'))}</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+          ${pagesHtml}
         </body>
       </html>`)
     win.document.close()
+    setShowPrintModal(false)
     setTimeout(() => {
       win.print()
       win.close()
-    }, 250)
+    }, 300)
   }
 
   const handleSave = async (isBackground = false, overrideDebits = null, overrideCredits = null, skipReload = false) => {
@@ -753,7 +848,7 @@ export default function DaySheet() {
           <button onClick={handleOpenIncome} className="btn btn-secondary" style={{ color: 'var(--success)', fontWeight: 600 }}>+ Add Income</button>
           <button onClick={handleOpenExpense} className="btn btn-secondary" style={{ color: 'var(--danger)', fontWeight: 600 }}>+ Add Expense</button>
           <button onClick={load} className="btn btn-secondary">↺ Refresh</button>
-          <button onClick={handlePrint} className="btn btn-secondary">🖨 Print</button>
+          <button onClick={openPrintModal} className="btn btn-secondary">🖨 Print / PDF</button>
           <button onClick={handleExport} className="btn btn-secondary">⬇ Export Excel</button>
         </div>
       </div>
@@ -1184,6 +1279,115 @@ export default function DaySheet() {
             </div>
           </div>
         </>
+      )}
+
+      {showPrintModal && (
+        <Modal
+          isOpen={true}
+          onClose={() => !printLoading && setShowPrintModal(false)}
+          title="Print Day Sheet / Save as PDF"
+          size="modal-md"
+          footer={
+            <>
+              <button className="btn btn-secondary" onClick={() => setShowPrintModal(false)} disabled={printLoading}>
+                Cancel
+              </button>
+              <button className="btn btn-primary" onClick={executePrint} disabled={printLoading}>
+                {printLoading ? 'Preparing PDF...' : '🖨 Print / Save as PDF'}
+              </button>
+            </>
+          }
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                style={{ fontSize: 12, padding: '6px 10px' }}
+                onClick={() => { setPrintFromDate(date); setPrintToDate(date) }}
+              >
+                Current Day ({format(new Date(date + 'T00:00:00'), 'dd-MM-yyyy')})
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                style={{ fontSize: 12, padding: '6px 10px' }}
+                onClick={() => {
+                  const base = new Date(date + 'T00:00:00')
+                  setPrintFromDate(format(startOfMonth(base), 'yyyy-MM-dd'))
+                  setPrintToDate(format(endOfMonth(base), 'yyyy-MM-dd'))
+                }}
+              >
+                Full Month ({format(new Date(date + 'T00:00:00'), 'MMM yyyy')})
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                style={{ fontSize: 12, padding: '6px 10px' }}
+                onClick={() => {
+                  const prev = subMonths(new Date(date + 'T00:00:00'), 1)
+                  setPrintFromDate(format(startOfMonth(prev), 'yyyy-MM-dd'))
+                  setPrintToDate(format(endOfMonth(prev), 'yyyy-MM-dd'))
+                }}
+              >
+                Last Month ({format(subMonths(new Date(date + 'T00:00:00'), 1), 'MMM yyyy')})
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                style={{ fontSize: 12, padding: '6px 10px' }}
+                onClick={() => {
+                  const base = new Date(date + 'T00:00:00')
+                  setPrintFromDate(format(subDays(base, 6), 'yyyy-MM-dd'))
+                  setPrintToDate(date)
+                }}
+              >
+                Last 7 Days
+              </button>
+            </div>
+
+            <div className="form-grid-2">
+              <div className="form-group">
+                <label className="form-label required">From Date</label>
+                <input
+                  className="form-control"
+                  type="date"
+                  value={printFromDate}
+                  onChange={e => setPrintFromDate(e.target.value)}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label required">To Date</label>
+                <input
+                  className="form-control"
+                  type="date"
+                  value={printToDate}
+                  onChange={e => setPrintToDate(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: 'var(--gray-700)', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={skipEmptyDays}
+                onChange={e => setSkipEmptyDays(e.target.checked)}
+              />
+              Skip days with no transactions (only Opening Balance)
+            </label>
+
+            {printFromDate && printToDate && printFromDate <= printToDate && (
+              <div style={{ padding: '10px 12px', background: 'var(--primary-50, #eff6ff)', border: '1px solid var(--primary-200, #bfdbfe)', borderRadius: 8, fontSize: 13, color: 'var(--primary-800, #1e40af)' }}>
+                {(() => {
+                  const days = differenceInCalendarDays(new Date(printToDate + 'T00:00:00'), new Date(printFromDate + 'T00:00:00')) + 1
+                  return days === 1
+                    ? `1 day selected (${format(new Date(printFromDate + 'T00:00:00'), 'dd-MM-yyyy')}).`
+                    : `${days} days selected (${format(new Date(printFromDate + 'T00:00:00'), 'dd-MM-yyyy')} to ${format(new Date(printToDate + 'T00:00:00'), 'dd-MM-yyyy')}) — all days will be combined into a single PDF, one day per page.`
+                })()}
+              </div>
+            )}
+          </div>
+        </Modal>
       )}
 
       {showSaveWarning && (
