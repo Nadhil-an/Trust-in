@@ -655,19 +655,12 @@ export default function DaySheet() {
       return
     }
 
-    const win = window.open('', '_blank')
-    if (!win) {
-      toast.error('Pop-up blocked. Please allow pop-ups to print.')
-      return
-    }
-
     const docTitle = printFromDate === printToDate
       ? `Day Sheet — ${printFromDate}`
       : `Day Sheet — ${printFromDate} to ${printToDate}`
 
     const pagesHtml = pagesToRender.map(renderDaySheetPageHtml).join('')
-
-    win.document.write(`
+    const fullHtml = `
       <html>
         <head>
           <title>${docTitle}</title>
@@ -702,13 +695,34 @@ export default function DaySheet() {
         <body>
           ${pagesHtml}
         </body>
-      </html>`)
-    win.document.close()
+      </html>`
+
+    const iframe = document.createElement('iframe')
+    iframe.style.position = 'fixed'
+    iframe.style.right = '0'
+    iframe.style.bottom = '0'
+    iframe.style.width = '0'
+    iframe.style.height = '0'
+    iframe.style.border = '0'
+    document.body.appendChild(iframe)
+
+    const iframeWin = iframe.contentWindow
+    const iframeDoc = iframeWin.document
+    iframeDoc.open()
+    iframeDoc.write(fullHtml)
+    iframeDoc.close()
+
     setShowPrintModal(false)
+    const cleanup = () => {
+      if (iframe.parentNode) iframe.parentNode.removeChild(iframe)
+    }
+    iframeWin.onafterprint = cleanup
+
     setTimeout(() => {
-      win.print()
-      win.close()
-    }, 300)
+      iframeWin.focus()
+      iframeWin.print()
+      setTimeout(cleanup, 1000)
+    }, 350)
   }
 
   const handleSave = async (isBackground = false, overrideDebits = null, overrideCredits = null, skipReload = false) => {
